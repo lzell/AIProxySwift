@@ -9,6 +9,7 @@ your API key secure and your AI bill predictable:
 - DeviceCheck verification
 - Split key encryption
 
+
 ## Note to existing customers
 
 If you previously used `AIProxy.swift` from our dashboard, or integrated with
@@ -27,7 +28,14 @@ steps:
    value that we provided you in the AIProxy dashboard
 
 
-## Example usage:
+## Adding this package as a dependency to your Xcode project
+
+1. Open your Xcode project
+2. Select `File > Add Package Dependencies`
+3. Punch `github.com/lzell/aiproxyswift` into the package URL bar
+
+
+## Example usage
 
 ### Get a chat completion from a text prompt:
 
