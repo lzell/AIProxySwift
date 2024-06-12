@@ -29,46 +29,68 @@ steps:
 
 ## Example usage:
 
-Get a chat completion from a text prompt:
+### Get a chat completion from a text prompt:
+
+
+    import AIProxy
 
     let openAIService = AIProxy.openAIService(
         partialKey: "<the-partial-key-from-the-dashboard>"
     )
-    let response = try! await openAIService.chatCompletionRequest(body: .init(
-        model: "gpt-4o",
-        messages: [.init(role: "system", content: .text("hello world"))]
-    ))
-    print(response.choices.first?.message.content)
+    do {
+        let response = try await openAIService.chatCompletionRequest(body: .init(
+            model: "gpt-4o",
+            messages: [.init(role: "system", content: .text("hello world"))]
+        ))
+        print(response.choices.first?.message.content)
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
 
 
-Get a chat completion that includes an image:
+Note that you have to be in an async context for the above to work. If you are
+not using structured concurrency, wrap the code above in a `Task`
 
+
+### Get a chat completion that includes an image:
+
+
+    import AIProxy
 
     let openAIService = AIProxy.openAIService(
         partialKey: "<the-partial-key-from-the-dashboard>"
     )
-
-    let image = create1x1Image()
-    let localURL = // get a local URL of your image, see OpenAIServiceTests.swift for an example
-    let response = try! await service.chatCompletionRequest(body: .init(
-        model: "gpt-4o",
-        messages: [
-            .init(
-                role: "system",
-                content: .text("Tell me what you see")
-            ),
-            .init(
-                role: "user",
-                content: .parts(
-                    [
-                        .text("What do you see?"),
-                        .imageURL(localURL)
-                    ]
+    let imageURL = // get a local URL of your image, see OpenAIServiceTests.swift for an example
+    do {
+        let response = try await service.chatCompletionRequest(body: .init(
+            model: "gpt-4o",
+            messages: [
+                .init(
+                    role: "system",
+                    content: .text("Tell me what you see")
+                ),
+                .init(
+                    role: "user",
+                    content: .parts(
+                        [
+                            .text("What do you see?"),
+                            .imageURL(imageURL)
+                        ]
+                    )
                 )
-            )
-        ]
-    ))
-    print(response.choices.first?.message.content)
+            ]
+        ))
+        print(response.choices.first?.message.content)
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
 
+
+Note that you have to be in an async context for the above to work. If you are
+not using structured concurrency, wrap the code above in a `Task`.
 
 There are simple examples in `Tests/AIProxyTests/OpenAIServiceTests.swift` that you may take inspiration from.
