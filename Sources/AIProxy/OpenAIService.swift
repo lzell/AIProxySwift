@@ -56,7 +56,7 @@ public struct OpenAIService {
     public func chatCompletionRequest(
         body: OpenAIChatCompletionRequestBody
     ) async throws -> OpenAIChatCompletionResponseBody {
-        let session = URLSession(configuration: .default, delegate: challengeDelegate, delegateQueue: nil)
+        let session = self.getServiceSession()
         session.sessionDescription = "AIProxy Buffered" // See "Analyze HTTP traffic in Instruments" wwdc session
         let request = try await buildAIProxyRequest(
             partialKey: self.partialKey,
@@ -76,6 +76,17 @@ public struct OpenAIService {
         }
 
         return try JSONDecoder().decode(OpenAIChatCompletionResponseBody.self, from: data)
+    }
+
+    private func getServiceSession() -> URLSession {
+        if self.serviceURL.starts(with: "http://localhost") {
+            return URLSession(configuration: .default)
+        }
+        return URLSession(
+            configuration: .default,
+            delegate: challengeDelegate,
+            delegateQueue: nil
+        )
     }
 }
 
