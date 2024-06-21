@@ -36,11 +36,13 @@ public enum AIProxyError: Error {
 
 public struct OpenAIService {
     private let partialKey: String
+    private let serviceURL: String
     private let deviceCheckBypass: String? = ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"]
 
     /// Please use `AIProxy.openAIService`
-    internal init(partialKey: String) {
+    internal init(partialKey: String, serviceURL: String) {
         self.partialKey = partialKey
+        self.serviceURL = serviceURL
     }
 
     /// Initiates an async/await-based, non-streaming chat completion request to /v1/chat/completions.
@@ -58,6 +60,7 @@ public struct OpenAIService {
         session.sessionDescription = "AIProxy Buffered" // See "Analyze HTTP traffic in Instruments" wwdc session
         let request = try await buildAIProxyRequest(
             partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
             deviceCheckBypass: self.deviceCheckBypass,
             requestBody: body,
             path: "/v1/chat/completions"
@@ -115,6 +118,7 @@ private func getClientID() -> String? {
 /// Used for both streaming and non-streaming chat.
 private func buildAIProxyRequest(
     partialKey: String,
+    serviceURL: String,
     deviceCheckBypass: String?,
     requestBody: Encodable,
     path: String
@@ -124,12 +128,12 @@ private func buildAIProxyRequest(
     let deviceCheckToken = await getDeviceCheckToken()
     let clientID = getClientID()
 
-    guard var urlComponents = URLComponents(string: aiproxyURL) else {
+    guard var urlComponents = URLComponents(string: serviceURL) else {
         aiproxyLogger.error("Could not create urlComponents, please check the aiproxyEndpoint constant")
         throw AIProxyError.programmerError
     }
 
-    urlComponents.path = path
+    urlComponents.path = urlComponents.path.appending(path)
     guard let url = urlComponents.url else {
         aiproxyLogger.error("Could not create a request URL")
         throw AIProxyError.programmerError

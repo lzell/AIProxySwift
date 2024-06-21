@@ -7,7 +7,13 @@ let aiproxyLogger = Logger(
 
 public struct AIProxy {
     /// Entrypoint for AIProxy's OpenAI service
-    public static func openAIService(partialKey: String) -> OpenAIService {
-        return OpenAIService(partialKey: partialKey)
+    public static func openAIService(
+        partialKey: String,
+        serviceURL: String
+    ) -> OpenAIService {
+        return OpenAIService(
+            partialKey: partialKey,
+            serviceURL: serviceURL
+        )
     }
 }
