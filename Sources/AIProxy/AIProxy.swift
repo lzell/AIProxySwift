@@ -16,7 +16,12 @@ public struct AIProxy {
     ///
     /// - Parameters:
     ///   - partialKey: The partial key that was displayed in the AIProxy dashboard when you
-    ///     configured your project
+    ///     submitted your OpenAI key
+    ///
+    ///   - serviceURL: The service URL that was displayed in the AIProxy dashboard when you
+    ///     submitted your OpenAI key. This argument is required for keys that you submitted after
+    ///     July 22nd, 2024. If you are an existing customer that configured your AIProxy project
+    ///     before July 22nd, you may continue to leave this blank.
     ///
     ///   - clientID: An optional clientID to attribute requests to specific users or devices. It is OK to
     ///     leave this blank for most applications. You would set this if you already have an
@@ -31,9 +36,14 @@ public struct AIProxy {
     /// - Returns: An instance of OpenAIService configured and ready to make requests
     public static func openAIService(
         partialKey: String,
+        serviceURL: String? = nil,
         clientID: String? = nil
     ) -> OpenAIService {
-        return OpenAIService(partialKey: partialKey, clientID: clientID)
+        return OpenAIService(
+            partialKey: partialKey,
+            serviceURL: serviceURL,
+            clientID: clientID
+        )
     }
 
 

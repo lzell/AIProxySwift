@@ -3,19 +3,21 @@
 
 import Foundation
 
-private let aiproxyURL = "https://api.aiproxy.pro"
+private let legacyURL = "https://api.aiproxy.pro"
 private let aiproxyChatPath = "/v1/chat/completions"
 
 
 public final class OpenAIService {
     private let secureDelegate = AIProxyCertificatePinningDelegate()
     private let partialKey: String
+    private let serviceURL: String?
     private let clientID: String?
 
     /// Creates an instance of OpenAIService. Note that the initializer is not public.
     /// Customers are expected to use the factory `AIProxy.openAIService` defined in AIProxy.swift
-    internal init(partialKey: String, clientID: String?) {
+    internal init(partialKey: String, serviceURL: String?, clientID: String?) {
         self.partialKey = partialKey
+        self.serviceURL = serviceURL
         self.clientID = clientID
     }
 
@@ -32,12 +34,10 @@ public final class OpenAIService {
         var body = body
         body.stream = false
         body.streamOptions = nil
-        let session = URLSession(configuration: .default,
-                                 delegate: self.secureDelegate,
-                                 delegateQueue: nil)
-        session.sessionDescription = "AIProxy Buffered" // See "Analyze HTTP traffic in Instruments" wwdc session
+        let session = self.getServiceSession()
         let request = try await buildAIProxyRequest(
             partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
             clientID: self.clientID,
             requestBody: body,
             path: "/v1/chat/completions"
@@ -70,12 +70,10 @@ public final class OpenAIService {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
-        let session = URLSession(configuration: .default,
-                                 delegate: self.secureDelegate,
-                                 delegateQueue: nil)
-        session.sessionDescription = "AIProxy Streaming" // See "Analyze HTTP traffic in Instruments" wwdc session
+        let session = self.getServiceSession()
         let request = try await buildAIProxyRequest(
             partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
             clientID: self.clientID,
             requestBody: body,
             path: "/v1/chat/completions"
@@ -107,12 +105,10 @@ public final class OpenAIService {
     public func createImageRequest(
         body: OpenAICreateImageRequestBody
     ) async throws -> OpenAICreateImageResponseBody {
-        let session = URLSession(configuration: .default,
-                                 delegate: self.secureDelegate,
-                                 delegateQueue: nil)
-        session.sessionDescription = "AIProxy Buffered" // See "Analyze HTTP traffic in Instruments" wwdc session
+        let session = self.getServiceSession()
         let request = try await buildAIProxyRequest(
             partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
             clientID: self.clientID,
             requestBody: body,
             path: "/v1/images/generations"
@@ -132,6 +128,16 @@ public final class OpenAIService {
         return try JSONDecoder().decode(OpenAICreateImageResponseBody.self, from: data)
     }
 
+    private func getServiceSession() -> URLSession {
+        if (self.serviceURL ?? legacyURL).starts(with: "http://localhost") {
+            return URLSession(configuration: .default)
+        }
+        return URLSession(
+            configuration: .default,
+            delegate: self.secureDelegate,
+            delegateQueue: nil
+        )
+    }
 }
 
 // MARK: - Private Helpers
@@ -140,6 +146,7 @@ public final class OpenAIService {
 /// Used for both streaming and non-streaming chat.
 private func buildAIProxyRequest(
     partialKey: String,
+    serviceURL: String?,
     clientID: String?,
     requestBody: Encodable,
     path: String
@@ -148,14 +155,15 @@ private func buildAIProxyRequest(
     let postBody = try JSONEncoder().encode(requestBody)
     let deviceCheckToken = await AIProxyDeviceCheck.getToken()
     let clientID = clientID ?? AIProxyIdentifier.getClientID()
+    let baseURL = serviceURL ?? legacyURL
 
-    guard var urlComponents = URLComponents(string: aiproxyURL) else {
+    guard var urlComponents = URLComponents(string: baseURL) else {
         throw AIProxyError.assertion(
             "Could not create urlComponents, please check the aiproxyEndpoint constant"
         )
     }
 
-    urlComponents.path = path
+    urlComponents.path = urlComponents.path.appending(path)
     guard let url = urlComponents.url else {
         throw AIProxyError.assertion("Could not create a request URL")
     }
