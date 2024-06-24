@@ -167,3 +167,10 @@ If you encounter the error
 
 Modify your macOS project settings by tapping on your project in the Xcode project tree, then
 select `Signing & Capabilities` and enable `Outgoing Connections (client)`
+
+
+## Community contributions
+
+Contributions are welcome! In order to contribute, we require that you grant
+AIProxy an irrevocable license to use your contributions as we see fit. Please
+read `CONTRIBUTIONS.md` for details
