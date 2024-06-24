@@ -96,6 +96,39 @@ the steps in the next section for adding an environment variable to your project
     }
 
 
+### How to ensure OpenAI returns JSON as the chat message content
+
+Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON only:
+
+    import AIProxy
+
+    let openAIService = AIProxy.openAIService(
+        partialKey: "<the-partial-key-from-the-dashboard>"
+    )
+    do {
+        let response = try await service.chatCompletionRequest(body: .init(
+            model: "gpt-4o",
+            messages: [
+                .init(
+                    role: "system",
+                    content: .text("Return valid JSON only")
+                ),
+                .init(
+                    role: "user",
+                    content: .text("Return alice and bob in a list of names")
+                )
+            ],
+            responseFormat: .type("json_object")
+        ))
+        print(response.choices.first?.message.content)
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
+
+
+
 ### Specify your own `clientID` to annotate requests
 
 If your app already has client or user IDs that you want to annotate AIProxy requests with,
