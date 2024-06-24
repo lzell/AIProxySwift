@@ -1,60 +1,63 @@
 //
-//  ChallengeDelegate.swift
+//  AIProxyCertificatePinning.swift
 //
 //
-//  Created by Lou Zell on 6/12/24.
+//  Created by Lou Zell on 6/23/24.
 //
 
 import Foundation
 
-final class ChallengeDelegate: NSObject, URLSessionDelegate {
-    private let pubKeys = PubKeys()
+/// Use this class in conjunction with a URLSession to adopt certificate pinning in your app.
+/// Cert pinning greatly reduces the ability for an attacker to snoop on your traffic.
+///
+/// A common misunderstanding about https is that it's hard for an attacker to read your traffic.
+/// Unfortunately, that is only true if you, as the developer, control both sides of the pipe.
+/// As an app developer, this is almost never the case. You ship your apps to the app store, and
+/// attackers install them. When an attacker has your app on hardware they control (e.g. an iPhone),
+/// it is trivial for them to MITM your app and read encrypted traffic.
+///
+/// Certificate pinning adds an additional layer of security by only allowing the TLS handshake to
+/// succeed if your app recognizes the public key from the other side. I have baked in several AIProxy
+/// public keys to this implementation.
+///
+/// This also functions as a reference implementation for any other libraries that want to interact
+/// with the aiproxy.pro service using certificate pinning.
+internal struct AIProxyCertificatePinning {
 
-    func urlSession(
-        _ session: URLSession,
-        didReceive challenge: URLAuthenticationChallenge
-    ) async -> (URLSession.AuthChallengeDisposition, URLCredential?)
-    {
-        guard let secTrust = challenge.protectionSpace.serverTrust else {
-            aiproxyLogger.error("Could not access the server's security space")
-            return (.cancelAuthenticationChallenge, nil)
-        }
-
-        guard let certificate = getServerCert(secTrust: secTrust) else {
-            aiproxyLogger.error("Could not access the server's TLS cert")
-            return (.cancelAuthenticationChallenge, nil)
-        }
-
-        let serverPublicKey = SecCertificateCopyKey(certificate)!
-        let serverPublicKeyData = SecKeyCopyExternalRepresentation(serverPublicKey, nil)!
-
-        for m in self.pubKeys.kMap {
-            if serverPublicKeyData as Data == m {
-                let credential = URLCredential(trust: secTrust)
-                return (.useCredential, credential)
+    internal final class SecureURLSessionDelegate: NSObject, URLSessionDelegate {
+        func urlSession(
+            _ session: URLSession,
+            didReceive challenge: URLAuthenticationChallenge
+        ) async -> (URLSession.AuthChallengeDisposition, URLCredential?)
+        {
+            guard let secTrust = challenge.protectionSpace.serverTrust else {
+                aiproxyLogger.error("Could not access the server's security space")
+                return (.cancelAuthenticationChallenge, nil)
             }
+
+            guard let certificate = getServerCert(secTrust: secTrust) else {
+                aiproxyLogger.error("Could not access the server's TLS cert")
+                return (.cancelAuthenticationChallenge, nil)
+            }
+
+            let serverPublicKey = SecCertificateCopyKey(certificate)!
+            let serverPublicKeyData = SecKeyCopyExternalRepresentation(serverPublicKey, nil)!
+
+            for publicKeyData in publicKeysAsData {
+                if serverPublicKeyData as Data == publicKeyData {
+                    let credential = URLCredential(trust: secTrust)
+                    return (.useCredential, credential)
+                }
+            }
+
+            return (.cancelAuthenticationChallenge, nil)
         }
-
-        return (.cancelAuthenticationChallenge, nil)
     }
-}
 
-private func getServerCert(secTrust: SecTrust) -> SecCertificate? {
-    if #available(macOS 12.0, iOS 15.0, *) {
-        guard let certs = SecTrustCopyCertificateChain(secTrust) as? [SecCertificate] else {
-            return nil
-        }
-        return certs[0]
-    } else {
-        return SecTrustGetCertificateAtIndex(secTrust, 0);
-    }
-}
-
-private final class PubKeys {
-
-    lazy var kMap: [Data] = {
-        let newVal = self.k.map { x in
-            let keyData = Data(x)
+    // MARK: - Private
+    private static var publicKeysAsData: [Data] = {
+        let newVal = publicKeysAsHex.map { publicKeyAsHex in
+            let keyData = Data(publicKeyAsHex)
 
             let attributes: [String: Any] = [
                 kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
@@ -76,7 +79,7 @@ private final class PubKeys {
         return newVal
     }()
 
-    let k: [[UInt8]] = [
+    private static let publicKeysAsHex: [[UInt8]] = [
         // live on api.aiproxy.pro
         [
             0x04, 0x25, 0xa2, 0xd1, 0x81, 0xc0, 0x38, 0xce, 0x57, 0xaa, 0x6e, 0xf0, 0x5a, 0xc3, 0x6a,
@@ -123,4 +126,19 @@ private final class PubKeys {
         ]
 
     ]
+
+    private static func getServerCert(secTrust: SecTrust) -> SecCertificate? {
+        if #available(macOS 12.0, iOS 15.0, *) {
+            guard let certs = SecTrustCopyCertificateChain(secTrust) as? [SecCertificate] else {
+                return nil
+            }
+            return certs[0]
+        } else {
+            return SecTrustGetCertificateAtIndex(secTrust, 0);
+        }
+    }
+
+    private init() {
+        fatalError("This type is not designed to be instantiated")
+    }
 }
