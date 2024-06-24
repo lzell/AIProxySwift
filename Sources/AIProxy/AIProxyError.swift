@@ -41,6 +41,6 @@ public enum AIProxyError: Error {
     /// to place a really low rate limit in the AIProxy dashboard, and then fire a couple requests
     /// from the simulator to reach the rate limit. You wouldn't want to do this once your app is in
     /// production, because the rate limits that you apply will rate limit live users!
-    case unsuccessfulRequest(statusCode: Int, responseBody: String?)
+    case unsuccessfulRequest(statusCode: Int, responseBody: String)
 }
 

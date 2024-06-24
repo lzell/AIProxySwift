@@ -14,10 +14,18 @@ import Foundation
 public struct OpenAIChatCompletionRequestBody: Encodable {
     public let model: String
     public let messages: [OpenAIChatMessage]
+    public let responseFormat: OpenAIChatResponseFormat?
 
-    public init(model: String, messages: [OpenAIChatMessage]) {
+    enum CodingKeys: String, CodingKey {
+        case model
+        case messages
+        case responseFormat = "response_format"
+    }
+
+    public init(model: String, messages: [OpenAIChatMessage], responseFormat: OpenAIChatResponseFormat? = nil) {
         self.model = model
         self.messages = messages
+        self.responseFormat = responseFormat
     }
 }
 
@@ -28,6 +36,22 @@ public struct OpenAIChatMessage: Encodable {
     public init(role: String, content: OpenAIChatContent) {
         self.role = role
         self.content = content
+    }
+}
+
+public enum OpenAIChatResponseFormat: Encodable {
+    case type(String)
+
+    enum CodingKeys: String, CodingKey {
+        case type
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .type(let format):
+            try container.encode(format, forKey: .type)
+        }
     }
 }
 

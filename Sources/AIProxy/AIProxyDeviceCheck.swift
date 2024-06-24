@@ -7,6 +7,16 @@
 
 import Foundation
 import DeviceCheck
+import OSLog
+
+private let deviceCheckWarning = """
+    AIProxy warning: DeviceCheck is not available on this device.
+
+    To use AIProxy on an iOS simulator, set an AIPROXY_DEVICE_CHECK_BYPASS environment variable.
+
+    See the README at https://github.com/lzell/AIProxySwift for instructions.
+    """
+
 
 struct AIProxyDeviceCheck {
 
@@ -23,7 +33,9 @@ struct AIProxyDeviceCheck {
     /// - Returns: A base 64 encoded DeviceCheck token, if possible
     internal static func getToken() async -> String? {
         guard DCDevice.current.isSupported else {
-            aiproxyLogger.error("DeviceCheck is not available on this device. Are you on the simulator?")
+            if ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] == nil {
+                aiproxyLogger.warning("\(deviceCheckWarning, privacy: .public)")
+            }
             return nil
         }
 

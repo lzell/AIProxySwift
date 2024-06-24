@@ -8,6 +8,15 @@ final class OpenAIServiceTests: XCTestCase {
         return encoder
     }()
 
+    // MARK: - ResponseFormat
+    func testResponseFormatIsEncodable() {
+        let responseFormat = OpenAIChatResponseFormat.type("json_object")
+        XCTAssertEqual(
+            #"{"type":"json_object"}"#,
+            jsonEncode(responseFormat)
+        )
+    }
+
     // MARK: - ChatContentPart
     func testTextChatContentPartIsEncodable() {
         let chatContentPart: OpenAIChatContentPart = .text("abc")
@@ -121,6 +130,25 @@ final class OpenAIServiceTests: XCTestCase {
             XCTFail()
         }
     }
+
+    func testChatCompletionRequestWithResponseFormatIsEncodableToJson() {
+        let chatRequestBody = OpenAIChatCompletionRequestBody(
+            model: "gpt-4o",
+            messages: [.init(role: "system", content: .text("return JSON only"))],
+            responseFormat: .type("json_object")
+        )
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+
+        if let jsonData = try? encoder.encode(chatRequestBody),
+            let jsonStr = String(data: jsonData, encoding: .utf8) {
+            XCTAssertEqual(jsonStr, #"{"messages":[{"content":"return JSON only","role":"system"}],"model":"gpt-4o","response_format":{"type":"json_object"}}"#)
+        } else {
+            XCTFail()
+        }
+    }
+
 
     func testChatCompletionRequestBodyWithImageIsEncodableToJson() {
         let image = create1x1Image()
