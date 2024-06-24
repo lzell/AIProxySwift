@@ -172,5 +172,5 @@ select `Signing & Capabilities` and enable `Outgoing Connections (client)`
 ## Community contributions
 
 Contributions are welcome! In order to contribute, we require that you grant
-AIProxy an irrevocable license to use your contributions as we see fit. Please
-read `CONTRIBUTIONS.md` for details
+AIProxy an irrevocable license to use your contributions as we see fit.
+Please read [CONTRIBUTIONS.md](https://github.com/lzell/AIProxySwift/blob/main/CONTRIBUTIONS.md) for details
