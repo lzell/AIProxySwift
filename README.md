@@ -1,7 +1,7 @@
 ## iOS and macOS clients for AIProxy
 
 This is a young project. It includes a small client for OpenAI that routes all
-requests through AIProxy. You would use this client to add AI to your apps
+requests through [AIProxy](https://www.aiproxy.pro). You would use this client to add AI to your apps
 without building your own backend. Three levels of security are applied to keep
 your API key secure and your AI bill predictable:
 

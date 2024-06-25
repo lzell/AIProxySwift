@@ -4,7 +4,7 @@
 
 #### About
 
-AIColorPalette generates a color palette from a photo in your camera roll.
+AIColorPalette generates a color palette from a photo in your camera roll. This project uses [AIProxy](https://www.aiproxy.pro) to secure your OpenAI key.
 
 #### Features demonstrated
 
