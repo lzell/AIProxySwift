@@ -8,6 +8,7 @@ AIColorPalette generates a color palette from a photo in your camera roll.
 
 #### Features demonstrated
 
+- Shows off new iOS 18 SwiftUI effects
 - Calls the OpenAI chat completion endpoint
 - Submits a photo as the chat completion request body
 - Compels OpenAI to return valid JSON in the chat completion response
