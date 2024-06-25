@@ -36,6 +36,13 @@ the steps in the next section for adding an environment variable to your project
    value that we provided you in the AIProxy dashboard
 
 
+## Sample apps
+
+Sample apps live in the `Examples` folder. As this repo grows, we will add sample apps demonstrating
+supported functionality across various providers. Use these sample apps as starting points for your
+own apps. See the [Examples README](https://github.com/lzell/AIProxySwift/blob/main/Examples/README.md)
+
+
 
 ## Example usage
 
@@ -147,7 +154,8 @@ out, and we'll generate IDs for you. See `AIProxyIdentifier.swift` if you would 
 ID generation specifics.
 
 
-### Troubleshooting
+
+## Troubleshooting
 
 #### Async function context
 
