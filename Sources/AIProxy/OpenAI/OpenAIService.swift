@@ -8,7 +8,7 @@ private let aiproxyChatPath = "/v1/chat/completions"
 
 
 public final class OpenAIService {
-    private let secureDelegate = AIProxyCertificatePinning.SecureURLSessionDelegate()
+    private let secureDelegate = AIProxyCertificatePinningDelegate()
     private let partialKey: String
     private let clientID: String?
     private let deviceCheckBypass: String? = ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"]
@@ -44,7 +44,7 @@ public final class OpenAIService {
         )
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
-            fatalError("Network response is not an http response")
+            throw AIProxyError.assertion("Network response is not an http response")
         }
 
         if (httpResponse.statusCode > 299) {
