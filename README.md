@@ -26,14 +26,20 @@ the steps in the next section for adding an environment variable to your project
 1. Open your Xcode project
 2. Select `File > Add Package Dependencies`
 3. Punch `github.com/lzell/aiproxyswift` into the package URL bar
-4. Add the device check bypass token to your Xcode project as an environment
-   variable (you get the bypass token when you configure a project on aiproxy.pro)
+4. Add an `AIPROXY_DEVICE_CHECK_BYPASS' env variable to Xcode. This token is provided to you in the AIProxy
+   developer dashboard, and is necessary for the iOS simulator to communicate with the AIProxy backend.
     - Type `cmd shift ,` to open up the "Edit Schemes" menu.
     - Select `Run` in the sidebar
     - Select `Arguments` from the top nav
-    - Add to the "Environment Variables" section (not the "Arguments Passed on
-   Launch" section) an env variable with name `AIPROXY_DEVICE_CHECK_BYPASS` and
-   value that we provided you in the AIProxy dashboard
+    - Add to the "Environment Variables" section (not the "Arguments Passed on Launch" section) an env
+      variable with name `AIPROXY_DEVICE_CHECK_BYPASS` and value that we provided you in the AIProxy dashboard
+
+
+The `AIPROXY_DEVICE_CHECK_BYPASS` is intended for the simulator only. Do not let it leak into
+a distribution build of your app (including a TestFlight distribution). If you follow the steps above,
+then the constant won't leak because env variables are not packaged into the app bundle.
+
+See the FAQ for more details on the DeviceCheck bypass constant.
 
 
 ## Sample apps
@@ -175,6 +181,27 @@ If you encounter the error
 
 Modify your macOS project settings by tapping on your project in the Xcode project tree, then
 select `Signing & Capabilities` and enable `Outgoing Connections (client)`
+
+
+## FAQ
+
+
+### What is the `AIPROXY_DEVICE_CHECK_BYPASS` constant?
+
+AIProxy uses Apple's [DeviceCheck](https://developer.apple.com/documentation/devicecheck) to ensure
+that requests received by the backend originated from your app on a legitimate Apple device.
+However, the iOS simulator cannot produce DeviceCheck tokens. Rather than requiring you to
+constantly build and run on device during development, AIProxy provides a way to skip the
+DeviceCheck integrity check. The token is intended for use by developers only. If an attacker gets
+the token, they can make requests to your AIProxy project without including a DeviceCheck token, and
+thus remove one level of protection.
+
+### What is the `aiproxyPartialKey` constant?
+
+This constant is intended to be **included** in the distributed version of your app. As the name implies, it is a
+partial representation of your OpenAI key. Specifically, it is one half of an encrypted version of your key.
+The other half resides on AIProxy's backend. As your app makes requests to AIProxy, the two encrypted parts
+are paired, decrypted, and used to fulfill the request to OpenAI.
 
 
 ## Community contributions
