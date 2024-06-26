@@ -11,7 +11,6 @@ public final class OpenAIService {
     private let secureDelegate = AIProxyCertificatePinningDelegate()
     private let partialKey: String
     private let clientID: String?
-    private let deviceCheckBypass: String? = ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"]
 
     /// Creates an instance of OpenAIService. Note that the initializer is not public.
     /// Customers are expected to use the factory `AIProxy.openAIService` defined in AIProxy.swift
@@ -38,7 +37,6 @@ public final class OpenAIService {
         let request = try await buildAIProxyRequest(
             partialKey: self.partialKey,
             clientID: self.clientID,
-            deviceCheckBypass: self.deviceCheckBypass,
             requestBody: body,
             path: "/v1/chat/completions"
         )
@@ -65,7 +63,6 @@ public final class OpenAIService {
 private func buildAIProxyRequest(
     partialKey: String,
     clientID: String?,
-    deviceCheckBypass: String?,
     requestBody: Encodable,
     path: String
 ) async throws -> URLRequest {
@@ -99,9 +96,11 @@ private func buildAIProxyRequest(
         request.addValue(deviceCheckToken, forHTTPHeaderField: "aiproxy-devicecheck")
     }
 
-    if let deviceCheckBypass = deviceCheckBypass {
+#if DEBUG && targetEnvironment(simulator)
+    if let deviceCheckBypass = ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] {
         request.addValue(deviceCheckBypass, forHTTPHeaderField: "aiproxy-devicecheck-bypass")
     }
+#endif
 
     return request
 }
