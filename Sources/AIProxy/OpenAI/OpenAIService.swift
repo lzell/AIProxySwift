@@ -19,8 +19,7 @@ public final class OpenAIService {
         self.clientID = clientID
     }
 
-    /// Initiates an async/await-based, non-streaming chat completion request to /v1/chat/completions.
-    /// See the usage instructions at the top of this file.
+    /// Initiates a non-streaming chat completion request to /v1/chat/completions.
     ///
     /// - Parameters:
     ///   - chatRequestBody: The request body to send to aiproxy and openai. See this reference:
@@ -30,6 +29,9 @@ public final class OpenAIService {
     public func chatCompletionRequest(
         body: OpenAIChatCompletionRequestBody
     ) async throws -> OpenAIChatCompletionResponseBody {
+        var body = body
+        body.stream = false
+        body.streamOptions = nil
         let session = URLSession(configuration: .default,
                                  delegate: self.secureDelegate,
                                  delegateQueue: nil)
@@ -53,6 +55,46 @@ public final class OpenAIService {
         }
 
         return try JSONDecoder().decode(OpenAIChatCompletionResponseBody.self, from: data)
+    }
+
+    /// Initiates a streaming chat completion request to /v1/chat/completions.
+    ///
+    /// - Parameters:
+    ///   - chatRequestBody: The request body to send to aiproxy and openai. See this reference:
+    ///                      https://platform.openai.com/docs/api-reference/chat/create
+    /// - Returns: A ChatCompletionResponse. See this reference:
+    ///            https://platform.openai.com/docs/api-reference/chat/object
+    public func streamingChatCompletionRequest(
+        body: OpenAIChatCompletionRequestBody
+    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
+        var body = body
+        body.stream = true
+        body.streamOptions = .init(includeUsage: true)
+        let session = URLSession(configuration: .default,
+                                 delegate: self.secureDelegate,
+                                 delegateQueue: nil)
+        session.sessionDescription = "AIProxy Streaming" // See "Analyze HTTP traffic in Instruments" wwdc session
+        let request = try await buildAIProxyRequest(
+            partialKey: self.partialKey,
+            clientID: self.clientID,
+            requestBody: body,
+            path: "/v1/chat/completions"
+        )
+        let (asyncBytes, res) = try await session.bytes(for: request)
+
+        guard let httpResponse = res as? HTTPURLResponse else {
+            throw AIProxyError.assertion("Network response is not an http response")
+        }
+
+        if (httpResponse.statusCode > 299) {
+            let responseBody = try await asyncBytes.lines.reduce(into: "") { $0 += $1 }
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: responseBody
+            )
+        }
+
+        return asyncBytes.lines.compactMap { OpenAIChatCompletionChunk.from(line: $0) }
     }
 }
 
