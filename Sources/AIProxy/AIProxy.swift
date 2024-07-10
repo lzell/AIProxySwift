@@ -1,4 +1,9 @@
 import OSLog
+#if canImport(AppKit)
+import AppKit
+#elseif canImport(UIKit)
+import UIKit
+#endif
 
 let aiproxyLogger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "UnknownApp",
@@ -30,6 +35,23 @@ public struct AIProxy {
     ) -> OpenAIService {
         return OpenAIService(partialKey: partialKey, clientID: clientID)
     }
+
+
+#if canImport(AppKit)
+    public static func openAIEncodedImage(
+        image: NSImage,
+        compressionQuality: CGFloat = 1.0
+    ) -> URL? {
+        return OpenAIUtils.encodeImageAsURL(image, compressionQuality)
+    }
+#elseif canImport(UIKit)
+    public static func openAIEncodedImage(
+        image: UIImage,
+        compressionQuality: CGFloat = 1.0
+    ) -> URL? {
+        return OpenAIUtils.encodeImageAsURL(image, compressionQuality)
+    }
+#endif
 
     private init() {
         fatalError("This type is not designed to be instantiated")
