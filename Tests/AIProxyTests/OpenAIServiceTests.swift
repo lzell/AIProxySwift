@@ -8,6 +8,15 @@ final class OpenAIServiceTests: XCTestCase {
         return encoder
     }()
 
+    // MARK: - StreamOptions
+    func testStreamOptionsIsEncodable() {
+        let streamOptions = OpenAIChatStreamOptions(includeUsage: true)
+        XCTAssertEqual(
+            #"{"include_usage":true}"#,
+            jsonEncode(streamOptions)
+        )
+    }
+
     // MARK: - ResponseFormat
     func testResponseFormatIsEncodable() {
         let responseFormat = OpenAIChatResponseFormat.type("json_object")
@@ -131,6 +140,25 @@ final class OpenAIServiceTests: XCTestCase {
         }
     }
 
+    func testBasicStreamingChatCompletionRequestBodyIsEncodableToJson() {
+        let chatRequestBody = OpenAIChatCompletionRequestBody(
+            model: "gpt-4o",
+            messages: [.init(role: "system", content: .text("hello world"))],
+            stream: true,
+            streamOptions: .init(includeUsage: true)
+        )
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+
+        if let jsonData = try? encoder.encode(chatRequestBody),
+            let jsonStr = String(data: jsonData, encoding: .utf8) {
+            XCTAssertEqual(jsonStr, #"{"messages":[{"content":"hello world","role":"system"}],"model":"gpt-4o","stream":true,"stream_options":{"include_usage":true}}"#)
+        } else {
+            XCTFail()
+        }
+    }
+
     func testChatCompletionRequestWithResponseFormatIsEncodableToJson() {
         let chatRequestBody = OpenAIChatCompletionRequestBody(
             model: "gpt-4o",
@@ -215,6 +243,15 @@ final class OpenAIServiceTests: XCTestCase {
         XCTAssertEqual("gpt-4o-2024-05-13", res.model)
         XCTAssertEqual("The image is a blank gray square", res.choices.first?.message.content)
     }
+
+    func testChatCompletionResponseChunkIsDecodable() {
+        let line = """
+        data: {"id":"chatcmpl-9jAXUtD5xAKjjgo3XBZEawyoRdUGk","object":"chat.completion.chunk","created":1720552300,"model":"gpt-3.5-turbo-0125","system_fingerprint":null,"choices":[{"index":0,"delta":{"content":"FINDME"},"logprobs":null,"finish_reason":null}],"usage":null}
+        """
+        let res = OpenAIChatCompletionChunk.from(line: line)!
+        XCTAssertEqual("FINDME", res.choices.first?.delta.content!)
+    }
+
 
 
 #if false // E2E tests

@@ -52,20 +52,18 @@ own apps. See the [Examples README](https://github.com/lzell/AIProxySwift/blob/m
 
 ## Example usage
 
-### Get a chat completion from openai:
+### Get a non-streaming chat completion from OpenAI:
 
 
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "<the-partial-key-from-the-dashboard>"
-    )
+    let openAIService = AIProxy.openAIService(partialKey: "<the-partial-key-from-the-dashboard>")
     do {
         let response = try await openAIService.chatCompletionRequest(body: .init(
             model: "gpt-4o",
             messages: [.init(role: "system", content: .text("hello world"))]
         ))
-        print(response.choices.first?.message.content)
+        print(response.choices.first?.message.content ?? "")
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
@@ -73,17 +71,49 @@ own apps. See the [Examples README](https://github.com/lzell/AIProxySwift/blob/m
     }
 
 
-### Send a multi-modal chat completion request to openai:
+### Get a streaming chat completion from OpenAI:
+
+    import AIProxy
+
+    let openAIService = AIProxy.openAIService(partialKey: "<the-partial-key-from-the-dashboard>")
+    let requestBody = OpenAIChatCompletionRequestBody(
+        model: "gpt-4o",
+        messages: [.init(role: "user", content: .text("hello world"))]
+    )
+
+    do {
+        let stream = try await openAIService.streamingChatCompletionRequest(body: requestBody)
+        for try await chunk in stream {
+            print(chunk.choices.first?.delta.content ?? "")
+        }
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
+
+
+### Send a multi-modal chat completion request to OpenAI:
+
+On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
 
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "<the-partial-key-from-the-dashboard>"
-    )
-    let imageURL = // get a local URL of your image, see OpenAIServiceTests.swift for an example
+
+    let openAIService = AIProxy.openAIService(partialKey: "<the-partial-key-from-the-dashboard>")
+    guard let image = UIImage(named: "myImage") else {
+        print("Could not find an image named 'myImage' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.openAIEncodedImage(image: image) else {
+        print("Could not convert image to OpenAI's imageURL format")
+        return
+    }
+
     do {
-        let response = try await service.chatCompletionRequest(body: .init(
+        let response = try await openAIService.chatCompletionRequest(body: .init(
             model: "gpt-4o",
             messages: [
                 .init(
@@ -101,7 +131,7 @@ own apps. See the [Examples README](https://github.com/lzell/AIProxySwift/blob/m
                 )
             ]
         ))
-        print(response.choices.first?.message.content)
+        print(response.choices.first?.message.content ?? "")
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
