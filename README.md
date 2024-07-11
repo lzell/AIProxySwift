@@ -1,38 +1,39 @@
-## iOS and macOS clients for AIProxy
+# About
 
-This is a young project. It includes a small client for OpenAI that routes all
-requests through [AIProxy](https://www.aiproxy.pro). You would use this client to add AI to your apps
-without building your own backend. Three levels of security are applied to keep
-your API key secure and your AI bill predictable:
+Use this package to add [AIProxy](https://www.aiproxy.pro) support to your iOS and macOS apps.
+AIProxy lets you depend on AI APIs safely without building your own backend. 
+Five levels of security are applied to keep your API key secure and your AI bill predictable:
 
 - Certificate pinning
 - DeviceCheck verification
 - Split key encryption
+- Per user rate limits
+- Per IP rate limits
 
 
-## Note to existing customers
-
-If you previously used `AIProxy.swift` from our dashboard, or integrated with
-SwiftOpenAI, you will find that we initialize the aiproxy service slightly
-differently here. We no longer accept a `deviceCheckBypass` as an argument to
-the initializer of the service. It was too easy to accidentally leak the constant.
-
-Instead, you add the device check bypass as an environment variable. Please follow
-the steps in the next section for adding an environment variable to your project.
+# Installation
 
 
-## Adding this package as a dependency to your Xcode project
+## How to add this package as a dependency to your Xcode project
 
-1. Open your Xcode project
-2. Select `File > Add Package Dependencies`
-3. Punch `github.com/lzell/aiproxyswift` into the package URL bar
-4. Add an `AIPROXY_DEVICE_CHECK_BYPASS' env variable to Xcode. This token is provided to you in the AIProxy
+1. From within your Xcode project, select `File > Add Package Dependencies`
+
+   <img src="https://github.com/lzell/AIProxySwift/assets/35940/d44698a0-34e6-434b-b501-390254a14439" alt="Add package dependencies" width="420">
+
+2. Punch `github.com/lzell/aiproxyswift` into the package URL bar, and select the 'main' branch
+   as the dependency rule. Alternatively, you can choose specific releases if you'd like to have finer control of when your dependency gets updated.
+
+   <img src="https://github.com/lzell/AIProxySwift/assets/35940/fd76b588-5e19-4d4d-9748-8db3fd64df8e" alt="Set package rule" width="720">
+
+3. Add an `AIPROXY_DEVICE_CHECK_BYPASS` env variable to Xcode. This token is provided to you in the AIProxy
    developer dashboard, and is necessary for the iOS simulator to communicate with the AIProxy backend.
-    - Type `cmd shift ,` to open up the "Edit Schemes" menu.
+    - Type `cmd shift ,` to open up the "Edit Schemes" menu (or `Product > Scheme > Edit Scheme`)
     - Select `Run` in the sidebar
     - Select `Arguments` from the top nav
-    - Add to the "Environment Variables" section (not the "Arguments Passed on Launch" section) an env
-      variable with name `AIPROXY_DEVICE_CHECK_BYPASS` and value that we provided you in the AIProxy dashboard
+    - Add to the "Environment Variables" section an env variable with name
+      `AIPROXY_DEVICE_CHECK_BYPASS` and value that we provided you in the AIProxy dashboard
+
+      <img src="https://github.com/lzell/AIProxySwift/assets/35940/0ccd6bfe-af9a-4b7d-99c4-5a43ac1b4d09" alt="Add env variable" width="720">
 
 
 The `AIPROXY_DEVICE_CHECK_BYPASS` is intended for the simulator only. Do not let it leak into
@@ -42,7 +43,27 @@ then the constant won't leak because env variables are not packaged into the app
 See the FAQ for more details on the DeviceCheck bypass constant.
 
 
-## Sample apps
+## How to update the package
+
+- If you set the dependency rule to `main` in step 2 above, then you can ensure the package is
+  up to date by right clicking on the package and selecting 'Update Package'
+  
+  <img src="https://github.com/lzell/AIProxySwift/assets/35940/aeee0ab2-362b-4995-b9ca-ff4e1dd04f47" alt="Update package version" width="720">
+
+
+  
+
+- If you selected a version-based rule, inspect the rule in the 'Package Dependencies' section
+  of your project settings:
+
+  <img src="https://github.com/lzell/AIProxySwift/assets/35940/ca788c4c-ac38-4d9d-bb4f-928a9487f6eb" alt="Update package rule" width="720">
+
+  Once the rule is set to include the release version that you'd like to bring in, Xcode should
+  update the package automatically. If it does not, right click on the package in the project
+  tree and select 'Update Package'.
+
+
+# Sample apps
 
 Sample apps live in the `Examples` folder. As this repo grows, we will add sample apps demonstrating
 supported functionality across various providers. Use these sample apps as starting points for your
@@ -50,7 +71,7 @@ own apps. See the [Examples README](https://github.com/lzell/AIProxySwift/blob/m
 
 
 
-## Example usage
+# Example usage
 
 ### Get a non-streaming chat completion from OpenAI:
 
@@ -191,19 +212,24 @@ ID generation specifics.
 
 
 
-## Troubleshooting
-
-#### Async function context
-
-If you use the snippets above and encounter the error
-
-    'async' call in a function that does not support concurrency
-
-it is because we assume you are in a structured concurrency context. If you encounter this
-error, you can use the escape hatch of wrapping your snippet in a `Task {}`.
+# Troubleshooting
 
 
-#### macOS network sandbox
+## No such module 'AIProxy' error
+Occassionally, Xcode fails to automatically add the AIProxy library to your target's dependency
+list.  If you receive the `No such module 'AIProxy'` error, first ensure that you have added
+the package to Xcode using the [Installation steps](https://github.com/lzell/aiproxy?tab=readme-ov-file#how-installation).
+Next, select your project in the Project Navigator (`cmd-1`), select your target, and scroll to
+the `Frameworks, Libraries, and Embedded Content` section. Tap on the plus icon:
+
+<img src="https://github.com/lzell/AIProxySwift/assets/35940/438e2bbb-688c-49bc-aa2a-ea85806818d5" alt="Add library dependency" width="820">  
+
+And add the AIProxy library:
+
+<img src="https://github.com/lzell/AIProxySwift/assets/35940/f015a181-9591-435c-a37f-6fb0c8c5050c" alt="Select the AIProxy dependency" width="400">  
+
+
+## macOS network sandbox
 
 If you encounter the error
 
@@ -213,10 +239,55 @@ Modify your macOS project settings by tapping on your project in the Xcode proje
 select `Signing & Capabilities` and enable `Outgoing Connections (client)`
 
 
-## FAQ
+## 'async' call in a function that does not support concurrency
+
+If you use the snippets above and encounter the error
+
+    'async' call in a function that does not support concurrency
+
+it is because we assume you are in a structured concurrency context. If you encounter this
+error, you can use the escape hatch of wrapping your snippet in a `Task {}`.
 
 
-### What is the `AIPROXY_DEVICE_CHECK_BYPASS` constant?
+## Requests to AIProxy fail in iOS XCTest UI test cases
+
+If you'd like to do UI testing and allow the test cases to execute real API requests, you must
+set the `AIPROXY_DEVICE_CHECK_BYPASS` env variable in your test plan **and** forward the env
+variable from the test case to the host simulator (Apple does not do this by default, which I
+consider a bug). Here is how to set it up:
+
+* Set the `AIPROXY_DEVICE_CHECK_BYPASS` env variable in your test environment:
+  - Open the scheme editor at `Product > Scheme > Edit Scheme`
+  - Select `Test`
+  - Tap through to the test plan
+  
+    <img src="https://github.com/lzell/AIProxySwift/assets/35940/9a372244-f03e-4fe3-9361-ffc9d729b7d9" alt="Select test plan" width="720">  
+    
+  - Select `Configurations > Environment Variables`
+    
+    <img src="https://github.com/lzell/AIProxySwift/assets/35940/2e042957-2c40-4335-833d-70b2bf56c31a" alt="Select env variables" width="780">
+    
+  - Add the `AIPROXY_DEVICE_CHECK_BYPASS` env variable with your value  
+  
+    <img src="https://github.com/lzell/AIProxySwift/assets/35940/e466097c-1700-401d-add6-07c14dd26ab8" alt="Enter env variable value" width="720">
+
+* **Important** Edit your test cases to forward on the env variable to the host simulator:
+
+```swift
+func testExample() throws {
+    let app = XCUIApplication()
+    app.launchEnvironment = [
+        "AIPROXY_DEVICE_CHECK_BYPASS": ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"]!
+    ]
+    app.launch()
+}
+```
+
+
+# FAQ
+
+
+## What is the `AIPROXY_DEVICE_CHECK_BYPASS` constant?
 
 AIProxy uses Apple's [DeviceCheck](https://developer.apple.com/documentation/devicecheck) to ensure
 that requests received by the backend originated from your app on a legitimate Apple device.
@@ -226,7 +297,7 @@ DeviceCheck integrity check. The token is intended for use by developers only. I
 the token, they can make requests to your AIProxy project without including a DeviceCheck token, and
 thus remove one level of protection.
 
-### What is the `aiproxyPartialKey` constant?
+## What is the `aiproxyPartialKey` constant?
 
 This constant is intended to be **included** in the distributed version of your app. As the name implies, it is a
 partial representation of your OpenAI key. Specifically, it is one half of an encrypted version of your key.
