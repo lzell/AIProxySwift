@@ -46,15 +46,19 @@ See the FAQ for more details on the DeviceCheck bypass constant.
 ## How to update the package
 
 - If you set the dependency rule to `main` in step 2 above, then you can ensure the package is
-  up to date by selecting `File > Packages > Reset Package Caches`.
+  up to date by right clicking on the package and selecting 'Update Package'
+  
+  <img src="https://github.com/lzell/AIProxySwift/assets/35940/aeee0ab2-362b-4995-b9ca-ff4e1dd04f47" alt="Update package version" width="720">
+
+
+  
 
 - If you selected a version-based rule, inspect the rule in the 'Package Dependencies' section
   of your project settings:
 
   <img src="https://github.com/lzell/AIProxySwift/assets/35940/ca788c4c-ac38-4d9d-bb4f-928a9487f6eb" alt="Update package rule" width="720">
 
-  Once the rule is set to include the release version that you'd like to bring in, select
-  `File > Packages > Reset Package Caches`
+  Once the rule is set to include the release version that you'd like to bring in, Xcode should update the package automatically. If it does not, right click on the package in the project tree and select 'Update Package'.
 
 
 # Sample apps
