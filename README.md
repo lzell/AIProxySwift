@@ -210,9 +210,36 @@ ID generation specifics.
 
 
 
-## Troubleshooting
+# Troubleshooting
 
-#### UI Test cases
+## Requests to AIProxy fail in iOS XCTest UI test cases
+
+If you'd like to do UI testing and allow the test cases to execute real API requests, you must
+set the `AIPROXY_DEVICE_CHECK_BYPASS` env variable in your test plan **and** forward the env
+variable from the test case to the host simulator (Apple does not do this by default, which I
+consider a bug). Here is how to set it up:
+
+1. Set the `AIPROXY_DEVICE_CHECK_BYPASS` env variable in your test environment:
+- Open the scheme editor at `Product > Scheme > Edit Scheme`
+- Select `Test`
+- Tap through to the test plan
+- Select `Configurations > Environment Variables`
+- Add the `AIPROXY_DEVICE_CHECK_BYPASS` env variable with your value
+: image :
+
+2. **Important** Edit your test cases to forward on the env variable to the host simulator:
+
+```swift
+func testExample() throws {
+    let app = XCUIApplication()
+    app.launchEnvironment = [
+        "AIPROXY_DEVICE_CHECK_BYPASS": ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"]!
+    ]
+    app.launch()
+}
+```
+
+
 
 #### Forgetting an import. Or that weird error that shows up sometimes
 
