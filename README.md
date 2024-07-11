@@ -2,11 +2,13 @@
 
 Use this package to add [AIProxy](https://www.aiproxy.pro) support to your iOS and macOS apps.
 AIProxy lets you depend on AI APIs safely without building your own backend. 
-Three levels of security are applied to keep your API key secure and your AI bill predictable:
+Five levels of security are applied to keep your API key secure and your AI bill predictable:
 
 - Certificate pinning
 - DeviceCheck verification
 - Split key encryption
+- Per user rate limits
+- Per IP rate limits
 
 
 ## Installation
@@ -15,18 +17,23 @@ Three levels of security are applied to keep your API key secure and your AI bil
 ### How to add this package as a dependency to your Xcode project
 
 1. From within your Xcode project, select `File > Add Package Dependencies`
-   :image:
+
+   <img src="https://github.com/lzell/AIProxySwift/assets/35940/d44698a0-34e6-434b-b501-390254a14439" alt="Add package dependencies" width="420">
+
 2. Punch `github.com/lzell/aiproxyswift` into the package URL bar, and select the 'main' branch
    as the dependency rule. Alternatively, you can choose specific releases if you'd like to have finer control of when your dependency gets updated.
-   :image:
-4. Add an `AIPROXY_DEVICE_CHECK_BYPASS' env variable to Xcode. This token is provided to you in the AIProxy
+
+   <img src="https://github.com/lzell/AIProxySwift/assets/35940/fd76b588-5e19-4d4d-9748-8db3fd64df8e" alt="Set package rule" width="720">
+
+3. Add an `AIPROXY_DEVICE_CHECK_BYPASS` env variable to Xcode. This token is provided to you in the AIProxy
    developer dashboard, and is necessary for the iOS simulator to communicate with the AIProxy backend.
-    - Type `cmd shift ,` to open up the "Edit Schemes" menu.
+    - Type `cmd shift ,` to open up the "Edit Schemes" menu (or `Product > Scheme > Edit Scheme`)
     - Select `Run` in the sidebar
     - Select `Arguments` from the top nav
     - Add to the "Environment Variables" section an env variable with name
       `AIPROXY_DEVICE_CHECK_BYPASS` and value that we provided you in the AIProxy dashboard
-    :Image: 
+
+      <img src="https://github.com/lzell/AIProxySwift/assets/35940/0ccd6bfe-af9a-4b7d-99c4-5a43ac1b4d09" alt="Add env variable" width="720">
 
 
 The `AIPROXY_DEVICE_CHECK_BYPASS` is intended for the simulator only. Do not let it leak into
