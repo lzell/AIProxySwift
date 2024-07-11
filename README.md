@@ -11,10 +11,10 @@ Five levels of security are applied to keep your API key secure and your AI bill
 - Per IP rate limits
 
 
-## Installation
+# Installation
 
 
-### How to add this package as a dependency to your Xcode project
+## How to add this package as a dependency to your Xcode project
 
 1. From within your Xcode project, select `File > Add Package Dependencies`
 
@@ -40,15 +40,23 @@ The `AIPROXY_DEVICE_CHECK_BYPASS` is intended for the simulator only. Do not let
 a distribution build of your app (including a TestFlight distribution). If you follow the steps above,
 then the constant won't leak because env variables are not packaged into the app bundle.
 
-### How to update the package
-
-- Update rule if necessary :image:
-- Package > update package cache  :image:
-
 See the FAQ for more details on the DeviceCheck bypass constant.
 
 
-## Sample apps
+## How to update the package
+
+- If you set the dependency rule to `main` in step 2 above, then you can ensure the package is
+  up to date by selecting `File > Packages > Reset Package Caches`.
+
+- If you selected a version-based rule, inspect the rule in the 'Package Dependencies' section
+  of your project settings: 
+
+    :image:
+  Once the rule is set to include the release version that you'd like to bring in, select
+  `File > Packages > Reset Package Caches`
+
+
+# Sample apps
 
 Sample apps live in the `Examples` folder. As this repo grows, we will add sample apps demonstrating
 supported functionality across various providers. Use these sample apps as starting points for your
@@ -56,7 +64,7 @@ own apps. See the [Examples README](https://github.com/lzell/AIProxySwift/blob/m
 
 
 
-## Example usage
+# Example usage
 
 ### Get a non-streaming chat completion from OpenAI:
 
