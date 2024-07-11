@@ -1,43 +1,42 @@
-## iOS and macOS clients for AIProxy
+# About
 
-This is a young project. It includes a small client for OpenAI that routes all
-requests through [AIProxy](https://www.aiproxy.pro). You would use this client to add AI to your apps
-without building your own backend. Three levels of security are applied to keep
-your API key secure and your AI bill predictable:
+Use this package to add [AIProxy](https://www.aiproxy.pro) support to your iOS and macOS apps.
+AIProxy lets you depend on AI APIs safely without building your own backend. 
+Three levels of security are applied to keep your API key secure and your AI bill predictable:
 
 - Certificate pinning
 - DeviceCheck verification
 - Split key encryption
 
 
-## Note to existing customers
-
-If you previously used `AIProxy.swift` from our dashboard, or integrated with
-SwiftOpenAI, you will find that we initialize the aiproxy service slightly
-differently here. We no longer accept a `deviceCheckBypass` as an argument to
-the initializer of the service. It was too easy to accidentally leak the constant.
-
-Instead, you add the device check bypass as an environment variable. Please follow
-the steps in the next section for adding an environment variable to your project.
+## Installation
 
 
-## Adding this package as a dependency to your Xcode project
+### How to add this package as a dependency to your Xcode project
 
-1. Open your Xcode project
-2. Select `File > Add Package Dependencies`
-3. Punch `github.com/lzell/aiproxyswift` into the package URL bar
+1. From within your Xcode project, select `File > Add Package Dependencies`
+   :image:
+2. Punch `github.com/lzell/aiproxyswift` into the package URL bar, and select the 'main' branch
+   as the dependency rule. Alternatively, you can choose specific releases if you'd like to have finer control of when your dependency gets updated.
+   :image:
 4. Add an `AIPROXY_DEVICE_CHECK_BYPASS' env variable to Xcode. This token is provided to you in the AIProxy
    developer dashboard, and is necessary for the iOS simulator to communicate with the AIProxy backend.
     - Type `cmd shift ,` to open up the "Edit Schemes" menu.
     - Select `Run` in the sidebar
     - Select `Arguments` from the top nav
-    - Add to the "Environment Variables" section (not the "Arguments Passed on Launch" section) an env
-      variable with name `AIPROXY_DEVICE_CHECK_BYPASS` and value that we provided you in the AIProxy dashboard
+    - Add to the "Environment Variables" section an env variable with name
+      `AIPROXY_DEVICE_CHECK_BYPASS` and value that we provided you in the AIProxy dashboard
+    :Image: 
 
 
 The `AIPROXY_DEVICE_CHECK_BYPASS` is intended for the simulator only. Do not let it leak into
 a distribution build of your app (including a TestFlight distribution). If you follow the steps above,
 then the constant won't leak because env variables are not packaged into the app bundle.
+
+### How to update the package
+
+- Update rule if necessary :image:
+- Package > update package cache  :image:
 
 See the FAQ for more details on the DeviceCheck bypass constant.
 
@@ -192,6 +191,11 @@ ID generation specifics.
 
 
 ## Troubleshooting
+
+#### UI Test cases
+
+#### Forgetting an import. Or that weird error that shows up sometimes
+
 
 #### Async function context
 
