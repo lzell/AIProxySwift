@@ -33,7 +33,7 @@ Five levels of security are applied to keep your API key secure and your AI bill
     - Add to the "Environment Variables" section an env variable with name
       `AIPROXY_DEVICE_CHECK_BYPASS` and value that we provided you in the AIProxy dashboard
 
-      <img src="https://github.com/lzell/AIProxySwift/assets/35940/0ccd6bfe-af9a-4b7d-99c4-5a43ac1b4d09" alt="Add env variable" width="720">
+      <img src="https://github.com/lzell/AIProxySwift/assets/35940/33ce2c0a-69ac-4beb-aefb-3d6c43b5e97a" alt="Add env variable" width="720">
 
 
 The `AIPROXY_DEVICE_CHECK_BYPASS` is intended for the simulator only. Do not let it leak into
@@ -218,7 +218,7 @@ ID generation specifics.
 ## No such module 'AIProxy' error
 Occassionally, Xcode fails to automatically add the AIProxy library to your target's dependency
 list.  If you receive the `No such module 'AIProxy'` error, first ensure that you have added
-the package to Xcode using the [Installation steps](https://github.com/lzell/aiproxy?tab=readme-ov-file#how-installation).
+the package to Xcode using the [Installation steps](https://github.com/lzell/AIProxySwift?tab=readme-ov-file#installation).
 Next, select your project in the Project Navigator (`cmd-1`), select your target, and scroll to
 the `Frameworks, Libraries, and Embedded Content` section. Tap on the plus icon:
 
