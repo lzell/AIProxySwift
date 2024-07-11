@@ -58,7 +58,9 @@ See the FAQ for more details on the DeviceCheck bypass constant.
 
   <img src="https://github.com/lzell/AIProxySwift/assets/35940/ca788c4c-ac38-4d9d-bb4f-928a9487f6eb" alt="Update package rule" width="720">
 
-  Once the rule is set to include the release version that you'd like to bring in, Xcode should update the package automatically. If it does not, right click on the package in the project tree and select 'Update Package'.
+  Once the rule is set to include the release version that you'd like to bring in, Xcode should
+  update the package automatically. If it does not, right click on the package in the project
+  tree and select 'Update Package'.
 
 
 # Sample apps
@@ -212,16 +214,39 @@ ID generation specifics.
 
 # Troubleshooting
 
+
 ## No such module 'AIProxy' error
-Occassionally, Xcode fails to automatically add the AIProxy library to your target's dependency list.
-If you receive the `No such module 'AIProxy'` error, first ensure that you have added the package to Xcode using the [Installation steps](https://github.com/lzell/aiproxy?tab=readme-ov-file#how-installation).
-Next, select your project in the Project Navigator (`cmd-1`), select your target, and scroll to the `Frameworks, Libraries, and Embedded Content` section. Tap on the plus icon:
+Occassionally, Xcode fails to automatically add the AIProxy library to your target's dependency
+list.  If you receive the `No such module 'AIProxy'` error, first ensure that you have added
+the package to Xcode using the [Installation steps](https://github.com/lzell/aiproxy?tab=readme-ov-file#how-installation).
+Next, select your project in the Project Navigator (`cmd-1`), select your target, and scroll to
+the `Frameworks, Libraries, and Embedded Content` section. Tap on the plus icon:
 
 <img src="https://github.com/lzell/AIProxySwift/assets/35940/438e2bbb-688c-49bc-aa2a-ea85806818d5" alt="Add library dependency" width="820">  
 
 And add the AIProxy library:
 
 <img src="https://github.com/lzell/AIProxySwift/assets/35940/f015a181-9591-435c-a37f-6fb0c8c5050c" alt="Select the AIProxy dependency" width="400">  
+
+
+## macOS network sandbox
+
+If you encounter the error
+
+    networkd_settings_read_from_file Sandbox is preventing this process from reading networkd settings file at "/Library/Preferences/com.apple.networkd.plist", please add an exception.
+
+Modify your macOS project settings by tapping on your project in the Xcode project tree, then
+select `Signing & Capabilities` and enable `Outgoing Connections (client)`
+
+
+## 'async' call in a function that does not support concurrency
+
+If you use the snippets above and encounter the error
+
+    'async' call in a function that does not support concurrency
+
+it is because we assume you are in a structured concurrency context. If you encounter this
+error, you can use the escape hatch of wrapping your snippet in a `Task {}`.
 
 
 ## Requests to AIProxy fail in iOS XCTest UI test cases
@@ -259,30 +284,10 @@ func testExample() throws {
 ```
 
 
-## 'async' call in a function that does not support concurrency
-
-If you use the snippets above and encounter the error
-
-    'async' call in a function that does not support concurrency
-
-it is because we assume you are in a structured concurrency context. If you encounter this
-error, you can use the escape hatch of wrapping your snippet in a `Task {}`.
+# FAQ
 
 
-## macOS network sandbox
-
-If you encounter the error
-
-    networkd_settings_read_from_file Sandbox is preventing this process from reading networkd settings file at "/Library/Preferences/com.apple.networkd.plist", please add an exception.
-
-Modify your macOS project settings by tapping on your project in the Xcode project tree, then
-select `Signing & Capabilities` and enable `Outgoing Connections (client)`
-
-
-## FAQ
-
-
-### What is the `AIPROXY_DEVICE_CHECK_BYPASS` constant?
+## What is the `AIPROXY_DEVICE_CHECK_BYPASS` constant?
 
 AIProxy uses Apple's [DeviceCheck](https://developer.apple.com/documentation/devicecheck) to ensure
 that requests received by the backend originated from your app on a legitimate Apple device.
@@ -292,7 +297,7 @@ DeviceCheck integrity check. The token is intended for use by developers only. I
 the token, they can make requests to your AIProxy project without including a DeviceCheck token, and
 thus remove one level of protection.
 
-### What is the `aiproxyPartialKey` constant?
+## What is the `aiproxyPartialKey` constant?
 
 This constant is intended to be **included** in the distributed version of your app. As the name implies, it is a
 partial representation of your OpenAI key. Specifically, it is one half of an encrypted version of your key.
