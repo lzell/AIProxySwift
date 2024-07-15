@@ -96,6 +96,42 @@ public final class OpenAIService {
 
         return asyncBytes.lines.compactMap { OpenAIChatCompletionChunk.from(line: $0) }
     }
+
+    /// Initiates a create image request to /v1/images/generations
+    ///
+    /// - Parameters:
+    ///   - body: The request body to send to aiproxy and openai. See this reference:
+    ///           https://platform.openai.com/docs/api-reference/images/create
+    /// - Returns: A ChatCompletionResponse. See this reference:
+    ///            https://platform.openai.com/docs/api-reference/chat/object
+    public func createImageRequest(
+        body: OpenAICreateImageRequestBody
+    ) async throws -> OpenAICreateImageResponseBody {
+        let session = URLSession(configuration: .default,
+                                 delegate: self.secureDelegate,
+                                 delegateQueue: nil)
+        session.sessionDescription = "AIProxy Buffered" // See "Analyze HTTP traffic in Instruments" wwdc session
+        let request = try await buildAIProxyRequest(
+            partialKey: self.partialKey,
+            clientID: self.clientID,
+            requestBody: body,
+            path: "/v1/images/generations"
+        )
+        let (data, res) = try await session.data(for: request)
+        guard let httpResponse = res as? HTTPURLResponse else {
+            throw AIProxyError.assertion("Network response is not an http response")
+        }
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        return try JSONDecoder().decode(OpenAICreateImageResponseBody.self, from: data)
+    }
+
 }
 
 // MARK: - Private Helpers
