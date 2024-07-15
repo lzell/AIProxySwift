@@ -159,6 +159,24 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
         print(error.localizedDescription)
     }
 
+### How to generate an image with DALLE
+
+This snippet will print out the URL of an image generated with `dall-e-3`:
+
+    let openAIService = AIProxy.openAIService(partialKey: "<the-partial-key-from-the-dashboard>")
+    do {
+        let requestBody = OpenAICreateImageRequestBody(
+            prompt: "a skier",
+            model: "dall-e-3"
+        )
+        let response = try await openAIService.createImageRequest(body: requestBody)
+        print(response.data.first?.url ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
+
 
 ### How to ensure OpenAI returns JSON as the chat message content
 

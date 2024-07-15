@@ -252,6 +252,25 @@ final class OpenAIServiceTests: XCTestCase {
         XCTAssertEqual("FINDME", res.choices.first?.delta.content!)
     }
 
+    func testCreateImageResponseIsDecodable() {
+        let sampleResponse = """
+        {
+          "created": 1721071915,
+          "data": [
+            {
+              "revised_prompt": "An outdoor winter scene.",
+              "url": "https://api.example.com/image.png"
+            }
+          ]
+        }
+        """
+        let decoder = JSONDecoder()
+
+        let res = try! decoder.decode(OpenAICreateImageResponseBody.self, from: sampleResponse.data(using: .utf8)!)
+        XCTAssertEqual("An outdoor winter scene.", res.data.first?.revisedPrompt)
+        XCTAssertEqual(URL(string: "https://api.example.com/image.png")!, res.data.first?.url)
+
+    }
 
 
 #if false // E2E tests
