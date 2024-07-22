@@ -3,7 +3,7 @@
 
 import Foundation
 
-private let legacyURL = "https://api.aiproxy.pro"
+private let legacyURL = "http://Lous-MacBook-Air-3.local:4000"
 private let aiproxyChatPath = "/v1/chat/completions"
 
 
@@ -39,8 +39,9 @@ public final class OpenAIService {
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
-            requestBody: body,
-            path: "/v1/chat/completions"
+            postBody: try JSONEncoder().encode(body),
+            path: "/v1/chat/completions",
+            contentType: "application/json"
         )
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
@@ -75,8 +76,9 @@ public final class OpenAIService {
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
-            requestBody: body,
-            path: "/v1/chat/completions"
+            postBody: try JSONEncoder().encode(body),
+            path: "/v1/chat/completions",
+            contentType: "application/json"
         )
         let (asyncBytes, res) = try await session.bytes(for: request)
 
@@ -110,8 +112,9 @@ public final class OpenAIService {
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
-            requestBody: body,
-            path: "/v1/images/generations"
+            postBody: try JSONEncoder().encode(body),
+            path: "/v1/images/generations",
+            contentType: "application/json"
         )
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
@@ -127,6 +130,42 @@ public final class OpenAIService {
 
         return try JSONDecoder().decode(OpenAICreateImageResponseBody.self, from: data)
     }
+
+    /// Initiates a create transcription request to v1/audio/transcriptions
+    ///
+    /// - Parameters:
+    ///   - body: The request body to send to aiproxy and openai. See this reference:
+    ///           https://platform.openai.com/docs/api-reference/audio/createTranscription
+    /// - Returns: An transcription response. See this reference:
+    ///            https://platform.openai.com/docs/api-reference/audio/json-object
+    public func createTranscriptionRequest(
+        body: OpenAICreateTranscriptionRequestBody
+    ) async throws -> OpenAICreateTranscriptionResponseBody {
+        let session = self.getServiceSession()
+        let boundary = UUID().uuidString
+        let request = try await buildAIProxyRequest(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            postBody: formEncode(body, boundary),
+            path: "/v1/audio/transcriptions",
+            contentType: "multipart/form-data; boundary=\(boundary)"
+        )
+        let (data, res) = try await session.data(for: request)
+        guard let httpResponse = res as? HTTPURLResponse else {
+            throw AIProxyError.assertion("Network response is not an http response")
+        }
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        return try JSONDecoder().decode(OpenAICreateTranscriptionResponseBody.self, from: data)
+    }
+
 
     private func getServiceSession() -> URLSession {
         if (self.serviceURL ?? legacyURL).starts(with: "http://localhost") {
@@ -148,11 +187,10 @@ private func buildAIProxyRequest(
     partialKey: String,
     serviceURL: String?,
     clientID: String?,
-    requestBody: Encodable,
-    path: String
+    postBody: Data,
+    path: String,
+    contentType: String
 ) async throws -> URLRequest {
-
-    let postBody = try JSONEncoder().encode(requestBody)
     let deviceCheckToken = await AIProxyDeviceCheck.getToken()
     let clientID = clientID ?? AIProxyIdentifier.getClientID()
     let baseURL = serviceURL ?? legacyURL
@@ -171,7 +209,7 @@ private func buildAIProxyRequest(
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.httpBody = postBody
-    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.addValue(contentType, forHTTPHeaderField: "Content-Type")
     request.addValue(partialKey, forHTTPHeaderField: "aiproxy-partial-key")
 
     if let clientID = clientID {
