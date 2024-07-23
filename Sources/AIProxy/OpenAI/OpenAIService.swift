@@ -3,7 +3,7 @@
 
 import Foundation
 
-private let legacyURL = "http://Lous-MacBook-Air-3.local:4000"
+private let legacyURL = "https://api.aiproxy.pro"
 private let aiproxyChatPath = "/v1/chat/completions"
 
 
