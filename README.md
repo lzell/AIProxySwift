@@ -211,12 +211,12 @@ Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON 
 
 
 ### How to get word-level timestamps in an audio transcription
-- Record an audio file in quicktime and save it as "helloworld.m4a"
-- Add the audio file to your Xcode project. Make sure it's included in your target: select
-  your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view
-  `Target Membership`
-- Run this snippet:
 
+1. Record an audio file in quicktime and save it as "helloworld.m4a"
+2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
+3. Run this snippet:
+
+    ```
     import AIProxy
 
     let openAIService = AIProxy.openAIService(
@@ -241,6 +241,7 @@ Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON 
     } catch {
         print(error.localizedDescription)
     }
+    ```
 
 
 ### Specify your own `clientID` to annotate requests
