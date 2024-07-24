@@ -78,7 +78,10 @@ own apps. See the [Examples README](https://github.com/lzell/AIProxySwift/blob/m
 
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(partialKey: "<the-partial-key-from-the-dashboard>")
+    let openAIService = AIProxy.openAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
     do {
         let response = try await openAIService.chatCompletionRequest(body: .init(
             model: "gpt-4o",
@@ -96,7 +99,10 @@ own apps. See the [Examples README](https://github.com/lzell/AIProxySwift/blob/m
 
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(partialKey: "<the-partial-key-from-the-dashboard>")
+    let openAIService = AIProxy.openAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
     let requestBody = OpenAIChatCompletionRequestBody(
         model: "gpt-4o",
         messages: [.init(role: "user", content: .text("hello world"))]
@@ -121,8 +127,10 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
     import AIProxy
 
-
-    let openAIService = AIProxy.openAIService(partialKey: "<the-partial-key-from-the-dashboard>")
+    let openAIService = AIProxy.openAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
     guard let image = UIImage(named: "myImage") else {
         print("Could not find an image named 'myImage' in your app assets")
         return
@@ -163,7 +171,10 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
 This snippet will print out the URL of an image generated with `dall-e-3`:
 
-    let openAIService = AIProxy.openAIService(partialKey: "<the-partial-key-from-the-dashboard>")
+    let openAIService = AIProxy.openAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
     do {
         let requestBody = OpenAICreateImageRequestBody(
             prompt: "a skier",
@@ -185,7 +196,8 @@ Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON 
     import AIProxy
 
     let openAIService = AIProxy.openAIService(
-        partialKey: "<the-partial-key-from-the-dashboard>"
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
     )
     do {
         let response = try await service.chatCompletionRequest(body: .init(
@@ -220,7 +232,8 @@ Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON 
     import AIProxy
 
     let openAIService = AIProxy.openAIService(
-        partialKey: "<the-partial-key-from-the-dashboard>"
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
     )
     do {
         let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a")!
@@ -250,7 +263,8 @@ If your app already has client or user IDs that you want to annotate AIProxy req
 pass a second argument to the provider's service initializer. For example:
 
     let openAIService = AIProxy.openAIService(
-        partialKey: "<the-partial-key-from-the-dashboard>",
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard",
         clientID: "<your-id>"
     )
 
