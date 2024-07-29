@@ -382,6 +382,27 @@ Use `UIImage` in place of `NSImage` for iOS apps:
     }
 
 
+### How to generate an image with Stability.ai
+
+In the snippet below, replace NSImage with UIImage if you are building on iOS.
+For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24cc0dd87a31f4dceccd092)
+
+        let service = AIProxy.stabilityAIService(
+            partialKey: "partial-key-from-your-developer-dashboard",
+            serviceURL: "service-url-from-your-developer-dashboard"
+        )
+        do {
+            let body = StabilityAIUltraRequestBody(prompt: "Lighthouse on a cliff overlooking the ocean")
+            let response = try await service.ultraRequest(body: body)
+            let image = NSImage(data: response.imageData)
+            // Do something with `image`
+        }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+            print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+        } catch {
+            print(error.localizedDescription)
+        }
+
+
 ### Specify your own `clientID` to annotate requests
 
 If your app already has client or user IDs that you want to annotate AIProxy requests with,

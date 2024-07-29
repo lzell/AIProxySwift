@@ -17,7 +17,7 @@ enum FormField {
     case textField(name: String, content: String)
 }
 
-func formEncode(_ body: OpenAICreateTranscriptionRequestBody, _ boundary: String) -> Data {
+func formEncode(_ body: MultipartFormEncodable, _ boundary: String) -> Data {
     var encoded = Data()
     let u: (String) -> Data = { $0.data(using: .utf8)! }
     for field in body.formFields {
