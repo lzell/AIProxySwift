@@ -12,23 +12,39 @@ import AppKit
 import UIKit
 #endif
 
-struct OpenAIUtils {
+struct AIProxyUtils {
+
 #if canImport(AppKit)
+    static func encodeImageAsJpeg(
+        _ image: NSImage,
+        _ compressionQuality: CGFloat
+    ) -> Data? {
+        return image.jpegData(compressionQuality: compressionQuality)
+    }
+
     static func encodeImageAsURL(
         _ image: NSImage,
         _ compressionQuality: CGFloat
     ) -> URL? {
-        guard let jpegData = image.jpegData(compressionQuality: compressionQuality) else {
+        guard let jpegData = self.encodeImageAsJpeg(image, compressionQuality) else {
             return nil
         }
         return URL(string: "data:image/jpeg;base64,\(jpegData.base64EncodedString())")
     }
+
 #elseif canImport(UIKit)
+    static func encodeImageAsJpeg(
+        _ image: UIImage,
+        _ compressionQuality: CGFloat
+    ) -> Data? {
+        return image.jpegData(compressionQuality: compressionQuality)
+    }
+
     static func encodeImageAsURL(
         _ image: UIImage,
         _ compressionQuality: CGFloat
     ) -> URL? {
-        guard let jpegData = image.jpegData(compressionQuality: compressionQuality) else {
+        guard let jpegData = self.encodeImageAsJpeg(image, compressionQuality) else {
             return nil
         }
         return URL(string: "data:image/jpeg;base64,\(jpegData.base64EncodedString())")

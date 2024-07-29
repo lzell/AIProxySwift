@@ -257,6 +257,131 @@ Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON 
     ```
 
 
+### How to send an Anthropic message request
+
+    import AIProxy
+
+    let anthropicService = AIProxy.anthropicService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let response = try await anthropicService.messageRequest(body: AnthropicMessageRequestBody(
+            maxTokens: 1024,
+            messages: [
+                AnthropicInputMessage(content: [.text("hello world")], role: .user)
+            ],
+            model: "claude-3-5-sonnet-20240620"
+        ))
+        for content in response.content {
+            switch content {
+            case .text(let message):
+                print("Claude sent a message: \(message)")
+            case .toolUse(id: _, name: let toolName, input: let toolInput):
+                print("Claude used a tool \(toolName) with input: \(toolInput)")
+            }
+        }
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
+
+
+### How to send an image to Anthropic
+
+Use `UIImage` in place of `NSImage` for iOS apps:
+
+
+    guard let image = NSImage(named: "marina") else {
+        print("Could not find an image named 'marina' in your app assets")
+        return
+    }
+
+    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.8) else {
+        print("Could not convert image to base64")
+        return
+    }
+
+    let anthropicService = AIProxy.anthropicService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let response = try await anthropicService.messageRequest(body: AnthropicMessageRequestBody(
+            maxTokens: 1024,
+            messages: [
+                AnthropicInputMessage(content: [
+                    .text("Provide a very short description of this image"),
+                    .image(mediaType: .jpeg, data: jpegData.base64EncodedString())
+                ], role: .user)
+            ],
+            model: "claude-3-5-sonnet-20240620"
+        ))
+        for content in response.content {
+            switch content {
+            case .text(let message):
+                print("Claude sent a message: \(message)")
+            case .toolUse(id: _, name: let toolName, input: let toolInput):
+                print("Claude used a tool \(toolName) with input: \(toolInput)")
+            }
+        }
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
+
+
+### How to use the tools API with Anthropic
+
+    let anthropicService = AIProxy.anthropicService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let requestBody = AnthropicMessageRequestBody(
+            maxTokens: 1024,
+            messages: [
+                .init(
+                    content: [.text("What is nvidia's stock price?")],
+                    role: .user
+                )
+            ],
+            model: "claude-3-5-sonnet-20240620",
+            tools: [
+                .init(
+                    description: "Call this function when the user wants a stock symbol",
+                    inputSchema: [
+                        "type": "object",
+                        "properties": [
+                            "ticker": [
+                                "type": "string",
+                                "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+                            ]
+                        ],
+                        "required": ["ticker"]
+                    ],
+                    name: "get_stock_symbol"
+                )
+            ]
+        )
+        let response = try await anthropicService.messageRequest(body: requestBody)
+        for content in response.content {
+            switch content {
+            case .text(let message):
+                print("Claude sent a message: \(message)")
+            case .toolUse(id: _, name: let toolName, input: let toolInput):
+                print("Claude used a tool \(toolName) with input: \(toolInput)")
+            }
+        }
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
+
+
 ### Specify your own `clientID` to annotate requests
 
 If your app already has client or user IDs that you want to annotate AIProxy requests with,
@@ -375,3 +500,9 @@ are paired, decrypted, and used to fulfill the request to OpenAI.
 Contributions are welcome! In order to contribute, we require that you grant
 AIProxy an irrevocable license to use your contributions as we see fit.
 Please read [CONTRIBUTIONS.md](https://github.com/lzell/AIProxySwift/blob/main/CONTRIBUTIONS.md) for details
+
+
+## Contribution style guidelines
+
+In codable representations, fields that are required by the API should be above fields that are optional.
+Within the two groups (required and optional) all fields should be alphabetically ordered.
