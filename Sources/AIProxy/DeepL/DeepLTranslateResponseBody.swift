@@ -1,0 +1,29 @@
+//
+//  DeepLTranslateResponseBody.swift
+//
+//
+//  Created by Lou Zell on 8/3/24.
+//
+
+import Foundation
+
+/// All docstrings on this model are from:
+/// https://developers.deepl.com/docs/api-reference/translate/openapi-spec-for-text-translation
+public struct DeepLTranslateResponseBody: Decodable {
+    public let translations: [DeepLTranslation]
+}
+
+public struct DeepLTranslation: Decodable {
+    /// The language detected in the source text. It reflects the value of the `source_lang` parameter, when specified.
+    /// Example: "EN"
+    public let detectedSourceLanguage: String
+
+    /// The translated text.
+    /// Example: "Hallo, Welt!"
+    public let text: String
+
+    private enum CodingKeys: String, CodingKey {
+        case detectedSourceLanguage = "detected_source_language"
+        case text
+    }
+}
