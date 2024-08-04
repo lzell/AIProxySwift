@@ -403,6 +403,24 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
         }
 
 
+### How to create translations using DeepL
+
+    let service = AIProxy.deepLService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let body = DeepLTranslateRequestBody(targetLang: "ES", text: ["hello world"])
+        let response = try await service.translateRequest(body: body)
+        // Do something with `response.translations`
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create translation: \(error.localizedDescription)")
+    }
+
+
 ### Specify your own `clientID` to annotate requests
 
 If your app already has client or user IDs that you want to annotate AIProxy requests with,
