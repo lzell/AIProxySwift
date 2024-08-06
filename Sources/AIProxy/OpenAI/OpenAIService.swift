@@ -34,7 +34,7 @@ public final class OpenAIService {
         var body = body
         body.stream = false
         body.streamOptions = nil
-        let session = self.getServiceSession()
+        let session = AIProxyURLSession.create()
         let request = try await buildAIProxyRequest(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
@@ -71,7 +71,7 @@ public final class OpenAIService {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
-        let session = self.getServiceSession()
+        let session = AIProxyURLSession.create()
         let request = try await buildAIProxyRequest(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
@@ -107,7 +107,7 @@ public final class OpenAIService {
     public func createImageRequest(
         body: OpenAICreateImageRequestBody
     ) async throws -> OpenAICreateImageResponseBody {
-        let session = self.getServiceSession()
+        let session = AIProxyURLSession.create()
         let request = try await buildAIProxyRequest(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
@@ -141,7 +141,7 @@ public final class OpenAIService {
     public func createTranscriptionRequest(
         body: OpenAICreateTranscriptionRequestBody
     ) async throws -> OpenAICreateTranscriptionResponseBody {
-        let session = self.getServiceSession()
+        let session = AIProxyURLSession.create()
         let boundary = UUID().uuidString
         let request = try await buildAIProxyRequest(
             partialKey: self.partialKey,
@@ -165,18 +165,6 @@ public final class OpenAIService {
 
         return try JSONDecoder().decode(OpenAICreateTranscriptionResponseBody.self, from: data)
     }
-
-
-    private func getServiceSession() -> URLSession {
-        if (self.serviceURL ?? legacyURL).starts(with: "http://localhost") {
-            return URLSession(configuration: .default)
-        }
-        return URLSession(
-            configuration: .default,
-            delegate: self.secureDelegate,
-            delegateQueue: nil
-        )
-    }
 }
 
 // MARK: - Private Helpers
@@ -191,40 +179,14 @@ private func buildAIProxyRequest(
     path: String,
     contentType: String
 ) async throws -> URLRequest {
-    let deviceCheckToken = await AIProxyDeviceCheck.getToken()
-    let clientID = clientID ?? AIProxyIdentifier.getClientID()
-    let baseURL = serviceURL ?? legacyURL
-
-    guard var urlComponents = URLComponents(string: baseURL) else {
-        throw AIProxyError.assertion(
-            "Could not create urlComponents, please check the aiproxyEndpoint constant"
-        )
-    }
-
-    urlComponents.path = urlComponents.path.appending(path)
-    guard let url = urlComponents.url else {
-        throw AIProxyError.assertion("Could not create a request URL")
-    }
-
-    var request = URLRequest(url: url)
-    request.httpMethod = "POST"
-    request.httpBody = postBody
+    var request = try await AIProxyURLRequest.create(
+        partialKey: partialKey,
+        serviceURL: serviceURL ?? legacyURL,
+        clientID: clientID,
+        proxyPath: path,
+        body: postBody,
+        verb: .post
+    )
     request.addValue(contentType, forHTTPHeaderField: "Content-Type")
-    request.addValue(partialKey, forHTTPHeaderField: "aiproxy-partial-key")
-
-    if let clientID = clientID {
-        request.addValue(clientID, forHTTPHeaderField: "aiproxy-client-id")
-    }
-
-    if let deviceCheckToken = deviceCheckToken {
-        request.addValue(deviceCheckToken, forHTTPHeaderField: "aiproxy-devicecheck")
-    }
-
-#if DEBUG && targetEnvironment(simulator)
-    if let deviceCheckBypass = ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] {
-        request.addValue(deviceCheckBypass, forHTTPHeaderField: "aiproxy-devicecheck-bypass")
-    }
-#endif
-
     return request
 }

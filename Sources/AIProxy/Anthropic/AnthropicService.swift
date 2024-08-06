@@ -33,7 +33,7 @@ public final class AnthropicService {
     ) async throws -> AnthropicMessageResponseBody {
         var body = body
         body.stream = false
-        let session = self.getServiceSession()
+        let session = AIProxyURLSession.create()
         let request = try await buildAIProxyRequest(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
@@ -56,17 +56,6 @@ public final class AnthropicService {
     
         return try AnthropicMessageResponseBody.safeDecode(from: data)
     }
-
-    private func getServiceSession() -> URLSession {
-        if self.serviceURL.starts(with: "http://localhost") {
-            return URLSession(configuration: .default)
-        }
-        return URLSession(
-            configuration: .default,
-            delegate: self.secureDelegate,
-            delegateQueue: nil
-        )
-    }
 }
 
 // MARK: - Private Helpers
@@ -81,40 +70,14 @@ private func buildAIProxyRequest(
     path: String,
     contentType: String
 ) async throws -> URLRequest {
-    let deviceCheckToken = await AIProxyDeviceCheck.getToken()
-    let clientID = clientID ?? AIProxyIdentifier.getClientID()
-    let baseURL = serviceURL
-
-    guard var urlComponents = URLComponents(string: baseURL) else {
-        throw AIProxyError.assertion(
-            "Could not create urlComponents, please check the aiproxyEndpoint constant"
-        )
-    }
-
-    urlComponents.path = urlComponents.path.appending(path)
-    guard let url = urlComponents.url else {
-        throw AIProxyError.assertion("Could not create a request URL")
-    }
-
-    var request = URLRequest(url: url)
-    request.httpMethod = "POST"
-    request.httpBody = postBody
+    var request = try await AIProxyURLRequest.create(
+        partialKey: partialKey,
+        serviceURL: serviceURL,
+        clientID: clientID,
+        proxyPath: path,
+        body: postBody,
+        verb: .post
+    )
     request.addValue(contentType, forHTTPHeaderField: "Content-Type")
-    request.addValue(partialKey, forHTTPHeaderField: "aiproxy-partial-key")
-
-    if let clientID = clientID {
-        request.addValue(clientID, forHTTPHeaderField: "aiproxy-client-id")
-    }
-
-    if let deviceCheckToken = deviceCheckToken {
-        request.addValue(deviceCheckToken, forHTTPHeaderField: "aiproxy-devicecheck")
-    }
-
-#if DEBUG && targetEnvironment(simulator)
-    if let deviceCheckBypass = ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] {
-        request.addValue(deviceCheckBypass, forHTTPHeaderField: "aiproxy-devicecheck-bypass")
-    }
-#endif
-
     return request
 }
