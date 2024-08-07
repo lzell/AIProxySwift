@@ -1,4 +1,4 @@
-# About
+ About
 
 Use this package to add [AIProxy](https://www.aiproxy.pro) support to your iOS and macOS apps.
 AIProxy lets you depend on AI APIs safely without building your own backend. 
@@ -51,8 +51,6 @@ See the FAQ for more details on the DeviceCheck bypass constant.
   <img src="https://github.com/lzell/AIProxySwift/assets/35940/aeee0ab2-362b-4995-b9ca-ff4e1dd04f47" alt="Update package version" width="720">
 
 
-  
-
 - If you selected a version-based rule, inspect the rule in the 'Package Dependencies' section
   of your project settings:
 
@@ -63,18 +61,12 @@ See the FAQ for more details on the DeviceCheck bypass constant.
   tree and select 'Update Package'.
 
 
-# Sample apps
-
-Sample apps live in the `Examples` folder. As this repo grows, we will add sample apps demonstrating
-supported functionality across various providers. Use these sample apps as starting points for your
-own apps. See the [Examples README](https://github.com/lzell/AIProxySwift/blob/main/Examples/README.md)
-
-
-
 # Example usage
 
-### Get a non-streaming chat completion from OpenAI:
+Along with the snippets below, which you can copy and paste into your Xcode project, we also
+offer full demo apps to jump-start your development. Please see the [AIProxyBootstrap](https://github.com/lzell/AIProxyBootstrap) repo.
 
+### Get a non-streaming chat completion from OpenAI:
 
     import AIProxy
 
@@ -170,6 +162,8 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 ### How to generate an image with DALLE
 
 This snippet will print out the URL of an image generated with `dall-e-3`:
+
+    import AIProxy
 
     let openAIService = AIProxy.openAIService(
         partialKey: "partial-key-from-your-developer-dashboard",
@@ -292,6 +286,7 @@ Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON 
 
 Use `UIImage` in place of `NSImage` for iOS apps:
 
+    import AIProxy
 
     guard let image = NSImage(named: "marina") else {
         print("Could not find an image named 'marina' in your app assets")
@@ -334,6 +329,8 @@ Use `UIImage` in place of `NSImage` for iOS apps:
 
 
 ### How to use the tools API with Anthropic
+
+    import AIProxy
 
     let anthropicService = AIProxy.anthropicService(
         partialKey: "partial-key-from-your-developer-dashboard",
@@ -387,23 +384,27 @@ Use `UIImage` in place of `NSImage` for iOS apps:
 In the snippet below, replace NSImage with UIImage if you are building on iOS.
 For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24cc0dd87a31f4dceccd092)
 
-        let service = AIProxy.stabilityAIService(
-            partialKey: "partial-key-from-your-developer-dashboard",
-            serviceURL: "service-url-from-your-developer-dashboard"
-        )
-        do {
-            let body = StabilityAIUltraRequestBody(prompt: "Lighthouse on a cliff overlooking the ocean")
-            let response = try await service.ultraRequest(body: body)
-            let image = NSImage(data: response.imageData)
-            // Do something with `image`
-        }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-            print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
-        } catch {
-            print(error.localizedDescription)
-        }
+    import AIProxy
+
+    let service = AIProxy.stabilityAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let body = StabilityAIUltraRequestBody(prompt: "Lighthouse on a cliff overlooking the ocean")
+        let response = try await service.ultraRequest(body: body)
+        let image = NSImage(data: response.imageData)
+        // Do something with `image`
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
 
 
 ### How to create translations using DeepL
+
+    import AIProxy
 
     let service = AIProxy.deepLService(
         partialKey: "partial-key-from-your-developer-dashboard",
@@ -474,7 +475,6 @@ when you view top users, or the timeline of requests, your client IDs will be fa
 If you do not have existing client or user IDs, no problem! Leave the `clientID` argument
 out, and we'll generate IDs for you. See `AIProxyIdentifier.swift` if you would like to see
 ID generation specifics.
-
 
 
 # Troubleshooting
