@@ -421,6 +421,42 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
     }
 
 
+### How to fetch the weather with OpenMeteo
+
+This pattern is slightly different than the others, because OpenMeteo has an official lib that
+we'd like to rely on. To run the snippet below, you'll need to add AIProxySwift and
+OpenMeteoSDK to your Xcode project. Add OpenMeteoSDK:
+
+- In Xcode, go to `File > Add Package Dependences`
+- Enter the package URL `https://github.com/open-meteo/sdk`
+- Choose your dependency rule (e.g. the `main` branch for the most up-to-date package)
+
+Next, use AIProxySwift's core functionality to get a URLRequest and URLSession, and pass those
+into the OpenMeteoSDK:
+
+
+    import AIProxy
+    import OpenMeteoSdk
+
+    do {
+        let request = try await AIProxy.request(
+            partialKey: "partial-key-from-your-aiproxy-developer-dashboard",
+            serviceURL: "service-url-from-your-aiproxy-developer-dashboard",
+            proxyPath: "/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m&format=flatbuffers"
+        )
+        let session = AIProxy.session()
+        let responses = try await WeatherApiResponse.fetch(request: request, session: session)
+        // Do something with `responses`. For a usage example, follow these instructions:
+        // 1. Navigate to https://open-meteo.com/en/docs
+        // 2. Scroll to the 'API response' section
+        // 3. Tap on Swift
+        // 4. Scroll to 'Usage'
+        print(responses)
+    } catch {
+        print("Could not fetch the weather: \(error.localizedDescription)")
+    }
+
+
 ### Specify your own `clientID` to annotate requests
 
 If your app already has client or user IDs that you want to annotate AIProxy requests with,
