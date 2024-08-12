@@ -145,7 +145,21 @@ final class OpenAIChatRequestTests: XCTestCase {
             #"{"messages":[{"content":"hello world","role":"system"}],"model":"gpt-4o"}"#,
             String(data: jsonData, encoding: .utf8)
         )
+    }
 
+    func testChatCompletionRequestBodyWithOptionsIsEncodableToJson() throws {
+        let chatRequestBody = OpenAIChatCompletionRequestBody(
+            model: "gpt-4o",
+            messages: [.init(role: "system", content: .text("hello world"))],
+            temperature: 0.5,
+            topP: 0.1
+        )
+
+        let jsonData = try self.jsonEncoder.encode(chatRequestBody)
+        XCTAssertEqual(
+            #"{"messages":[{"content":"hello world","role":"system"}],"model":"gpt-4o","temperature":0.5,"top_p":0.1}"#,
+            String(data: jsonData, encoding: .utf8)
+        )
     }
 
     func testBasicStreamingChatCompletionRequestBodyIsEncodableToJson() throws {
