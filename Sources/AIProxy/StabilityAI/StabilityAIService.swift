@@ -8,7 +8,6 @@
 import Foundation
 
 public final class StabilityAIService {
-    private let secureDelegate = AIProxyCertificatePinningDelegate()
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
@@ -30,7 +29,33 @@ public final class StabilityAIService {
     ///            the `imageData` property
     public func ultraRequest(
         body: StabilityAIUltraRequestBody
-    ) async throws -> StabilityAIUltraResponse {
+    ) async throws -> StabilityAIImageResponse {
+        return try await stabilityRequestCommon(
+            body: body,
+            path: "/v2beta/stable-image/generate/ultra"
+        )
+    }
+
+    /// Initiates a request to /v2beta/stable-image/generate/sd3
+    ///
+    /// - Parameters:
+    ///   - body: The request body to send to aiproxy and StabilityAI. See this reference:
+    ///           https://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1sd3/post
+    /// - Returns: The response as StabilityAIUltraResponse, wth image binary data stored on
+    ///            the `imageData` property
+    public func stableDiffusionRequest(
+        body: StabilityAIStableDiffusionRequestBody
+    ) async throws -> StabilityAIImageResponse {
+        return try await stabilityRequestCommon(
+            body: body,
+            path: "/v2beta/stable-image/generate/sd3"
+        )
+    }
+
+    private func stabilityRequestCommon<T: MultipartFormEncodable>(
+        body: T,
+        path: String
+    ) async throws -> StabilityAIImageResponse {
         let session = AIProxyURLSession.create()
         let boundary = UUID().uuidString
         let request = try await buildAIProxyRequest(
@@ -38,7 +63,7 @@ public final class StabilityAIService {
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             postBody: formEncode(body, boundary),
-            path: "/v2beta/stable-image/generate/ultra",
+            path: path,
             contentType: "multipart/form-data; boundary=\(boundary)",
             accept: "image/*"
         )
@@ -54,7 +79,7 @@ public final class StabilityAIService {
             )
         }
 
-        return StabilityAIUltraResponse(
+        return StabilityAIImageResponse(
             imageData: data,
             contentType: httpResponse.allHeaderFields["Content-Type"] as? String,
             finishReason: httpResponse.allHeaderFields["finish-reason"] as? String,

@@ -13,7 +13,7 @@ import Foundation
 ///
 /// See the "Response Headers" section here:
 /// https://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1ultra/post
-public struct StabilityAIUltraResponse {
+public struct StabilityAIImageResponse {
 
     /// The image data
     public let imageData: Data

@@ -46,4 +46,61 @@ final class StabilityAIRequestTests: XCTestCase {
         """
         XCTAssertEqual(expected, String(data: result, encoding: .utf8)!)
     }
+
+    func testStableDiffusionTextToImageBodyIsFormEncodable() {
+        let body = StabilityAIStableDiffusionRequestBody(
+            prompt: "lighthouse",
+            mode: .textToImage
+        )
+
+        let boundary = UUID().uuidString
+        let result = formEncode(body, boundary)
+
+        let expected = """
+        --\(boundary)\r
+        Content-Disposition: form-data; name="prompt"\r
+        \r
+        lighthouse\r
+        --\(boundary)\r
+        Content-Disposition: form-data; name="mode"\r
+        \r
+        text-to-image\r
+        --\(boundary)--
+        """
+        XCTAssertEqual(expected, String(data: result, encoding: .utf8)!)
+    }
+
+    func testStableDiffusionImageToImageBodyIsFormEncodable() {
+        let body = StabilityAIStableDiffusionRequestBody(
+            prompt: "lighthouse",
+            image: Data([0x61]),
+            mode: .imageToImage,
+            strength: 0.5
+        )
+
+        let boundary = UUID().uuidString
+        let result = formEncode(body, boundary)
+
+        let expected = """
+        --\(boundary)\r
+        Content-Disposition: form-data; name="prompt"\r
+        \r
+        lighthouse\r
+        --\(boundary)\r
+        Content-Disposition: form-data; name="image"; filename="aiproxy.m4a"\r
+        Content-Type: image/jpeg\r
+        \r
+        a\r
+        --\(boundary)\r
+        Content-Disposition: form-data; name="mode"\r
+        \r
+        image-to-image\r
+        --\(boundary)\r
+        Content-Disposition: form-data; name="strength"\r
+        \r
+        0.5\r
+        --\(boundary)--
+        """
+        XCTAssertEqual(expected, String(data: result, encoding: .utf8)!)
+    }
 }

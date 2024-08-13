@@ -8,7 +8,6 @@ private let aiproxyChatPath = "/v1/chat/completions"
 
 
 public final class OpenAIService {
-    private let secureDelegate = AIProxyCertificatePinningDelegate()
     private let partialKey: String
     private let serviceURL: String?
     private let clientID: String?
