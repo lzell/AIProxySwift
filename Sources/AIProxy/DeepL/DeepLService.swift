@@ -8,7 +8,6 @@
 import Foundation
 
 public final class DeepLService {
-    private let secureDelegate = AIProxyCertificatePinningDelegate()
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?

@@ -294,7 +294,7 @@ Use `UIImage` in place of `NSImage` for iOS apps:
     }
 
     guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.8) else {
-        print("Could not convert image to base64")
+        print("Could not convert image to jpeg")
         return
     }
 
