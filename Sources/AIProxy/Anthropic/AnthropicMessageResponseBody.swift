@@ -8,8 +8,6 @@
 import Foundation
 
 /// All docstrings in this file are from: https://docs.anthropic.com/en/api/messages
-/// Important: to decode this type, please use the `safeDecode` static method. Special handling is applied
-/// to accommodate a flexible JSON schema for Anthropic tool use.
 public struct AnthropicMessageResponseBody: Decodable {
     public var content: [AnthropicMessageResponseContent]
     public let id: String
@@ -58,7 +56,10 @@ public enum AnthropicMessageResponseContent: Decodable {
             let value = try container.decode(String.self, forKey: .text)
             self = .text(value)
         case .toolUse:
-            throw AIProxyError.assertion("Inconsistency. Expected deserialization using escape hatch.")
+            let id = try container.decode(String.self, forKey: .id)
+            let name = try container.decode(String.self, forKey: .name)
+            let input = try container.decode([String: AIProxyJSONValue].self, forKey: .input)
+            self = .toolUse(id: id, name: name, input: input.untypedDictionary)
         }
     }
 }
@@ -75,49 +76,9 @@ public struct AnthropicMessageUsage: Decodable {
 }
 
 
-// Special handling of tool decoding
 internal extension AnthropicMessageResponseBody {
-    static func safeDecode(from data: Data) throws -> AnthropicMessageResponseBody {
-        guard var jsonObject = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else
-        {
-            throw AIProxyError.assertion("Could not convert response into a JSONObject")
-        }
-
-        // If there are any 'type': "tool_use", pluck them out
-        var indicesToPluck = [Int]()
-        let contents = (jsonObject["content"] as? [[String: Any]]) ?? []
-        for (index, messageContent) in contents.enumerated() {
-            if (messageContent["type"] as? String == "tool_use") {
-                indicesToPluck.append(index)
-            }
-        }
-
-        // Build up the replacement content
-        var replacement = [[String: Any]]()
-        let idxSet = Set(indicesToPluck)
-        for (index, messageContent) in contents.enumerated() {
-            if (!idxSet.contains(index)) {
-                replacement.append(messageContent)
-            }
-        }
-        jsonObject["content"] = replacement
-
-        // Use decodable on the remainder
-        let data = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
+    static func deserialize(from data: Data) throws -> AnthropicMessageResponseBody {
         let decoder = JSONDecoder()
-        var mappedResult = try decoder.decode(Self.self, from: data)
-
-        // Reinsert the plucked out content
-        for idx in indicesToPluck {
-            // This algorithm assumes the indices are sorted in ascending order.
-            // Insert them in their proper location.
-            guard let toolId = contents[idx]["id"] as? String,
-                  let toolName = contents[idx]["name"] as? String,
-                  let toolInput = contents[idx]["input"] as? [String: Any] else {
-                throw AIProxyError.assertion("Unexpected Anthropic tool fields in the response")
-            }
-            mappedResult.content.insert(.toolUse(id: toolId, name: toolName, input: toolInput), at: idx)
-        }
-        return mappedResult
+        return try decoder.decode(Self.self, from: data)
     }
 }

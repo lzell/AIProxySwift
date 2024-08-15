@@ -37,7 +37,7 @@ public final class AnthropicService {
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
-            postBody: try body.safeEncode(),
+            postBody: try body.serialize(),
             path: "/v1/messages",
             contentType: "application/json"
         )
@@ -53,7 +53,7 @@ public final class AnthropicService {
             )
         }
     
-        return try AnthropicMessageResponseBody.safeDecode(from: data)
+        return try AnthropicMessageResponseBody.deserialize(from: data)
     }
 }
 
