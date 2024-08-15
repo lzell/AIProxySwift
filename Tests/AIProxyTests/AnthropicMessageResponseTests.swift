@@ -70,11 +70,12 @@ final class AnthropicMessageResponseTests: XCTestCase {
         }
         """
 
-        let res = try! AnthropicMessageResponseBody.safeDecode(from: sampleResponse.data(using: .utf8)!)
+        let res = try! AnthropicMessageResponseBody.deserialize(from: sampleResponse.data(using: .utf8)!)
 
         switch res.content.last! {
-        case .toolUse(id: _, name: let toolName, input: let input):
+        case .toolUse(id: let id, name: let toolName, input: let input):
             XCTAssertEqual("get_stock_symbol", toolName)
+            XCTAssertEqual("toolu_01GZovj2vHs5AKsNAshWFgUT", id)
             XCTAssertEqual("NVDA", input["ticker"] as? String)
         default:
             XCTFail()
