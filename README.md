@@ -422,6 +422,191 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
     }
 
 
+### How to create a non-streaming chat completion with TogetherAI
+
+See the [TogetherAI model list](https://docs.together.ai/docs/chat-models) for available
+options to pass as the `model` argument:
+
+    import AIProxy
+
+    let togetherAIService = AIProxy.togetherAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let requestBody = TogetherAIChatCompletionRequestBody(
+            messages: [TogetherAIMessage(content: "Hello world", role: .user)],
+            model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+        )
+        let response = try await togetherAIService.chatCompletionRequest(body: requestBody)
+        print(response.choices.first?.message.content ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create TogetherAI chat completion: \(error.localizedDescription)")
+    }
+
+
+### How to create a streaming chat completion with TogetherAI
+
+See the [TogetherAI model list](https://docs.together.ai/docs/chat-models) for available
+options to pass as the `model` argument:
+
+    import AIProxy
+
+    let togetherAIService = AIProxy.togetherAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let requestBody = TogetherAIChatCompletionRequestBody(
+            messages: [TogetherAIMessage(content: "Hello world", role: .user)],
+            model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+        )
+        let stream = try await togetherAIService.streamingChatCompletionRequest(body: requestBody)
+        for try await chunk in stream {
+            print(chunk.choices.first?.delta.content ?? "")
+        }
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create TogetherAI streaming chat completion: \(error.localizedDescription)")
+    }
+
+
+### How to create a JSON response with TogetherAI
+
+JSON mode is handy for enforcing that the model returns JSON in a structure that your
+application expects. You specify the contract using `schema` below. Note that only some models
+support JSON mode. See [this guide](https://docs.together.ai/docs/json-mode) for a list.
+
+    import AIProxy
+
+    let togetherAIService = AIProxy.togetherAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let schema: [String: AIProxyJSONValue] = [
+            "type": "object",
+            "properties": [
+                "people": [
+                    "type": "array",
+                    "items": [
+                        "type": "object",
+                        "properties": [
+                            "name": [
+                                "type": "string",
+                                "description": "The name of the person"
+                            ],
+                            "address": [
+                                "type": "string",
+                                "description": "The address of the person"
+                            ]
+                        ],
+                        "required": ["name", "address"]
+                    ]
+                ]
+            ]
+        ]
+        let requestBody = TogetherAIChatCompletionRequestBody(
+            messages: [
+                TogetherAIMessage(
+                    content: "You are a helpful assistant that answers in JSON",
+                    role: .system
+                ),
+                TogetherAIMessage(
+                    content: "Create three fictitious people",
+                    role: .user
+                )
+            ],
+            model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+            responseFormat: .json(schema: schema)
+        )
+        let response = try await togetherAIService.chatCompletionRequest(body: requestBody)
+        print(response.choices.first?.message.content ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create TogetherAI JSON chat completion: \(error.localizedDescription)")
+    }
+
+
+### How to make a tool call request with Llama and TogetherAI
+
+This example is a Swift port of [this guide](https://docs.together.ai/docs/llama-3-function-calling):
+
+    import AIProxy
+
+    let togetherAIService = AIProxy.togetherAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let function = TogetherAIFunction(
+            description: "Call this when the user wants the weather",
+            name: "get_weather",
+            parameters: [
+                "type": "object",
+                "properties": [
+                    "location": [
+                        "type": "string",
+                        "description": "The city and state, e.g. San Francisco, CA",
+                    ],
+                    "num_days": [
+                        "type": "integer",
+                        "description": "The number of days to get the forecast for",
+                    ],
+                ],
+                "required": ["location", "num_days"],
+            ]
+        )
+
+        let toolPrompt = """
+        You have access to the following functions:
+
+        Use the function '\(function.name)' to '\(function.description)':
+        \(try function.serialize())
+
+        If you choose to call a function ONLY reply in the following format with no prefix or suffix:
+
+        <function=example_function_name>{{\"example_name\": \"example_value\"}}</function>
+
+        Reminder:
+        - Function calls MUST follow the specified format, start with <function= and end with </function>
+        - Required parameters MUST be specified
+        - Only call one function at a time
+        - Put the entire function call reply on one line
+        - If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls
+
+        """
+
+        let requestBody = TogetherAIChatCompletionRequestBody(
+            messages: [
+                TogetherAIMessage(
+                    content: toolPrompt,
+                    role: .system
+                ),
+                TogetherAIMessage(
+                    content: "What's the weather like in Tokyo over the next few days?",
+                    role: .user
+                )
+            ],
+            model: "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+            temperature: 0,
+            tools: [
+                TogetherAITool(function: function)
+            ]
+        )
+        let response = try await togetherAIService.chatCompletionRequest(body: requestBody)
+        print(response.choices.first?.message.content ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create TogetherAI llama 3.1 tool completion: \(error.localizedDescription)")
+    }
+
+
 ### How to fetch the weather with OpenMeteo
 
 This pattern is slightly different than the others, because OpenMeteo has an official lib that
