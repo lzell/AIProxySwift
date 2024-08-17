@@ -1,5 +1,5 @@
 //
-//  OpenAIChatRequestTests.swift
+//  OpenAIChatCompletionRequestTests.swift
 //
 //
 //  Created by Lou Zell on 8/11/24.
@@ -8,7 +8,7 @@
 import XCTest
 @testable import AIProxy
 
-final class OpenAIChatRequestTests: XCTestCase {
+final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     let jsonEncoder = {
         let encoder = JSONEncoder()

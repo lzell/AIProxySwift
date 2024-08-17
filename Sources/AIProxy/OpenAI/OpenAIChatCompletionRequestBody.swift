@@ -1,5 +1,5 @@
 //
-//  OpenAIChatCodables.swift
+//  OpenAIChatCompletionRequestBody.swift
 //
 //
 //  Created by Lou Zell on 6/11/24.
@@ -155,75 +155,4 @@ public struct OpenAIChatStreamOptions: Encodable {
 
 private struct OpenAIImageURL: Encodable {
     let url: URL
-}
-
-
-// MARK: - Response Codables
-// MARK: Non-streaming
-public struct OpenAIChatCompletionResponseBody: Decodable {
-    public let model: String
-    public let choices: [OpenAIChatChoice]
-}
-
-public struct OpenAIChatChoice: Decodable {
-    public let message: OpenAIChoiceMessage
-    public let finishReason: String
-
-    enum CodingKeys: String, CodingKey {
-        case message
-        case finishReason = "finish_reason"
-    }
-}
-
-public struct OpenAIChoiceMessage: Decodable {
-    public let role: String
-    public let content: String
-}
-
-
-// MARK: Streaming
-public struct OpenAIChatCompletionChunk: Codable {
-    public let choices: [OpenAIChunkChoice]
-}
-
-public struct OpenAIChunkChoice: Codable {
-    public let delta: OpenAIChunkDelta
-    public let finishReason: String?
-
-    enum CodingKeys: String, CodingKey {
-        case delta
-        case finishReason = "finish_reason"
-    }
-}
-
-public struct OpenAIChunkDelta: Codable {
-    public let role: String?
-    public let content: String?
-}
-
-
-// MARK: - Internal extensions
-extension OpenAIChatCompletionChunk {
-    /// Creates a ChatCompletionChunk from a streamed line of the /v1/chat/completions response
-    static func from(line: String) -> Self? {
-        guard line.hasPrefix("data: ") else {
-            aiproxyLogger.warning("Received unexpected line from aiproxy: \(line)")
-            return nil
-        }
-
-        guard line != "data: [DONE]" else {
-            aiproxyLogger.debug("Streaming response has finished")
-            return nil
-        }
-
-        guard let chunkJSON = line.dropFirst(6).data(using: .utf8),
-              let chunk = try? JSONDecoder().decode(OpenAIChatCompletionChunk.self, from: chunkJSON) else
-        {
-            aiproxyLogger.warning("Received unexpected JSON from aiproxy: \(line)")
-            return nil
-        }
-
-        // aiproxyLogger.debug("Received a chunk: \(line)")
-        return chunk
-    }
 }
