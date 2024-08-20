@@ -7,22 +7,34 @@
 
 import Foundation
 
-
-// MARK: - Request Codables
-
 /// Chat completion request body. See the OpenAI reference for available fields.
 /// Contributions are welcome if you need something beyond the simple fields I've added so far.
 /// Docstrings are taken from this reference:
 /// https://platform.openai.com/docs/api-reference/chat/create
 public struct OpenAIChatCompletionRequestBody: Encodable {
 
-    // Required
-    public let model: String
-    public let messages: [OpenAIChatMessage]
+    // MARK: Required
+    // The required section should be in alphabetical order. This section is an exception,
+    // because we have existing callers that I don't want to break.
 
-    // Optional
+    /// ID of the model to use. See the model endpoint compatibility table for details on which models work
+    /// with the Chat API:
+    /// https://platform.openai.com/docs/models/model-endpoint-compatibility
+    public let model: String
+
+    /// A list of messages comprising the conversation so far
+    public let messages: [OpenAIChatCompletionMessage]
+
+    // MARK: Optional
+
+    /// Specifies the format that the model must output. See the docstring on OpenAIChatResponseFormat
     public let responseFormat: OpenAIChatResponseFormat?
+
+    /// If set, partial message deltas will be sent. Using the `OpenAIService.streamingChatCompletionRequest`
+    /// method is the easiest way to use streaming chats.
     public var stream: Bool?
+
+    /// Options for streaming response. Only set this when you set stream: true
     public var streamOptions: OpenAIChatStreamOptions?
 
     /// What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the
@@ -34,6 +46,14 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
     /// If not set, OpenAI defaults this value to 1.
     public let temperature: Double?
 
+    /// A list of tools the model may call. Currently, only functions are supported as a tool. Use this to
+    /// provide a list of functions the model may generate JSON inputs for. A max of 128 functions are
+    /// supported.
+    public let tools: [OpenAIChatCompletionTool]?
+
+    /// Controls which (if any) tool is called by the model.
+    public let toolChoice: OpenAIChatCompletionToolChoice?
+
     /// An alternative to sampling with `temperature`, called nucleus sampling, where the model
     /// considers the results of the tokens with `top_p` probability mass. So 0.1 means only the
     /// tokens comprising the top 10% probability mass are considered.
@@ -43,12 +63,17 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
     public let topP: Double?
 
     private enum CodingKeys: String, CodingKey {
+        // required
         case messages
         case model
+
+        // optional
         case responseFormat = "response_format"
         case stream
         case streamOptions = "stream_options"
         case temperature
+        case tools
+        case toolChoice = "tool_choice"
         case topP = "top_p"
     }
 
@@ -57,11 +82,13 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
     // To format, place the cursor in the initializer's parameter list and use `ctrl-m`
     public init(
         model: String,
-        messages: [OpenAIChatMessage],
+        messages: [OpenAIChatCompletionMessage],
         responseFormat: OpenAIChatResponseFormat? = nil,
         stream: Bool? = nil,
         streamOptions: OpenAIChatStreamOptions? = nil,
         temperature: Double? = nil,
+        tools: [OpenAIChatCompletionTool]? = nil,
+        toolChoice: OpenAIChatCompletionToolChoice? = nil,
         topP: Double? = nil
     ) {
         self.model = model
@@ -70,72 +97,194 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
         self.stream = stream
         self.streamOptions = streamOptions
         self.temperature = temperature
+        self.tools = tools
+        self.toolChoice = toolChoice
         self.topP = topP
     }
 }
 
-public struct OpenAIChatMessage: Encodable {
-    public let role: String
-    public let content: OpenAIChatContent
+public enum OpenAIChatCompletionMessage: Encodable {
+    /// A system message
+    /// - Parameters:
+    ///   - content: The contents of the system message.
+    ///   - name: An optional name for the participant. Provides the model information to differentiate
+    ///           between participants of the same role.
+    case system(content: OpenAIChatCompletionSystemContent, name: String? = nil)
 
-    public init(role: String, content: OpenAIChatContent) {
-        self.role = role
-        self.content = content
+    /// A user message
+    /// - Parameters:
+    ///   - content: The contents of the user message.
+    ///   - name: An optional name for the participant. Provides the model information to differentiate
+    ///           between participants of the same role.
+    case user(content: OpenAIChatCompletionUserContent, name: String? = nil)
+
+    private enum RootKey: String, CodingKey {
+        case content
+        case role
+        case name
     }
-}
 
-public enum OpenAIChatResponseFormat: Encodable {
-    case type(String)
-
-    enum CodingKeys: String, CodingKey {
-        case type
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: RootKey.self)
         switch self {
-        case .type(let format):
-            try container.encode(format, forKey: .type)
+        case .system(let content, let name):
+            try container.encode(content, forKey: .content)
+            try container.encode("system", forKey: .role)
+            if let name = name {
+                try container.encode(name, forKey: .name)
+            }
+        case .user(let content, let name):
+            try container.encode(content, forKey: .content)
+            try container.encode("user", forKey: .role)
+            if let name = name {
+                try container.encode(name, forKey: .name)
+            }
         }
     }
 }
 
-/// ChatContent is made up of either a single piece of text or a collection of ChatContentParts
-public enum OpenAIChatContent: Encodable {
+/// System messages can consiste of a single string or an array of strings
+public enum OpenAIChatCompletionSystemContent: Encodable {
     case text(String)
-    case parts([OpenAIChatContentPart])
+    case parts([String])
 
-    public func encode(to encoder: Encoder) throws {
-       var container = encoder.singleValueContainer()
-       switch self {
-       case .text(let text):
-          try container.encode(text)
-       case .parts(let contentParts):
-          try container.encode(contentParts)
-       }
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .text(let text):
+            try container.encode(text)
+        case .parts(let parts):
+            try container.encode(parts)
+        }
     }
 }
 
-public enum OpenAIChatContentPart: Encodable {
-
+/// User messages can consist of a single string or an array of parts, each part capable of containing a
+/// string or image
+public enum OpenAIChatCompletionUserContent: Encodable {
+    /// The text contents of the message.
     case text(String)
+
+    /// An array of content parts. You can pass multiple images by adding multiple imageURL content parts.
+    /// Image input is only supported when using the gpt-4o model.
+    case parts([OpenAIChatCompletionContentPart])
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .text(let text):
+            try container.encode(text)
+        case .parts(let parts):
+            try container.encode(parts)
+        }
+    }
+}
+
+public enum OpenAIChatCompletionContentPart: Encodable {
+    /// The text content.
+    case text(String)
+
+    /// The URL is a "local URL" containing base64 encoded image data. See the helper `AIProxy.openaiEncodedImage`
+    /// to construct this URL.
     case imageURL(URL)
 
-    enum CodingKeys: String, CodingKey {
+    private enum RootKey: String, CodingKey {
         case type
         case text
         case imageURL = "image_url"
     }
 
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
+    private enum ImageKey: CodingKey {
+        case url
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: RootKey.self)
         switch self {
         case .text(let text):
             try container.encode("text", forKey: .type)
             try container.encode(text, forKey: .text)
-        case .imageURL(let url):
+        case .imageURL(let imageURL):
             try container.encode("image_url", forKey: .type)
-            try container.encode(OpenAIImageURL(url: url), forKey: .imageURL)
+            var nestedContainer = container.nestedContainer(keyedBy: ImageKey.self, forKey: .imageURL)
+            try nestedContainer.encode(imageURL, forKey: .url)
+        }
+    }
+}
+
+/// An object specifying the format that the model must output. Compatible with GPT-4o, GPT-4o mini, GPT-4
+/// Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.
+public enum OpenAIChatResponseFormat: Encodable {
+
+    /// Enables JSON mode, which ensures the message the model generates is valid JSON. Note, if you want to
+    /// supply your own schema use `jsonSchema` instead.
+    ///
+    /// Important: when using JSON mode, you must also instruct the model to produce JSON yourself via a
+    /// system or user message. Without this, the model may generate an unending stream of whitespace until
+    /// the generation reaches the token limit, resulting in a long-running and seemingly "stuck" request.
+    /// Also note that the message content may be partially cut off if finish_reason="length", which indicates
+    /// the generation exceeded max_tokens or the conversation exceeded the max context length.
+    case jsonObject
+
+    /// Enables Structured Outputs which ensures the model will match your supplied JSON schema.
+    /// Learn more in the Structured Outputs guide: https://platform.openai.com/docs/guides/structured-outputs
+    ///
+    /// - Parameters:
+    ///   - name: The name of the response format. Must be a-z, A-Z, 0-9, or contain underscores and dashes,
+    ///           with a maximum length of 64.
+    ///
+    ///   - description: A description of what the response format is for, used by the model to determine how
+    ///                  to respond in the format.
+    ///
+    ///   - schema: The schema for the response format, described as a JSON Schema object.
+    ///
+    ///   - strict: Whether to enable strict schema adherence when generating the output. If set to true, the
+    ///             model will always follow the exact schema defined in the schema field. Only a subset of JSON Schema
+    ///             is supported when strict is true. To learn more, read the Structured Outputs guide.
+    case jsonSchema(
+        name: String,
+        description: String? = nil,
+        schema: [String: AIProxyJSONValue]? = nil,
+        strict: Bool? = nil
+    )
+
+    /// Instructs the model to produce text only.
+    case text
+
+    private enum RootKey: String, CodingKey {
+        case type
+        case jsonSchema = "json_schema"
+    }
+
+    private enum SchemaKey: String, CodingKey {
+        case description
+        case name
+        case schema
+        case strict
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: RootKey.self)
+        switch self {
+        case .jsonObject:
+            try container.encode("json_object", forKey: .type)
+        case .jsonSchema(
+            name: let name,
+            description: let description,
+            schema: let schema,
+            strict: let strict
+        ):
+            try container.encode("json_schema", forKey: .type)
+            var nestedContainer = container.nestedContainer(
+                keyedBy: SchemaKey.self,
+                forKey: .jsonSchema
+            )
+            try nestedContainer.encode(name, forKey: .name)
+            try nestedContainer.encodeIfPresent(description, forKey: .description)
+            try nestedContainer.encodeIfPresent(schema, forKey: .schema)
+            try nestedContainer.encodeIfPresent(strict, forKey: .strict)
+        case .text:
+            try container.encode("text", forKey: .type)
         }
     }
 }
@@ -147,12 +296,116 @@ public struct OpenAIChatStreamOptions: Encodable {
    /// a usage field, but with a null value.
    let includeUsage: Bool
 
-   enum CodingKeys: String, CodingKey {
+   private enum CodingKeys: String, CodingKey {
        case includeUsage = "include_usage"
    }
 }
 
+public enum OpenAIChatCompletionTool: Encodable {
 
-private struct OpenAIImageURL: Encodable {
-    let url: URL
+    /// A function that chatGPT can instruct us to call when appropriate
+    ///
+    /// - Parameters:
+    ///   - name: The name of the function to be called. Must be a-z, A-Z, 0-9, or contain underscores and
+    ///           dashes, with a maximum length of 64.
+    ///
+    ///   - description: A description of what the function does, used by the model to choose when and how to
+    ///                  call the function.
+    ///
+    ///   - parameters: The parameters the functions accepts, described as a JSON Schema object. See the guide
+    ///                 for examples, and the JSON Schema reference for documentation about the format.
+    ///                 Omitting parameters defines a function with an empty parameter list.
+    ///
+    ///   - strict: Whether to enable strict schema adherence when generating the function call. If set to
+    ///             true, the model will follow the exact schema defined in the parameters field. Only a subset of JSON
+    ///             Schema is supported when strict is true. Learn more about Structured Outputs in the function calling
+    ///             guide: https://platform.openai.com/docs/api-reference/chat/docs/guides/function-calling
+    case function(
+        name: String,
+        description: String?,
+        parameters: [String: AIProxyJSONValue]?,
+        strict: Bool?
+    )
+
+    private enum RootKey: CodingKey {
+        case type
+        case function
+    }
+
+    private enum FunctionKey: CodingKey {
+        case description
+        case name
+        case parameters
+        case strict
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: RootKey.self)
+        switch self {
+        case .function(
+            name: let name,
+            description: let description,
+            parameters: let parameters,
+            strict: let strict
+        ):
+            try container.encode("function", forKey: .type)
+            var functionContainer = container.nestedContainer(
+                keyedBy: FunctionKey.self,
+                forKey: .function
+            )
+            try functionContainer.encode(name, forKey: .name)
+            try functionContainer.encodeIfPresent(description, forKey: .description)
+            try functionContainer.encodeIfPresent(parameters, forKey: .parameters)
+            try functionContainer.encodeIfPresent(strict, forKey: .strict)
+        }
+    }
+}
+
+/// Controls which (if any) tool is called by the model.
+public enum OpenAIChatCompletionToolChoice: Encodable {
+
+    /// The model will not call any tool and instead generates a message.
+    /// This is the default when no tools are present in the request body
+    case none
+
+    /// The model can pick between generating a message or calling one or more tools.
+    /// This is the default when tools are present in the request body
+    case auto
+
+    /// The model must call one or more tools
+    case required
+
+    /// Forces the model to call a specific tool
+    case specific(functionName: String)
+
+    private enum RootKey: CodingKey {
+        case type
+        case function
+    }
+
+    private enum FunctionKey: CodingKey {
+        case name
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        switch self {
+        case .none:
+            var container = encoder.singleValueContainer()
+            try container.encode("none")
+        case .auto:
+            var container = encoder.singleValueContainer()
+            try container.encode("auto")
+        case .required:
+            var container = encoder.singleValueContainer()
+            try container.encode("required")
+        case .specific(let functionName):
+            var container = encoder.container(keyedBy: RootKey.self)
+            try container.encode("function", forKey: .type)
+            var functionContainer = container.nestedContainer(
+                keyedBy: FunctionKey.self,
+                forKey: .function
+            )
+            try functionContainer.encode(functionName, forKey: .name)
+        }
+    }
 }

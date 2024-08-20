@@ -12,7 +12,7 @@ public final class TogetherAIService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
-    
+
     /// Creates an instance of TogetherAIService. Note that the initializer is not public.
     /// Customers are expected to use the factory `AIProxy.togetherAIService` defined in AIProxy.swift
     internal init(partialKey: String, serviceURL: String, clientID: String?) {
@@ -20,12 +20,12 @@ public final class TogetherAIService {
         self.serviceURL = serviceURL
         self.clientID = clientID
     }
-    
+
     /// Initiates a non-streaming chat completion request to /v1/chat/completions.
     ///
     /// - Parameters:
-    ///   - chatRequestBody: The request body to send to aiproxy and Together.ai. See this reference:
-    ///                      https://docs.together.ai/reference/completions-1
+    ///   - body: The request body to send to aiproxy and Together.ai. See this reference:
+    ///           https://docs.together.ai/reference/completions-1
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func chatCompletionRequest(
@@ -62,8 +62,8 @@ public final class TogetherAIService {
     /// Initiates a streaming chat completion request to /v1/chat/completions.
     ///
     /// - Parameters:
-    ///   - chatRequestBody: The request body to send to aiproxy and Together.ai. See this reference:
-    ///                      https://docs.together.ai/reference/completions-1
+    ///   - body: The request body to send to aiproxy and Together.ai. See this reference:
+    ///           https://docs.together.ai/reference/completions-1
     /// - Returns: A chat completion response. See the reference above.
     public func streamingChatCompletionRequest(
         body: TogetherAIChatCompletionRequestBody

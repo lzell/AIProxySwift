@@ -76,4 +76,64 @@ final class OpenAIChatCompletionResponseTests: XCTestCase {
             res.data.first?.url
         )
     }
+
+    // This tests the response for function calling in this announcement:
+    // https://openai.com/index/introducing-structured-outputs-in-the-api/
+    func testResponseWithToolUseAndStructuredOutputsIsDecodable() throws {
+        let sampleResponse = #"""
+        {
+          "id": "chatcmpl-9yhYJX5jQtBCHOiPkAxvGmHFPEZcS",
+          "object": "chat.completion",
+          "created": 1724254123,
+          "model": "gpt-4o-2024-08-06",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": null,
+                "tool_calls": [
+                  {
+                    "id": "call_DJl0fscEzKiVZXXrW56Azbq9",
+                    "type": "function",
+                    "function": {
+                      "name": "query",
+                      "arguments": "{\"columns\":[\"id\",\"status\",\"expected_delivery_date\",\"delivered_at\"],\"order_by\":\"asc\",\"table_name\":\"orders\",\"conditions\":[{\"value\":\"2023-05-01\",\"operator\":\">=\",\"column\":\"ordered_at\"},{\"value\":\"2023-05-31\",\"operator\":\"<=\",\"column\":\"ordered_at\"},{\"value\":\"fulfilled\",\"operator\":\"=\",\"column\":\"status\"},{\"value\":{\"column_name\":\"expected_delivery_date\"},\"operator\":\"<\",\"column\":\"delivered_at\"}]}"
+                    }
+                  }
+                ],
+                "refusal": null
+              },
+              "logprobs": null,
+              "finish_reason": "tool_calls"
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 185,
+            "completion_tokens": 108,
+            "total_tokens": 293
+          },
+          "system_fingerprint": "fp_2a322c9ffc"
+        }
+        """#
+        let decoder = JSONDecoder()
+        let res = try decoder.decode(
+            OpenAIChatCompletionResponseBody.self,
+            from: sampleResponse.data(using: .utf8)!
+        )
+        let functionToCall = res.choices.first!.message.toolCalls!.first!.function
+        let arguments = functionToCall.arguments!
+        XCTAssertEqual(
+            "orders",
+            arguments["table_name"] as? String
+        )
+        XCTAssertEqual(
+            "asc",
+            arguments["order_by"] as? String
+        )
+        XCTAssertEqual(
+            4,
+            (arguments["conditions"] as? [Any])?.count
+        )
+    }
 }
