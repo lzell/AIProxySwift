@@ -77,7 +77,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
     do {
         let response = try await openAIService.chatCompletionRequest(body: .init(
             model: "gpt-4o",
-            messages: [.init(role: "system", content: .text("hello world"))]
+            messages: [.system(content: .text("hello world"))]
         ))
         print(response.choices.first?.message.content ?? "")
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
@@ -96,8 +96,8 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
         serviceURL: "service-url-from-your-developer-dashboard"
     )
     let requestBody = OpenAIChatCompletionRequestBody(
-        model: "gpt-4o",
-        messages: [.init(role: "user", content: .text("hello world"))]
+        model: "gpt-4o-mini",
+        messages: [.user(content: .text("hello world"))]
     )
 
     do {
@@ -110,6 +110,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
     } catch {
         print(error.localizedDescription)
     }
+
 
 
 ### Send a multi-modal chat completion request to OpenAI:
@@ -137,12 +138,10 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
         let response = try await openAIService.chatCompletionRequest(body: .init(
             model: "gpt-4o",
             messages: [
-                .init(
-                    role: "system",
+                .system(
                     content: .text("Tell me what you see")
                 ),
-                .init(
-                    role: "user",
+                .user(
                     content: .parts(
                         [
                             .text("What do you see?"),
@@ -158,6 +157,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch {
         print(error.localizedDescription)
     }
+
 
 ### How to generate an image with DALLE
 
@@ -194,25 +194,143 @@ Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON 
         serviceURL: "service-url-from-your-developer-dashboard"
     )
     do {
-        let response = try await service.chatCompletionRequest(body: .init(
+        let requestBody = OpenAIChatCompletionRequestBody(
             model: "gpt-4o",
             messages: [
-                .init(
-                    role: "system",
-                    content: .text("Return valid JSON only")
-                ),
-                .init(
-                    role: "user",
-                    content: .text("Return alice and bob in a list of names")
-                )
+                .system(content: .text("Return valid JSON only")),
+                .user(content: .text("Return alice and bob in a list of names"))
             ],
-            responseFormat: .type("json_object")
-        ))
-        print(response.choices.first?.message.content)
+            responseFormat: .jsonObject
+        )
+        let response = try await openAIService.chatCompletionRequest(body: requestBody)
+        print(response.choices.first?.message.content ?? "")
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print(error.localizedDescription)
+    }
+
+
+### How to use OpenAI structured outputs (JSON schemas) in a chat response
+
+This example prompts chatGPT to construct a color palette and conform to a strict JSON schema
+in its response:
+
+    import AIProxy
+
+    let openAIService = AIProxy.openAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let schema: [String: AIProxyJSONValue] = [
+            "type": "object",
+            "properties": [
+                "colors": [
+                    "type": "array",
+                    "items": [
+                        "type": "object",
+                        "properties": [
+                            "name": [
+                                "type": "string",
+                                "description": "A descriptive name to give the color"
+                            ],
+                            "hex_code": [
+                                "type": "string",
+                                "description": "The hex code of the color"
+                            ]
+                        ],
+                        "required": ["name", "hex_code"],
+                        "additionalProperties": false
+                    ]
+                ]
+            ],
+            "required": ["colors"],
+            "additionalProperties": false
+        ]
+        let requestBody = OpenAIChatCompletionRequestBody(
+            model: "gpt-4o",
+            messages: [
+                .system(content: .text("Return valid JSON only")),
+                .user(content: .text("Return a peaches and cream color palette"))
+            ],
+            responseFormat: .jsonSchema(
+                name: "palette_creator",
+                description: "A list of colors that make up a color pallete",
+                schema: schema,
+                strict: true
+            )
+        )
+        let response = try await openAIService.chatCompletionRequest(body: requestBody)
+        print(response.choices.first?.message.content ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
+
+
+### How to use OpenAI structured outputs (JSON schemas) in a tool call
+
+This example is taken from the structured outputs announcement:
+https://openai.com/index/introducing-structured-outputs-in-the-api/
+
+It asks ChatGPT to call a function with the correct arguments to look up a business's unfulfilled orders:
+
+    import AIProxy
+
+    let openAIService = AIProxy.openAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let schema: [String: AIProxyJSONValue] = [
+            "type": "object",
+            "properties": [
+                "location": [
+                    "type": "string",
+                    "description": "The city and state, e.g. San Francisco, CA"
+                ],
+                "unit": [
+                  "type": "string",
+                  "enum": ["celsius", "fahrenheit"],
+                  "description": "The unit of temperature. If not specified in the prompt, always default to fahrenheit",
+                  "default": "fahrenheit"
+                ]
+            ],
+            "required": ["location", "unit"],
+            "additionalProperties": false
+        ]
+
+        let requestBody = OpenAIChatCompletionRequestBody(
+            model: "gpt-4o-2024-08-06",
+            messages: [
+                .user(content: .text("How cold is it today in SF?"))
+            ],
+            tools: [
+                .function(
+                    name: "get_weather",
+                    description: "Call this when the user wants the weather",
+                    parameters: schema,
+                    strict: true)
+            ]
+        )
+
+        let response = try await openAIService.chatCompletionRequest(body: requestBody)
+        if let toolCall = response.choices.first?.message.toolCalls?.first {
+            let functionName = toolCall.function.name
+            let arguments = toolCall.function.arguments ?? [:]
+            print("ChatGPT wants us to call function \(functionName) with arguments: \(arguments)")
+        } else {
+            print("Could not get function arguments")
+        }
+
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not make a tool call to OpenAI: \(error.localizedDescription)")
     }
 
 
@@ -490,24 +608,27 @@ support JSON mode. See [this guide](https://docs.together.ai/docs/json-mode) for
         let schema: [String: AIProxyJSONValue] = [
             "type": "object",
             "properties": [
-                "people": [
+                "colors": [
                     "type": "array",
                     "items": [
                         "type": "object",
                         "properties": [
                             "name": [
                                 "type": "string",
-                                "description": "The name of the person"
+                                "description": "A descriptive name to give the color"
                             ],
-                            "address": [
+                            "hex_code": [
                                 "type": "string",
-                                "description": "The address of the person"
+                                "description": "The hex code of the color"
                             ]
                         ],
-                        "required": ["name", "address"]
+                        "required": ["name", "hex_code"],
+                        "additionalProperties": false
                     ]
                 ]
-            ]
+            ],
+            "required": ["colors"],
+            "additionalProperties": false
         ]
         let requestBody = TogetherAIChatCompletionRequestBody(
             messages: [
@@ -516,7 +637,7 @@ support JSON mode. See [this guide](https://docs.together.ai/docs/json-mode) for
                     role: .system
                 ),
                 TogetherAIMessage(
-                    content: "Create three fictitious people",
+                    content: "Create a peaches and cream color palette",
                     role: .user
                 )
             ],

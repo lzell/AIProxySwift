@@ -23,8 +23,8 @@ public final class OpenAIService {
     /// Initiates a non-streaming chat completion request to /v1/chat/completions.
     ///
     /// - Parameters:
-    ///   - chatRequestBody: The request body to send to aiproxy and openai. See this reference:
-    ///                      https://platform.openai.com/docs/api-reference/chat/create
+    ///   - body: The request body to send to aiproxy and openai. See this reference:
+    ///           https://platform.openai.com/docs/api-reference/chat/create
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func chatCompletionRequest(
@@ -60,8 +60,8 @@ public final class OpenAIService {
     /// Initiates a streaming chat completion request to /v1/chat/completions.
     ///
     /// - Parameters:
-    ///   - chatRequestBody: The request body to send to aiproxy and openai. See this reference:
-    ///                      https://platform.openai.com/docs/api-reference/chat/create
+    ///   - body: The request body to send to aiproxy and openai. See this reference:
+    ///           https://platform.openai.com/docs/api-reference/chat/create
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func streamingChatCompletionRequest(
