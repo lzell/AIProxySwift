@@ -20,12 +20,28 @@ final class AnthropicMessageRequestTests: XCTestCase {
             messages: [
                 AnthropicInputMessage(content: [.text("hello world")], role: .user)
             ],
-            model: "claude-3-5-sonnet-20240620"
+            model: "claude-3-5-sonnet-20240620",
+            system: "You are a helpful assistant"
         )
-        let data = try! request.serialize()
-        XCTAssertEqual(
-            #"{"max_tokens":1024,"messages":[{"content":[{"text":"hello world","type":"text"}],"role":"user"}],"model":"claude-3-5-sonnet-20240620"}"#
-            ,
+        let data = try! request.serialize(pretty: true)
+        XCTAssertEqual("""
+            {
+              "max_tokens" : 1024,
+              "messages" : [
+                {
+                  "content" : [
+                    {
+                      "text" : "hello world",
+                      "type" : "text"
+                    }
+                  ],
+                  "role" : "user"
+                }
+              ],
+              "model" : "claude-3-5-sonnet-20240620",
+              "system" : "You are a helpful assistant"
+            }
+            """,
             String(data: data, encoding: .utf8)!
         )
     }
@@ -71,7 +87,7 @@ final class AnthropicMessageRequestTests: XCTestCase {
         )
     }
 
-    func testRequestWithImageIsEncodable() {
+    func testRequestWithImageIsEncodable() throws {
         let request = AnthropicMessageRequestBody(
             maxTokens: 1024,
             messages: [
@@ -82,11 +98,15 @@ final class AnthropicMessageRequestTests: XCTestCase {
             ],
             model: "claude-3-5-sonnet-20240620"
         )
-        let data = try! request.serialize()
+        let data = try request.serialize()
         XCTAssertEqual(
             #"{"max_tokens":1024,"messages":[{"content":[{"source":{"data":"encoded-image","media_type":"image\/jpeg","type":"base64"},"type":"image"}],"role":"user"}],"model":"claude-3-5-sonnet-20240620"}"#
             ,
             String(data: data, encoding: .utf8)!
         )
+    }
+
+    func testSystemMessageIsInitializableAsLiteral() throws {
+
     }
 }

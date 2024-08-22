@@ -68,7 +68,7 @@ public struct AnthropicMessageRequestBody: Encodable {
     ///     ]}
     ///
     /// See this for more input examples: https://docs.anthropic.com/en/api/messages-examples#vision
-    public let messages: [AnthropicInputMessage]
+    public let messages: [AnthropicMessage]
 
     /// The model that will complete your prompt.
     /// See this resource for a list of model strings you may use:
@@ -97,7 +97,7 @@ public struct AnthropicMessageRequestBody: Encodable {
 
     /// A system prompt is a way of providing context and instructions to Claude, such as
     /// specifying a particular goal or role. See our guide to system prompts.
-    public let system: String?
+    public let system: AnthropicSystemMessage?
 
     /// Amount of randomness injected into the response.
     ///
@@ -215,7 +215,7 @@ public struct AnthropicMessageRequestBody: Encodable {
     // To format, place the cursor in the initializer's parameter list and use `ctrl-m`
     public init(
         maxTokens: Int,
-        messages: [AnthropicInputMessage],
+        messages: [AnthropicMessage],
         model: String,
         metadata: AnthropicRequestMetadata? = nil,
         stopSequences: [String]? = nil,
@@ -243,6 +243,56 @@ public struct AnthropicMessageRequestBody: Encodable {
 }
 
 
+/// There is no "system" role for input messages in the messages API.
+/// If you want to include a system prompt, you can use the top-level `system`
+/// parameter on `AnthropicMessageRequestBody`
+public enum AnthropicMessage: Encodable {
+    /// A user message
+    case user(AnthropicMessageContent)
+
+    /// An assistant message
+    case assistant(AnthropicMessageContent)
+
+    /// When you make a request to Anthropic and include the `tools` field, Anthropic
+    /// may return a tool message that instructs us to call a certain function within our app.
+    /// To continue a fluid conversation, we can pass that tool message back to Anthropic here.
+    /// Note that this is not the *result* of the tool call, that case is handled by `toolResult`
+    case toolUse(
+        id: String,
+        name: String,
+        input: [String: AIProxyJSONValue],
+        cacheControl: AnthropicCacheControl? = nil
+    )
+
+    /// When you make a request to Anthropic and include the `tools` field, Anthropic
+    /// may return a tool message that instructs us to call a certain function within our app.
+    /// To continue a fluid conversation, we can pass the result of that tool call back to Anthropic here.
+    ///
+    /// See "Example of tool result with images" here:
+    /// https://docs.anthropic.com/en/docs/build-with-claude/tool-use#example-of-tool-result-with-images
+    case toolResult(toolUseID: String, isError: Bool?, content: AnthropicToolUseContent)
+
+
+    ///
+    case toolResult
+}
+
+public enum AnthropicMessageContent: Encodable {
+    case text(String, cacheControl: AnthropicCacheControl? = nil)
+    case image(base64EncodedImage: String, cachedControl: AnthropicCacheControl? = nil)
+    case
+}
+
+public enum AnthropicToolResultContent: Encodable {
+    case string(String)
+    case text(String, cacheControl: AnthropicCacheControl? = nil)
+}
+
+public enum AnthropicCacheControl: Encodable {
+    case ephemeral
+}
+
+
 public enum AnthropicImageMediaType: String {
     case jpeg = "image/jpeg"
     case png = "image/png"
@@ -251,9 +301,11 @@ public enum AnthropicImageMediaType: String {
 }
 
 
+/// The content of the input to send to Claude.
+/// Supports text, images, and tools
 public enum AnthropicInputContent: Encodable {
     case image(mediaType: AnthropicImageMediaType, data: String)
-    case text(String)
+    case text(String, cacheControl: )
 
     private enum CodingKeys: String, CodingKey {
         case image
@@ -283,33 +335,6 @@ public enum AnthropicInputContent: Encodable {
         }
     }
 }
-
-
-public struct AnthropicInputMessage: Encodable {
-    public init(
-        content: [AnthropicInputContent],
-        role: AnthropicInputMessageRole
-    ) {
-        self.content = content
-        self.role = role
-    }
-
-    /// The content of the input to send to Claude.
-    /// Supports text, images, and tools
-    public let content: [AnthropicInputContent]
-
-    /// One of `user` or `assistant`.
-    /// Note that if you want to include a system prompt, you can use the top-level `system`
-    /// parameter on `AnthropicMessageRequestBody`
-    public let role: AnthropicInputMessageRole
-}
-
-
-public enum AnthropicInputMessageRole: String, Encodable {
-    case assistant
-    case user
-}
-
 
 public struct AnthropicRequestMetadata: Encodable {
     /// An external identifier for the user who is associated with the request.
@@ -376,10 +401,19 @@ public struct AnthropicTool: Encodable {
 }
 
 
+public enum AnthropicSystemMessage: Encodable {
+    case text(String)
+    case parts(useCache: Bool, )
+}
+
+
 internal extension AnthropicMessageRequestBody {
-    func serialize() throws -> Data {
+    func serialize(pretty: Bool = false) throws -> Data {
         let encoder = JSONEncoder()
-        encoder.outputFormatting = .sortedKeys
+        encoder.outputFormatting = [.sortedKeys]
+        if pretty {
+            encoder.outputFormatting.insert(.prettyPrinted)
+        }
         return try encoder.encode(self)
     }
 }
