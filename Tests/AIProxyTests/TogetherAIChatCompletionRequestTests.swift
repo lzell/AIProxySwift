@@ -11,14 +11,14 @@ import XCTest
 
 final class TogetherAIChatCompletionRequestTests: XCTestCase {
 
-    func testBasicRequestIsEncodable() {
+    func testBasicRequestIsEncodable() throws {
         let requestBody = TogetherAIChatCompletionRequestBody(
             messages: [
                 TogetherAIMessage(content: "hello world", role: .user)
             ],
             model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
         )
-        let data = try! requestBody.serialize(pretty: true)
+        let data = try requestBody.serialize(pretty: true)
         XCTAssertEqual(#"""
             {
               "messages" : [
@@ -34,7 +34,7 @@ final class TogetherAIChatCompletionRequestTests: XCTestCase {
         )
     }
 
-    func testRequestWithJSONSchemaIsEncodable() {
+    func testRequestWithJSONSchemaIsEncodable() throws {
         let schema: [String: AIProxyJSONValue] = [
             "type": "object",
             "properties": [
@@ -71,7 +71,7 @@ final class TogetherAIChatCompletionRequestTests: XCTestCase {
             model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
             responseFormat: .json(schema: schema)
         )
-        let data = try! requestBody.serialize(pretty: true)
+        let data = try requestBody.serialize(pretty: true)
         XCTAssertEqual(
             #"""
             {
@@ -154,7 +154,7 @@ final class TogetherAIChatCompletionRequestTests: XCTestCase {
             ]
         )
 
-        let data = try! requestBody.serialize(pretty: true)
+        let data = try requestBody.serialize(pretty: true)
         XCTAssertEqual(
             #"""
             {
