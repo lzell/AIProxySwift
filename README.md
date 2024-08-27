@@ -728,6 +728,30 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
     }
 
 
+### How to generate an SDXL image using Replicate
+
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let input = ReplicateSDXLInputSchema(
+            prompt: "Monument valley, Utah"
+        )
+        let output = try await replicateService.createSDXLImage(
+            input: input
+        )
+        print("Done creating SDXL image: ", output.first ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create SDXL image: \(error.localizedDescription)")
+    }
+
+See the full range of controls for generating an image by viewing `ReplicateSDXLInputSchema.swift`
+
+
 ### How to fetch the weather with OpenMeteo
 
 This pattern is slightly different than the others, because OpenMeteo has an official lib that
@@ -885,5 +909,67 @@ Please read [CONTRIBUTIONS.md](https://github.com/lzell/AIProxySwift/blob/main/C
 
 ## Contribution style guidelines
 
-In codable representations, fields that are required by the API should be above fields that are optional.
-Within the two groups (required and optional) all fields should be alphabetically ordered.
+- In codable representations, fields that are required by the API should be above fields that
+  are optional. Within the two groups (required and optional) all fields should be
+  alphabetically ordered.
+
+- Decodables should all have optional properties. Why? We don't want to fail decoding in live
+  apps if the provider changes something out from under us (which can happen purposefully due
+  to deprecations, or by accident due to bad deploys). If we use non-optionals in decodable
+  definitions, then a provider removing a field, changing the type of a field, or removing an
+  enum case would cause decoding to fail. You may think this isn't too bad, since the
+  JSONDecoder throws anyway, and therefore client code will already be wrapped in a do/catch.
+  However, we always want to give the best chance that decodable succeeds _for the properties
+  that the client actually uses_. That is, if the provider changes out the enum case of a
+  property unused by the client, we want the client application to continue functioning
+  correctly, not to throw an error and enter the catch branch of the client's call site.
+
+- When a request or response object is deeply nested by the API provider, create nested structs
+  in the same namespace as the top level object. This lib started with a flat namespace, so
+  some structs do not follow this pattern. Going forward, though, nesting is preferred to flat.
+  A flat namespace leads to long struct names to avoid collision between providers. Use this
+  instead:
+
+    ```
+    // An example provider response
+    public struct ProviderResponseBody: Decodable {
+
+        // An examples status
+        public let status: Status?
+
+        // ... other fields ...
+    }
+
+    extension ProviderResponseBody {
+        public enum Status: String, Decodable {
+            case succeeded
+            case failed
+            case canceled
+        }
+    }
+    ```
+
+  This pattern avoids collisions, works well with Xcode's click to jump-to-definition, and
+  improves source understanding for folks that use `ctrl-6` to navigate through a file.
+
+- If you are implementing an API contract that could reuse a provider's nested structure, and
+  it's reasonable to suppose that the two objects will change together, then pull the nested
+  struct into its own file and give it a longer prefix. The example above would become:
+
+    ```
+    // ProviderResponseBody.swift
+    public struct ProviderResponseBody: Decodable {
+
+        // An examples status
+        public let status: ProviderStatus?
+
+        // ... other fields ...
+    }
+
+    // ProviderStatus.swift
+    public enum ProviderStatus: String, Decodable {
+        case succeeded
+        case failed
+        case canceled
+    }
+    ```

@@ -130,12 +130,7 @@ public struct TogetherAIChatCompletionRequestBody: Encodable {
 
     /// Serialize the request body to json data
     internal func serialize(pretty: Bool = false) throws -> Data {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        if pretty {
-            encoder.outputFormatting.insert(.prettyPrinted)
-        }
-        return try encoder.encode(self)
+        return try AIProxyUtils.serialize(self, pretty: pretty)
     }
 
     private enum CodingKeys: String, CodingKey {
