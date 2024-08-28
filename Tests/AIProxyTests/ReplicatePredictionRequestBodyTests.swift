@@ -34,6 +34,7 @@ final class ReplicatePredictionRequestBodyTests: XCTestCase {
 
     func testFullSDXLPredictionRequestIsEncodable() throws {
         let input = ReplicateSDXLInputSchema(
+            prompt: "Monument valley, Utah",
             applyWatermark: true,
             disableSafetyChecker: true,
             guidanceScale: 0.5,
@@ -45,7 +46,6 @@ final class ReplicatePredictionRequestBodyTests: XCTestCase {
             negativePrompt: "low quality",
             numInferenceSteps: 50,
             numOutputs: 2,
-            prompt: "Monument valley, Utah",
             promptStrength: 0.5,
             refine: .baseImageRefiner,
             refineSteps: 50,

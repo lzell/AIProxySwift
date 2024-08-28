@@ -34,6 +34,9 @@ public struct ReplicatePredictionResponseBody<T: Decodable>: Decodable {
     /// URLs to cancel the prediction or get the result from the prediction
     public let urls: ActionURLs?
 
+    /// The version of the model that ran
+    public let version: String?
+
     static func deserialize(from serializedString: String) throws -> Self {
         guard let serializedData = serializedString.data(using: .utf8) else {
             throw AIProxyError.assertion("Could not represent string as utf8")

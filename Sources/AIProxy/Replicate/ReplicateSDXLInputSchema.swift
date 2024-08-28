@@ -11,6 +11,11 @@ import Foundation
 /// https://replicate.com/stability-ai/sdxl/api/schema#input-schema
 public struct ReplicateSDXLInputSchema: Encodable {
 
+    /// Prompt for generated image
+    let prompt: String
+
+    // MARK: Optional
+
     /// Applies a watermark to enable determining if an image is generated in downstream
     /// applications. If you have other provisions for generating or deploying images safely,
     /// you can use this to disable watermarking. Defaults to true.
@@ -46,9 +51,6 @@ public struct ReplicateSDXLInputSchema: Encodable {
 
     /// Number of images to output. Defaults to `1`, with a maximum of `4`.
     public let numOutputs: Int?
-
-    /// Input prompt. Defaults to "An astronaut riding a rainbow unicorn".
-    public let prompt: String?
 
     /// Prompt strength when using img2img/inpaint. `1.0` corresponds to full destruction of
     /// information in the image. Defaults to `0.8`.
@@ -94,6 +96,7 @@ public struct ReplicateSDXLInputSchema: Encodable {
     // To regenerate, use `cmd-shift-a` > Generate Memberwise Initializer
     // To format, place the cursor in the initializer's parameter list and use `ctrl-m`
     public init(
+        prompt: String,
         applyWatermark: Bool? = nil,
         disableSafetyChecker: Bool? = nil,
         guidanceScale: Double? = nil,
@@ -105,7 +108,6 @@ public struct ReplicateSDXLInputSchema: Encodable {
         negativePrompt: String? = nil,
         numInferenceSteps: Int? = nil,
         numOutputs: Int? = nil,
-        prompt: String? = nil,
         promptStrength: Double? = nil,
         refine: ReplicateSDXLInputSchema.Refiner? = nil,
         refineSteps: Int? = nil,
@@ -113,6 +115,7 @@ public struct ReplicateSDXLInputSchema: Encodable {
         seed: Int? = nil,
         width: Int? = nil
     ) {
+        self.prompt = prompt
         self.applyWatermark = applyWatermark
         self.disableSafetyChecker = disableSafetyChecker
         self.guidanceScale = guidanceScale
@@ -124,7 +127,6 @@ public struct ReplicateSDXLInputSchema: Encodable {
         self.negativePrompt = negativePrompt
         self.numInferenceSteps = numInferenceSteps
         self.numOutputs = numOutputs
-        self.prompt = prompt
         self.promptStrength = promptStrength
         self.refine = refine
         self.refineSteps = refineSteps
