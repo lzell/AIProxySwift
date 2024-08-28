@@ -728,7 +728,32 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
     }
 
 
-### How to generate an SDXL image using Replicate
+### How to generate a Flux-Schnell image by Black Forest Labs, using Replicate
+
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let input = ReplicateFluxSchnellInputSchema(
+            prompt: "Monument valley, Utah"
+        )
+        let output = try await replicateService.createFluxSchnellImage(
+            input: input
+        )
+        print("Done creating Flux-Schnell image: ", output.first ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create SDXL image: \(error.localizedDescription)")
+    }
+
+
+See the full range of controls for generating an image by viewing `ReplicateFluxSchnellInputSchema.swift`
+
+
+### How to generate an SDXL image by StabilityAI, using Replicate
 
     let replicateService = AIProxy.replicateService(
         partialKey: "partial-key-from-your-developer-dashboard",
