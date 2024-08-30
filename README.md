@@ -730,6 +730,8 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
 
 ### How to generate a Flux-Schnell image by Black Forest Labs, using Replicate
 
+    import AIProxy
+
     let replicateService = AIProxy.replicateService(
         partialKey: "partial-key-from-your-developer-dashboard",
         serviceURL: "service-url-from-your-developer-dashboard"
@@ -746,14 +748,68 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create SDXL image: \(error.localizedDescription)")
+        print("Could not create Flux-Schnell image: \(error.localizedDescription)")
     }
 
 
 See the full range of controls for generating an image by viewing `ReplicateFluxSchnellInputSchema.swift`
 
 
+### How to generate a Flux-Dev image by Black Forest Labs, using Replicate
+
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let input = ReplicateFluxDevInputSchema(
+            prompt: "Monument valley, Utah. High res"
+        )
+        let output = try await replicateService.createFluxDevImage(
+            input: input
+        )
+        print("Done creating Flux-Dev image: ", output.first ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Flux-Dev image: \(error.localizedDescription)")
+    }
+
+
+See the full range of controls for generating an image by viewing `ReplicateFluxDevInputSchema.swift`
+
+
+### How to generate a Flux-Pro image by Black Forest Labs, using Replicate
+
+    import AIProxy
+
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let input = ReplicateFluxProInputSchema(
+            prompt: "Monument valley, Utah. High res"
+        )
+        let output = try await replicateService.createFluxProImage(
+            input: input
+        )
+        print("Done creating Flux-Pro image: ", output.first ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Flux-Pro image: \(error.localizedDescription)")
+    }
+
+
+See the full range of controls for generating an image by viewing `ReplicateFluxProInputSchema.swift`
+
+
 ### How to generate an SDXL image by StabilityAI, using Replicate
+
+    import AIProxy
 
     let replicateService = AIProxy.replicateService(
         partialKey: "partial-key-from-your-developer-dashboard",
