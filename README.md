@@ -833,6 +833,53 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 See the full range of controls for generating an image by viewing `ReplicateSDXLInputSchema.swift`
 
 
+### How to call your own fine-tuned models on Replicate.
+
+1. Generate the Encodable representation of your input schema. You can use input schemas in
+   this library as inspiration. Take a look at `ReplicateFluxProInputSchema.swift` as
+   inspiration. Find the schema format that you should conform to using replicate's web
+   dashboard and tapping through `Your Model > API > Schema > Input Schema`
+
+2. Generate the Decodable representation of your output schema. For simple cases, a typealias
+   will do (for example, if the output schema is just a string or an array of strings). Look at
+   `ReplicateFluxProOutputSchema.swift` for inspiration. If you need help doing this, please reach out.
+
+3. Call the `createPrediction` method, followed by `pollForPredictionOutput` method. Note that
+   you'll need to change `YourInputSchema`, `YourOutputSchema` and `your-model-version` in this
+   snippet:
+
+
+    ```
+    import AIProxy
+
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let input = YourInputSchema(
+            prompt: "Monument valley, Utah"
+        )
+
+        let predictionResponse = try await replicateService.createPrediction(
+            version: "your-model-version",
+            input: input,
+            output: ReplicatePredictionResponseBody<YourOutputSchema>.self
+        )
+        let predictionOutput: YourOutputSchema = try await replicateService.pollForPredictionOutput(
+            predictionResponse: predictionResponse,
+            pollAttempts: 30
+        )
+        print("Done creating predictionOutput")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create replicate prediction: \(error.localizedDescription)")
+    }
+    ```
+
+
 ### How to fetch the weather with OpenMeteo
 
 This pattern is slightly different than the others, because OpenMeteo has an official lib that
