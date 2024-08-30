@@ -19,17 +19,85 @@ public final class ReplicateService {
         self.clientID = clientID
     }
 
+    /// This is a convenience method for creating an image through Black Forest Lab's Flux-Schnell model:
+    /// https://replicate.com/black-forest-labs/flux-schnell
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxSchnellInputSchema.swift
+    ///
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. Each poll is separated by 1
+    ///                   second. The default is to try to fetch the resulting image for up to 30 seconds,
+    ///                   after which ReplicateError.reachedRetryLimit will be thrown.
+    ///
+    /// - Returns: An array of image URLs
     public func createFluxSchnellImage(
         input: ReplicateFluxSchnellInputSchema,
         pollAttempts: Int = 30
-    ) async throws -> ReplicateFluxSchnellOutputSchema {
+    ) async throws -> ReplicateFluxOutputSchema {
         let predictionResponse = try await self.createPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-schnell",
             input: input,
-            output: ReplicatePredictionResponseBody<ReplicateFluxSchnellOutputSchema>.self
+            output: ReplicatePredictionResponseBody<ReplicateFluxOutputSchema>.self
         )
-        return try await self.pollLoopUntilOutputIsAvailable(
+        return try await self.pollForPredictionOutput(
+            predictionResponse: predictionResponse,
+            pollAttempts: pollAttempts
+        )
+    }
+
+    /// This is a convenience method for creating an image through Black Forest Lab's Flux-Pro model:
+    /// https://replicate.com/black-forest-labs/flux-pro
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxProInputSchema.swift
+    ///
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. Each poll is separated by 1
+    ///                   second. The default is to try to fetch the resulting image for up to 30 seconds,
+    ///                   after which ReplicateError.reachedRetryLimit will be thrown.
+    ///
+    /// - Returns: An array of image URLs
+    public func createFluxProImage(
+        input: ReplicateFluxProInputSchema,
+        pollAttempts: Int = 30
+    ) async throws -> ReplicateFluxOutputSchema {
+        let predictionResponse = try await self.createPredictionUsingOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-pro",
+            input: input,
+            output: ReplicatePredictionResponseBody<ReplicateFluxOutputSchema>.self
+        )
+        return try await self.pollForPredictionOutput(
+            predictionResponse: predictionResponse,
+            pollAttempts: pollAttempts
+        )
+    }
+
+    /// This is a convenience method for creating an image through Black Forest Lab's Flux-Dev model:
+    /// https://replicate.com/black-forest-labs/flux-dev
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxDevInputSchema.swift
+    ///
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. Each poll is separated by 1
+    ///                   second. The default is to try to fetch the resulting image for up to 30 seconds,
+    ///                   after which ReplicateError.reachedRetryLimit will be thrown.
+    ///
+    /// - Returns: An array of image URLs
+    public func createFluxDevImage(
+        input: ReplicateFluxDevInputSchema,
+        pollAttempts: Int = 30
+    ) async throws -> ReplicateFluxOutputSchema {
+        let predictionResponse = try await self.createPredictionUsingOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-dev",
+            input: input,
+            output: ReplicatePredictionResponseBody<ReplicateFluxOutputSchema>.self
+        )
+        return try await self.pollForPredictionOutput(
             predictionResponse: predictionResponse,
             pollAttempts: pollAttempts
         )
@@ -57,7 +125,7 @@ public final class ReplicateService {
             input: input,
             output: ReplicatePredictionResponseBody<ReplicateSDXLOutputSchema>.self
         )
-        return try await self.pollLoopUntilOutputIsAvailable(
+        return try await self.pollForPredictionOutput(
             predictionResponse: predictionResponse,
             pollAttempts: pollAttempts
         )
@@ -160,7 +228,36 @@ public final class ReplicateService {
         return try JSONDecoder().decode(output, from: data)
     }
 
-    /// Polls for the result of a prediction request
+    /// Polls for the output, `T`, of a prediction request.
+    /// For an example of how to call this generic method, see the convenience method `createFluxProImage`.
+    ///
+    /// - Parameters:
+    ///
+    ///   - predictionResponse: The response from the `createPrediction` request
+    ///
+    ///   - pollAttempts: The number of attempts to poll for a completed prediction. Each poll is separated by 1
+    ///               second. The default is to try to fetch the resulting image for up to 60 seconds, after
+    ///               which ReplicateError.reachedRetryLimit will be thrown.
+    ///
+    /// - Returns: The completed prediction response body
+    public func pollForPredictionOutput<T>(
+        predictionResponse: ReplicatePredictionResponseBody<T>,
+        pollAttempts: Int
+    ) async throws -> T {
+        guard let pollURL = predictionResponse.urls?.get else {
+            throw ReplicateError.predictionDidNotIncludeURL
+        }
+        let pollResult: ReplicatePredictionResponseBody<T> = try await self.actorPollForPredictionResult(
+            url: pollURL,
+            numTries: pollAttempts
+        )
+        guard let output = pollResult.output else {
+            throw ReplicateError.predictionDidNotIncludeOutput
+        }
+        return output
+    }
+
+    /// Polls for the result of a prediction request on the AIProxy Network Actor.
     ///
     /// - Parameters:
     ///
@@ -172,12 +269,12 @@ public final class ReplicateService {
     ///
     /// - Returns: The completed prediction response body
     @NetworkActor
-    public func pollForPredictionResult<U: Decodable>(
+    private func actorPollForPredictionResult<U: Decodable>(
         url: URL,
         numTries: Int
     ) async throws -> ReplicatePredictionResponseBody<U> {
         for _ in 0..<numTries {
-            let response = try await getPredictionResult(
+            let response = try await self.actorGetPredictionResult(
                 url: url,
                 output: ReplicatePredictionResponseBody<U>.self
             )
@@ -189,7 +286,7 @@ public final class ReplicateService {
         throw ReplicateError.reachedRetryLimit
     }
 
-    /// Queries for a prediction result a single time
+    /// Queries for a prediction result a single time on the AIProxy Network Actor.
     ///
     /// - Parameters:
     ///
@@ -199,7 +296,8 @@ public final class ReplicateService {
     ///             ReplicatePredictionResponseBody specialized by the output schema of your model,
     ///             e.g. ReplicatePredictionResponseBody<ReplicateSDXLOutputSchema>
     /// - Returns: The prediction response body
-    public func getPredictionResult<U: Decodable>(
+    @NetworkActor
+    private func actorGetPredictionResult<U: Decodable>(
         url: URL,
         output: U.Type
     ) async throws -> U {
@@ -222,22 +320,5 @@ public final class ReplicateService {
             )
         }
         return try JSONDecoder().decode(output, from: data)
-    }
-
-    private func pollLoopUntilOutputIsAvailable<T>(
-        predictionResponse: ReplicatePredictionResponseBody<T>,
-        pollAttempts: Int
-    ) async throws -> T {
-        guard let pollURL = predictionResponse.urls?.get else {
-            throw ReplicateError.predictionDidNotIncludeURL
-        }
-        let pollResult: ReplicatePredictionResponseBody<T> = try await self.pollForPredictionResult(
-            url: pollURL,
-            numTries: pollAttempts
-        )
-        guard let output = pollResult.output else {
-            throw ReplicateError.predictionDidNotIncludeOutput
-        }
-        return output
     }
 }
