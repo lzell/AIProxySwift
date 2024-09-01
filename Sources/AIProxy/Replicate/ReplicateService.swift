@@ -278,10 +278,16 @@ public final class ReplicateService {
                 url: url,
                 output: ReplicatePredictionResponseBody<U>.self
             )
-            if response.status == .succeeded {
+            switch response.status {
+            case .canceled:
+                throw ReplicateError.predictionCanceled
+            case .failed:
+                throw ReplicateError.predictionFailed
+            case .succeeded:
                 return response
+            case .none, .processing, .starting:
+                try await Task.sleep(nanoseconds: 1_000_000_000)
             }
-            try await Task.sleep(nanoseconds: 1_000_000_000)
         }
         throw ReplicateError.reachedRetryLimit
     }
