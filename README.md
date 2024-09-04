@@ -842,7 +842,7 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
 
 2. Generate the Decodable representation of your output schema. For simple cases, a typealias
    will do (for example, if the output schema is just a string or an array of strings). Look at
-   `ReplicateFluxProOutputSchema.swift` for inspiration. If you need help doing this, please reach out.
+   `ReplicateFluxOutputSchema.swift` for inspiration. If you need help doing this, please reach out.
 
 3. Call the `createPrediction` method, followed by `pollForPredictionOutput` method. Note that
    you'll need to change `YourInputSchema`, `YourOutputSchema` and `your-model-version` in this
