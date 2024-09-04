@@ -1,4 +1,4 @@
- About
+# About
 
 Use this package to add [AIProxy](https://www.aiproxy.pro) support to your iOS and macOS apps.
 AIProxy lets you depend on AI APIs safely without building your own backend. 
@@ -840,7 +840,8 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
    inspiration. Find the schema format that you should conform to using replicate's web
    dashboard and tapping through `Your Model > API > Schema > Input Schema`
 
-2. Generate the Decodable representation of your output schema. For simple cases, a typealias
+2. Generate the Decodable representation of your output schema. The output schema is defined on
+   replicate's site at `Your Model > API > Schema > Output Schema`. For simple cases, a typealias
    will do (for example, if the output schema is just a string or an array of strings). Look at
    `ReplicateFluxOutputSchema.swift` for inspiration. If you need help doing this, please reach out.
 
