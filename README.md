@@ -833,7 +833,7 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 See the full range of controls for generating an image by viewing `ReplicateSDXLInputSchema.swift`
 
 
-### How to call your own fine-tuned models on Replicate.
+### How to call your own models on Replicate.
 
 1. Generate the Encodable representation of your input schema. You can use input schemas in
    this library as inspiration. Take a look at `ReplicateFluxProInputSchema.swift` as
@@ -879,6 +879,176 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
         print("Could not create replicate prediction: \(error.localizedDescription)")
     }
     ```
+
+### How to create a replicate model for your own Flux fine tune
+
+Replace `<your-account>`:
+
+
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let modelURL = try await replicateService.createModel(owner: "<your-account>", name: "my-model", description: "My great model")
+        print("Your model is at \(modelURL)")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create replicate model: \(error.localizedDescription)")
+    }
+
+
+### How to upload training data for your own Flux fine tune
+
+Create a zip file called `training.zip` and drop it in your Xcode assets.
+See the "Prepare your training data" section of [this guide](https://replicate.com/blog/fine-tune-flux)
+for tips on what to include in the zip file. Then run:
+
+
+    ```
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    guard let trainingData = NSDataAsset(name: "training") else {
+        print("""
+              Drop training.zip file into Assets first.
+              See the 'Prepare your training data' of this guide:
+              https://replicate.com/blog/fine-tune-flux
+              """)
+        return
+    }
+
+    do {
+        let fileUploadResponse = try await replicateService.uploadTrainingZipFile(
+            zipData: trainingData.data,
+            name: "training.zip"
+        )
+        print("""
+              Training file uploaded. Find it at \(fileUploadResponse.urls.get)
+              You you can train with this file until \(fileUploadResponse.expiresAt ?? "")
+              """)
+
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not upload file to replicate: \(error.localizedDescription)")
+    }
+    ```
+
+
+### How to train a flux fine-tune
+
+Use the '<training-url>' returned from the snippet above.
+Use the '<model-name>' that you used from the snippet above that.
+
+    ```
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        // You should experiment with the settings in `ReplicateFluxTrainingInput.swift` to
+        // find what works best for your use case.
+        //
+        // The `layersToOptimizeRegex` argument here speeds training and works well for faces.
+        // You could could optionally remove that argument to see if the final trained model
+        // works better for your user case.
+        let trainingInput = ReplicateFluxTrainingInput(
+            inputImages: URL(string: "<training-url>")!,
+            layersToOptimizeRegex: "transformer.single_transformer_blocks.(7|12|16|20).proj_out",
+            steps: 200,
+            triggerWord: "face"
+        )
+        let reqBody = ReplicateTrainingRequestBody(destination: "<model-owner>/<model-name>", input: trainingInput)
+
+
+        // Find valid version numbers here: https://replicate.com/ostris/flux-dev-lora-trainer/train
+        let training = try await replicateService.createTraining(
+            modelOwner: "ostris",
+            modelName: "flux-dev-lora-trainer",
+            versionID: "d995297071a44dcb72244e6c19462111649ec86a9646c32df56daa7f14801944",
+            body: reqBody
+        )
+        print("Get training status at: \(training.urls?.get?.absoluteString ?? "unknown")")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create replicate training: \(error.localizedDescription)")
+    }
+    ```
+
+### How to poll the flux fine-tune for training complete
+
+Use the '<url>' that is returned from the snippet above.
+
+    ```
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    // This URL comes from the output of the sample above
+    let url = URL(string: "<url>")!
+
+    do {
+        let training = try await replicateService.pollForTrainingComplete(
+            url: url,
+            pollAttempts: 100,
+            secondsBetweenPollAttempts: 10
+        )
+        print("""
+              Flux training status: \(training.status?.rawValue ?? "unknown")
+              Your model version is: \(training.output?.version ?? "unknown")
+              """)
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not poll for the replicate training: \(error.localizedDescription)")
+    }
+
+
+### How to generate images with your own flux fine-tune
+
+Use the '<version>' string that was returned from the snippet above, but do not include the
+model owner and model name in the string.
+
+    ```
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    let input = ReplicateFluxFineTuneInputSchema(
+        prompt: "an oil painting of my face on a blimp",
+        model: .dev,
+        numInferenceSteps: 28  // Replicate recommends around 28 steps for `.dev` and 4 for `.schnell`
+    )
+
+    do {
+        let predictionResponse = try await replicateService.createPrediction(
+            version: "<version>",
+            input: input,
+            output: ReplicatePredictionResponseBody<[URL]>.self
+        )
+
+        let predictionOutput: [URL] = try await replicateService.pollForPredictionOutput(
+            predictionResponse: predictionResponse,
+            pollAttempts: 30,
+            secondsBetweenPollAttempts: 5
+        )
+        print("Done creating predictionOutput: \(predictionOutput)")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create replicate prediction: \(error.localizedDescription)")
+    }
+
+    ```
+
 
 ### How to use ElevenLabs for text-to-speech
 

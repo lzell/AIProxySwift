@@ -44,7 +44,7 @@ public struct OpenAICreateTranscriptionRequestBody: MultipartFormEncodable {
 
     var formFields: [FormField] {
         var fields: [FormField] = [
-            .fileField(name: "file", content: self.file, contentType: "audio/mpeg"),
+            .fileField(name: "file", content: self.file, contentType: "audio/mpeg", filename: "aiproxy.m4a"),
             .textField(name: "model", content: self.model),
             self.language.flatMap { .textField(name: "language", content: $0)},
             self.prompt.flatMap { .textField(name: "prompt", content: $0)},
