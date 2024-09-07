@@ -880,6 +880,43 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
     }
     ```
 
+### How to use ElevenLabs for text-to-speech
+
+    import AIProxy
+
+    let elevenLabsService = AIProxy.elevenLabsService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let body = ElevenLabsTTSRequestBody(
+            text: "Hello world"
+        )
+        let mpegData = try await elevenLabsService.ttsRequest(
+            voiceID: "EXAVITQu4vr4xnSDxMaL",
+            body: body
+        )
+
+        // Do not use a local `let` or `var` for AVAudioPlayer.
+        // You need the lifecycle of the player to live beyond the scope of this function.
+        // Instead, use file scope or set the player as a member of a reference type with long life.
+        // For example, at the top of this file you may define:
+        //
+        //   fileprivate var audioPlayer: AVAudioPlayer? = nil
+        //
+        // And then use the code below to play the TTS result:
+        audioPlayer = try AVAudioPlayer(data: mpegData)
+        audioPlayer?.prepareToPlay()
+        audioPlayer?.play()
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create ElevenLabs TTS audio: \(error.localizedDescription)")
+    }
+
+- See the full range of TTS controls by viewing `ElevenLabsTTSRequestBody.swift`.
+- See https://api.elevenlabs.io/v1/voices for the IDs that you can pass to `voiceID`.
+
 
 ### How to fetch the weather with OpenMeteo
 
