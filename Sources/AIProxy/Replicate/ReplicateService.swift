@@ -34,12 +34,12 @@ public final class ReplicateService {
     public func createFluxSchnellImage(
         input: ReplicateFluxSchnellInputSchema,
         pollAttempts: Int = 30
-    ) async throws -> ReplicateFluxOutputSchema {
+    ) async throws -> [URL] {
         let predictionResponse = try await self.createPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-schnell",
             input: input,
-            output: ReplicatePredictionResponseBody<ReplicateFluxOutputSchema>.self
+            output: ReplicatePredictionResponseBody<ReplicateFluxSchnellOutputSchema>.self
         )
         return try await self.pollForPredictionOutput(
             predictionResponse: predictionResponse,
@@ -58,16 +58,16 @@ public final class ReplicateService {
     ///                   second. The default is to try to fetch the resulting image for up to 30 seconds,
     ///                   after which ReplicateError.reachedRetryLimit will be thrown.
     ///
-    /// - Returns: An array of image URLs
+    /// - Returns: An image URL
     public func createFluxProImage(
         input: ReplicateFluxProInputSchema,
         pollAttempts: Int = 30
-    ) async throws -> ReplicateFluxOutputSchema {
+    ) async throws -> URL {
         let predictionResponse = try await self.createPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-pro",
             input: input,
-            output: ReplicatePredictionResponseBody<ReplicateFluxOutputSchema>.self
+            output: ReplicatePredictionResponseBody<ReplicateFluxProOutputSchema>.self
         )
         return try await self.pollForPredictionOutput(
             predictionResponse: predictionResponse,
@@ -90,12 +90,12 @@ public final class ReplicateService {
     public func createFluxDevImage(
         input: ReplicateFluxDevInputSchema,
         pollAttempts: Int = 30
-    ) async throws -> ReplicateFluxOutputSchema {
+    ) async throws -> [URL] {
         let predictionResponse = try await self.createPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-dev",
             input: input,
-            output: ReplicatePredictionResponseBody<ReplicateFluxOutputSchema>.self
+            output: ReplicatePredictionResponseBody<ReplicateFluxDevOutputSchema>.self
         )
         return try await self.pollForPredictionOutput(
             predictionResponse: predictionResponse,
@@ -119,7 +119,7 @@ public final class ReplicateService {
         input: ReplicateSDXLInputSchema,
         version: String = "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
         pollAttempts: Int = 60
-    ) async throws -> ReplicateSDXLOutputSchema {
+    ) async throws -> [URL] {
         let predictionResponse = try await self.createPrediction(
             version: version,
             input: input,

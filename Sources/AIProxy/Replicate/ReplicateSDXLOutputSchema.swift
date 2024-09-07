@@ -9,4 +9,4 @@ import Foundation
 
 /// Output schema for use with requests to Stability AI's SDXL model:
 /// https://replicate.com/stability-ai/sdxl/api/schema#output-schema
-public typealias ReplicateSDXLOutputSchema = [String]
+typealias ReplicateSDXLOutputSchema = [URL]
