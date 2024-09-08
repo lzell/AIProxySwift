@@ -796,7 +796,7 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
         let output = try await replicateService.createFluxProImage(
             input: input
         )
-        print("Done creating Flux-Pro image: ", output.first ?? "")
+        print("Done creating Flux-Pro image: ", output)
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
