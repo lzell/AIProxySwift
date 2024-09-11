@@ -55,14 +55,4 @@ extension ReplicatePredictionResponseBody {
     }
 }
 
-extension ReplicatePredictionResponseBody: Deserializable {
-
-    // Use a customization point here. Do not rely on the default extension implementation,
-    // because we need to strip fields that replicate sends invalid JSON in.
-    static func deserialize(from serializedData: Data) throws -> Self {
-        let strippedData = try AIProxyUtils.stripFields(["logs"], from: serializedData)
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(Self.self, from: strippedData)
-    }
-}
+extension ReplicatePredictionResponseBody: Deserializable {}

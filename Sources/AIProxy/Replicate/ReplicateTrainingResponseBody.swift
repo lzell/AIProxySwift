@@ -38,13 +38,12 @@ public struct ReplicateTrainingResponseBody: Decodable {
     public let createdAt: Date?
 
     // Deliberately omitted. Replicate sends data in this field that is not Decodable
-    // public let error: String?
+    public let error: String?
 
     /// An identifier of the training
     public let id: String?
 
-    // Deliberately omitted. Replicate sends data in this field that is not Decodable.
-    // public let logs: String?
+    public let logs: String?
 
     /// Metrics about the training
     public let metrics: Metrics?
@@ -68,7 +67,9 @@ public struct ReplicateTrainingResponseBody: Decodable {
     private enum CodingKeys: String, CodingKey {
         case completedAt = "completed_at"
         case createdAt = "created_at"
+        case error
         case id
+        case logs
         case metrics
         case model
         case output
@@ -97,13 +98,4 @@ extension ReplicateTrainingResponseBody {
     }
 }
 
-extension ReplicateTrainingResponseBody: Deserializable {
-    // Use a customization point here. Do not rely on the default extension implementation,
-    // because we need to strip fields that replicate sends invalid JSON in.
-    static func deserialize(from serializedData: Data) throws -> Self {
-        let modified = try AIProxyUtils.stripFields(["logs", "error"], from: serializedData)
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(Self.self, from: modified)
-    }
-}
+extension ReplicateTrainingResponseBody: Deserializable {}

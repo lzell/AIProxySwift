@@ -12,9 +12,7 @@ import Foundation
 final class ReplicateTrainingResponseBodyTests: XCTestCase {
 
     func testPolledTrainingResponseIsDecodable() throws {
-        // I reported the unescaped newline to replicate. We do not try to deserialize
-        // the `logs` field for now.
-        let responseBody = """
+        let responseBody = #"""
         {
           "id": "z4bc1tcp51rm00chtetae3jcx8",
           "model": "ostris/flux-dev-lora-trainer",
@@ -35,7 +33,7 @@ final class ReplicateTrainingResponseBodyTests: XCTestCase {
             "get": "https://api.replicate.com/v1/predictions/z4bc1tcp51rm00chtetae3jcx8"
           }
         }
-        """
+        """#
         let res = try ReplicateTrainingResponseBody.deserialize(
             from: responseBody
         )

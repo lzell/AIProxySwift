@@ -23,48 +23,6 @@ struct AIProxyUtils {
         return try encoder.encode(encodable)
     }
 
-    /// Some providers return invalid JSON that blows up Decodable and JSONSerialization.
-    /// Use this to strip fields from raw Data before passing the result off to Decodable.
-    static func stripFields(_ fields: [String], from data: Data) throws -> Data {
-        // let t = Date()
-
-        guard var str = String(data: data, encoding: .utf8) else {
-            throw AIProxyError.assertion("Could not represent data as utf8 string")
-        }
-
-        for field in fields {
-            if let matchingRange = str.range(of: "\"\(field)\": \"") {
-                let startOfSnip = matchingRange.upperBound
-                var snipWalker = matchingRange.upperBound
-                var endOfSnip = matchingRange.upperBound
-
-                // Advance until we encounter a double quote that is not preceeded by a single escape:
-                var avoid = false
-                while snipWalker < str.endIndex {
-                    if (str[snipWalker] == #"""# && !avoid) {
-                        endOfSnip = snipWalker
-                        break
-                    }
-                    avoid = str[snipWalker] == #"\"#
-                    snipWalker = str.index(after: snipWalker)
-                }
-                if startOfSnip != endOfSnip {
-                    let before = str[..<startOfSnip]
-                    let after = str[endOfSnip...]
-                    str = String(before + after)
-                }
-            }
-        }
-
-        guard let stripped = str.data(using: .utf8) else {
-            throw AIProxyError.assertion("Could not represent utf8 string as data")
-        }
-
-        // print("Replicate hack took \(Date().timeIntervalSince(t))")
-        return stripped
-    }
-
-
 #if canImport(AppKit)
     static func encodeImageAsJpeg(
         _ image: NSImage,
