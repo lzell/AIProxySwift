@@ -9,4 +9,4 @@ import Foundation
 
 /// Output schema for use with requests to Black Forest Lab's Flux Pro model:
 /// https://replicate.com/black-forest-labs/flux-pro/api/schema#output-schema
-typealias ReplicateFluxProOutputSchema = URL
+public typealias ReplicateFluxProOutputSchema = URL
