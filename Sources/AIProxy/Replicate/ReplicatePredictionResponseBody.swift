@@ -36,20 +36,6 @@ public struct ReplicatePredictionResponseBody<T: Decodable>: Decodable {
 
     /// The version of the model that ran
     public let version: String?
-
-    static func deserialize(from serializedString: String) throws -> Self {
-        guard let serializedData = serializedString.data(using: .utf8) else {
-            throw AIProxyError.assertion("Could not represent string as utf8")
-        }
-
-        return try self.deserialize(from: serializedData)
-    }
-
-    static func deserialize(from serializedData: Data) throws -> Self {
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(Self.self, from: serializedData)
-    }
 }
 
 extension ReplicatePredictionResponseBody {
@@ -66,5 +52,17 @@ extension ReplicatePredictionResponseBody {
         case succeeded
         case failed
         case canceled
+    }
+}
+
+extension ReplicatePredictionResponseBody: Deserializable {
+
+    // Use a customization point here. Do not rely on the default extension implementation,
+    // because we need to strip fields that replicate sends invalid JSON in.
+    static func deserialize(from serializedData: Data) throws -> Self {
+        let strippedData = try AIProxyUtils.stripFields(["logs"], from: serializedData)
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return try decoder.decode(Self.self, from: strippedData)
     }
 }

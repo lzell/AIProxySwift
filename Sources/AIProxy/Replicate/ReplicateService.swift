@@ -6,6 +6,7 @@
 
 import Foundation
 
+
 public final class ReplicateService {
     private let partialKey: String
     private let serviceURL: String
@@ -131,6 +132,157 @@ public final class ReplicateService {
         )
     }
 
+    /// Adds a new public or private model to your replicate account.
+    /// You can use this as a starting point to fine-tune Flux.
+    ///
+    /// - Parameters:
+    ///
+    ///   - owner: Your replicate account
+    ///
+    ///   - name: The name of the model
+    ///
+    ///   - description: A description of your model
+    ///
+    ///   - hardware: From replicate's docs:
+    ///               Choose the type of hardware you want your model to run on. This will affect how the
+    ///               model performs and how much it costs to run. The billing docs show the specifications
+    ///               of the different hardware available and how much each costs: https://replicate.com/docs/billing
+    ///
+    ///               If your model requires a GPU to run, choose a lower-price GPU model to start, like the
+    ///               Nvidia T4 GPU. Later in this guide, you'll learn how to use deployments so you can
+    ///               customize the hardware on the fly.
+    ///
+    ///   - visibility:  From replicate's docs:
+    ///                  Visibility: Public models can be discovered and used by anyone. Private models can only be seen
+    ///                  by the user or organization that owns them.
+    ///
+    ///                  Cost: When running public models, you only pay for the time it takes to process your request.
+    ///                  When running private models, you also pay for setup and idle time. Take a look at how billing
+    ///                  works on Replicate for a full explanation.: https://replicate.com/docs/billing
+    ///
+    /// - Returns: URL of the model
+    public func createModel(
+        owner: String,
+        name: String,
+        description: String,
+        hardware: String? = nil,
+        visibility: ReplicateModelVisibility = .private
+    ) async throws -> URL {
+        // From replicate docs: "Note that it doesn’t matter which hardware you pick for your
+        // model at this time, because we route to H100s for all our FLUX.1 fine-tunes"
+        let requestBody = ReplicateCreateModelRequestBody(
+            description: description,
+            hardware: hardware ?? "gpu-t4",
+            name: name,
+            owner: owner,
+            visibility: visibility
+        )
+
+        var request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/models",
+            body: requestBody.serialize(),
+            verb: .post
+        )
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let (data, httpResponse) = try await ReplicateNetworker.send(request: request)
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+        let responseModel = try ReplicateModelResponseBody.deserialize(from: data)
+        guard let url = responseModel.url else {
+            throw ReplicateError.missingModelURL
+        }
+        return url
+    }
+
+    /// Uploads a zip file to replicate for use in training Flux fine-tunes.
+    /// For instructions on what to place in the zip file, see the "prepare your training data"
+    /// of this guide: https://replicate.com/blog/fine-tune-flux
+    ///
+    /// - Parameters:
+    ///
+    ///   - zipData: The binary contents of your zip file. If you've added your zip file to xcassets, you
+    ///              can access the file's data with `NSDataAsset(name: "myfile").data`
+    ///
+    ///   - name: The name of the zip file, e.g. `myfile.zip`
+    ///
+    /// - Returns: The file upload response body, which contains a URL for where your zip file lives on
+    ///            replicate's network. You can pass this URL to training jobs.
+    public func uploadTrainingZipFile(
+        zipData: Data,
+        name: String
+    ) async throws -> ReplicateFileUploadResponseBody {
+        let body = ReplicateFileUploadRequestBody(fileData: zipData, fileName: name)
+        let boundary = UUID().uuidString
+        var request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/files",
+            body: formEncode(body, boundary),
+            verb: .post
+        )
+
+        request.addValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        let (data, httpResponse) = try await ReplicateNetworker.send(request: request)
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        return try ReplicateFileUploadResponseBody.deserialize(from: data)
+    }
+
+    /// Train a model
+    ///
+    /// - Parameters:
+    ///
+    ///   - modelOwner:  This is not your replicate account. Set this to the owner of the fine-tuning trainer, e.g. `ostris`.
+    ///
+    ///   - modelName: The name of the trainer, e.g. `flux-dev-lora-trainer`.
+    ///
+    ///   - versionID: The version of the trainer to run.
+    ///
+    ///   - body: The training request body, parametrized by T where T is a decodable input that you define.
+    ///
+    /// - Returns: The training response, which contains a URL to poll for the training progress
+    public func createTraining<T>(
+        modelOwner: String,
+        modelName: String,
+        versionID: String,
+        body: ReplicateTrainingRequestBody<T>
+    ) async throws -> ReplicateTrainingResponseBody {
+        var request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/models/\(modelOwner)/\(modelName)/versions/\(versionID)/trainings",
+            body: body.serialize(),
+            verb: .post
+        )
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        let (data, httpResponse) = try await ReplicateNetworker.send(request: request)
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+        return try ReplicateTrainingResponseBody.deserialize(from: data)
+    }
+
     /// Makes a POST request to the 'create a prediction using an official model' endpoint described here:
     /// https://replicate.com/docs/reference/http#create-a-prediction-using-an-official-model
     ///
@@ -179,7 +331,6 @@ public final class ReplicateService {
 
         return try JSONDecoder().decode(output, from: data)
     }
-
 
     /// Makes a POST request to the 'create a prediction' endpoint described here:
     /// https://replicate.com/docs/reference/http#create-a-prediction
@@ -242,19 +393,33 @@ public final class ReplicateService {
     /// - Returns: The completed prediction response body
     public func pollForPredictionOutput<T>(
         predictionResponse: ReplicatePredictionResponseBody<T>,
-        pollAttempts: Int
+        pollAttempts: Int,
+        secondsBetweenPollAttempts: UInt64 = 1
     ) async throws -> T {
         guard let pollURL = predictionResponse.urls?.get else {
             throw ReplicateError.predictionDidNotIncludeURL
         }
         let pollResult: ReplicatePredictionResponseBody<T> = try await self.actorPollForPredictionResult(
             url: pollURL,
-            numTries: pollAttempts
+            numTries: pollAttempts,
+            nsBetweenPollAttempts: secondsBetweenPollAttempts * 1_000_000_000
         )
         guard let output = pollResult.output else {
             throw ReplicateError.predictionDidNotIncludeOutput
         }
         return output
+    }
+
+    public func pollForTrainingComplete(
+        url: URL,
+        pollAttempts: Int,
+        secondsBetweenPollAttempts: UInt64 = 10
+    ) async throws -> ReplicateTrainingResponseBody {
+        return try await self.actorPollForTrainingResult(
+            url: url,
+            numTries: pollAttempts,
+            nsBetweenPollAttempts: secondsBetweenPollAttempts * 1_000_000_000
+        )
     }
 
     /// Polls for the result of a prediction request on the AIProxy Network Actor.
@@ -271,7 +436,8 @@ public final class ReplicateService {
     @NetworkActor
     private func actorPollForPredictionResult<U: Decodable>(
         url: URL,
-        numTries: Int
+        numTries: Int,
+        nsBetweenPollAttempts: UInt64 = 1_000_000_000
     ) async throws -> ReplicatePredictionResponseBody<U> {
         for _ in 0..<numTries {
             let response = try await self.actorGetPredictionResult(
@@ -286,7 +452,33 @@ public final class ReplicateService {
             case .succeeded:
                 return response
             case .none, .processing, .starting:
-                try await Task.sleep(nanoseconds: 1_000_000_000)
+                try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
+            }
+        }
+        throw ReplicateError.reachedRetryLimit
+    }
+
+    @NetworkActor
+    private func actorPollForTrainingResult(
+        url: URL,
+        numTries: Int,
+        nsBetweenPollAttempts: UInt64
+    ) async throws -> ReplicateTrainingResponseBody {
+        for _ in 0..<numTries {
+            let response = try await self.actorGetPredictionResult(
+                url: url,
+                output: ReplicateTrainingResponseBody.self
+            )
+            print("AIProxy: polled replicate training. Current status: \(response.status?.rawValue ?? "none")")
+            switch response.status {
+            case .canceled:
+                throw ReplicateError.predictionCanceled
+            case .failed:
+                throw ReplicateError.predictionFailed
+            case .succeeded:
+                return response
+            case .none, .processing, .starting:
+                try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
             }
         }
         throw ReplicateError.reachedRetryLimit
@@ -303,7 +495,7 @@ public final class ReplicateService {
     ///             e.g. ReplicatePredictionResponseBody<ReplicateSDXLOutputSchema>
     /// - Returns: The prediction response body
     @NetworkActor
-    private func actorGetPredictionResult<U: Decodable>(
+    private func actorGetPredictionResult<U: Decodable & Deserializable>(
         url: URL,
         output: U.Type
     ) async throws -> U {
@@ -325,6 +517,6 @@ public final class ReplicateService {
                 responseBody: String(data: data, encoding: .utf8) ?? ""
             )
         }
-        return try JSONDecoder().decode(output, from: data)
+        return try output.deserialize(from: data)
     }
 }

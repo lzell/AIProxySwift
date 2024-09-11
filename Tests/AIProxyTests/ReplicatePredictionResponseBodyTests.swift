@@ -72,6 +72,7 @@ final class ReplicatePredictionResponseBodyTests: XCTestCase {
         let res = try ReplicatePredictionResponseBody<ReplicateSDXLOutputSchema>.deserialize(
             from: responseBody
         )
+        XCTAssertEqual("2024-08-27T04:11:38.588127861Z", res.completedAt)
         XCTAssertEqual(
             "https://replicate.delivery/pbxt/qYcfkg5JpaS2Paeu1e5unMmcPIm04qQSVeJ1e9SyrTJUfDs1E/out-0.png",
             res.output?.first?.absoluteString
@@ -107,6 +108,7 @@ final class ReplicatePredictionResponseBodyTests: XCTestCase {
         }
         """
         let res = try ReplicatePredictionResponseBody<ReplicateFluxProOutputSchema>.deserialize(from: responseBody)
+        XCTAssertEqual("2024-09-07T01:21:13.910476435Z", res.completedAt)
         XCTAssertEqual(
             "https://replicate.delivery/czjl/PxBiGkp8kYbNLpY0acmT04rsduBjEOGTdUrmweKtrl7E5KtJA/output.webp",
             res.output?.absoluteString

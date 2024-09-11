@@ -72,7 +72,7 @@ public struct StabilityAIStableDiffusionRequestBody: MultipartFormEncodable {
         let theFields: [FormField] = [
             .textField(name: "prompt", content: self.prompt),
             self.aspectRatio.flatMap { .textField(name: "aspect_ratio", content: $0) },
-            self.image.flatMap { .fileField(name: "image", content: $0, contentType: "image/jpeg") },
+            self.image.flatMap { .fileField(name: "image", content: $0, contentType: "image/jpeg", filename: "aiproxy.m4a") },
             self.mode.flatMap { .textField(name: "mode", content: $0.rawValue) },
             self.model.flatMap { .textField(name: "model", content: $0.rawValue) },
             self.negativePrompt.flatMap { .textField(name: "negative_prompt", content: $0) },
