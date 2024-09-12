@@ -4,7 +4,7 @@ enum ReplicateError: LocalizedError {
     case predictionCanceled
     case predictionDidNotIncludeOutput
     case predictionDidNotIncludeURL
-    case predictionFailed
+    case predictionFailed(String?)
     case missingModelURL
     case reachedRetryLimit
 
@@ -16,8 +16,11 @@ enum ReplicateError: LocalizedError {
             return "A prediction was successful, but replicate did not include the output schema"
         case .predictionDidNotIncludeURL:
             return "A prediction was created, but replicate did not respond with a URL to poll"
-        case .predictionFailed:
-            return "The prediction failed. If this is a NSFW prediction, please ensure disableSafetyChecker is set to true."
+        case .predictionFailed(let message):
+            if let message = message {
+                return "The prediction failed with error message: \(message)."
+            }
+            return "The prediction failed with an unspecificed error from replicate."
         case .missingModelURL:
             return "The replicate model does not contain a URL"
         case .reachedRetryLimit:
