@@ -757,6 +757,8 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 
 ### How to generate a Flux-Dev image by Black Forest Labs, using Replicate
 
+    import AIProxy
+
     let replicateService = AIProxy.replicateService(
         partialKey: "partial-key-from-your-developer-dashboard",
         serviceURL: "service-url-from-your-developer-dashboard"
