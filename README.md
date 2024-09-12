@@ -83,7 +83,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print("Could not create OpenAI chat completion: \(error.localizedDescription)")
     }
 
 
@@ -108,7 +108,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print("Could not create OpenAI streaming chat completion: \(error.localizedDescription)")
     }
 
 
@@ -155,7 +155,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print("Could not create OpenAI multi-modal chat completion: \(error.localizedDescription)")
     }
 
 
@@ -179,7 +179,7 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print("Could not generate an image with OpenAI's DALLE: \(error.localizedDescription)")
     }
 
 
@@ -207,7 +207,7 @@ Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON 
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print("Could not create OpenAI chat completion in JSON mode: \(error.localizedDescription)")
     }
 
 
@@ -267,7 +267,7 @@ in its response:
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print("Could not create OpenAI chat completion with structured outputs: \(error.localizedDescription)")
     }
 
 
@@ -330,7 +330,7 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not make a tool call to OpenAI: \(error.localizedDescription)")
+        print("Could not make an OpenAI structured output tool call: \(error.localizedDescription)")
     }
 
 
@@ -364,7 +364,7 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print("Could not get word-level timestamps from OpenAI: \(error.localizedDescription)")
     }
     ```
 
@@ -396,7 +396,7 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print("Could not create an Anthropic message: \(error.localizedDescription)")
     }
 
 
@@ -442,7 +442,7 @@ Use `UIImage` in place of `NSImage` for iOS apps:
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print("Could not send a multi-modal message to Anthropic: \(error.localizedDescription)")
     }
 
 
@@ -493,7 +493,7 @@ Use `UIImage` in place of `NSImage` for iOS apps:
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print("Could not create Anthropic message with tool call: \(error.localizedDescription)")
     }
 
 
@@ -516,7 +516,7 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print("Could not generate an image with StabilityAI: \(error.localizedDescription)")
     }
 
 
@@ -536,7 +536,7 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create translation: \(error.localizedDescription)")
+        print("Could not create DeepL translation: \(error.localizedDescription)")
     }
 
 
