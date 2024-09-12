@@ -5,7 +5,9 @@
 //  Created by Lou Zell on 6/23/24.
 //
 
-public enum AIProxyError: Error {
+import Foundation
+
+public enum AIProxyError: LocalizedError {
 
     /// This error is thrown if any programmer assumptions are broken and the library can't continue.
     ///
@@ -42,5 +44,15 @@ public enum AIProxyError: Error {
     /// from the simulator to reach the rate limit. You wouldn't want to do this once your app is in
     /// production, because the rate limits that you apply will rate limit live users!
     case unsuccessfulRequest(statusCode: Int, responseBody: String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .assertion(let message):
+            return "An AIProxy precondition was not met: \(message)"
+
+        case .unsuccessfulRequest(statusCode: let statusCode, responseBody: let responseBody):
+            return "An AIProxy request resulted in a status code of \(statusCode) with response body: \(responseBody)."
+        }
+    }
 }
 
