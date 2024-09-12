@@ -884,6 +884,7 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
 
 Replace `<your-account>`:
 
+    import AIProxy
 
     let replicateService = AIProxy.replicateService(
         partialKey: "partial-key-from-your-developer-dashboard",
@@ -905,8 +906,8 @@ Create a zip file called `training.zip` and drop it in your Xcode assets.
 See the "Prepare your training data" section of [this guide](https://replicate.com/blog/fine-tune-flux)
 for tips on what to include in the zip file. Then run:
 
+    import AIProxy
 
-    ```
     let replicateService = AIProxy.replicateService(
         partialKey: "partial-key-from-your-developer-dashboard",
         serviceURL: "service-url-from-your-developer-dashboard"
@@ -936,7 +937,6 @@ for tips on what to include in the zip file. Then run:
     } catch {
         print("Could not upload file to replicate: \(error.localizedDescription)")
     }
-    ```
 
 
 ### How to train a flux fine-tune
@@ -944,7 +944,8 @@ for tips on what to include in the zip file. Then run:
 Use the '<training-url>' returned from the snippet above.
 Use the '<model-name>' that you used from the snippet above that.
 
-    ```
+    import AIProxy
+
     let replicateService = AIProxy.replicateService(
         partialKey: "partial-key-from-your-developer-dashboard",
         serviceURL: "service-url-from-your-developer-dashboard"
@@ -979,13 +980,13 @@ Use the '<model-name>' that you used from the snippet above that.
     } catch {
         print("Could not create replicate training: \(error.localizedDescription)")
     }
-    ```
 
 ### How to poll the flux fine-tune for training complete
 
 Use the '<url>' that is returned from the snippet above.
 
-    ```
+    import AIProxy
+
     let replicateService = AIProxy.replicateService(
         partialKey: "partial-key-from-your-developer-dashboard",
         serviceURL: "service-url-from-your-developer-dashboard"
@@ -1016,7 +1017,8 @@ Use the '<url>' that is returned from the snippet above.
 Use the '<version>' string that was returned from the snippet above, but do not include the
 model owner and model name in the string.
 
-    ```
+    import AIProxy
+
     let replicateService = AIProxy.replicateService(
         partialKey: "partial-key-from-your-developer-dashboard",
         serviceURL: "service-url-from-your-developer-dashboard"
@@ -1046,8 +1048,6 @@ model owner and model name in the string.
     } catch {
         print("Could not create replicate prediction: \(error.localizedDescription)")
     }
-
-    ```
 
 
 ### How to use ElevenLabs for text-to-speech
