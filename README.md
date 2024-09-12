@@ -941,8 +941,8 @@ for tips on what to include in the zip file. Then run:
 
 ### How to train a flux fine-tune
 
-Use the '<training-url>' returned from the snippet above.
-Use the '<model-name>' that you used from the snippet above that.
+Use the `<training-url>` returned from the snippet above.
+Use the `<model-name>` that you used from the snippet above that.
 
     import AIProxy
 
@@ -983,7 +983,7 @@ Use the '<model-name>' that you used from the snippet above that.
 
 ### How to poll the flux fine-tune for training complete
 
-Use the '<url>' that is returned from the snippet above.
+Use the `<url>` that is returned from the snippet above.
 
     import AIProxy
 
@@ -1014,7 +1014,7 @@ Use the '<url>' that is returned from the snippet above.
 
 ### How to generate images with your own flux fine-tune
 
-Use the '<version>' string that was returned from the snippet above, but do not include the
+Use the `<version>` string that was returned from the snippet above, but do not include the
 model owner and model name in the string.
 
     import AIProxy
