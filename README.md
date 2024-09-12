@@ -294,10 +294,10 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
                     "description": "The city and state, e.g. San Francisco, CA"
                 ],
                 "unit": [
-                  "type": "string",
-                  "enum": ["celsius", "fahrenheit"],
-                  "description": "The unit of temperature. If not specified in the prompt, always default to fahrenheit",
-                  "default": "fahrenheit"
+                    "type": "string",
+                    "enum": ["celsius", "fahrenheit"],
+                    "description": "The unit of temperature. If not specified in the prompt, always default to fahrenheit",
+                    "default": "fahrenheit"
                 ]
             ],
             "required": ["location", "unit"],
