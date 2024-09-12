@@ -448,7 +448,7 @@ public final class ReplicateService {
             case .canceled:
                 throw ReplicateError.predictionCanceled
             case .failed:
-                throw ReplicateError.predictionFailed
+                throw ReplicateError.predictionFailed(response.error)
             case .succeeded:
                 return response
             case .none, .processing, .starting:
@@ -474,7 +474,7 @@ public final class ReplicateService {
             case .canceled:
                 throw ReplicateError.predictionCanceled
             case .failed:
-                throw ReplicateError.predictionFailed
+                throw ReplicateError.predictionFailed(response.error)
             case .succeeded:
                 return response
             case .none, .processing, .starting:
