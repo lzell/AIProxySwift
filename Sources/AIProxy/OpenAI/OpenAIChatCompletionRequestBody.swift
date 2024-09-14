@@ -186,7 +186,7 @@ public enum OpenAIChatCompletionContentPart: Encodable {
 
     /// The URL is a "local URL" containing base64 encoded image data. See the helper `AIProxy.openaiEncodedImage`
     /// to construct this URL.
-    case imageURL(URL)
+    case imageURL(url: URL, detail: String?)
 
     private enum RootKey: String, CodingKey {
         case type
@@ -196,6 +196,7 @@ public enum OpenAIChatCompletionContentPart: Encodable {
 
     private enum ImageKey: CodingKey {
         case url
+        case detail
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -204,10 +205,13 @@ public enum OpenAIChatCompletionContentPart: Encodable {
         case .text(let text):
             try container.encode("text", forKey: .type)
             try container.encode(text, forKey: .text)
-        case .imageURL(let imageURL):
+        case .imageURL(let url, let detail):
             try container.encode("image_url", forKey: .type)
             var nestedContainer = container.nestedContainer(keyedBy: ImageKey.self, forKey: .imageURL)
-            try nestedContainer.encode(imageURL, forKey: .url)
+            try nestedContainer.encode(url, forKey: .url)
+            if let detail = detail {
+                try nestedContainer.encode(detail, forKey: .detail)
+            }
         }
     }
 }
