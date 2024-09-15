@@ -14,7 +14,7 @@ import Foundation
 
 final class AnthropicMessageRequestTests: XCTestCase {
 
-    func testRequestIsEncodable() {
+    func testRequestIsEncodable() throws {
         let request = AnthropicMessageRequestBody(
             maxTokens: 1024,
             messages: [
@@ -22,15 +22,14 @@ final class AnthropicMessageRequestTests: XCTestCase {
             ],
             model: "claude-3-5-sonnet-20240620"
         )
-        let data = try! request.serialize()
         XCTAssertEqual(
             #"{"max_tokens":1024,"messages":[{"content":[{"text":"hello world","type":"text"}],"role":"user"}],"model":"claude-3-5-sonnet-20240620"}"#
             ,
-            String(data: data, encoding: .utf8)!
+            try request.serialize()
         )
     }
 
-    func testRequestWithToolUseIsEncodable() {
+    func testRequestWithToolUseIsEncodable() throws {
         let request = AnthropicMessageRequestBody(
             maxTokens: 1024,
             messages: [
@@ -63,15 +62,14 @@ final class AnthropicMessageRequestTests: XCTestCase {
                 )
             ]
         )
-        let data = try! request.serialize()
         XCTAssertEqual(
             #"{"max_tokens":1024,"messages":[{"content":[{"text":"What's the temp in San Francisco?","type":"text"}],"role":"user"}],"model":"claude-3-5-sonnet-20240620","tools":[{"description":"Call this function when the user wants the weather","input_schema":{"properties":{"location":{"description":"The city and state, e.g. San Francisco, CA","type":"string"},"unit":{"default":"fahrenheit","description":"The unit of temperature. Default to fahrenheit","enum":["celsius","fahrenheit"],"type":"string"}},"required":["location","unit"],"type":"object"},"name":"get_weather"}]}"#
             ,
-            String(data: data, encoding: .utf8)!
+            try request.serialize()
         )
     }
 
-    func testRequestWithImageIsEncodable() {
+    func testRequestWithImageIsEncodable() throws {
         let request = AnthropicMessageRequestBody(
             maxTokens: 1024,
             messages: [
@@ -82,11 +80,10 @@ final class AnthropicMessageRequestTests: XCTestCase {
             ],
             model: "claude-3-5-sonnet-20240620"
         )
-        let data = try! request.serialize()
         XCTAssertEqual(
             #"{"max_tokens":1024,"messages":[{"content":[{"source":{"data":"encoded-image","media_type":"image\/jpeg","type":"base64"},"type":"image"}],"role":"user"}],"model":"claude-3-5-sonnet-20240620"}"#
             ,
-            String(data: data, encoding: .utf8)!
+            try request.serialize()
         )
     }
 }

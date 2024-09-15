@@ -34,16 +34,15 @@ public final class TogetherAIService {
         var body = body
         body.stream = false
         let session = AIProxyURLSession.create()
-
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/v1/chat/completions",
             body: try body.serialize(),
-            verb: .post
+            verb: .post,
+            contentType: "application/json"
         )
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
             throw AIProxyError.assertion("Network response is not an http response")
@@ -72,15 +71,15 @@ public final class TogetherAIService {
         body.stream = true
 
         let session = AIProxyURLSession.create()
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/v1/chat/completions",
             body: try body.serialize(),
-            verb: .post
+            verb: .post,
+            contentType: "application/json"
         )
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let (asyncBytes, res) = try await session.bytes(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {

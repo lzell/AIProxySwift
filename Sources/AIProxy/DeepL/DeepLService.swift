@@ -30,12 +30,13 @@ public final class DeepLService {
         body: DeepLTranslateRequestBody
     ) async throws -> DeepLTranslateResponseBody {
         let session = AIProxyURLSession.create()
-        let request = try await buildAIProxyRequest(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
-            postBody: try JSONEncoder().encode(body),
-            path: "/v2/translate",
+            proxyPath: "/v2/translate",
+            body: try JSONEncoder().encode(body),
+            verb: .post,
             contentType: "application/json"
         )
         let (data, res) = try await session.data(for: request)
@@ -52,26 +53,4 @@ public final class DeepLService {
 
         return try JSONDecoder().decode(DeepLTranslateResponseBody.self, from: data)
     }
-}
-
-// MARK: - Private Helpers
-
-private func buildAIProxyRequest(
-    partialKey: String,
-    serviceURL: String,
-    clientID: String?,
-    postBody: Data,
-    path: String,
-    contentType: String
-) async throws -> URLRequest {
-    var request = try await AIProxyURLRequest.create(
-        partialKey: partialKey,
-        serviceURL: serviceURL,
-        clientID: clientID,
-        proxyPath: path,
-        body: postBody,
-        verb: .post
-    )
-    request.addValue(contentType, forHTTPHeaderField: "Content-Type")
-    return request
 }

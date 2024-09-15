@@ -20,13 +20,7 @@ public struct TogetherAIChatCompletionStreamingChunk: Decodable {
     /// Usage information, which is only included on the last chunk of the stream
     public let usage: TogetherAIChatUsage?
 
-    internal static func deserialize(from data: Data) throws -> Self {
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(Self.self, from: data)
-    }
-
-    internal static func deserialize(fromLine line: String) throws -> Self? {
+    static func deserialize(fromLine line: String) throws -> Self? {
         guard line.hasPrefix("data: ") else {
             aiproxyLogger.warning("Received unexpected line from aiproxy: \(line)")
             return nil
@@ -45,13 +39,6 @@ public struct TogetherAIChatCompletionStreamingChunk: Decodable {
         }
 
         return chunk
-    }
-
-    internal static func deserialize(from str: String) throws -> Self {
-        guard let data = str.data(using: .utf8) else {
-            throw AIProxyError.assertion("Could not create utf8 data from string")
-        }
-        return try self.deserialize(from: data)
     }
 }
 

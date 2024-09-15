@@ -13,8 +13,4 @@ struct ReplicateCreateModelRequestBody: Encodable {
     let name: String
     let owner: String
     let visibility: ReplicateModelVisibility
-
-    func serialize() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
 }

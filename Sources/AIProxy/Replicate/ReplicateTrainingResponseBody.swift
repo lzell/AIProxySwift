@@ -32,10 +32,10 @@ extension ReplicateTrainingResponseBody {
 public struct ReplicateTrainingResponseBody: Decodable {
 
     /// ISO8601 date stamp of when the training completed
-    public let completedAt: Date?
+    public let completedAt: String?
 
     /// ISO8601 date stamp of when the training was created
-    public let createdAt: Date?
+    public let createdAt: String?
 
     // Deliberately omitted. Replicate sends data in this field that is not Decodable
     public let error: String?
@@ -53,7 +53,7 @@ public struct ReplicateTrainingResponseBody: Decodable {
     public let output: TrainingOutput?
 
     /// ISO8601 date stamp of when the training started
-    public let startedAt: Date?
+    public let startedAt: String?
 
     /// One of `starting`, `processing`, `succeeded`, `failed`, `canceled`
     public let status: Status?
@@ -97,5 +97,3 @@ extension ReplicateTrainingResponseBody {
         case canceled
     }
 }
-
-extension ReplicateTrainingResponseBody: Deserializable {}

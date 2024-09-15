@@ -19,8 +19,8 @@ final class ReplicatePredictionRequestBodyTests: XCTestCase {
             input: input,
             version: "abc"
         )
-        let data = try requestBody.serialize(pretty: true)
-        XCTAssertEqual(#"""
+        XCTAssertEqual(
+            #"""
             {
               "input" : {
                 "prompt" : "Monument valley, Utah"
@@ -28,7 +28,7 @@ final class ReplicatePredictionRequestBodyTests: XCTestCase {
               "version" : "abc"
             }
             """#,
-            String(data: data, encoding: .utf8)
+            try requestBody.serialize(pretty: true)
         )
     }
 
@@ -57,8 +57,8 @@ final class ReplicatePredictionRequestBodyTests: XCTestCase {
             input: input,
             version: "abc"
         )
-        let data = try requestBody.serialize(pretty: true)
-        XCTAssertEqual(#"""
+        XCTAssertEqual(
+            #"""
             {
               "input" : {
                 "apply_watermark" : true,
@@ -83,7 +83,7 @@ final class ReplicatePredictionRequestBodyTests: XCTestCase {
               "version" : "abc"
             }
             """#,
-            String(data: data, encoding: .utf8)
+            try requestBody.serialize(pretty: true)
         )
     }
 

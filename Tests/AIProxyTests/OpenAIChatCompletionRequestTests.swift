@@ -16,42 +16,40 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
         return encoder
     }()
 
-    func serialize(_ encodable: Encodable) throws -> String? {
-        let jsonData = try self.jsonEncoder.encode(encodable)
-        return String(data: jsonData, encoding: .utf8)
-    }
-
     func testStreamOptionsIsEncodable() throws {
         let streamOptions = OpenAIChatStreamOptions(includeUsage: true)
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "include_usage" : true
             }
             """,
-            try serialize(streamOptions)
+            try streamOptions.serialize(pretty: true)
         )
     }
 
     func testResponseFormatIsEncodable() throws {
         let responseFormat = OpenAIChatResponseFormat.jsonObject
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "type" : "json_object"
             }
             """,
-            try serialize(responseFormat)
+            try responseFormat.serialize(pretty: true)
         )
     }
 
     func testTextChatContentPartIsEncodable() throws {
         let chatContentPart: OpenAIChatCompletionContentPart = .text("abc")
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "text" : "abc",
               "type" : "text"
             }
             """,
-            try serialize(chatContentPart)
+            try chatContentPart.serialize(pretty: true)
         )
     }
 
@@ -59,7 +57,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
         let image = createImage(width: 1, height: 1)
         let localURL = AIProxy.openAIEncodedImage(image: image)!
         let chatContentPart: OpenAIChatCompletionContentPart = .imageURL(localURL)
-        XCTAssertEqual(#"""
+        XCTAssertEqual(
+            #"""
             {
               "image_url" : {
                 "url" : "data:image\/jpeg;base64,\/9j\/4AAQSkZJRgABAQAASABIAAD\/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAAD\/7QA4UGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAAAA4QklNBCUAAAAAABDUHYzZjwCyBOmACZjs+EJ+\/8AAEQgAAQABAwERAAIRAQMRAf\/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC\/\/EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29\/j5+v\/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC\/\/EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29\/j5+v\/bAEMAAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAf\/bAEMBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAf\/dAAQAAf\/aAAwDAQACEQMRAD8A\/F+v8pz\/AL+D\/9k="
@@ -67,7 +66,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               "type" : "image_url"
             }
             """#,
-            try serialize(chatContentPart)
+            try chatContentPart.serialize(pretty: true)
         )
     }
 
@@ -75,7 +74,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
         let chatContent: OpenAIChatCompletionUserContent = .text("abc")
         XCTAssertEqual(
             #""abc""#,
-            try serialize(chatContent)
+            try chatContent.serialize()
         )
     }
 
@@ -84,7 +83,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
             .text("a"),
             .text("b")
         ])
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             [
               {
                 "text" : "a",
@@ -96,7 +96,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               }
             ]
             """,
-            try serialize(chatContent)
+            try chatContent.serialize(pretty: true)
         )
     }
 
@@ -107,7 +107,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
             .text("hello"),
             .imageURL(localURL)
         ])
-        XCTAssertEqual(#"""
+        XCTAssertEqual(
+            #"""
             [
               {
                 "text" : "hello",
@@ -121,19 +122,20 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               }
             ]
             """#,
-            try serialize(chatContent)
+            try chatContent.serialize(pretty: true)
         )
     }
 
     func testUserMessageWithTextContentIsEncodable() throws {
         let userMessage = OpenAIChatCompletionMessage.user(content: .text("hello"))
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "content" : "hello",
               "role" : "user"
             }
             """,
-            try serialize(userMessage)
+            try userMessage.serialize(pretty: true)
         )
     }
 
@@ -146,7 +148,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
                 ]
             )
         )
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "content" : [
                 {
@@ -161,7 +164,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               "role" : "user"
             }
             """,
-            try serialize(userMessage)
+            try userMessage.serialize(pretty: true)
         )
     }
 
@@ -176,7 +179,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
                 ]
             )
         )
-        XCTAssertEqual(#"""
+        XCTAssertEqual(
+            #"""
             {
               "content" : [
                 {
@@ -193,7 +197,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               "role" : "user"
             }
             """#,
-            try serialize(userMessage)
+            try userMessage.serialize(pretty: true)
         )
     }
 
@@ -202,7 +206,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
             .system(content: .text("hello")),
             .user(content: .text("hello"))
         ]
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             [
               {
                 "content" : "hello",
@@ -214,7 +219,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               }
             ]
             """,
-            try serialize(messages)
+            try messages.serialize(pretty: true)
         )
     }
 
@@ -225,7 +230,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
                 .system(content: .text("hello world"))
             ]
         )
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "messages" : [
                 {
@@ -236,7 +242,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               "model" : "gpt-4o"
             }
             """,
-            try serialize(requestBody)
+            try requestBody.serialize(pretty: true)
         )
     }
 
@@ -247,7 +253,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
             temperature: 0.5,
             topP: 0.1
         )
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "messages" : [
                 {
@@ -260,7 +267,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               "top_p" : 0.1
             }
             """,
-            try serialize(requestBody)
+            try requestBody.serialize(pretty: true)
         )
     }
 
@@ -271,7 +278,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
             stream: true,
             streamOptions: .init(includeUsage: true)
         )
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "messages" : [
                 {
@@ -286,7 +294,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               }
             }
             """,
-            try serialize(requestBody)
+            try requestBody.serialize(pretty: true)
         )
 
     }
@@ -297,7 +305,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
             messages: [.system(content: .text("return JSON only"))],
             responseFormat: .jsonObject
         )
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "messages" : [
                 {
@@ -311,7 +320,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               }
             }
             """,
-            try serialize(requestBody)
+            try requestBody.serialize(pretty: true)
         )
     }
 
@@ -326,7 +335,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
                 strict: true
             )
         )
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "messages" : [
                 {
@@ -348,24 +358,25 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               }
             }
             """,
-            try serialize(requestBody)
+            try requestBody.serialize(pretty: true)
         )
     }
 
     func testToolChoiceIsEncodable() throws {
         XCTAssertEqual(
             #""auto""#,
-            try serialize(OpenAIChatCompletionToolChoice.auto)
+            try OpenAIChatCompletionToolChoice.auto.serialize()
         )
         XCTAssertEqual(
             #""none""#,
-            try serialize(OpenAIChatCompletionToolChoice.none)
+            try OpenAIChatCompletionToolChoice.none.serialize()
         )
         XCTAssertEqual(
             #""required""#,
-            try serialize(OpenAIChatCompletionToolChoice.required)
+            try OpenAIChatCompletionToolChoice.required.serialize()
         )
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "function" : {
                 "name" : "xyz"
@@ -373,7 +384,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               "type" : "function"
             }
             """,
-            try serialize(OpenAIChatCompletionToolChoice.specific(functionName: "xyz"))
+            try OpenAIChatCompletionToolChoice.specific(functionName: "xyz").serialize(pretty: true)
         )
     }
 
@@ -395,7 +406,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
             toolChoice: .required
         )
 
-        XCTAssertEqual("""
+        XCTAssertEqual(
+            """
             {
               "messages" : [
                 {
@@ -424,7 +436,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               ]
             }
             """,
-            try serialize(requestBody)
+            try requestBody.serialize(pretty: true)
         )
     }
 
@@ -449,7 +461,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
             ]
         )
 
-        XCTAssertEqual(#"""
+        XCTAssertEqual(
+            #"""
             {
               "messages" : [
                 {
@@ -475,7 +488,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               "model" : "gpt-4o"
             }
             """#,
-            try serialize(requestBody)
+            try requestBody.serialize(pretty: true)
         )
     }
 
@@ -546,7 +559,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               "type" : "json_schema"
             }
             """#,
-            try serialize(responseFormat)
+            try responseFormat.serialize(pretty: true)
         )
     }
 }

@@ -374,12 +374,3 @@ public struct AnthropicTool: Encodable {
         self.name = name
     }
 }
-
-
-internal extension AnthropicMessageRequestBody {
-    func serialize() throws -> Data {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .sortedKeys
-        return try encoder.encode(self)
-    }
-}

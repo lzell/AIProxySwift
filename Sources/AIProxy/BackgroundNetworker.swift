@@ -1,5 +1,5 @@
 //
-//  ReplicateNetworker.swift
+//  Networker.swift
 //
 //
 //  Created by Lou Zell on 8/24/24.
@@ -7,7 +7,7 @@
 import Foundation
 
 @NetworkActor
-struct ReplicateNetworker {
+struct BackgroundNetworker {
     static func send(
         request: URLRequest
     ) async throws -> (Data, HTTPURLResponse) {
