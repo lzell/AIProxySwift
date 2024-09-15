@@ -1090,6 +1090,34 @@ model owner and model name in the string.
 - See https://api.elevenlabs.io/v1/voices for the IDs that you can pass to `voiceID`.
 
 
+### How to generate a FastSDXL image using Fal
+
+    import AIProxy
+
+    let falService = AIProxy.falService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    let input = FalFastSDXLInputSchema(
+        prompt: "Yosemite Valley",
+        enableSafetyChecker: false
+    )
+    do {
+        let output = try await falService.createFastSDXLImage(input: input)
+        print("""
+              The first output image is at \(output.images?.first?.url?.absoluteString ?? "")
+              It took \(output.timings?.inference ?? Double.nan) seconds to generate.
+              """)
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Fal SDXL image: \(error.localizedDescription)")
+    }
+
+See the full range of controls for generating an image by viewing `FalFastSDXLInputSchema.swift`
+
+
 ### How to fetch the weather with OpenMeteo
 
 This pattern is slightly different than the others, because OpenMeteo has an official lib that
