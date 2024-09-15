@@ -16,7 +16,8 @@ struct AIProxyURLRequest {
         clientID: String?,
         proxyPath: String,
         body: Data?,
-        verb: AIProxyHTTPVerb
+        verb: AIProxyHTTPVerb,
+        contentType: String? = nil
     ) async throws -> URLRequest {
         let deviceCheckToken = await AIProxyDeviceCheck.getToken()
 
@@ -56,6 +57,10 @@ struct AIProxyURLRequest {
             request.addValue(deviceCheckBypass, forHTTPHeaderField: "aiproxy-devicecheck-bypass")
         }
     #endif
+
+        if let contentType = contentType {
+            request.addValue(contentType, forHTTPHeaderField: "Content-Type")
+        }
 
         return request
     }

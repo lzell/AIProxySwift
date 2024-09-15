@@ -36,6 +36,16 @@ public struct ReplicatePredictionResponseBody<T: Decodable>: Decodable {
 
     /// The version of the model that ran
     public let version: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case completedAt = "completed_at"
+        case error
+        case output
+        case startedAt = "started_at"
+        case status
+        case urls
+        case version
+    }
 }
 
 extension ReplicatePredictionResponseBody {
@@ -54,5 +64,3 @@ extension ReplicatePredictionResponseBody {
         case canceled
     }
 }
-
-extension ReplicatePredictionResponseBody: Deserializable {}

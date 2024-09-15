@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ReplicateModelResponseBody: Decodable, Deserializable {
+struct ReplicateModelResponseBody: Decodable {
     let description: String?
     let name: String?
     let owner: String?

@@ -24,19 +24,6 @@ public struct TogetherAIChatCompletionResponseBody: Decodable {
     public let model: String
 
     public let usage: TogetherAIChatUsage?
-
-    internal static func deserialize(from data: Data) throws -> Self {
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(Self.self, from: data)
-    }
-
-    internal static func deserialize(from str: String) throws -> Self {
-        guard let data = str.data(using: .utf8) else {
-            throw AIProxyError.assertion("Could not create utf8 data from string")
-        }
-        return try self.deserialize(from: data)
-    }
 }
 
 public struct TogetherAIChatCompletionChoice: Decodable {
@@ -47,13 +34,19 @@ public struct TogetherAIChatCompletionChoice: Decodable {
     public let finishReason: TogetherAIFinishReason?
 
     public let logprobs: TogetherAILogprobs?
+
+    private enum CodingKeys: String, CodingKey {
+        case message
+        case finishReason = "finish_reason"
+        case logprobs
+    }
 }
 
 public enum TogetherAIFinishReason: String, Decodable {
     case eos
     case stop
     case length
-    case toolCalls
+    case toolCalls = "tool_calls"
 }
 
 public struct TogetherAILogprobs: Decodable {
@@ -62,10 +55,21 @@ public struct TogetherAILogprobs: Decodable {
 
     /// List of token log probabilities
     public let tokenLogprobs: [Double]
+
+    private enum CodingKeys: String, CodingKey {
+        case tokens
+        case tokenLogprobs = "token_logprobs"
+    }
 }
 
 public struct TogetherAIChatUsage: Decodable {
     public let promptTokens: Int
     public let completionTokens: Int
     public let totalTokens: Int
+
+    enum CodingKeys: String, CodingKey {
+        case promptTokens = "prompt_tokens"
+        case completionTokens = "completion_tokens"
+        case totalTokens = "total_tokens"
+    }
 }

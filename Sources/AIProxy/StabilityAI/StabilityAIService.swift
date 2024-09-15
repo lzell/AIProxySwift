@@ -58,15 +58,17 @@ public final class StabilityAIService {
     ) async throws -> StabilityAIImageResponse {
         let session = AIProxyURLSession.create()
         let boundary = UUID().uuidString
-        let request = try await buildAIProxyRequest(
+        var request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
-            postBody: formEncode(body, boundary),
-            path: path,
-            contentType: "multipart/form-data; boundary=\(boundary)",
-            accept: "image/*"
+            proxyPath: path,
+            body: formEncode(body, boundary),
+            verb: .post,
+            contentType: "multipart/form-data; boundary=\(boundary)"
         )
+        request.addValue("image/*", forHTTPHeaderField: "Accept")
+
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
             throw AIProxyError.assertion("Network response is not an http response")
@@ -86,28 +88,4 @@ public final class StabilityAIService {
             seed: httpResponse.allHeaderFields["seed"] as? String
         )
     }
-}
-
-// MARK: - Private Helpers
-
-private func buildAIProxyRequest(
-    partialKey: String,
-    serviceURL: String,
-    clientID: String?,
-    postBody: Data,
-    path: String,
-    contentType: String,
-    accept: String
-) async throws -> URLRequest {
-    var request = try await AIProxyURLRequest.create(
-        partialKey: partialKey,
-        serviceURL: serviceURL,
-        clientID: clientID,
-        proxyPath: path,
-        body: postBody,
-        verb: .post
-    )
-    request.addValue(contentType, forHTTPHeaderField: "Content-Type")
-    request.addValue(accept, forHTTPHeaderField: "Accept")
-    return request
 }

@@ -36,15 +36,15 @@ public final class ElevenLabsService {
         body: ElevenLabsTTSRequestBody
     ) async throws -> Data {
         let session = AIProxyURLSession.create()
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/v1/text-to-speech/\(voiceID)",
             body: try body.serialize(),
-            verb: .post
+            verb: .post,
+            contentType: "application/json"
         )
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {

@@ -18,7 +18,7 @@ final class AIProxyJSONValueTests: XCTestCase {
         ]
         XCTAssertEqual(
             #"{"x":null}"#,
-            try serialize(json)
+            try json.serialize()
         )
     }
 
@@ -28,7 +28,7 @@ final class AIProxyJSONValueTests: XCTestCase {
         ]
         XCTAssertEqual(
             #"{"x":true}"#,
-            try serialize(json)
+            try json.serialize()
         )
     }
 
@@ -38,7 +38,7 @@ final class AIProxyJSONValueTests: XCTestCase {
         ]
         XCTAssertEqual(
             #"{"x":1}"#,
-            try serialize(json)
+            try json.serialize()
         )
     }
 
@@ -48,7 +48,7 @@ final class AIProxyJSONValueTests: XCTestCase {
         ]
         XCTAssertEqual(
             #"{"x":1.1}"#,
-            try serialize(json)
+            try json.serialize()
         )
     }
 
@@ -58,7 +58,7 @@ final class AIProxyJSONValueTests: XCTestCase {
         ]
         XCTAssertEqual(
             #"{"x":"y"}"#,
-            try serialize(json)
+            try json.serialize()
         )
     }
 
@@ -68,7 +68,7 @@ final class AIProxyJSONValueTests: XCTestCase {
         ]
         XCTAssertEqual(
             #"{"x":["y","z"]}"#,
-            try serialize(json)
+            try json.serialize()
         )
     }
 
@@ -78,7 +78,7 @@ final class AIProxyJSONValueTests: XCTestCase {
         ]
         XCTAssertEqual(
             #"{"x":{"y":"z"}}"#,
-            try serialize(json)
+            try json.serialize()
         )
     }
 
@@ -88,7 +88,7 @@ final class AIProxyJSONValueTests: XCTestCase {
         ]
         XCTAssertEqual(
             #"{"x":{"y":{"z":true}}}"#,
-            try serialize(json)
+            try json.serialize()
         )
     }
 
@@ -98,14 +98,14 @@ final class AIProxyJSONValueTests: XCTestCase {
         ]
         XCTAssertEqual(
             #"{"x":[{"y":"z"}]}"#,
-            try serialize(json)
+            try json.serialize()
         )
     }
 
     // MARK: Decodable
     func testNullIsDecodable() throws {
         let sampleResponse = #"{"x":null}"#
-        let jsonValue = try deserialize(sampleResponse)
+        let jsonValue = try [String: AIProxyJSONValue].deserialize(from: sampleResponse)
         if case let .null(null) = jsonValue["x"] {
             XCTAssert(null == NSNull())
         } else {
@@ -118,7 +118,7 @@ final class AIProxyJSONValueTests: XCTestCase {
 
     func testBoolIsDecodable() throws {
         let sampleResponse = #"{"x":true}"#
-        let jsonValue = try deserialize(sampleResponse)
+        let jsonValue = try [String: AIProxyJSONValue].deserialize(from: sampleResponse)
         if case let .bool(bool) = jsonValue["x"] {
             XCTAssert(bool)
         } else {
@@ -130,7 +130,7 @@ final class AIProxyJSONValueTests: XCTestCase {
 
     func testIntIsDecodable() throws {
         let sampleResponse = #"{"x":1}"#
-        let jsonValue = try deserialize(sampleResponse)
+        let jsonValue = try [String: AIProxyJSONValue].deserialize(from: sampleResponse)
         if case let .int(int) = jsonValue["x"] {
             XCTAssertEqual(1, int)
         } else {
@@ -142,7 +142,7 @@ final class AIProxyJSONValueTests: XCTestCase {
 
     func testDoubleIsDecodable() throws {
         let sampleResponse = #"{"x":1.1}"#
-        let jsonValue = try deserialize(sampleResponse)
+        let jsonValue = try [String: AIProxyJSONValue].deserialize(from: sampleResponse)
         if case let .double(double) = jsonValue["x"] {
             XCTAssertEqual(1.1, double)
         } else {
@@ -154,7 +154,7 @@ final class AIProxyJSONValueTests: XCTestCase {
 
     func testStringIsDecodable() throws {
         let sampleResponse = #"{"x":"y"}"#
-        let jsonValue = try deserialize(sampleResponse)
+        let jsonValue = try [String: AIProxyJSONValue].deserialize(from: sampleResponse)
         if case let .string(str) = jsonValue["x"] {
             XCTAssertEqual("y", str)
         } else {
@@ -166,7 +166,7 @@ final class AIProxyJSONValueTests: XCTestCase {
 
     func testArrayIsDecodable() throws {
         let sampleResponse = #"{"x":["y","z"]}"#
-        let jsonValue = try deserialize(sampleResponse)
+        let jsonValue = try [String: AIProxyJSONValue].deserialize(from: sampleResponse)
         if case let .array(arr) = jsonValue["x"] {
             XCTAssertEqual(2, arr.count)
         } else {
@@ -178,7 +178,7 @@ final class AIProxyJSONValueTests: XCTestCase {
 
     func testObjectIsDecodable() throws {
         let sampleResponse = #"{"x":{"y":"z"}}"#
-        let jsonValue = try deserialize(sampleResponse)
+        let jsonValue = try [String: AIProxyJSONValue].deserialize(from: sampleResponse)
         if case let .object(obj) = jsonValue["x"] {
             XCTAssertEqual(["y"], Array(obj.keys))
         } else {
@@ -190,7 +190,7 @@ final class AIProxyJSONValueTests: XCTestCase {
 
     func testNestedObjectIsDecodable() throws {
         let sampleResponse = #"{"x":{"y":{"z":true}}}"#
-        let jsonValue = try deserialize(sampleResponse)
+        let jsonValue = try [String: AIProxyJSONValue].deserialize(from: sampleResponse)
         if case let .object(obj) = jsonValue["x"] {
             XCTAssertEqual(["y"], Array(obj.keys))
         } else {
@@ -202,7 +202,7 @@ final class AIProxyJSONValueTests: XCTestCase {
 
     func testObjectNestedInAnArrayIsDecodable() throws {
         let sampleResponse = #"{"x":[{"y":"z"}]}"#
-        let jsonValue = try deserialize(sampleResponse)
+        let jsonValue = try [String: AIProxyJSONValue].deserialize(from: sampleResponse)
         if case let .array(arr) = jsonValue["x"] {
             XCTAssertEqual(1, arr.count)
         } else {
@@ -211,16 +211,4 @@ final class AIProxyJSONValueTests: XCTestCase {
         let dict = jsonValue.untypedDictionary
         XCTAssertEqual([["y": "z"]], dict["x"] as? [[String: String]])
     }
-}
-
-private func serialize(_ encodable: Encodable) throws -> String {
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = .sortedKeys
-    let jsonData = try encoder.encode(encodable)
-    return String(data: jsonData, encoding: .utf8)!
-}
-
-private func deserialize(_ responseBody: String) throws -> [String: AIProxyJSONValue] {
-    let responseData = responseBody.data(using: .utf8)!
-    return try JSONDecoder().decode([String: AIProxyJSONValue].self, from: responseData)
 }

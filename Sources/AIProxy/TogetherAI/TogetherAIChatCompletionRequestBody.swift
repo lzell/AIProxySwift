@@ -128,11 +128,6 @@ public struct TogetherAIChatCompletionRequestBody: Encodable {
         self.topP = topP
     }
 
-    /// Serialize the request body to json data
-    internal func serialize(pretty: Bool = false) throws -> Data {
-        return try AIProxyUtils.serialize(self, pretty: pretty)
-    }
-
     private enum CodingKeys: String, CodingKey {
         // Required
         case messages

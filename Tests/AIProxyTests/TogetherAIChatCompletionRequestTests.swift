@@ -18,7 +18,6 @@ final class TogetherAIChatCompletionRequestTests: XCTestCase {
             ],
             model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
         )
-        let data = try requestBody.serialize(pretty: true)
         XCTAssertEqual(#"""
             {
               "messages" : [
@@ -30,7 +29,7 @@ final class TogetherAIChatCompletionRequestTests: XCTestCase {
               "model" : "meta-llama\/Meta-Llama-3.1-8B-Instruct-Turbo"
             }
             """#,
-            String(data: data, encoding: .utf8)!
+                       try requestBody.serialize(pretty: true)
         )
     }
 
@@ -71,7 +70,6 @@ final class TogetherAIChatCompletionRequestTests: XCTestCase {
             model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
             responseFormat: .json(schema: schema)
         )
-        let data = try requestBody.serialize(pretty: true)
         XCTAssertEqual(
             #"""
             {
@@ -116,7 +114,7 @@ final class TogetherAIChatCompletionRequestTests: XCTestCase {
               }
             }
             """#,
-            String(data: data, encoding: .utf8)!
+            try requestBody.serialize(pretty: true)
         )
     }
 
@@ -154,7 +152,6 @@ final class TogetherAIChatCompletionRequestTests: XCTestCase {
             ]
         )
 
-        let data = try requestBody.serialize(pretty: true)
         XCTAssertEqual(
             #"""
             {
@@ -194,7 +191,7 @@ final class TogetherAIChatCompletionRequestTests: XCTestCase {
             }
             """#
             ,
-            String(data: data, encoding: .utf8)!
+            try requestBody.serialize(pretty: true)
         )
     }
 

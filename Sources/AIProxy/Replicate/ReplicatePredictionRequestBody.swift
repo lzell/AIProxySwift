@@ -34,9 +34,5 @@ public struct ReplicatePredictionRequestBody: Encodable {
         try container.encode(self.input, forKey: .input)
         try container.encodeIfPresent(self.version, forKey: .version)
     }
-
-    /// Serialize the request body to json data
-    internal func serialize(pretty: Bool = false) throws -> Data {
-        return try AIProxyUtils.serialize(self, pretty: pretty)
-    }
 }
+

@@ -178,17 +178,17 @@ public final class ReplicateService {
             visibility: visibility
         )
 
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/v1/models",
             body: requestBody.serialize(),
-            verb: .post
+            verb: .post,
+            contentType: "application/json"
         )
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let (data, httpResponse) = try await ReplicateNetworker.send(request: request)
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
 
         if (httpResponse.statusCode > 299) {
             throw AIProxyError.unsuccessfulRequest(
@@ -222,18 +222,17 @@ public final class ReplicateService {
     ) async throws -> ReplicateFileUploadResponseBody {
         let body = ReplicateFileUploadRequestBody(fileData: zipData, fileName: name)
         let boundary = UUID().uuidString
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/v1/files",
             body: formEncode(body, boundary),
-            verb: .post
+            verb: .post,
+            contentType: "multipart/form-data; boundary=\(boundary)"
         )
 
-        request.addValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-
-        let (data, httpResponse) = try await ReplicateNetworker.send(request: request)
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
         if (httpResponse.statusCode > 299) {
             throw AIProxyError.unsuccessfulRequest(
                 statusCode: httpResponse.statusCode,
@@ -263,16 +262,16 @@ public final class ReplicateService {
         versionID: String,
         body: ReplicateTrainingRequestBody<T>
     ) async throws -> ReplicateTrainingResponseBody {
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/v1/models/\(modelOwner)/\(modelName)/versions/\(versionID)/trainings",
             body: body.serialize(),
-            verb: .post
+            verb: .post,
+            contentType: "application/json"
         )
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        let (data, httpResponse) = try await ReplicateNetworker.send(request: request)
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
 
         if (httpResponse.statusCode > 299) {
             throw AIProxyError.unsuccessfulRequest(
@@ -310,17 +309,17 @@ public final class ReplicateService {
                 input: input
             )
         )
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/v1/models/\(modelOwner)/\(modelName)/predictions",
             body: body,
-            verb: .post
+            verb: .post,
+            contentType: "application/json"
         )
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let (data, httpResponse) = try await ReplicateNetworker.send(request: request)
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
 
         if (httpResponse.statusCode > 299) {
             throw AIProxyError.unsuccessfulRequest(
@@ -357,17 +356,17 @@ public final class ReplicateService {
                 version: version
             )
         )
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/v1/predictions",
             body: body,
-            verb: .post
+            verb: .post,
+            contentType: "application/json"
         )
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let (data, httpResponse) = try await ReplicateNetworker.send(request: request)
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
 
         if (httpResponse.statusCode > 299) {
             throw AIProxyError.unsuccessfulRequest(
@@ -439,6 +438,7 @@ public final class ReplicateService {
         numTries: Int,
         nsBetweenPollAttempts: UInt64 = 1_000_000_000
     ) async throws -> ReplicatePredictionResponseBody<U> {
+        try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
         for _ in 0..<numTries {
             let response = try await self.actorGetPredictionResult(
                 url: url,
@@ -464,6 +464,7 @@ public final class ReplicateService {
         numTries: Int,
         nsBetweenPollAttempts: UInt64
     ) async throws -> ReplicateTrainingResponseBody {
+        try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
         for _ in 0..<numTries {
             let response = try await self.actorGetPredictionResult(
                 url: url,
@@ -495,7 +496,7 @@ public final class ReplicateService {
     ///             e.g. ReplicatePredictionResponseBody<ReplicateSDXLOutputSchema>
     /// - Returns: The prediction response body
     @NetworkActor
-    private func actorGetPredictionResult<U: Decodable & Deserializable>(
+    private func actorGetPredictionResult<U: Decodable>(
         url: URL,
         output: U.Type
     ) async throws -> U {
@@ -510,7 +511,7 @@ public final class ReplicateService {
             body: nil,
             verb: .get
         )
-        let (data, httpResponse) = try await ReplicateNetworker.send(request: request)
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
         if (httpResponse.statusCode > 299) {
             throw AIProxyError.unsuccessfulRequest(
                 statusCode: httpResponse.statusCode,

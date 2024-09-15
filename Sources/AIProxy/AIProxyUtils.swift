@@ -14,15 +14,6 @@ import UIKit
 
 struct AIProxyUtils {
 
-    static func serialize(_ encodable: Encodable, pretty: Bool = false) throws -> Data {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        if pretty {
-            encoder.outputFormatting.insert(.prettyPrinted)
-        }
-        return try encoder.encode(encodable)
-    }
-
 #if canImport(AppKit)
     static func encodeImageAsJpeg(
         _ image: NSImage,

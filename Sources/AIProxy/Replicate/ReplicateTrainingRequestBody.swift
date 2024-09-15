@@ -16,8 +16,4 @@ public struct ReplicateTrainingRequestBody<T: Encodable>: Encodable {
         self.destination = destination
         self.input = input
     }
-
-    func serialize() throws -> Data {
-        return try JSONEncoder().encode(self)
-    }
 }

@@ -74,11 +74,3 @@ public struct AnthropicMessageUsage: Decodable {
         case outputTokens = "output_tokens"
     }
 }
-
-
-internal extension AnthropicMessageResponseBody {
-    static func deserialize(from data: Data) throws -> AnthropicMessageResponseBody {
-        let decoder = JSONDecoder()
-        return try decoder.decode(Self.self, from: data)
-    }
-}

@@ -34,14 +34,16 @@ public final class OpenAIService {
         body.stream = false
         body.streamOptions = nil
         let session = AIProxyURLSession.create()
-        let request = try await buildAIProxyRequest(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
+            serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
-            postBody: try JSONEncoder().encode(body),
-            path: "/v1/chat/completions",
+            proxyPath: "/v1/chat/completions",
+            body:  try JSONEncoder().encode(body),
+            verb: .post,
             contentType: "application/json"
         )
+
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
             throw AIProxyError.assertion("Network response is not an http response")
@@ -71,14 +73,16 @@ public final class OpenAIService {
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
         let session = AIProxyURLSession.create()
-        let request = try await buildAIProxyRequest(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
+            serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
-            postBody: try JSONEncoder().encode(body),
-            path: "/v1/chat/completions",
+            proxyPath: "/v1/chat/completions",
+            body:  try JSONEncoder().encode(body),
+            verb: .post,
             contentType: "application/json"
         )
+
         let (asyncBytes, res) = try await session.bytes(for: request)
 
         guard let httpResponse = res as? HTTPURLResponse else {
@@ -107,14 +111,16 @@ public final class OpenAIService {
         body: OpenAICreateImageRequestBody
     ) async throws -> OpenAICreateImageResponseBody {
         let session = AIProxyURLSession.create()
-        let request = try await buildAIProxyRequest(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
+            serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
-            postBody: try JSONEncoder().encode(body),
-            path: "/v1/images/generations",
+            proxyPath: "/v1/images/generations",
+            body:  try JSONEncoder().encode(body),
+            verb: .post,
             contentType: "application/json"
         )
+
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
             throw AIProxyError.assertion("Network response is not an http response")
@@ -142,14 +148,16 @@ public final class OpenAIService {
     ) async throws -> OpenAICreateTranscriptionResponseBody {
         let session = AIProxyURLSession.create()
         let boundary = UUID().uuidString
-        let request = try await buildAIProxyRequest(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
+            serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
-            postBody: formEncode(body, boundary),
-            path: "/v1/audio/transcriptions",
+            proxyPath: "/v1/audio/transcriptions",
+            body: formEncode(body, boundary),
+            verb: .post,
             contentType: "multipart/form-data; boundary=\(boundary)"
         )
+
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
             throw AIProxyError.assertion("Network response is not an http response")
@@ -164,28 +172,4 @@ public final class OpenAIService {
 
         return try JSONDecoder().decode(OpenAICreateTranscriptionResponseBody.self, from: data)
     }
-}
-
-// MARK: - Private Helpers
-
-/// Builds and AI Proxy request.
-/// Used for both streaming and non-streaming chat.
-private func buildAIProxyRequest(
-    partialKey: String,
-    serviceURL: String?,
-    clientID: String?,
-    postBody: Data,
-    path: String,
-    contentType: String
-) async throws -> URLRequest {
-    var request = try await AIProxyURLRequest.create(
-        partialKey: partialKey,
-        serviceURL: serviceURL ?? legacyURL,
-        clientID: clientID,
-        proxyPath: path,
-        body: postBody,
-        verb: .post
-    )
-    request.addValue(contentType, forHTTPHeaderField: "Content-Type")
-    return request
 }

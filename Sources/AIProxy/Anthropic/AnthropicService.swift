@@ -33,12 +33,13 @@ public final class AnthropicService {
         var body = body
         body.stream = false
         let session = AIProxyURLSession.create()
-        let request = try await buildAIProxyRequest(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
-            postBody: try body.serialize(),
-            path: "/v1/messages",
+            proxyPath: "/v1/messages",
+            body: try body.serialize(),
+            verb: .post,
             contentType: "application/json"
         )
         let (data, res) = try await session.data(for: request)
@@ -55,28 +56,4 @@ public final class AnthropicService {
     
         return try AnthropicMessageResponseBody.deserialize(from: data)
     }
-}
-
-// MARK: - Private Helpers
-
-/// Builds and AI Proxy request.
-/// Used for both streaming and non-streaming chat.
-private func buildAIProxyRequest(
-    partialKey: String,
-    serviceURL: String,
-    clientID: String?,
-    postBody: Data,
-    path: String,
-    contentType: String
-) async throws -> URLRequest {
-    var request = try await AIProxyURLRequest.create(
-        partialKey: partialKey,
-        serviceURL: serviceURL,
-        clientID: clientID,
-        proxyPath: path,
-        body: postBody,
-        verb: .post
-    )
-    request.addValue(contentType, forHTTPHeaderField: "Content-Type")
-    return request
 }
