@@ -186,7 +186,18 @@ public enum OpenAIChatCompletionContentPart: Encodable {
 
     /// The URL is a "local URL" containing base64 encoded image data. See the helper `AIProxy.openaiEncodedImage`
     /// to construct this URL.
-    case imageURL(URL)
+    ///
+    /// By controlling the detail parameter, which has three options, low, high, or auto, you have control over
+    /// how the model processes the image and generates its textual understanding. By default, the model will use
+    /// the auto setting which will look at the image input size and decide if it should use the low or high setting.
+    ///
+    /// "low" will enable the "low res" mode. The model will receive a low-res 512px x 512px version of the image, and
+    /// represent the image with a budget of 85 tokens. This allows the API to return faster responses and consume
+    /// fewer input tokens for use cases that do not require high detail.
+    ///
+    /// "high" will enable "high res" mode, which first allows the model to first see the low res image (using 85
+    /// tokens) and then creates detailed crops using 170 tokens for each 512px x 512px tile.
+    case imageURL(URL, detail: Detail? = nil)
 
     private enum RootKey: String, CodingKey {
         case type
@@ -196,6 +207,7 @@ public enum OpenAIChatCompletionContentPart: Encodable {
 
     private enum ImageKey: CodingKey {
         case url
+        case detail
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -204,12 +216,23 @@ public enum OpenAIChatCompletionContentPart: Encodable {
         case .text(let text):
             try container.encode("text", forKey: .type)
             try container.encode(text, forKey: .text)
-        case .imageURL(let imageURL):
+        case .imageURL(let url, let detail):
             try container.encode("image_url", forKey: .type)
             var nestedContainer = container.nestedContainer(keyedBy: ImageKey.self, forKey: .imageURL)
-            try nestedContainer.encode(imageURL, forKey: .url)
+            try nestedContainer.encode(url, forKey: .url)
+            if let detail = detail {
+                try nestedContainer.encode(detail, forKey: .detail)
+            }
         }
     }
+}
+
+extension OpenAIChatCompletionContentPart {
+  public enum Detail: String, Encodable {
+    case auto
+    case low
+    case high
+  }
 }
 
 /// An object specifying the format that the model must output. Compatible with GPT-4o, GPT-4o mini, GPT-4

@@ -145,7 +145,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
                     content: .parts(
                         [
                             .text("What do you see?"),
-                            .imageURL(imageURL)
+                            .imageURL(imageURL, detail: .auto)
                         ]
                     )
                 )
