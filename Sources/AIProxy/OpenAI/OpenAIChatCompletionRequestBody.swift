@@ -186,7 +186,20 @@ public enum OpenAIChatCompletionContentPart: Encodable {
 
     /// The URL is a "local URL" containing base64 encoded image data. See the helper `AIProxy.openaiEncodedImage`
     /// to construct this URL.
-    case imageURL(url: URL, detail: String?)
+    ///
+    /// By controlling the detail parameter, which has three options, low, high, or auto, you have control over 
+    /// how the model processes the image and generates its textual understanding. By default, the model will use
+    /// the auto setting which will look at the image input size and decide if it should use the low or high setting.
+    ///
+    /// "low" will enable the "low res" mode. The model will receive a low-res 512px x 512px version of the image, and 
+    /// represent the image with a budget of 85 tokens. This allows the API to return faster responses and consume 
+    /// fewer input tokens for use cases that do not require high detail.
+    ///
+    /// "high" will enable "high res" mode, which first allows the model to first see the low res image (using 85 
+    /// tokens) and then creates detailed crops using 170 tokens for each 512px x 512px tile.
+
+
+    case imageURL(URL, detail: Detail? = nil)
 
     private enum RootKey: String, CodingKey {
         case type
@@ -214,6 +227,14 @@ public enum OpenAIChatCompletionContentPart: Encodable {
             }
         }
     }
+}
+
+extension OpenAIChatCompletionContentPart {
+  public enum Detail: String, Encodable {
+    case auto
+    case low
+    case high
+  }
 }
 
 /// An object specifying the format that the model must output. Compatible with GPT-4o, GPT-4o mini, GPT-4
