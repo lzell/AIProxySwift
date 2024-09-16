@@ -19,7 +19,7 @@ enum FalError: LocalizedError {
         case .missingStatusURL:
             return "Fal request was queued, but the response did not contain a status URL"
         case .reachedRetryLimit:
-            return "Reached replicate polling retry limit"
+            return "Reached Fal polling retry limit"
         }
     }
 }

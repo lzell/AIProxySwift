@@ -1,5 +1,5 @@
 //
-//  FalFastSDXLOutputSchema.swift
+//  FalFluxLoRAOutputSchema.swift
 //
 //
 //  Created by Lou Zell on 9/14/24.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct FalFastSDXLOutputSchema: Decodable {
+public struct FalFluxLoRAOutputSchema: Decodable {
     public let hasNSFWConcepts: [Bool]?
     public let images: [FalOutputImage]?
     public let prompt: String?

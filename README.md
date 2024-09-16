@@ -1179,6 +1179,88 @@ model owner and model name in the string.
 See the full range of controls for generating an image by viewing `FalFastSDXLInputSchema.swift`
 
 
+### How to train Flux on your own images using Fal
+
+#### Upload training data to Fal
+
+Your training data must be a zip file of images. You can either pull the zip from assets (what
+I do here), or construct the zip in memory:
+
+    // Get the images to train with:
+    guard let trainingData = NSDataAsset(name: "training") else {
+        print("""
+              Drop training.zip file into Assets first.
+              """)
+        return
+    }
+
+    do {
+        let url = try await falService.uploadTrainingZipFile(
+            zipData: trainingData.data,
+            name: "training.zip"
+        )
+        print("""
+              Training file uploaded. Find it at \(url.absoluteString)
+              """)
+
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not upload file to Fal: \(error.localizedDescription)")
+    }
+
+#### Train `fal-ai/flux-lora-fast-training` using your uploaded data
+
+Using the URL returned in the step above:
+
+    let input = FalFluxLoRAFastTrainingInputSchema(
+        imagesDataURL: &lt;url-from-step-above&gt;
+        triggerWord: "face"
+    )
+    do {
+        let output = try await falService.createFluxLoRAFastTraining(input: input)
+        print("""
+              Fal's Flux LoRA fast trainer is complete.
+              Your weights are at: \(output.diffusersLoraFile?.url?.absoluteString ?? "")
+              """)
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Fal SDXL image: \(error.localizedDescription)")
+    }
+
+See `FalFluxLoRAFastTrainingInputSchema.swift` for the full range of training controls.
+
+#### Run inference on your trained model
+
+Using the LoRA URL returned in the step above:
+
+        let inputSchema = FalFluxLoRAInputSchema(
+            prompt: "face on a blimp over Monument Valley, Utah",
+            loras: [
+                .init(
+                    path: &lt;lora-url-from-step-above&gt;
+                    scale: 0.9
+                )
+            ],
+            numImages: 2,
+            outputFormat: .jpeg
+        )
+        do {
+            let output = try await falService.createFluxLoRAImage(input: inputSchema)
+            print("""
+                  Fal's Flux LoRA inference is complete.
+                  Your images are at: \(output.images?.compactMap {$0.url?.absoluteString} ?? [])
+                  """)
+        }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+            print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+        } catch {
+            print("Could not create Fal LoRA image: \(error.localizedDescription)")
+        }
+
+See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
+
+
 ### How to generate a non-streaming chat completion using Groq
 
     import AIProxy
