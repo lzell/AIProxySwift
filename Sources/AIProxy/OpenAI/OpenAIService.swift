@@ -170,6 +170,13 @@ public final class OpenAIService {
             )
         }
 
+        if (body.responseFormat == "text") {
+            guard let text = String(data: data, encoding: .utf8) else {
+                throw AIProxyError.assertion("Could not represent OpenAI's whisper response as string")
+            }
+            return OpenAICreateTranscriptionResponseBody(text: text, language: nil, duration: nil, words: nil, segments: nil)
+        }
+
         return try JSONDecoder().decode(OpenAICreateTranscriptionResponseBody.self, from: data)
     }
 }
