@@ -38,7 +38,7 @@ public final class OpenAIService {
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
-            proxyPath: "/v1/chat/completions",
+            proxyPath: "/chat/completions?api-version=2023-03-15-preview",
             body:  try JSONEncoder().encode(body),
             verb: .post,
             contentType: "application/json"
@@ -77,7 +77,7 @@ public final class OpenAIService {
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
-            proxyPath: "/v1/chat/completions",
+            proxyPath: "/chat/completions?api-version=2023-03-15-preview",
             body:  try JSONEncoder().encode(body),
             verb: .post,
             contentType: "application/json"
