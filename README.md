@@ -129,7 +129,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
         return
     }
 
-    guard let imageURL = AIProxy.openAIEncodedImage(image: image) else {
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image) else {
         print("Could not convert image to OpenAI's imageURL format")
         return
     }
@@ -819,6 +819,48 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 
 
 See the full range of controls for generating an image by viewing `ReplicateFluxProInputSchema.swift`
+
+
+### How to generate a Flux-PuLID image using Replicate
+
+On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
+
+    import AIProxy
+
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    guard let image = UIImage(named: "face") else {
+        print("Could not find an image named 'face' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.8) else {
+        print("Could not convert image to a local data URI")
+        return
+    }
+
+    do {
+        let input = ReplicateFluxPulidInputSchema(
+            mainFaceImage: imageURL,
+            prompt: "smiling man holding sign with glowing green text 'PuLID for FLUX'",
+            numOutputs: 4,
+            startStep: 4
+        )
+        let output = try await replicateService.createFluxPulidImage(
+            input: input
+        )
+        print("Done creating Flux-PuLID image: ", output)
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Flux-Pulid images: \(error.localizedDescription)")
+    }
+
+
+See the full range of controls for generating an image by viewing `ReplicateFluxPulidInputSchema.swift`
 
 
 ### How to generate an SDXL image by StabilityAI, using Replicate

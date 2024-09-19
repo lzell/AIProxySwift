@@ -104,6 +104,24 @@ public final class ReplicateService {
         )
     }
 
+    public func createFluxPulidImage(
+        input: ReplicateFluxPulidInputSchema,
+        version: String = "8baa7ef2255075b46f4d91cd238c21d31181b3e6a864463f967960bb0112525b",
+        pollAttempts: Int = 30,
+        secondsBetweenPollAttempts: UInt64 = 2
+    ) async throws -> [URL] {
+        let predictionResponse = try await self.createPrediction(
+            version: version,
+            input: input,
+            output: ReplicatePredictionResponseBody<[URL]>.self
+        )
+        return try await self.pollForPredictionOutput(
+            predictionResponse: predictionResponse,
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
+        )
+    }
+
     /// This is a convenience method for creating an image through StabilityAI's SDXL model.
     /// https://replicate.com/stability-ai/sdxl
     ///
