@@ -314,7 +314,15 @@ public struct AIProxy {
         return AIProxyUtils.encodeImageAsJpeg(image, compressionQuality)
     }
 
+    @available(*, deprecated, message: "This function is deprecated. Use AIProxy.encodeImageAsURL instead.")
     public static func openAIEncodedImage(
+        image: NSImage,
+        compressionQuality: CGFloat = 1.0
+    ) -> URL? {
+        return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
+    }
+
+    public static func encodeImageAsURL(
         image: NSImage,
         compressionQuality: CGFloat = 1.0
     ) -> URL? {
@@ -329,7 +337,15 @@ public struct AIProxy {
         return AIProxyUtils.encodeImageAsJpeg(image, compressionQuality)
     }
 
+    @available(*, deprecated, message: "This function is deprecated. Use AIProxy.encodeImageAsURL instead.")
     public static func openAIEncodedImage(
+        image: UIImage,
+        compressionQuality: CGFloat = 1.0
+    ) -> URL? {
+        return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
+    }
+
+    public static func encodeImageAsURL(
         image: UIImage,
         compressionQuality: CGFloat = 1.0
     ) -> URL? {
