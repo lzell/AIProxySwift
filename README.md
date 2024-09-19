@@ -823,6 +823,8 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 
 ### How to generate a Flux-PuLID image using Replicate
 
+On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
+
     import AIProxy
 
     let replicateService = AIProxy.replicateService(
@@ -830,7 +832,7 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
         serviceURL: "service-url-from-your-developer-dashboard"
     )
 
-    guard let image = NSImage(named: "face") else {
+    guard let image = UIImage(named: "face") else {
         print("Could not find an image named 'face' in your app assets")
         return
     }
