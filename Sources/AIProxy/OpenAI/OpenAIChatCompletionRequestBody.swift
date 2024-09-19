@@ -104,6 +104,13 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
 }
 
 public enum OpenAIChatCompletionMessage: Encodable {
+    /// Assistant message
+    /// - Parameters:
+    ///   - content: The contents of the assistant message
+    ///   - name: An optional name for the participant. Provides the model information to differentiate
+    ///           between participants of the same role.
+    case assistant(content: OpenAIChatCompletionAssistantContent, name: String? = nil)
+
     /// A system message
     /// - Parameters:
     ///   - content: The contents of the system message.
@@ -127,6 +134,12 @@ public enum OpenAIChatCompletionMessage: Encodable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: RootKey.self)
         switch self {
+        case .assistant(let content, let name):
+            try container.encode(content, forKey: .content)
+            try container.encode("assistant", forKey: .role)
+            if let name = name {
+                try container.encode(name, forKey: .name)
+            }
         case .system(let content, let name):
             try container.encode(content, forKey: .content)
             try container.encode("system", forKey: .role)
@@ -143,7 +156,23 @@ public enum OpenAIChatCompletionMessage: Encodable {
     }
 }
 
-/// System messages can consiste of a single string or an array of strings
+/// Assistant messages can consist of a single string or an array of strings
+public enum OpenAIChatCompletionAssistantContent: Encodable {
+    case text(String)
+    case parts([String])
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .text(let text):
+            try container.encode(text)
+        case .parts(let parts):
+            try container.encode(parts)
+        }
+    }
+}
+
+/// System messages can consist of a single string or an array of strings
 public enum OpenAIChatCompletionSystemContent: Encodable {
     case text(String)
     case parts([String])
