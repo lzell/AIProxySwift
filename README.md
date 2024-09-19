@@ -250,7 +250,7 @@ in its response:
             "additionalProperties": false
         ]
         let requestBody = OpenAIChatCompletionRequestBody(
-            model: "gpt-4o",
+            model: "gpt-4o-2024-08-06",
             messages: [
                 .system(content: .text("Return valid JSON only")),
                 .user(content: .text("Return a peaches and cream color palette"))
@@ -334,7 +334,7 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     }
 
 
-### How to get word-level timestamps in an audio transcription
+### How to get Whisper word-level timestamps in an audio transcription
 
 1. Record an audio file in quicktime and save it as "helloworld.m4a"
 2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
@@ -367,6 +367,18 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
         print("Could not get word-level timestamps from OpenAI: \(error.localizedDescription)")
     }
     ```
+
+
+### How to use OpenAI through an Azure deployment
+
+You can use all of the OpenAI snippets aboves with one change. Initialize the OpenAI service with:
+
+    import AIProxy
+    let openAIService = AIProxy.openAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard",
+        requestFormat: .azureDeployment(apiVersion: "2024-06-01")
+    )
 
 
 ### How to send an Anthropic message request

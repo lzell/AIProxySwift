@@ -11,13 +11,20 @@ public final class OpenAIService {
     private let partialKey: String
     private let serviceURL: String?
     private let clientID: String?
+    private let requestFormat: OpenAIRequestFormat
 
     /// Creates an instance of OpenAIService. Note that the initializer is not public.
     /// Customers are expected to use the factory `AIProxy.openAIService` defined in AIProxy.swift
-    internal init(partialKey: String, serviceURL: String?, clientID: String?) {
+    internal init(
+        partialKey: String,
+        serviceURL: String?,
+        clientID: String?,
+        requestFormat: OpenAIRequestFormat = .standard
+    ) {
         self.partialKey = partialKey
         self.serviceURL = serviceURL
         self.clientID = clientID
+        self.requestFormat = requestFormat
     }
 
     /// Initiates a non-streaming chat completion request to /v1/chat/completions.
@@ -38,7 +45,7 @@ public final class OpenAIService {
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
-            proxyPath: "/v1/chat/completions",
+            proxyPath: self.resolvedPath("chat/completions"),
             body:  try JSONEncoder().encode(body),
             verb: .post,
             contentType: "application/json"
@@ -77,7 +84,7 @@ public final class OpenAIService {
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
-            proxyPath: "/v1/chat/completions",
+            proxyPath: self.resolvedPath("chat/completions"),
             body:  try JSONEncoder().encode(body),
             verb: .post,
             contentType: "application/json"
@@ -115,7 +122,7 @@ public final class OpenAIService {
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
-            proxyPath: "/v1/images/generations",
+            proxyPath: self.resolvedPath("images/generations"),
             body:  try JSONEncoder().encode(body),
             verb: .post,
             contentType: "application/json"
@@ -152,7 +159,7 @@ public final class OpenAIService {
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
-            proxyPath: "/v1/audio/transcriptions",
+            proxyPath: self.resolvedPath("audio/transcriptions"),
             body: formEncode(body, boundary),
             verb: .post,
             contentType: "multipart/form-data; boundary=\(boundary)"
@@ -178,5 +185,15 @@ public final class OpenAIService {
         }
 
         return try JSONDecoder().decode(OpenAICreateTranscriptionResponseBody.self, from: data)
+    }
+
+    private func resolvedPath(_ common: String) -> String {
+        assert(common[common.startIndex] != "/")
+        switch self.requestFormat {
+        case .standard:
+            return "/v1/\(common)"
+        case .azureDeployment(let apiVersion):
+            return "/\(common)?api-version=\(apiVersion)"
+        }
     }
 }

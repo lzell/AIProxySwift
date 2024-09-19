@@ -78,16 +78,21 @@ public struct AIProxy {
     ///     persistent on macOS and can be accurately used to attribute all requests to the same device. The default UUIDs
     ///     on iOS are pesistent until the end user chooses to rotate their vendor identification number.
     ///
+    ///   - requestFormat: If you are sending requests to your own Azure deployment, set this to `.azureDeployment`.
+    ///                    Otherwise, you may leave this set to its default value of `.standard`.
+    ///
     /// - Returns: An instance of OpenAIService configured and ready to make requests
     public static func openAIService(
         partialKey: String,
         serviceURL: String? = nil,
-        clientID: String? = nil
+        clientID: String? = nil,
+        requestFormat: OpenAIRequestFormat = .standard
     ) -> OpenAIService {
         return OpenAIService(
             partialKey: partialKey,
             serviceURL: serviceURL,
-            clientID: clientID
+            clientID: clientID,
+            requestFormat: requestFormat
         )
     }
 
