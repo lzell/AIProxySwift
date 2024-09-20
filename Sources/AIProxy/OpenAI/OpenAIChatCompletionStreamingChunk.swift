@@ -7,8 +7,15 @@
 
 import Foundation
 
-public struct OpenAIChatCompletionChunk: Codable {
+public struct OpenAIChatCompletionChunk: Decodable {
+    /// A list of chat completion choices. Can contain more than one elements if
+    /// OpenAIChatCompletionRequestBody's `n` property is greater than 1. Can also be empty for
+    /// the last chunk, which contains usage information only.
     public let choices: [OpenAIChunkChoice]
+
+    /// This property is nil for all chunks except for the last chunk, which contains the token
+    /// usage statistics for the entire request.
+    public let usage: OpenAIChatUsage?
 }
 
 public struct OpenAIChunkChoice: Codable {

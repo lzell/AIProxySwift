@@ -846,7 +846,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
         let input = ReplicateFluxPulidInputSchema(
             mainFaceImage: imageURL,
             prompt: "smiling man holding sign with glowing green text 'PuLID for FLUX'",
-            numOutputs: 4,
+            numOutputs: 1,
             startStep: 4
         )
         let output = try await replicateService.createFluxPulidImage(

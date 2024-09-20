@@ -13,40 +13,43 @@ final class OpenAIChatCompletionResponseTests: XCTestCase {
     func testChatCompletionResponseBodyIsDecodable() throws {
         let sampleResponse = """
         {
-          "id": "chatcmpl-9Z8TAXo6bxOBAFgLghnhv8vzjmh5j",
+          "id": "chatcmpl-A9Mr6SqhWJJvxwlJ5ucAvyjJ6OSVY",
           "object": "chat.completion",
-          "created": 1718161064,
-          "model": "gpt-4o-2024-05-13",
+          "created": 1726796172,
+          "model": "o1-mini-2024-09-12",
           "choices": [
             {
               "index": 0,
               "message": {
                 "role": "assistant",
-                "content": "The image is a blank gray square"
+                "content": "Hello! How can I assist you today?",
+                "refusal": null
               },
-              "logprobs": null,
               "finish_reason": "stop"
             }
           ],
           "usage": {
-            "prompt_tokens": 276,
-            "completion_tokens": 29,
-            "total_tokens": 305
+            "prompt_tokens": 10,
+            "completion_tokens": 661,
+            "total_tokens": 671,
+            "completion_tokens_details": {
+              "reasoning_tokens": 640
+            }
           },
-          "system_fingerprint": "fp_aa87380ac5"
+          "system_fingerprint": "fp_9620a98a6c"
         }
         """
 
-        let decoder = JSONDecoder()
-        let res = try decoder.decode(
-            OpenAIChatCompletionResponseBody.self,
-            from: sampleResponse.data(using: .utf8)!
-        )
-        XCTAssertEqual("gpt-4o-2024-05-13", res.model)
+        let res = try OpenAIChatCompletionResponseBody.deserialize(from: sampleResponse)
+        XCTAssertEqual("o1-mini-2024-09-12", res.model)
         XCTAssertEqual(
-            "The image is a blank gray square",
+            "Hello! How can I assist you today?",
             res.choices.first?.message.content
         )
+        XCTAssertEqual(10, res.usage?.promptTokens)
+        XCTAssertEqual(661, res.usage?.completionTokens)
+        XCTAssertEqual(671, res.usage?.totalTokens)
+        XCTAssertEqual(640, res.usage?.completionTokensDetails?.reasoningTokens)
     }
 
     func testCreateImageResponseIsDecodable() throws {
@@ -62,11 +65,7 @@ final class OpenAIChatCompletionResponseTests: XCTestCase {
         }
         """
 
-        let decoder = JSONDecoder()
-        let res = try decoder.decode(
-            OpenAICreateImageResponseBody.self,
-            from: sampleResponse.data(using: .utf8)!
-        )
+        let res = try OpenAICreateImageResponseBody.deserialize(from: sampleResponse)
         XCTAssertEqual(
             "An outdoor winter scene.",
             res.data.first?.revisedPrompt
@@ -116,11 +115,7 @@ final class OpenAIChatCompletionResponseTests: XCTestCase {
           "system_fingerprint": "fp_2a322c9ffc"
         }
         """#
-        let decoder = JSONDecoder()
-        let res = try decoder.decode(
-            OpenAIChatCompletionResponseBody.self,
-            from: sampleResponse.data(using: .utf8)!
-        )
+        let res = try OpenAIChatCompletionResponseBody.deserialize(from: sampleResponse)
         let functionToCall = res.choices.first!.message.toolCalls!.first!.function
         let arguments = functionToCall.arguments!
         XCTAssertEqual(
