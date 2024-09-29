@@ -71,8 +71,8 @@ public final class OpenAIService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/chat/create
-    /// - Returns: A ChatCompletionResponse. See this reference:
-    ///            https://platform.openai.com/docs/api-reference/chat/object
+    /// - Returns: An async sequence of completion chunks. See this reference:
+    ///            https://platform.openai.com/docs/api-reference/chat/streaming
     public func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
