@@ -1172,6 +1172,53 @@ model owner and model name in the string.
 See the full range of controls for generating an image by viewing `FalFastSDXLInputSchema.swift`
 
 
+### How to generate a non-streaming chat completion using Groq
+
+    import AIProxy
+
+    let groqService = AIProxy.groqService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let response = try await groqService.chatCompletionRequest(body: .init(
+            messages: [.assistant(content: "hello world")],
+            model: "mixtral-8x7b-32768"
+        ))
+        print(response.choices.first?.message.content ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
+
+
+### How to generate a streaming chat completion using Groq
+
+    import AIProxy
+
+    let groqService = AIProxy.groqService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let stream = try await groqService.streamingChatCompletionRequest(body: .init(
+                messages: [.assistant(content: "hello world")],
+                model: "mixtral-8x7b-32768"
+            )
+        )
+        for try await chunk in stream {
+            print(chunk.choices.first?.delta.content ?? "")
+        }
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
+
+
 ### How to fetch the weather with OpenMeteo
 
 This pattern is slightly different than the others, because OpenMeteo has an official lib that
