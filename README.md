@@ -1219,6 +1219,38 @@ See the full range of controls for generating an image by viewing `FalFastSDXLIn
     }
 
 
+### How to transcribe audio with Groq
+
+1. Record an audio file in quicktime and save it as "helloworld.m4a"
+2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
+3. Run this snippet:
+
+    ```
+    import AIProxy
+
+    let groqService = AIProxy.groqService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a")!
+        let requestBody = GroqTranscriptionRequestBody(
+            file: try Data(contentsOf: url),
+            model: "whisper-large-v3",
+            responseFormat: "json"
+        )
+        let response = try await groqService.createTranscriptionRequest(body: requestBody)
+        let transcript = response.text ?? "None"
+        print("Groq transcribed: \(transcript)")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get audio transcription from Groq: \(error.localizedDescription)")
+    }
+    ```
+
+
 ### How to fetch the weather with OpenMeteo
 
 This pattern is slightly different than the others, because OpenMeteo has an official lib that

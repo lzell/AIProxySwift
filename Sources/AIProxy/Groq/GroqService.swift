@@ -65,7 +65,7 @@ public final class GroqService {
     /// Initiates a streaming chat completion request to Groq.
     ///
     /// - Parameters:
-    ///   - body: The request body to send to aiproxy and openai. See this reference:
+    ///   - body: The chat completion request body. See this reference:
     ///           https://console.groq.com/docs/api-reference#chat-create
     /// - Returns: An async sequence of completion chunks. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
@@ -101,4 +101,49 @@ public final class GroqService {
 
         return asyncBytes.lines.compactMap { GroqChatCompletionStreamingChunk.from(line: $0) }
     }
+
+    /// Initiates a transcription request to /openai/v1/audio/transcriptions
+    ///
+    /// - Parameters:
+    ///   - body: The audio transcription request body. See this reference:
+    ///           https://console.groq.com/docs/api-reference#audio-transcription
+    /// - Returns: An transcription response. See this reference:
+    ///            https://platform.openai.com/docs/api-reference/audio/json-object
+    public func createTranscriptionRequest(
+        body: GroqTranscriptionRequestBody
+    ) async throws -> GroqTranscriptionResponseBody {
+        let session = AIProxyURLSession.create()
+        let boundary = UUID().uuidString
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/openai/v1/audio/transcriptions",
+            body: formEncode(body, boundary),
+            verb: .post,
+            contentType: "multipart/form-data; boundary=\(boundary)"
+        )
+
+        let (data, res) = try await session.data(for: request)
+        guard let httpResponse = res as? HTTPURLResponse else {
+            throw AIProxyError.assertion("Network response is not an http response")
+        }
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        if (body.responseFormat == "text") {
+            guard let text = String(data: data, encoding: .utf8) else {
+                throw AIProxyError.assertion("Could not represent OpenAI's whisper response as string")
+            }
+            return GroqTranscriptionResponseBody(duration: nil, language: nil, segments: nil, text: text, words: nil)
+        }
+
+        return try GroqTranscriptionResponseBody.deserialize(from: data)
+    }
+
 }
