@@ -76,6 +76,35 @@ public final class ReplicateService {
         )
     }
 
+    /// This is a convenience method for creating an image through Black Forest Lab's Flux-Pro v1.1 model:
+    /// https://replicate.com/black-forest-labs/flux-1.1-pro
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the image you'd like to generate.
+    ///
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. Each poll is separated by 1
+    ///                   second. The default is to try to fetch the resulting image for up to 30 seconds,
+    ///                   after which ReplicateError.reachedRetryLimit will be thrown.
+    ///
+    /// - Returns: An image URL
+    public func createFluxProImage_v1_1(
+        input: ReplicateFluxProInputSchema_v1_1,
+        pollAttempts: Int = 30
+    ) async throws -> URL {
+        let predictionResponse = try await self.createPredictionUsingOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-1.1-pro",
+            input: input,
+            output: ReplicatePredictionResponseBody<URL>.self
+        )
+        return try await self.pollForPredictionOutput(
+            predictionResponse: predictionResponse,
+            pollAttempts: pollAttempts
+        )
+    }
+
+
     /// This is a convenience method for creating an image through Black Forest Lab's Flux-Dev model:
     /// https://replicate.com/black-forest-labs/flux-dev
     ///
