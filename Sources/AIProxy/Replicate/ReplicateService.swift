@@ -90,7 +90,8 @@ public final class ReplicateService {
     /// - Returns: An image URL
     public func createFluxProImage_v1_1(
         input: ReplicateFluxProInputSchema_v1_1,
-        pollAttempts: Int = 30
+        pollAttempts: Int = 30,
+        secondsBetweenPollAttempts: UInt64 = 2
     ) async throws -> URL {
         let predictionResponse = try await self.createPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
@@ -100,7 +101,8 @@ public final class ReplicateService {
         )
         return try await self.pollForPredictionOutput(
             predictionResponse: predictionResponse,
-            pollAttempts: pollAttempts
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
     }
 

@@ -796,6 +796,13 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 
 ### How to generate a Flux-Pro image by Black Forest Labs, using Replicate
 
+This snippet generates a version 1.1 image. If you would like to generate version 1, make the
+following substitutions:
+
+- `ReplicateFluxProInputSchema_v1_1` -> `ReplicateFluxProInputSchema`
+- `createFluxProImage_v1_1` -> `createFluxProImage`
+
+    ```
     import AIProxy
 
     let replicateService = AIProxy.replicateService(
@@ -804,10 +811,10 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
     )
 
     do {
-        let input = ReplicateFluxProInputSchema(
+        let input = ReplicateFluxProInputSchema_v1_1(
             prompt: "Monument valley, Utah. High res"
         )
-        let output = try await replicateService.createFluxProImage(
+        let output = try await replicateService.createFluxProImage_v1_1(
             input: input
         )
         print("Done creating Flux-Pro image: ", output)
@@ -816,6 +823,7 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
     } catch {
         print("Could not create Flux-Pro image: \(error.localizedDescription)")
     }
+    ```
 
 
 See the full range of controls for generating an image by viewing `ReplicateFluxProInputSchema.swift`
