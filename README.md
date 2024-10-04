@@ -825,8 +825,7 @@ following substitutions:
     }
     ```
 
-
-See the full range of controls for generating an image by viewing `ReplicateFluxProInputSchema.swift`
+See the full range of controls for generating an image by viewing `ReplicateFluxProInputSchema_v1_1.swift`
 
 
 ### How to generate a Flux-PuLID image using Replicate
