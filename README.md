@@ -1186,11 +1186,16 @@ See the full range of controls for generating an image by viewing `FalFastSDXLIn
 Your training data must be a zip file of images. You can either pull the zip from assets (what
 I do here), or construct the zip in memory:
 
+    import AIProxy
+
+    let falService = AIProxy.falService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
     // Get the images to train with:
     guard let trainingData = NSDataAsset(name: "training") else {
-        print("""
-              Drop training.zip file into Assets first.
-              """)
+        print("Drop training.zip file into Assets first")
         return
     }
 
@@ -1199,10 +1204,7 @@ I do here), or construct the zip in memory:
             zipData: trainingData.data,
             name: "training.zip"
         )
-        print("""
-              Training file uploaded. Find it at \(url.absoluteString)
-              """)
-
+        print("Training file uploaded. Find it at \(url.absoluteString)")
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
@@ -1214,7 +1216,7 @@ I do here), or construct the zip in memory:
 Using the URL returned in the step above:
 
     let input = FalFluxLoRAFastTrainingInputSchema(
-        imagesDataURL: &lt;url-from-step-above&gt;
+        imagesDataURL: <url-from-step-above>
         triggerWord: "face"
     )
     do {
@@ -1226,7 +1228,7 @@ Using the URL returned in the step above:
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create Fal SDXL image: \(error.localizedDescription)")
+        print("Could not create Fal Flux training: \(error.localizedDescription)")
     }
 
 See `FalFluxLoRAFastTrainingInputSchema.swift` for the full range of training controls.
@@ -1235,28 +1237,28 @@ See `FalFluxLoRAFastTrainingInputSchema.swift` for the full range of training co
 
 Using the LoRA URL returned in the step above:
 
-        let inputSchema = FalFluxLoRAInputSchema(
-            prompt: "face on a blimp over Monument Valley, Utah",
-            loras: [
-                .init(
-                    path: &lt;lora-url-from-step-above&gt;
-                    scale: 0.9
-                )
-            ],
-            numImages: 2,
-            outputFormat: .jpeg
-        )
-        do {
-            let output = try await falService.createFluxLoRAImage(input: inputSchema)
-            print("""
-                  Fal's Flux LoRA inference is complete.
-                  Your images are at: \(output.images?.compactMap {$0.url?.absoluteString} ?? [])
-                  """)
-        }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-            print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
-        } catch {
-            print("Could not create Fal LoRA image: \(error.localizedDescription)")
-        }
+    let inputSchema = FalFluxLoRAInputSchema(
+        prompt: "face on a blimp over Monument Valley, Utah",
+        loras: [
+            .init(
+                path: <lora-url-from-step-above>
+                scale: 0.9
+            )
+        ],
+        numImages: 2,
+        outputFormat: .jpeg
+    )
+    do {
+        let output = try await falService.createFluxLoRAImage(input: inputSchema)
+        print("""
+              Fal's Flux LoRA inference is complete.
+              Your images are at: \(output.images?.compactMap {$0.url?.absoluteString} ?? [])
+              """)
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Fal LoRA image: \(error.localizedDescription)")
+    }
 
 See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
