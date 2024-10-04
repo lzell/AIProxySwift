@@ -32,7 +32,7 @@ public final class FalService {
         input: FalFastSDXLInputSchema
     ) async throws -> FalFastSDXLOutputSchema {
         let queueResponse = try await self.createInference(
-            model: "fal-ai/fast-sdxl",
+            model: "fal-ai/fast-sdxl",  // Add lightning to this!
             input: input
         )
         guard let statusURL = queueResponse.statusURL else {
@@ -44,6 +44,105 @@ public final class FalService {
             throw FalError.missingResultURL
         }
         return try await self.getResponse(url: responseURL)
+    }
+
+    /// Convenience method for training using `fal-ai/flux-lora-fast-training`
+    ///
+    /// - Parameter input: The input schema. See `FalFluxLoraFastTrainingInputSchema.swift` for the range of controls that you
+    ///                    can use to adjust the training.
+    ///
+    /// - Returns: The training result
+    public func createFluxLoRAFastTraining(
+        input: FalFluxLoRAFastTrainingInputSchema
+    ) async throws -> FalFluxLoRAFastTrainingOutputSchema {
+        let queueResponse = try await self.createInference(
+            model: "fal-ai/flux-lora-fast-training",
+            input: input
+        )
+        guard let statusURL = queueResponse.statusURL else {
+            throw FalError.missingStatusURL
+        }
+        let completedResponse = try await self.pollForInferenceComplete(statusURL: statusURL,
+                                                                        pollAttempts: 30,
+                                                                        secondsBetweenPollAttempts: 10)
+
+        guard let responseURL = completedResponse.responseURL else {
+            throw FalError.missingResultURL
+        }
+        return try await self.getResponse(url: responseURL)
+    }
+
+    public func createFluxLoRAImage(
+        input: FalFluxLoRAInputSchema
+    ) async throws -> FalFluxLoRAOutputSchema {
+        let queueResponse = try await self.createInference(
+            model: "fal-ai/flux-lora",
+            input: input
+        )
+        guard let statusURL = queueResponse.statusURL else {
+            throw FalError.missingStatusURL
+        }
+        let completedResponse = try await self.pollForInferenceComplete(statusURL: statusURL)
+
+        guard let responseURL = completedResponse.responseURL else {
+            throw FalError.missingResultURL
+        }
+        return try await self.getResponse(url: responseURL)
+    }
+
+    /// Uploads a zip file to Fal for use in training Flux fine-tunes.
+    /// See https://fal.ai/models/fal-ai/flux-lora-fast-training/api#files-upload
+    ///
+    /// - Parameters:
+    ///
+    ///   - zipData: The binary contents of your zip file. If you've added your zip file to xcassets, you
+    ///              can access the file's data with `NSDataAsset(name: "myfile").data`
+    ///
+    ///   - name: The name of the zip file, e.g. `myfile.zip`
+    ///
+    /// - Returns: The URL for where your zip file lives on Fal's short term storage.
+    ///            You can pass this URL to training jobs.
+    public func uploadTrainingZipFile(
+        zipData: Data,
+        name: String
+    ) async throws -> URL {
+        let initiateUpload = FalInitiateUploadRequestBody(contentType: "application/zip", fileName: name)
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/storage/upload/initiate",
+            body: initiateUpload.serialize(),
+            verb: .post,
+            contentType: "application/json"
+        )
+
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
+        if httpResponse.statusCode > 299 {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        let initiateRes = try FalInitiateUploadResponseBody.deserialize(from: data)
+        var uploadReq = URLRequest(url: initiateRes.uploadURL)
+        uploadReq.httpMethod = "PUT"
+        uploadReq.setValue("application/zip", forHTTPHeaderField: "Content-Type")
+        let (storageResponseData, storageResponse) = try await URLSession.shared.upload(for: uploadReq, from: zipData)
+
+        guard let httpStorageResponse = storageResponse as? HTTPURLResponse else {
+            throw AIProxyError.assertion("Network response is not an http response")
+        }
+
+        if httpStorageResponse.statusCode > 299 {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        return initiateRes.fileURL
     }
 
     /// If one of the convenience methods above does not fit your use case, you can use the

@@ -10,6 +10,10 @@ import Foundation
 @testable import AIProxy
 
 final class FalQueueResponseTests: XCTestCase {
+    func testThis() {
+//        {"status": "COMPLETED", "request_id": "365f4013-3e2c-46cf-9351-083406730e77", "response_url": "https://queue.fal.run/fal-ai/flux-lora-fast-training/requests/365f4013-3e2c-46cf-9351-083406730e77", "status_url": "https://queue.fal.run/fal-ai/flux-lora-fast-training/requests/365f4013-3e2c-46cf-9351-083406730e77/status", "cancel_url": "https://queue.fal.run/fal-ai/flux-lora-fast-training/requests/365f4013-3e2c-46cf-9351-083406730e77/cancel", "logs": null, "metrics": {"inference_time": 132.09963178634644}}
+
+    }
 
     func testResponseBodyIsDecodable() throws {
         let sampleResponse = """
@@ -58,6 +62,26 @@ final class FalQueueResponseTests: XCTestCase {
         XCTAssertEqual(
             2.1722686290740967,
             res.metrics?.inferenceTime
+        )
+    }
+
+    func testTrainingQueueResponseIsDecodable() throws {
+        let sampleResponse = #"""
+        {
+          "status": "COMPLETED",
+          "request_id": "78386d79-a969-46e7-a590-793f8970aa3b",
+          "response_url": "https://queue.fal.run/fal-ai/flux-lora-fast-training/requests/78386d79-a969-46e7-a590-793f8970aa3b",
+          "status_url": "https://queue.fal.run/fal-ai/flux-lora-fast-training/requests/78386d79-a969-46e7-a590-793f8970aa3b/status",
+          "cancel_url": "https://queue.fal.run/fal-ai/flux-lora-fast-training/requests/78386d79-a969-46e7-a590-793f8970aa3b/cancel",
+          "logs": null,
+          "metrics": {}
+        }
+        """#
+        let res = try FalQueueResponseBody.deserialize(from: sampleResponse)
+        XCTAssertEqual(.completed, res.status)
+        XCTAssertEqual(
+            "https://queue.fal.run/fal-ai/flux-lora-fast-training/requests/78386d79-a969-46e7-a590-793f8970aa3b",
+            res.responseURL?.absoluteString
         )
     }
 }
