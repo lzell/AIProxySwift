@@ -72,11 +72,38 @@ public final class FalService {
         return try await self.getResponse(url: responseURL)
     }
 
+    /// Convenience method for running inference on your trained Flux LoRA
+    ///
+    /// - Parameter input: The input schema. See `FalFluxLoraInputSchema.swift` for the range of controls that you
+    ///                    can use to adjust the inference.
+    ///
+    /// - Returns: The inference output with URLs to all generated images
     public func createFluxLoRAImage(
         input: FalFluxLoRAInputSchema
     ) async throws -> FalFluxLoRAOutputSchema {
         let queueResponse = try await self.createInference(
             model: "fal-ai/flux-lora",
+            input: input
+        )
+        guard let statusURL = queueResponse.statusURL else {
+            throw FalError.missingStatusURL
+        }
+        let completedResponse = try await self.pollForInferenceComplete(statusURL: statusURL)
+
+        guard let responseURL = completedResponse.responseURL else {
+            throw FalError.missingResultURL
+        }
+        return try await self.getResponse(url: responseURL)
+    }
+
+
+    /// Convenience method for creating a `fal-ai/runway-gen3/turbo/image-to-video` video.
+    ///
+    public func createRunwayGen3AlphaVideo(
+        input: FalRunwayGen3AlphaInputSchema
+    ) async throws -> FalRunwayGen3AlphaOutputSchema {
+        let queueResponse = try await self.createInference(
+            model: "fal-ai/runway-gen3/turbo/image-to-video",
             input: input
         )
         guard let statusURL = queueResponse.statusURL else {
