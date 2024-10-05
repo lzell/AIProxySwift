@@ -1,7 +1,7 @@
 # About
 
 Use this package to add [AIProxy](https://www.aiproxy.pro) support to your iOS and macOS apps.
-AIProxy lets you depend on AI APIs safely without building your own backend. 
+AIProxy lets you depend on AI APIs safely without building your own backend.
 Five levels of security are applied to keep your API key secure and your AI bill predictable:
 
 - Certificate pinning
@@ -47,7 +47,7 @@ See the FAQ for more details on the DeviceCheck bypass constant.
 
 - If you set the dependency rule to `main` in step 2 above, then you can ensure the package is
   up to date by right clicking on the package and selecting 'Update Package'
-  
+
   <img src="https://github.com/lzell/AIProxySwift/assets/35940/aeee0ab2-362b-4995-b9ca-ff4e1dd04f47" alt="Update package version" width="720">
 
 
@@ -1178,6 +1178,29 @@ model owner and model name in the string.
 
 See the full range of controls for generating an image by viewing `FalFastSDXLInputSchema.swift`
 
+### How to generate a Runway Gen3 Alpha video using Fal
+
+    import AIProxy
+
+    let falService = AIProxy.falService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    let input = FalRunwayGen3AlphaInputSchema(
+        imageUrl: "https://www.sonomacounty.com/wp-content/uploads/2023/09/activities_ballooning_Sonoma_Ballooning_Sonoma_County_900x675.png",
+        prompt: "A hot air balloon floating in the sky."
+    )
+    do {
+        let output = try await falService.createRunwayGen3AlphaVideo(input: input)
+        print(output.video?.url?.absoluteString ?? "No video URL")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Fal Runway Gen3 Alpha video: \(error.localizedDescription)")
+    }
+
+See the full range of controls for generating an image by viewing `FalRunwayGen3AlphaInputSchema.swift`
 
 ### How to train Flux on your own images using Fal
 
@@ -1407,11 +1430,11 @@ the package to Xcode using the [Installation steps](https://github.com/lzell/AIP
 Next, select your project in the Project Navigator (`cmd-1`), select your target, and scroll to
 the `Frameworks, Libraries, and Embedded Content` section. Tap on the plus icon:
 
-<img src="https://github.com/lzell/AIProxySwift/assets/35940/438e2bbb-688c-49bc-aa2a-ea85806818d5" alt="Add library dependency" width="820">  
+<img src="https://github.com/lzell/AIProxySwift/assets/35940/438e2bbb-688c-49bc-aa2a-ea85806818d5" alt="Add library dependency" width="820">
 
 And add the AIProxy library:
 
-<img src="https://github.com/lzell/AIProxySwift/assets/35940/f015a181-9591-435c-a37f-6fb0c8c5050c" alt="Select the AIProxy dependency" width="400">  
+<img src="https://github.com/lzell/AIProxySwift/assets/35940/f015a181-9591-435c-a37f-6fb0c8c5050c" alt="Select the AIProxy dependency" width="400">
 
 
 ## macOS network sandbox
@@ -1445,15 +1468,15 @@ consider a bug). Here is how to set it up:
   - Open the scheme editor at `Product > Scheme > Edit Scheme`
   - Select `Test`
   - Tap through to the test plan
-  
-    <img src="https://github.com/lzell/AIProxySwift/assets/35940/9a372244-f03e-4fe3-9361-ffc9d729b7d9" alt="Select test plan" width="720">  
-    
+
+    <img src="https://github.com/lzell/AIProxySwift/assets/35940/9a372244-f03e-4fe3-9361-ffc9d729b7d9" alt="Select test plan" width="720">
+
   - Select `Configurations > Environment Variables`
-    
+
     <img src="https://github.com/lzell/AIProxySwift/assets/35940/2e042957-2c40-4335-833d-70b2bf56c31a" alt="Select env variables" width="780">
-    
-  - Add the `AIPROXY_DEVICE_CHECK_BYPASS` env variable with your value  
-  
+
+  - Add the `AIPROXY_DEVICE_CHECK_BYPASS` env variable with your value
+
     <img src="https://github.com/lzell/AIProxySwift/assets/35940/e466097c-1700-401d-add6-07c14dd26ab8" alt="Enter env variable value" width="720">
 
 * **Important** Edit your test cases to forward on the env variable to the host simulator:
