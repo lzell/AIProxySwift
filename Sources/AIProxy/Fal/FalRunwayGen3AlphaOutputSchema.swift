@@ -31,9 +31,9 @@ extension FalRunwayGen3AlphaOutputSchema {
 
         private enum CodingKeys: String, CodingKey {
             case contentType = "content_type"
-            case fileData
-            case fileName
-            case fileSize
+            case fileData = "file_data"
+            case fileName = "file_name"
+            case fileSize = "file_size"
             case url
         }
     }
