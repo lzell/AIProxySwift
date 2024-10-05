@@ -1188,8 +1188,8 @@ See the full range of controls for generating an image by viewing `FalFastSDXLIn
     )
 
     let input = FalRunwayGen3AlphaInputSchema(
-        prompt: "A hot air balloon floating in the sky.",
-        imageUrl: "https://www.sonomacounty.com/wp-content/uploads/2023/09/activities_ballooning_Sonoma_Ballooning_Sonoma_County_900x675.png"
+        imageUrl: "https://www.sonomacounty.com/wp-content/uploads/2023/09/activities_ballooning_Sonoma_Ballooning_Sonoma_County_900x675.png",
+        prompt: "A hot air balloon floating in the sky."
     )
     do {
         let output = try await falService.createRunwayGen3AlphaVideo(input: input)

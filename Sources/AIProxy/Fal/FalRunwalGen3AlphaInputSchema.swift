@@ -13,11 +13,11 @@ import Foundation
 public struct FalRunwayGen3AlphaInputSchema: Encodable {
     // Required
 
-    /// The prompt to use for generating the video
-    public let prompt: String
-
     /// The URL of the input image to be transformed into a video
     public let imageUrl: String
+
+    /// The prompt to use for generating the video
+    public let prompt: String
 
     // Optional
 
@@ -31,12 +31,12 @@ public struct FalRunwayGen3AlphaInputSchema: Encodable {
     }
 
     public init(
-        prompt: String,
         imageUrl: String,
+        prompt: String,
         duration: String? = nil
     ) {
-        self.prompt = prompt
         self.imageUrl = imageUrl
+        self.prompt = prompt
         self.duration = duration
     }
 }

@@ -9,26 +9,32 @@ import Foundation
 
 public struct FalRunwayGen3AlphaOutputSchema: Decodable {
     public let video: Video?
-
-    private enum CodingKeys: String, CodingKey {
-        case video
-    }
 }
 
 extension FalRunwayGen3AlphaOutputSchema {
     public struct Video: Decodable {
-        public let url: URL?                // The URL where the file can be downloaded from.
-        public let contentType: String?     // The mime type of the file.
-        public let fileName: String?        // The name of the file. It will be auto-generated if not provided.
-        public let fileSize: Int?           // The size of the file in bytes.
-        public let fileData: String?           // File data
+
+        /// The mime type of the file.
+        public let contentType: String?
+
+        // File data
+        public let fileData: String?
+
+        /// The name of the file. It will be auto-generated if not provided.
+        public let fileName: String?
+
+        /// The size of the file in bytes.
+        public let fileSize: Int?
+
+        /// The URL where the file can be downloaded from.
+        public let url: URL?
 
         private enum CodingKeys: String, CodingKey {
-            case url
             case contentType = "content_type"
+            case fileData
             case fileName
             case fileSize
-            case fileData
+            case url
         }
     }
 }

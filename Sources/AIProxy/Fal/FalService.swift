@@ -99,6 +99,10 @@ public final class FalService {
 
     /// Convenience method for creating a `fal-ai/runway-gen3/turbo/image-to-video` video.
     ///
+    /// - Parameter input: The input schema. See `FalRunwayGen3AlphaInputSchema.swift` for the controls that you
+    ///                    can use to adjust the video generation.
+    ///
+    /// - Returns: The inference result. The `video` property of the returned value has a `url` that you can use to fetch the video contents.
     public func createRunwayGen3AlphaVideo(
         input: FalRunwayGen3AlphaInputSchema
     ) async throws -> FalRunwayGen3AlphaOutputSchema {
