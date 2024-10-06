@@ -20,72 +20,77 @@ public final class ReplicateService {
         self.clientID = clientID
     }
 
-    /// This is a convenience method for creating an image through Black Forest Lab's Flux-Schnell model:
+    /// Convenience method for creating an image through Black Forest Lab's Flux-Schnell model:
     /// https://replicate.com/black-forest-labs/flux-schnell
     ///
     /// - Parameters:
     ///
     ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxSchnellInputSchema.swift
     ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. Each poll is separated by 1
-    ///                   second. The default is to try to fetch the resulting image for up to 30 seconds,
-    ///                   after which ReplicateError.reachedRetryLimit will be thrown.
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
+    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
+    ///
+    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
+    ///   amount of time that this method will wait for a result is `pollAttempts *
+    ///   secondsBetweenPollAttempts`
     ///
     /// - Returns: An array of image URLs
     public func createFluxSchnellImage(
         input: ReplicateFluxSchnellInputSchema,
-        pollAttempts: Int = 30
+        pollAttempts: Int = 30,
+        secondsBetweenPollAttempts: UInt64 = 1
     ) async throws -> [URL] {
-        let predictionResponse = try await self.createPredictionUsingOfficialModel(
+        return try await self.predictAndPollUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-schnell",
             input: input,
-            output: ReplicatePredictionResponseBody<ReplicateFluxSchnellOutputSchema>.self
-        )
-        return try await self.pollForPredictionOutput(
-            predictionResponse: predictionResponse,
-            pollAttempts: pollAttempts
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
     }
 
-    /// This is a convenience method for creating an image through Black Forest Lab's Flux-Pro model:
+    /// Convenience method for creating an image through Black Forest Lab's Flux-Pro model:
     /// https://replicate.com/black-forest-labs/flux-pro
     ///
     /// - Parameters:
     ///
     ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxProInputSchema.swift
     ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. Each poll is separated by 1
-    ///                   second. The default is to try to fetch the resulting image for up to 30 seconds,
-    ///                   after which ReplicateError.reachedRetryLimit will be thrown.
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
+    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
+    ///
+    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
+    ///   amount of time that this method will wait for a result is `pollAttempts *
+    ///   secondsBetweenPollAttempts`
     ///
     /// - Returns: An image URL
     public func createFluxProImage(
         input: ReplicateFluxProInputSchema,
-        pollAttempts: Int = 30
+        pollAttempts: Int = 30,
+        secondsBetweenPollAttempts: UInt64 = 2
     ) async throws -> URL {
-        let predictionResponse = try await self.createPredictionUsingOfficialModel(
+        return try await self.predictAndPollUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-pro",
             input: input,
-            output: ReplicatePredictionResponseBody<ReplicateFluxProOutputSchema>.self
-        )
-        return try await self.pollForPredictionOutput(
-            predictionResponse: predictionResponse,
-            pollAttempts: pollAttempts
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
     }
 
-    /// This is a convenience method for creating an image through Black Forest Lab's Flux-Pro v1.1 model:
+    /// Convenience method for creating an image through Black Forest Lab's Flux-Pro v1.1 model:
     /// https://replicate.com/black-forest-labs/flux-1.1-pro
     ///
     /// - Parameters:
     ///
     ///   - input: The input specification of the image you'd like to generate.
     ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. Each poll is separated by 1
-    ///                   second. The default is to try to fetch the resulting image for up to 30 seconds,
-    ///                   after which ReplicateError.reachedRetryLimit will be thrown.
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
+    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
+    ///
+    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
+    ///   amount of time that this method will wait for a result is `pollAttempts *
+    ///   secondsBetweenPollAttempts`
     ///
     /// - Returns: An image URL
     public func createFluxProImage_v1_1(
@@ -93,91 +98,164 @@ public final class ReplicateService {
         pollAttempts: Int = 30,
         secondsBetweenPollAttempts: UInt64 = 2
     ) async throws -> URL {
-        let predictionResponse = try await self.createPredictionUsingOfficialModel(
+        return try await self.predictAndPollUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-1.1-pro",
             input: input,
-            output: ReplicatePredictionResponseBody<URL>.self
-        )
-        return try await self.pollForPredictionOutput(
-            predictionResponse: predictionResponse,
             pollAttempts: pollAttempts,
             secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
     }
 
-
-    /// This is a convenience method for creating an image through Black Forest Lab's Flux-Dev model:
+    /// Convenience method for creating an image through Black Forest Lab's Flux-Dev model:
     /// https://replicate.com/black-forest-labs/flux-dev
     ///
     /// - Parameters:
     ///
     ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxDevInputSchema.swift
     ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. Each poll is separated by 1
-    ///                   second. The default is to try to fetch the resulting image for up to 30 seconds,
-    ///                   after which ReplicateError.reachedRetryLimit will be thrown.
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
+    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
+    ///
+    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
+    ///   amount of time that this method will wait for a result is `pollAttempts *
+    ///   secondsBetweenPollAttempts`
     ///
     /// - Returns: An array of image URLs
     public func createFluxDevImage(
         input: ReplicateFluxDevInputSchema,
-        pollAttempts: Int = 30
+        pollAttempts: Int = 30,
+        secondsBetweenPollAttempts: UInt64 = 1
     ) async throws -> [URL] {
-        let predictionResponse = try await self.createPredictionUsingOfficialModel(
+        return try await self.predictAndPollUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-dev",
             input: input,
-            output: ReplicatePredictionResponseBody<ReplicateFluxDevOutputSchema>.self
-        )
-        return try await self.pollForPredictionOutput(
-            predictionResponse: predictionResponse,
-            pollAttempts: pollAttempts
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
     }
 
+    /// Convenience method for creating an image using https://replicate.com/zsxkib/flux-pulid
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxPuLIDInputSchema.swift
+    ///
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
+    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
+    ///
+    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
+    ///   amount of time that this method will wait for a result is `pollAttempts *
+    ///   secondsBetweenPollAttempts`
+    ///
+    /// - Returns: An array of image URLs
     public func createFluxPulidImage(
         input: ReplicateFluxPulidInputSchema,
         version: String = "8baa7ef2255075b46f4d91cd238c21d31181b3e6a864463f967960bb0112525b",
         pollAttempts: Int = 30,
         secondsBetweenPollAttempts: UInt64 = 2
     ) async throws -> [URL] {
-        let predictionResponse = try await self.createPrediction(
+        return try await self.predictAndPollUsingVersion(
             version: version,
             input: input,
-            output: ReplicatePredictionResponseBody<[URL]>.self
-        )
-        return try await self.pollForPredictionOutput(
-            predictionResponse: predictionResponse,
             pollAttempts: pollAttempts,
             secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
     }
 
-    /// This is a convenience method for creating an image through StabilityAI's SDXL model.
+    /// Convenience method for creating an image through StabilityAI's SDXL model.
     /// https://replicate.com/stability-ai/sdxl
     ///
     /// - Parameters:
     ///
     ///   - input: The input specification of the image you'd like to generate. See ReplicateSDXLInputSchema.swift
     ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. Each poll is separated by 1
-    ///                   second. The default is to try to fetch the resulting image for up to 60 seconds,
-    ///                   after which ReplicateError.reachedRetryLimit will be thrown.
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
+    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
+    ///
+    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
+    ///   amount of time that this method will wait for a result is `pollAttempts *
+    ///   secondsBetweenPollAttempts`
     ///
     /// - Returns: An array of image URLs
     public func createSDXLImage(
         input: ReplicateSDXLInputSchema,
         version: String = "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
-        pollAttempts: Int = 60
+        pollAttempts: Int = 60,
+        secondsBetweenPollAttempts: UInt64 = 1
     ) async throws -> [URL] {
-        let predictionResponse = try await self.createPrediction(
+        return try await self.predictAndPollUsingVersion(
             version: version,
             input: input,
-            output: ReplicatePredictionResponseBody<ReplicateSDXLOutputSchema>.self
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
-        return try await self.pollForPredictionOutput(
-            predictionResponse: predictionResponse,
-            pollAttempts: pollAttempts
+    }
+
+    /// Convenience method for creating an image using Flux-Dev ControlNet:
+    /// https://replicate.com/xlabs-ai/flux-dev-controlnet
+    ///
+    /// In my testing:
+    /// - if the replicate model is cold, generation takes between 3 and 4 minutes
+    /// - If the model is warm, generation takes 30-50 seconds
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxDevControlNetInputSchema.swift
+    ///
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
+    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
+    ///
+    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
+    ///   amount of time that this method will wait for a result is `pollAttempts *
+    ///   secondsBetweenPollAttempts`
+    ///
+    /// - Returns: An array of image URLs
+    public func createFluxDevControlNetImage(
+        input: ReplicateFluxDevControlNetInputSchema,
+        version: String = "f2c31c31d81278a91b2447a304dae654c64a5d5a70340fba811bb1cbd41019a2",
+        pollAttempts: Int = 70,
+        secondsBetweenPollAttempts: UInt64 = 5
+    ) async throws -> [URL] {
+        return try await self.predictAndPollUsingVersion(
+            version: version,
+            input: input,
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
+        )
+    }
+
+    /// Convenience method for creating an image using Flux ControlNet:
+    /// https://replicate.com/xlabs-ai/flux-controlnet/api
+    ///
+    /// In my testing:
+    /// - if the replicate model is cold, generation takes between 3 and 4 minutes
+    /// - If the model is warm, generation takes 40-60 seconds
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxControlNetInputSchema.swift
+    ///
+    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
+    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
+    ///
+    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
+    ///   amount of time that this method will wait for a result is `pollAttempts *
+    ///   secondsBetweenPollAttempts`
+    ///
+    /// - Returns: An array of image URLs
+    public func createFluxControlNetImage(
+        input: ReplicateFluxControlNetInputSchema,
+        version: String = "017ca9c50e6f53e6510c8b1859ea112fbb83ee266c5ef6f461c05b4f1cc5bf63",
+        pollAttempts: Int = 30,
+        secondsBetweenPollAttempts: UInt64 = 10
+    ) async throws -> [URL] {
+        return try await self.predictAndPollUsingVersion(
+            version: version,
+            input: input,
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
     }
 
@@ -568,5 +646,43 @@ public final class ReplicateService {
             )
         }
         return try output.deserialize(from: data)
+    }
+
+    private func predictAndPollUsingVersion<T: Encodable, U: Decodable>(
+        version: String,
+        input: T,
+        pollAttempts: Int,
+        secondsBetweenPollAttempts: UInt64
+    ) async throws -> U {
+        let predictionResponse = try await self.createPrediction(
+            version: version,
+            input: input,
+            output: ReplicatePredictionResponseBody<U>.self
+        )
+        return try await self.pollForPredictionOutput(
+            predictionResponse: predictionResponse,
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
+        )
+    }
+
+    private func predictAndPollUsingOfficialModel<T: Encodable, U: Decodable>(
+        modelOwner: String,
+        modelName: String,
+        input: T,
+        pollAttempts: Int,
+        secondsBetweenPollAttempts: UInt64
+    ) async throws -> U {
+        let predictionResponse = try await self.createPredictionUsingOfficialModel(
+            modelOwner: modelOwner,
+            modelName: modelName,
+            input: input,
+            output: ReplicatePredictionResponseBody<U>.self
+        )
+        return try await self.pollForPredictionOutput(
+            predictionResponse: predictionResponse,
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
+        )
     }
 }
