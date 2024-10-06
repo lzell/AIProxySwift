@@ -224,8 +224,8 @@ public final class FalService {
     /// - Returns: A queue response with the status of `.completed`
     public func pollForInferenceComplete(
         statusURL: URL,
-        pollAttempts: Int = 30,
-        secondsBetweenPollAttempts: UInt64 = 1
+        pollAttempts: Int = 60,
+        secondsBetweenPollAttempts: UInt64 = 2
     ) async throws -> FalQueueResponseBody {
         return try await self.actorPollForInferenceCompletion(
             url: statusURL,
