@@ -870,6 +870,34 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 See the full range of controls for generating an image by viewing `ReplicateFluxPulidInputSchema.swift`
 
 
+### How to generate an image from a reference image using Flux ControlNet on Replicate
+
+There are many controls to play with for this use case. Please see
+`ReplicateFluxDevControlNetInputSchema.swift` for the full range of controls.
+
+    import AIProxy
+
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let input = ReplicateFluxDevControlNetInputSchema(
+            controlImage: URL(string: "https://example.com/your/image")!,
+            prompt: "a cyberpunk with natural greys and whites and browns",
+            controlStrength: 0.4
+        )
+        let output = try await replicateService.createFluxDevControlNetImage(
+            input: input
+        )
+        print("Done creating Flux-ControlNet image: ", output)
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Flux-ControlNet image: \(error.localizedDescription)")
+    }
+
+
 ### How to generate an SDXL image by StabilityAI, using Replicate
 
     import AIProxy
