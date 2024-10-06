@@ -226,39 +226,6 @@ public final class ReplicateService {
         )
     }
 
-    /// Convenience method for creating an image using Flux ControlNet:
-    /// https://replicate.com/xlabs-ai/flux-controlnet/api
-    ///
-    /// In my testing:
-    /// - if the replicate model is cold, generation takes between 3 and 4 minutes
-    /// - If the model is warm, generation takes 40-60 seconds
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxControlNetInputSchema.swift
-    ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
-    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
-    ///
-    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
-    ///   amount of time that this method will wait for a result is `pollAttempts *
-    ///   secondsBetweenPollAttempts`
-    ///
-    /// - Returns: An array of image URLs
-    public func createFluxControlNetImage(
-        input: ReplicateFluxControlNetInputSchema,
-        version: String = "017ca9c50e6f53e6510c8b1859ea112fbb83ee266c5ef6f461c05b4f1cc5bf63",
-        pollAttempts: Int = 30,
-        secondsBetweenPollAttempts: UInt64 = 10
-    ) async throws -> [URL] {
-        return try await self.predictAndPollUsingVersion(
-            version: version,
-            input: input,
-            pollAttempts: pollAttempts,
-            secondsBetweenPollAttempts: secondsBetweenPollAttempts
-        )
-    }
-
     /// Adds a new public or private model to your replicate account.
     /// You can use this as a starting point to fine-tune Flux.
     ///
