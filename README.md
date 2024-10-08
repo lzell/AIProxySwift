@@ -412,6 +412,96 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     }
 
 
+### How to use streaming text messages with Anthropic
+
+    import AIProxy
+
+    let anthropicService = AIProxy.anthropicService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    do {
+        let requestBody = AnthropicMessageRequestBody(
+            maxTokens: 1024,
+            messages: [
+                .init(
+                    content: [.text("hello world")],
+                    role: .user
+                )
+            ],
+            model: "claude-3-5-sonnet-20240620"
+        )
+
+        let stream = try await anthropicService.streamingMessageRequest(body: requestBody)
+        for try await chunk in stream {
+            switch chunk {
+            case .text(let text):
+                print(text)
+            case .toolUse(name: let toolName, input: let toolInput):
+                print("Claude wants to call tool \(toolName) with input \(toolInput)")
+            }
+        }
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not use Anthropic's message stream: \(error.localizedDescription)")
+    }
+
+
+### How to use streaming tool calls with Anthropic
+
+    import AIProxy
+
+    let anthropicService = AIProxy.anthropicService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let requestBody = AnthropicMessageRequestBody(
+            maxTokens: 1024,
+            messages: [
+                .init(
+                    content: [.text("What is nvidia's stock price?")],
+                    role: .user
+                )
+            ],
+            model: "claude-3-5-sonnet-20240620",
+            tools: [
+                .init(
+                    description: "Call this function when the user wants a stock symbol",
+                    inputSchema: [
+                        "type": "object",
+                        "properties": [
+                            "ticker": [
+                                "type": "string",
+                                "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+                            ]
+                        ],
+                        "required": ["ticker"]
+                    ],
+                    name: "get_stock_symbol"
+                )
+            ]
+        )
+
+        let stream = try await anthropicService.streamingMessageRequest(body: requestBody)
+        for try await chunk in stream {
+            switch chunk {
+            case .text(let text):
+                print(text)
+            case .toolUse(name: let toolName, input: let toolInput):
+                print("Claude wants to call tool \(toolName) with input \(toolInput)")
+            }
+        }
+        print("Done with stream")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print(error.localizedDescription)
+    }
+
+
 ### How to send an image to Anthropic
 
 Use `UIImage` in place of `NSImage` for iOS apps:
