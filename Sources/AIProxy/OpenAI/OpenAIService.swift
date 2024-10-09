@@ -196,9 +196,8 @@ public final class OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/audio/createSpeech
     public func createTextToSpeechRequest(
         body: OpenAITextToSpeechRequestBody
-    ) async throws -> URL {
+    ) async throws -> Data {
         let session = AIProxyURLSession.create()
-        let boundary = UUID().uuidString
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
@@ -209,7 +208,7 @@ public final class OpenAIService {
             contentType: "application/json"
         )
 
-        let (url, res) = try await session.download(for: request)
+        let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
             throw AIProxyError.assertion("Network response is not an http response")
         }
@@ -221,7 +220,7 @@ public final class OpenAIService {
             )
         }
         
-        return url
+        return data
     }
 
     private func resolvedPath(_ common: String) -> String {
