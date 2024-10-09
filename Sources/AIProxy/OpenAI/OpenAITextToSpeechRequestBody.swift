@@ -13,21 +13,25 @@ import Foundation
 public struct OpenAITextToSpeechRequestBody: Encodable {
 
     // Required
+    
     /// The text to generate audio for. The maximum length is 4096 characters.
     public let input: String
 
-    // Required
     /// One of the available TTS models: `tts-1` or `tts-1-hd`, default to `tts-1`
+    /// Default to `tts-1`
     public let model: Model
 
-    // Required
     /// The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`.
     public let voice: Voice
 
+    // Optional
+    
     /// The format to audio in. Supported formats are `mp3`, `opus`, `aac`, `flac`, `wav`, and `pcm`.
+    /// Default to `mp3`
     public let responseFormat: ResponseFormat?
 
-    /// The speed of the generated audio. Select a value from 0.25 to 4.0. 1.0 is the default.
+    /// The speed of the generated audio. Select a value from 0.25 to 4.0.
+    /// Default to `1.0`
     public let speed: Float?
 
     public init(
@@ -42,6 +46,14 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
         self.voice = voice
         self.responseFormat = responseFormat
         self.speed = speed
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case input
+        case model
+        case voice
+        case responseFormat = "response_format"
+        case speed
     }
 }
 
