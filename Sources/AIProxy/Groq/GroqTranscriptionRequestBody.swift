@@ -15,7 +15,7 @@ public struct GroqTranscriptionRequestBody: MultipartFormEncodable {
     /// mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.
     public let file: Data
 
-    /// ID of the model to use. Only `whisper-large-v3` is currently available.
+    /// ID of the model to use. `whisper-large-v3` and `whisper-large-v3-turbo` are available
     public let model: String
 
     // Optional

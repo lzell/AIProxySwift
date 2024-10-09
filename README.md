@@ -1469,7 +1469,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
         let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a")!
         let requestBody = GroqTranscriptionRequestBody(
             file: try Data(contentsOf: url),
-            model: "whisper-large-v3",
+            model: "whisper-large-v3-turbo",
             responseFormat: "json"
         )
         let response = try await groqService.createTranscriptionRequest(body: requestBody)
