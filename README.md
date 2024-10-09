@@ -368,6 +368,41 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     }
     ```
 
+### How to use OpenAI text-to-speech
+
+    ```swift
+    import AIProxy
+
+    let openAIService = AIProxy.openAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let requestBody = OpenAITextToSpeechRequestBody(
+            input: "Hello world",
+            voice: .nova
+        )
+        
+        let mpegData = try await openAIService.createTextToSpeechRequest(body: requestBody)
+
+        // Do not use a local `let` or `var` for AVAudioPlayer.
+        // You need the lifecycle of the player to live beyond the scope of this function.
+        // Instead, use file scope or set the player as a member of a reference type with long life.
+        // For example, at the top of this file you may define:
+        //
+        //   fileprivate var audioPlayer: AVAudioPlayer? = nil
+        //
+        // And then use the code below to play the TTS result:
+        audioPlayer = try AVAudioPlayer(data: mpegData)
+        audioPlayer?.prepareToPlay()
+        audioPlayer?.play()
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create ElevenLabs TTS audio: \(error.localizedDescription)")
+    }
+    ```
 
 ### How to use OpenAI through an Azure deployment
 
