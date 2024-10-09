@@ -17,7 +17,7 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
 
     // Required
     /// One of the available TTS models: `tts-1` or `tts-1-hd`, default to `tts-1`
-    public let model: String
+    public let model: Model
 
     // Required
     /// The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`.
@@ -37,9 +37,14 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
         case mp3, opus, aac, flac, wav, pcm
     }
     
+    public enum Model: String, Encodable {
+        case tts1 = "tts-1"
+        case tts1HD = "tts-1-hd"
+    }
+    
     public init(
         input: String,
-        model: String = "tts-1",
+        model: Model = .tts1,
         voice: OpenAITextToSpeechRequestBody.Voice,
         responseFormat: OpenAITextToSpeechRequestBody.ResponseFormat = .mp3,
         speed: Float = 1.0
