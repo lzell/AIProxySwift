@@ -203,7 +203,7 @@ public final class OpenAIService {
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
             proxyPath: self.resolvedPath("audio/speech"),
-            body:  try JSONEncoder().encode(body),
+            body:  try body.serialize(),
             verb: .post,
             contentType: "application/json"
         )
