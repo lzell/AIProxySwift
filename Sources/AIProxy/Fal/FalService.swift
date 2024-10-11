@@ -152,7 +152,7 @@ public final class FalService {
         contentType: String
     ) async throws -> URL {
         let initiateUpload = FalInitiateUploadRequestBody(contentType: contentType, fileName: name)
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -208,7 +208,7 @@ public final class FalService {
         if !model.starts(with: "/") {
             model = "/" + model
         }
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -265,7 +265,7 @@ public final class FalService {
         guard url.host == "queue.fal.run" else {
             throw AIProxyError.assertion("Fal has changed the image polling domain")
         }
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -314,7 +314,7 @@ public final class FalService {
         guard url.host == "queue.fal.run" else {
             throw AIProxyError.assertion("Fal has changed the image polling domain")
         }
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,

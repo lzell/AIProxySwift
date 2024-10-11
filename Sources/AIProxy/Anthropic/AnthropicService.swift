@@ -33,7 +33,7 @@ public final class AnthropicService {
         var body = body
         body.stream = false
         let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -70,7 +70,7 @@ public final class AnthropicService {
         var body = body
         body.stream = true
         let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,

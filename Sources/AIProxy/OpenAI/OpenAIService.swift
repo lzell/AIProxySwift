@@ -27,6 +27,48 @@ public final class OpenAIService {
         self.requestFormat = requestFormat
     }
 
+    public func connect() {
+        // Create a URL object with the WebSocket server address
+        guard let url = URL(string: "ws://localhost:6000") else {
+            fatalError("Invalid URL")
+        }
+
+        // Create a URLSession with default configuration
+        let session = URLSession(configuration: .default)
+
+        // Create a WebSocket task
+        let webSocketTask = session.webSocketTask(with: url)
+
+        // Function to receive messages
+        func receiveMessage() {
+            webSocketTask.receive { result in
+                switch result {
+                case .failure(let error):
+                    print("Failed to receive message: \(error)")
+                case .success(let message):
+                    switch message {
+                    case .string(let text):
+                        print("Received string: \(text)")
+                    case .data(let data):
+                        print("Received data: \(data)")
+                    @unknown default:
+                        print("Received an unknown message")
+                    }
+                }
+            }
+        }
+
+        // Start the WebSocket connection
+        webSocketTask.resume()
+
+        // Call the receive function
+        receiveMessage()
+
+        // Keep the playground running to receive the message
+        RunLoop.main.run()
+
+    }
+
     /// Initiates a non-streaming chat completion request to /v1/chat/completions.
     ///
     /// - Parameters:
@@ -41,7 +83,7 @@ public final class OpenAIService {
         body.stream = false
         body.streamOptions = nil
         let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
@@ -80,7 +122,7 @@ public final class OpenAIService {
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
         let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
@@ -118,7 +160,7 @@ public final class OpenAIService {
         body: OpenAICreateImageRequestBody
     ) async throws -> OpenAICreateImageResponseBody {
         let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
@@ -155,7 +197,7 @@ public final class OpenAIService {
     ) async throws -> OpenAICreateTranscriptionResponseBody {
         let session = AIProxyURLSession.create()
         let boundary = UUID().uuidString
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
@@ -198,7 +240,7 @@ public final class OpenAIService {
         body: OpenAITextToSpeechRequestBody
     ) async throws -> Data {
         let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,

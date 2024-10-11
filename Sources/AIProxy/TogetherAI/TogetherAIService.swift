@@ -34,7 +34,7 @@ public final class TogetherAIService {
         var body = body
         body.stream = false
         let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -71,7 +71,7 @@ public final class TogetherAIService {
         body.stream = true
 
         let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,

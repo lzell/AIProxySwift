@@ -30,7 +30,7 @@ public final class DeepLService {
         body: DeepLTranslateRequestBody
     ) async throws -> DeepLTranslateResponseBody {
         let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
