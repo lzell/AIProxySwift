@@ -272,7 +272,7 @@ public final class ReplicateService {
             visibility: visibility
         )
 
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -316,7 +316,7 @@ public final class ReplicateService {
     ) async throws -> ReplicateFileUploadResponseBody {
         let body = ReplicateFileUploadRequestBody(fileData: zipData, fileName: name)
         let boundary = UUID().uuidString
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -356,7 +356,7 @@ public final class ReplicateService {
         versionID: String,
         body: ReplicateTrainingRequestBody<T>
     ) async throws -> ReplicateTrainingResponseBody {
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -403,7 +403,7 @@ public final class ReplicateService {
                 input: input
             )
         )
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -450,7 +450,7 @@ public final class ReplicateService {
                 version: version
             )
         )
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -597,7 +597,7 @@ public final class ReplicateService {
         guard url.host == "api.replicate.com" else {
             throw AIProxyError.assertion("Replicate has changed the poll domain")
         }
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,

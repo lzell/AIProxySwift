@@ -9,8 +9,25 @@ import Foundation
 
 struct AIProxyURLRequest {
 
-    /// Creates a URLRequest that is configured for use with an AIProxy URLSession.
-    static func create(
+    static func createWS(
+        partialKey: String,
+        serviceURL: String,
+        clientID: String?
+    ) async throws -> URLRequest {
+        let deviceCheckToken = await AIProxyDeviceCheck.getToken()
+        guard var urlComponents = URLComponents(string: serviceURL),
+              let proxyPathComponents = URLComponents(string: proxyPath) else {
+            throw AIProxyError.assertion(
+                "Could not create urlComponents, please check the aiproxyEndpoint constant"
+            )
+        }
+
+        urlComponents.path += proxyPathComponents.path
+
+    }
+
+    /// Creates an HTTP URLRequest that is configured for use with an AIProxy URLSession.
+    static func createHTTP(
         partialKey: String,
         serviceURL: String,
         clientID: String?,

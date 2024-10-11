@@ -36,7 +36,7 @@ public final class ElevenLabsService {
         body: ElevenLabsTTSRequestBody
     ) async throws -> Data {
         let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,

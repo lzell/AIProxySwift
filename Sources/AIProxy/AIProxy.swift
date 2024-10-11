@@ -44,7 +44,7 @@ public struct AIProxy {
         body: Data? = nil,
         verb: AIProxyHTTPVerb = .automatic
     ) async throws -> URLRequest {
-        return try await AIProxyURLRequest.create(
+        return try await AIProxyURLRequest.createHTTP(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID,
