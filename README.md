@@ -1573,6 +1573,40 @@ out, and we'll generate IDs for you. See `AIProxyIdentifier.swift` if you would 
 ID generation specifics.
 
 
+### How to catch Foundation errors for specific conditions
+
+We use Foundation's `URL` types such as `URLRequest` and `URLSession` for all connections to
+AIProxy. You can view the various errors that Foundation may raise by viewing NSURLError.h
+(which is easiest to find by punching `cmd-shift-o` in Xcode and searching for it).
+
+Some errors may be more interesting to you, and worth their own error handler to pop UI for
+your user. For example, to catch `NSURLErrorTimedOut`, `NSURLErrorNetworkConnectionLost` and
+`NSURLErrorNotConnectedToInternet`, you could use the following try/catch structure:
+
+    import AIProxy
+
+    let openAIService = AIProxy.openAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let response = try await openAIService.chatCompletionRequest(body: .init(
+            model: "gpt-4o-mini",
+            messages: [.assistant(content: .text("hello world"))]
+        ))
+        print(response.choices.first?.message.content ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch let err as URLError where err.code == URLError.timedOut {
+        print("Request for OpenAI buffered chat completion timed out")
+    } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
+        print("Could not make buffered chat request. Please check your internet connection")
+    } catch {
+        print("Could not get buffered chat completion: \(error.localizedDescription)")
+    }
+
+
 # Troubleshooting
 
 
