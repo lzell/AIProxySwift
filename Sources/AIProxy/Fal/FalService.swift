@@ -137,17 +137,17 @@ public final class FalService {
         zipData: Data,
         name: String
     ) async throws -> URL {
-        try await uploadFile(data: zipData, name: name, contentType: "application/zip")
+        try await uploadFile(fileData: zipData, name: name, contentType: "application/zip")
     }
     
     /// Uploads a file to Fal's short term storage, for instance a reference image for Runway or ControlNet
     /// - Parameters:
-    ///   - data: The binary representation of your file
+    ///   - fileData: The binary representation of your file
     ///   - name: name of the file
     ///   - contentType: Content-type, e.g. `image/png` for PNG files or `application/zip` for zip files
     /// - Returns: The URL of the file on Fal's short term storage. Add this URL to any input schema like `FalRunwayGen3AlphaInputSchema`
     public func uploadFile(
-        data: Data,
+        fileData: Data,
         name: String,
         contentType: String
     ) async throws -> URL {
@@ -174,7 +174,7 @@ public final class FalService {
         var uploadReq = URLRequest(url: initiateRes.uploadURL)
         uploadReq.httpMethod = "PUT"
         uploadReq.setValue(contentType, forHTTPHeaderField: "Content-Type")
-        let (storageResponseData, storageResponse) = try await URLSession.shared.upload(for: uploadReq, from: data)
+        let (storageResponseData, storageResponse) = try await URLSession.shared.upload(for: uploadReq, from: fileData)
 
         guard let httpStorageResponse = storageResponse as? HTTPURLResponse else {
             throw AIProxyError.assertion("Network response is not an http response")
