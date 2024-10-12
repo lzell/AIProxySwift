@@ -13,17 +13,56 @@ struct AIProxyURLRequest {
         partialKey: String,
         serviceURL: String,
         clientID: String?
-    ) async throws -> URLRequest {
-        let deviceCheckToken = await AIProxyDeviceCheck.getToken()
-        guard var urlComponents = URLComponents(string: serviceURL),
-              let proxyPathComponents = URLComponents(string: proxyPath) else {
+    ) async throws /* -> URLRequest */ {
+        guard let urlComponents = URLComponents(string: serviceURL) else {
             throw AIProxyError.assertion(
                 "Could not create urlComponents, please check the aiproxyEndpoint constant"
             )
         }
+        let url = urlComponents.url!
+        // Snip out the https as of the schema.
+        let session = AIProxyURLSession.create()
 
-        urlComponents.path += proxyPathComponents.path
+        let webSocketTask = session.webSocketTask(with: url)
 
+        // Function to receive messages
+        func receiveMessage() {
+            webSocketTask.receive { result in
+                switch result {
+                case .failure(let error):
+                    print("Failed to receive message: \(error)")
+                case .success(let message):
+                    switch message {
+                    case .string(let text):
+                        print("Received string: \(text)")
+                    case .data(let data):
+                        print("Received data: \(data)")
+                    @unknown default:
+                        print("Received an unknown message")
+                    }
+                }
+            }
+        }
+
+        // Start the WebSocket connection
+        webSocketTask.resume()
+
+        // Call the receive function
+        receiveMessage()
+
+        // Keep the playground running to receive the message
+        RunLoop.main.run()
+
+//        let deviceCheckToken = await AIProxyDeviceCheck.getToken()
+//        guard var urlComponents = URLComponents(string: serviceURL),
+//              let proxyPathComponents = URLComponents(string: proxyPath) else {
+//            throw AIProxyError.assertion(
+//                "Could not create urlComponents, please check the aiproxyEndpoint constant"
+//            )
+//        }
+//
+//        urlComponents.path += proxyPathComponents.path
+//
     }
 
     /// Creates an HTTP URLRequest that is configured for use with an AIProxy URLSession.
