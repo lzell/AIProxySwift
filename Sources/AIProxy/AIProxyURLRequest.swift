@@ -54,7 +54,7 @@ struct AIProxyURLRequest {
 
         let webSocketTask = session.webSocketTask(with: request)
 
-        let thinger = Thinger(response: .init(modalities: ["text"], instructions: "Please assist the user."))
+        let thinger = OpenAIRealtimeResponseCreate(response: .init(modalities: ["text"], instructions: "Please assist the user."))
         let webSocketMessage = URLSessionWebSocketTask.Message.data(try thinger.serialize())
         print("About to send")
         // Start the WebSocket connection

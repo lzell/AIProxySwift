@@ -7,16 +7,16 @@
 
 import Foundation
 
-public struct Thinger: Encodable {
-    internal init(response: Thinger2) {
+public struct OpenAIRealtimeResponseCreate: Encodable {
+    public let type = "response.create"
+    public let response: OpenAIRealtimeInnerResponse?
+
+    internal init(response: OpenAIRealtimeInnerResponse?) {
         self.response = response
     }
-    
-    public let type = "response.create"
-    public let response: Thinger2
 }
 
-public struct Thinger2: Encodable {
+public struct OpenAIRealtimeInnerResponse: Encodable {
     internal init(modalities: [String], instructions: String) {
         self.modalities = modalities
         self.instructions = instructions
