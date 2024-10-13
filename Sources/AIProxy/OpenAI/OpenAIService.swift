@@ -29,9 +29,13 @@ public final class OpenAIService {
 
     public func connect() async throws {
 
-        let request = try await AIProxyURLRequest.createWS(partialKey: self.partialKey, serviceURL: self.serviceURL ?? legacyURL, clientID: self.clientID)
+        let request = try await AIProxyURLRequest.createWS(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL ?? legacyURL,
+            clientID: self.clientID
+        )
 
-
+        
 //        // Create a URL object with the WebSocket server address
 //        guard let url = URL(string: "ws://localhost:6000") else {
 //            fatalError("Invalid URL")
