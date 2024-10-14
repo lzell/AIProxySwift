@@ -7,6 +7,26 @@
 
 import Foundation
 
+public struct OpenAIRealtimeConversationItemCreate: Encodable {
+    public let type = "conversation.item.create"
+    public let item: Item
+}
+public extension OpenAIRealtimeConversationItemCreate {
+    struct Item: Encodable {
+        let type = "message"
+        let role: String
+        let content: [Content]
+    }
+}
+public extension OpenAIRealtimeConversationItemCreate.Item {
+    struct Content: Encodable {
+        let type = "input_text"
+        let text: String
+    }
+}
+
+
+// MARK: -
 public struct OpenAIRealtimeResponseCreate: Encodable {
     public let type = "response.create"
     public let response: OpenAIRealtimeInnerResponse?
