@@ -165,23 +165,33 @@ public extension OpenAIRealtimeSessionUpdate.Session {
 // MARK: - SessionUpdate.Session.TurnDetection
 public extension OpenAIRealtimeSessionUpdate.Session {
     struct TurnDetection: Encodable {
-//        /// Amount of audio to include before speech starts (in milliseconds).
-//        let prefixPaddingMs: Int
-//
-//        /// Duration of silence to detect speech stop (in milliseconds).
-//        let silenceDurationMs: Int
-//
-//        /// Activation threshold for VAD (0.0 to 1.0).
-//        let threshold: Double
+        /// Amount of audio to include before speech starts (in milliseconds).
+        let prefixPaddingMs: Int?
+
+        /// Duration of silence to detect speech stop (in milliseconds).
+        let silenceDurationMs: Int?
+
+        /// Activation threshold for VAD (0.0 to 1.0).
+        let threshold: Double?
 
         /// Type of turn detection, only "server_vad" is currently supported.
         let type = "server_vad"
 
         private enum CodingKeys: String, CodingKey {
-//            case prefixPaddingMs = "prefix_padding_ms"
-//            case silenceDurationMs = "silence_duration_ms"
-//            case threshold
+            case prefixPaddingMs = "prefix_padding_ms"
+            case silenceDurationMs = "silence_duration_ms"
+            case threshold
             case type
+        }
+
+        public init(
+            prefixPaddingMs: Int? = nil,
+            silenceDurationMs: Int? = nil,
+            threshold: Double? = nil
+        ) {
+            self.prefixPaddingMs = prefixPaddingMs
+            self.silenceDurationMs = silenceDurationMs
+            self.threshold = threshold
         }
     }
 }

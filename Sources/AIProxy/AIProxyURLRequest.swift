@@ -56,8 +56,7 @@ struct AIProxyURLRequest {
 
         // let thinger = OpenAIRealtimeResponseCreate(response: .init(modalities: ["text"], instructions: "Please assist the user."))
         // let thinger = OpenAIRealtimeConversationItemCreate(item: .init(role: "user", content: [.init(text: "Hello!")]))
-
-        /// Session Update task does not work as advertised. I do not know why.
+        //
         let rtSession = OpenAIRealtimeSessionUpdate.Session(
             inputAudioFormat: "pcm16",
             inputAudioTranscription: .init(model: "whisper-1"),
@@ -68,10 +67,10 @@ struct AIProxyURLRequest {
             temperature: 0.7,
             tools: [],
             toolChoice: .auto,
-            turnDetection: .init(),
+            turnDetection: .init(prefixPaddingMs: 200, silenceDurationMs: 500, threshold: 0.5),
             voice: "alloy"
         )
-        let thinger = OpenAIRealtimeSessionUpdate(eventId: "event_123", session: rtSession)
+        let thinger = OpenAIRealtimeSessionUpdate(session: rtSession)
         let webSocketMessage = URLSessionWebSocketTask.Message.data(try thinger.serialize())
         print("About to send")
         // Start the WebSocket connection
@@ -88,6 +87,7 @@ struct AIProxyURLRequest {
                 case .success(let message):
                     switch message {
                     case .string(let text):
+                        
                         // I think I should just use JSONDeserializer here.
                         if let wsError = try? OpenAIWSError.deserialize(from: text) {
                             print("Received error from OpenAI websocket: \(wsError.error)")
