@@ -216,7 +216,7 @@ public final class OpenAIService {
         if (httpResponse.statusCode > 299) {
             throw AIProxyError.unsuccessfulRequest(
                 statusCode: httpResponse.statusCode,
-                responseBody: String(data: Data(), encoding: .utf8) ?? ""
+                responseBody: String(data: data, encoding: .utf8) ?? ""
             )
         }
         
