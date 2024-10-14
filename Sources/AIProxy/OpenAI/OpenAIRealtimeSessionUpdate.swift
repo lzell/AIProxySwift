@@ -53,7 +53,7 @@ public extension OpenAIRealtimeSessionUpdate {
         /// Maximum number of output tokens for a single assistant response, inclusive of tool
         /// calls. Provide an integer between 1 and 4096 to limit output tokens, or "inf" for
         /// the maximum available tokens for a given model. Defaults to "inf".
-        public let maxOutputTokens: MaxOutputTokens?
+        public let maxResponseOutputTokens: MaxResponseOutputTokens?
 
         /// The set of modalities the model can respond with. To disable audio, set this to ["text"].
         /// Possible values are `audio` and `text`
@@ -82,7 +82,7 @@ public extension OpenAIRealtimeSessionUpdate {
             case inputAudioFormat = "input_audio_format"
             case inputAudioTranscription = "input_audio_transcription"
             case instructions
-            case maxOutputTokens = "max_output_tokens"
+            case maxResponseOutputTokens = "max_response_output_tokens"
             case modalities
             case outputAudioFormat = "output_audio_format"
             case temperature
@@ -96,7 +96,7 @@ public extension OpenAIRealtimeSessionUpdate {
             inputAudioFormat: String? = nil,
             inputAudioTranscription: OpenAIRealtimeSessionUpdate.Session.InputAudioTranscription? = nil,
             instructions: String? = nil,
-            maxOutputTokens: OpenAIRealtimeSessionUpdate.Session.MaxOutputTokens? = nil,
+            maxResponseOutputTokens: OpenAIRealtimeSessionUpdate.Session.MaxResponseOutputTokens? = nil,
             modalities: [String]? = nil,
             outputAudioFormat: String? = nil,
             temperature: Double? = nil,
@@ -108,7 +108,7 @@ public extension OpenAIRealtimeSessionUpdate {
             self.inputAudioFormat = inputAudioFormat
             self.inputAudioTranscription = inputAudioTranscription
             self.instructions = instructions
-            self.maxOutputTokens = maxOutputTokens
+            self.maxResponseOutputTokens = maxResponseOutputTokens
             self.modalities = modalities
             self.outputAudioFormat = outputAudioFormat
             self.temperature = temperature
@@ -128,16 +128,16 @@ public extension OpenAIRealtimeSessionUpdate.Session {
     }
 }
 
-// MARK: - SessionUpdate.Session.MaxOutputTokens
+// MARK: - SessionUpdate.Session.MaxResponseOutputTokens
 public extension OpenAIRealtimeSessionUpdate.Session {
-    enum MaxOutputTokens: Encodable {
-        case quantity(Int)
+    enum MaxResponseOutputTokens: Encodable {
+        case int(Int)
         case infinite
 
         public func encode(to encoder: Encoder) throws {
             var container = encoder.singleValueContainer()
             switch self {
-            case .quantity(let value):
+            case .int(let value):
                 try container.encode(value)
             case .infinite:
                 try container.encode("inf")
@@ -165,22 +165,22 @@ public extension OpenAIRealtimeSessionUpdate.Session {
 // MARK: - SessionUpdate.Session.TurnDetection
 public extension OpenAIRealtimeSessionUpdate.Session {
     struct TurnDetection: Encodable {
-        /// Amount of audio to include before speech starts (in milliseconds).
-        let prefixPaddingMs: Int
-
-        /// Duration of silence to detect speech stop (in milliseconds).
-        let silenceDurationMs: Int
-
-        /// Activation threshold for VAD (0.0 to 1.0).
-        let threshold: Double
+//        /// Amount of audio to include before speech starts (in milliseconds).
+//        let prefixPaddingMs: Int
+//
+//        /// Duration of silence to detect speech stop (in milliseconds).
+//        let silenceDurationMs: Int
+//
+//        /// Activation threshold for VAD (0.0 to 1.0).
+//        let threshold: Double
 
         /// Type of turn detection, only "server_vad" is currently supported.
         let type = "server_vad"
 
         private enum CodingKeys: String, CodingKey {
-            case prefixPaddingMs = "prefix_padding_ms"
-            case silenceDurationMs = "silence_duration_ms"
-            case threshold
+//            case prefixPaddingMs = "prefix_padding_ms"
+//            case silenceDurationMs = "silence_duration_ms"
+//            case threshold
             case type
         }
     }
