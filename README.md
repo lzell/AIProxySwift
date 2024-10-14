@@ -400,7 +400,7 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create ElevenLabs TTS audio: \(error.localizedDescription)")
+        print("Could not create OpenAI TTS audio: \(error.localizedDescription)")
     }
     ```
 
