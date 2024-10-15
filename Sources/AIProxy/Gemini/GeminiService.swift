@@ -25,11 +25,15 @@ public final class GeminiService {
     ) async throws -> GeminiGenerateContentResponseBody {
         var body = body
         let session = AIProxyURLSession.create()
+
+        // Dynamically construct the proxyPath using the model from the request body
+        let proxyPath = "/v1beta/models/\(body.model):generateContent"
+
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
-            proxyPath: "/v1beta/models/gemini-1.5-flash:generateContent",
+            proxyPath: proxyPath,
             body:  try JSONEncoder().encode(body),
             verb: .post,
             contentType: "application/json"

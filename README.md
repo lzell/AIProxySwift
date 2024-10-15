@@ -66,6 +66,21 @@ See the FAQ for more details on the DeviceCheck bypass constant.
 Along with the snippets below, which you can copy and paste into your Xcode project, we also
 offer full demo apps to jump-start your development. Please see the [AIProxyBootstrap](https://github.com/lzell/AIProxyBootstrap) repo.
 
+* [OpenAI](#openai)
+* [Gemini](#gemini)
+* [Anthropic](#anthropic)
+* [Stability AI](#stability-ai)
+* [DeepL](#deepl)
+* [Together AI](#together-ai)
+* [Replicate](#replicate)
+* [ElevenLabs](#elevenlabs)
+* [Fal](#fal)
+* [Groq](#groq)
+* [Advanced Settings](#advanced-settings)
+
+
+## OpenAI
+
 ### Get a non-streaming chat completion from OpenAI:
 
     import AIProxy
@@ -110,7 +125,6 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
     } catch {
         print("Could not create OpenAI streaming chat completion: \(error.localizedDescription)")
     }
-
 
 
 ### Send a multi-modal chat completion request to OpenAI:
@@ -383,7 +397,7 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
             input: "Hello world",
             voice: .nova
         )
-        
+
         let mpegData = try await openAIService.createTextToSpeechRequest(body: requestBody)
 
         // Do not use a local `let` or `var` for AVAudioPlayer.
@@ -409,12 +423,45 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
 You can use all of the OpenAI snippets aboves with one change. Initialize the OpenAI service with:
 
     import AIProxy
+
     let openAIService = AIProxy.openAIService(
         partialKey: "partial-key-from-your-developer-dashboard",
         serviceURL: "service-url-from-your-developer-dashboard",
         requestFormat: .azureDeployment(apiVersion: "2024-06-01")
     )
 
+
+***
+
+
+## Gemini
+
+### How to generate text content with Gemini
+
+    import AIProxy
+
+    let geminiService = AIProxy.geminiService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let response = try await geminiService.generateContentRequest(body: .init(
+            model: "gemini-1.5-flash",
+            contents: [Content(parts: [.init(text: "Tell a joke")])]
+        ))
+        print(response.candidates.first?.content.parts.first?.text ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Gemini generate content request: \(error.localizedDescription)")
+    }
+
+
+***
+
+
+## Anthropic
 
 ### How to send an Anthropic message request
 
@@ -634,6 +681,11 @@ Use `UIImage` in place of `NSImage` for iOS apps:
     }
 
 
+***
+
+
+## Stability.ai
+
 ### How to generate an image with Stability.ai
 
 In the snippet below, replace NSImage with UIImage if you are building on iOS.
@@ -656,6 +708,9 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
         print("Could not generate an image with StabilityAI: \(error.localizedDescription)")
     }
 
+***
+
+## DeepL
 
 ### How to create translations using DeepL
 
@@ -676,6 +731,9 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
         print("Could not create DeepL translation: \(error.localizedDescription)")
     }
 
+***
+
+## TogetherAI
 
 ### How to create a non-streaming chat completion with TogetherAI
 
@@ -864,6 +922,11 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
         print("Could not create TogetherAI llama 3.1 tool completion: \(error.localizedDescription)")
     }
 
+
+***
+
+
+## Replicate
 
 ### How to generate a Flux-Schnell image by Black Forest Labs, using Replicate
 
@@ -1266,6 +1329,11 @@ model owner and model name in the string.
     }
 
 
+***
+
+
+## ElevenLabs
+
 ### How to use ElevenLabs for text-to-speech
 
     import AIProxy
@@ -1303,6 +1371,11 @@ model owner and model name in the string.
 - See the full range of TTS controls by viewing `ElevenLabsTTSRequestBody.swift`.
 - See https://api.elevenlabs.io/v1/voices for the IDs that you can pass to `voiceID`.
 
+
+***
+
+
+## Fal
 
 ### How to generate a FastSDXL image using Fal
 
@@ -1439,6 +1512,11 @@ Using the LoRA URL returned in the step above:
 See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
 
+***
+
+
+## Groq
+
 ### How to generate a non-streaming chat completion using Groq
 
     import AIProxy
@@ -1518,6 +1596,11 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     ```
 
 
+***
+
+
+## OpenMeteo
+
 ### How to fetch the weather with OpenMeteo
 
 This pattern is slightly different than the others, because OpenMeteo has an official lib that
@@ -1553,6 +1636,11 @@ into the OpenMeteoSDK:
         print("Could not fetch the weather: \(error.localizedDescription)")
     }
 
+
+***
+
+
+## Advanced Settings
 
 ### Specify your own `clientID` to annotate requests
 
