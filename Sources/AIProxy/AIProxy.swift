@@ -96,6 +96,18 @@ public struct AIProxy {
         )
     }
 
+    public static func geminiService(
+        partialKey: String,
+        serviceURL: String,
+        clientID: String? = nil
+    ) -> GeminiService {
+        return GeminiService(
+            partialKey: partialKey,
+            serviceURL: serviceURL,
+            clientID: clientID
+        )
+    }
+
     /// AIProxy's Anthropic service
     ///
     /// - Parameters:
