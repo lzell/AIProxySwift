@@ -76,6 +76,12 @@ struct AIProxyURLRequest {
         // Start the WebSocket connection
         webSocketTask.resume()
         try await webSocketTask.send(webSocketMessage)
+
+        let thinger2 = OpenAIRealtimeConversationItemCreate(item: .init(role: "user", content: [.init(text: "tell me about science. Very briefly.")]))
+        let webSocketMessage2 = URLSessionWebSocketTask.Message.data(try thinger2.serialize())
+        try await webSocketTask.send(webSocketMessage2)
+
+
         print("Sent!")
 
         // Function to receive messages
@@ -87,7 +93,7 @@ struct AIProxyURLRequest {
                 case .success(let message):
                     switch message {
                     case .string(let text):
-                        
+
                         // I think I should just use JSONDeserializer here.
                         if let wsError = try? OpenAIWSError.deserialize(from: text) {
                             print("Received error from OpenAI websocket: \(wsError.error)")
@@ -110,10 +116,10 @@ struct AIProxyURLRequest {
             }
         }
 
-
         // Call the receive function
-        receiveMessage()
-        receiveMessage()
+        while true {
+            receiveMessage()
+        }
 
 //        // Keep the playground running to receive the message
 //        RunLoop.main.run()
