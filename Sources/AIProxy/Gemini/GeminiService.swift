@@ -20,9 +20,9 @@ public final class GeminiService {
         self.clientID = clientID
     }
 
-    public func chatCompletionRequest(
-        body: GeminiChatCompletionRequestBody
-    ) async throws -> GeminiChatCompletionResponseBody {
+    public func generateContentRequest(
+        body: GeminiGenerateContentRequestBody
+    ) async throws -> GeminiGenerateContentResponseBody {
         var body = body
         let session = AIProxyURLSession.create()
         let request = try await AIProxyURLRequest.create(
@@ -47,7 +47,7 @@ public final class GeminiService {
             )
         }
 
-        return try JSONDecoder().decode(GeminiChatCompletionResponseBody.self, from: data)
+        return try JSONDecoder().decode(GeminiGenerateContentResponseBody.self, from: data)
     }
 
 }
