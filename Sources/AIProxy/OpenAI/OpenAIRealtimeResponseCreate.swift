@@ -11,7 +11,7 @@ public struct OpenAIRealtimeResponseCreate: Encodable {
     public let type = "response.create"
     public let response: Response?
 
-    internal init(response: Response?) {
+    internal init(response: Response? = nil) {
         self.response = response
     }
 }
