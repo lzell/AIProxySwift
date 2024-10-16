@@ -442,8 +442,11 @@ func _playPCM16Audio(from base64String: String) {
     // Set up AVAudioEngine and AVAudioPlayerNode
     if !isAudioEngineStarted {
         audioEngine = AVAudioEngine()
+        playerNode = AVAudioPlayerNode()
+        audioEngine!.attach(playerNode!)
+        // Connect playerNode to mainMixerNode with the buffer's format
+        audioEngine!.connect(playerNode!, to: audioEngine!.mainMixerNode, format: audioBuffer.format)
     }
-    playerNode = AVAudioPlayerNode()
 
     guard let audioEngine = audioEngine else {
         return
@@ -453,9 +456,6 @@ func _playPCM16Audio(from base64String: String) {
         return
     }
 
-    audioEngine.attach(playerNode)
-    // Connect playerNode to mainMixerNode with the buffer's format
-    audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: audioBuffer.format)
 
     // Start the audio engine
     if !isAudioEngineStarted {
@@ -474,7 +474,7 @@ func _playPCM16Audio(from base64String: String) {
         // playerNode.stop()
         // audioEngine.stop()
         if !queue.isEmpty {
-            let str = queue.popLast()!
+            let str = queue.removeFirst()
             _playPCM16Audio(from: str)
         } else {
             isPlaying = false
