@@ -353,7 +353,19 @@ public final class OpenAIService {
 
 import AVFoundation
 
+var isPlaying = false
+var queue: [String] = []
+
 func playPCM16Audio(from base64String: String) {
+    if (isPlaying) {
+        queue.append(base64String)
+        return
+    }
+    _playPCM16Audio(from: base64String)
+}
+
+func _playPCM16Audio(from base64String: String) {
+    isPlaying = true
     // Decode the base64 string into raw PCM16 data
     guard let audioData = Data(base64Encoded: base64String) else {
         print("Error: Could not decode base64 string")
@@ -442,8 +454,14 @@ func playPCM16Audio(from base64String: String) {
     // Schedule the buffer for playback
     playerNode.scheduleBuffer(audioBuffer, at: nil, options: [], completionHandler: {
         // Stop the audio engine after playback finishes
-        //playerNode.stop()
+        // playerNode.stop()
         audioEngine.stop()
+        if !queue.isEmpty {
+            let str = queue.popLast()!
+            _playPCM16Audio(from: str)
+        } else {
+            isPlaying = false
+        }
     })
 
     // Play the audio
