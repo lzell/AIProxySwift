@@ -353,8 +353,12 @@ public final class OpenAIService {
 
 import AVFoundation
 
+var isAudioEngineStarted = false
 var isPlaying = false
 var queue: [String] = []
+var audioEngine:  AVAudioEngine? = nil
+var playerNode : AVAudioPlayerNode? = nil
+
 
 func playPCM16Audio(from base64String: String) {
     if (isPlaying) {
@@ -436,26 +440,39 @@ func _playPCM16Audio(from base64String: String) {
     }
 
     // Set up AVAudioEngine and AVAudioPlayerNode
-    let audioEngine = AVAudioEngine()
-    let playerNode = AVAudioPlayerNode()
+    if !isAudioEngineStarted {
+        audioEngine = AVAudioEngine()
+    }
+    playerNode = AVAudioPlayerNode()
+
+    guard let audioEngine = audioEngine else {
+        return
+    }
+
+    guard let playerNode = playerNode else {
+        return
+    }
 
     audioEngine.attach(playerNode)
     // Connect playerNode to mainMixerNode with the buffer's format
     audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: audioBuffer.format)
 
     // Start the audio engine
-    do {
-        try audioEngine.start()
-    } catch {
-        print("Error: Could not start audio engine. \(error.localizedDescription)")
-        return
+    if !isAudioEngineStarted {
+        do {
+            try audioEngine.start()
+            isAudioEngineStarted = true
+        } catch {
+            print("Error: Could not start audio engine. \(error.localizedDescription)")
+            return
+        }
     }
 
     // Schedule the buffer for playback
     playerNode.scheduleBuffer(audioBuffer, at: nil, options: [], completionHandler: {
         // Stop the audio engine after playback finishes
         // playerNode.stop()
-        audioEngine.stop()
+        // audioEngine.stop()
         if !queue.isEmpty {
             let str = queue.popLast()!
             _playPCM16Audio(from: str)
