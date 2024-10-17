@@ -25,8 +25,6 @@ public final class GeminiService {
     ) async throws -> GeminiGenerateContentResponseBody {
         var body = body
         let session = AIProxyURLSession.create()
-
-        // Dynamically construct the proxyPath using the model from the request body
         let proxyPath = "/v1beta/models/\(body.model):generateContent"
 
         let request = try await AIProxyURLRequest.create(
@@ -34,7 +32,7 @@ public final class GeminiService {
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: proxyPath,
-            body:  try JSONEncoder().encode(body),
+            body:  body.serialize(),
             verb: .post,
             contentType: "application/json"
         )
@@ -51,7 +49,7 @@ public final class GeminiService {
             )
         }
 
-        return try JSONDecoder().decode(GeminiGenerateContentResponseBody.self, from: data)
+        return try GeminiGenerateContentResponseBody.deserialize(from: data)
     }
 
 }
