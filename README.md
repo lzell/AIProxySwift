@@ -448,9 +448,25 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     do {
         let response = try await geminiService.generateContentRequest(body: .init(
             model: "gemini-1.5-flash",
-            contents: [Content(parts: [.init(text: "Tell a joke")])]
+            contents: [Content(parts: [.init(text: "Tell me a joke")])]
         ))
-        print(response.candidates.first?.content.parts.first?.text ?? "")
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            switch part {
+            case .text(let text):
+                print("Gemini sent: \(text)")
+            }
+        }
+        if let usage = response.usageMetadata {
+            print(
+                """
+                Used:
+                 \(usage.promptTokenCount ?? 0) prompt tokens
+                 \(usage.cachedContentTokenCount ?? 0) cached tokens
+                 \(usage.candidatesTokenCount ?? 0) candidate tokens
+                 \(usage.totalTokenCount ?? 0) total tokens
+                """
+            )
+        }
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
