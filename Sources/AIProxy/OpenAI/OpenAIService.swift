@@ -9,8 +9,6 @@ private let aiproxyChatPath = "/v1/chat/completions"
 
 fileprivate var audioPlayer: AVAudioPlayer? = nil
 
-
-
 public final class OpenAIService {
     private let partialKey: String
     private let serviceURL: String?
@@ -31,10 +29,7 @@ public final class OpenAIService {
         self.requestFormat = requestFormat
     }
 
-    var once = false
-
     public func startRealtimeTranscriptionSession() async throws {
-
 
         let request = try await AIProxyURLRequest.createWS(
             partialKey: self.partialKey,
@@ -377,7 +372,6 @@ func _playPCM16Audio(from base64String: String) {
     }
 
     // Read Int16 samples from audioData
-    let sampleCount = audioData.count / MemoryLayout<Int16>.size
     let int16Samples: [Int16] = audioData.withUnsafeBytes { rawBufferPointer in
         let bufferPointer = rawBufferPointer.bindMemory(to: Int16.self)
         return Array(bufferPointer)
