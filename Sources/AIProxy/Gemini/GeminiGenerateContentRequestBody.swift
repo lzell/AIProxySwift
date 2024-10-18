@@ -66,7 +66,7 @@ public struct GeminiGenerateContentRequestBody: Encodable {
 
 /// Struct representing the content of the conversation with the model.
 /// A Content includes a role field (e.g., "user" or "model") and ordered parts that constitute a message.
-public extension GeminiGenerateContentRequestBody {
+extension GeminiGenerateContentRequestBody {
     public struct Content: Encodable {
         public let role: String?
         public let parts: [GeminiGenerateContentRequestBody.Content.Part]
@@ -80,7 +80,7 @@ public extension GeminiGenerateContentRequestBody {
 
 /// Struct representing a part of the content.
 /// A Part can contain text, inline data, function calls, or other forms of media or content.
-public extension GeminiGenerateContentRequestBody.Content {
+extension GeminiGenerateContentRequestBody.Content {
     public struct Part: Encodable {
         public let text: String?
 
@@ -94,7 +94,7 @@ public extension GeminiGenerateContentRequestBody.Content {
 
 
 // MARK: - RequestBody.Tool
-public extension GeminiGenerateContentRequestBody {
+extension GeminiGenerateContentRequestBody {
     /// Tool details that the model may use to generate response.
     /// A Tool is a piece of code that enables the system to interact with external systems to perform an action,
     /// or set of actions, outside of knowledge and scope of the model.
@@ -111,7 +111,7 @@ public extension GeminiGenerateContentRequestBody {
 
 
 // MARK: - RequestBody.ToolConfig
-public extension GeminiGenerateContentRequestBody {
+extension GeminiGenerateContentRequestBody {
     /// Tool configuration for any Tool specified in the request.
     public struct ToolConfig: Encodable {
         public let functionCallingConfig: FunctionCallingConfig?
@@ -123,7 +123,7 @@ public extension GeminiGenerateContentRequestBody {
 }
 
 // MARK: - RequestBody.SafetySetting
-public extension GeminiGenerateContentRequestBody {
+extension GeminiGenerateContentRequestBody {
     /// A list of unique SafetySetting instances for blocking unsafe content.
     public struct SafetySetting: Encodable {
         public enum SafetyCategory: String, Encodable {
@@ -153,7 +153,7 @@ public extension GeminiGenerateContentRequestBody {
 }
 
 // MARK: - RequestBody.SystemInstruction
-public extension GeminiGenerateContentRequestBody {
+extension GeminiGenerateContentRequestBody {
     /// Developer set system instruction(s). Currently, text only.
     public struct SystemInstruction: Encodable {
         public let role: String?
@@ -167,7 +167,7 @@ public extension GeminiGenerateContentRequestBody {
 }
 
 // MARK: - RequestBody.GenerationConfig
-public extension GeminiGenerateContentRequestBody {
+extension GeminiGenerateContentRequestBody {
     /// Configuration options for model generation and outputs.
     public struct GenerationConfig: Encodable {
         public let maxTokens: Int?
@@ -196,7 +196,7 @@ public extension GeminiGenerateContentRequestBody {
 }
 
 // MARK: - RequestBody.ChachedContent
-public extension GeminiGenerateContentRequestBody {
+extension GeminiGenerateContentRequestBody {
     /// Content that has been preprocessed and can be used in subsequent request to GenerativeService.
     /// Cached content can be only used with model it was created for.
     public struct ChachedContent: Encodable {
@@ -209,7 +209,7 @@ public extension GeminiGenerateContentRequestBody {
 }
 
 // MARK: - RequestBody.FunctionDeclaration
-public extension GeminiGenerateContentRequestBody.Tool {
+extension GeminiGenerateContentRequestBody.Tool {
     /// Structured representation of a function declaration as defined by the OpenAPI 3.03 specification.
     public struct FunctionDeclaration: Encodable {
         public let name: String
@@ -225,7 +225,7 @@ public extension GeminiGenerateContentRequestBody.Tool {
 }
 
 // MARK: - RequestBody.Tool.FunctionDeclaration.Schema
-public extension GeminiGenerateContentRequestBody.Tool.FunctionDeclaration {
+extension GeminiGenerateContentRequestBody.Tool.FunctionDeclaration {
     /// The Schema object allows the definition of input and output data types.
     /// These types can be objects, but also primitives and arrays. Represents a select subset of an OpenAPI 3.0 schema object.
     public struct Schema: Encodable {
@@ -240,7 +240,7 @@ public extension GeminiGenerateContentRequestBody.Tool.FunctionDeclaration {
 }
 
 // MARK: - RequestBody.Tool.CodeExecution
-public extension GeminiGenerateContentRequestBody.Tool {
+extension GeminiGenerateContentRequestBody.Tool {
     /// Enables the model to execute code as part of generation.
     public struct CodeExecution: Encodable {
         public let language: String
@@ -254,7 +254,7 @@ public extension GeminiGenerateContentRequestBody.Tool {
 }
 
 // MARK: - RequestBody.ToolConfig.FunctionCallingConfig
-public extension GeminiGenerateContentRequestBody.ToolConfig {
+extension GeminiGenerateContentRequestBody.ToolConfig {
     /// Configuration for specifying function calling behavior.
     public struct FunctionCallingConfig: Encodable {
         public enum Mode: String, Encodable {

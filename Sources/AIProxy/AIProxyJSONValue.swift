@@ -88,8 +88,8 @@ public enum AIProxyJSONValue: Codable {
     }
 }
 
-public extension [String: AIProxyJSONValue] {
-    var untypedDictionary: [String: Any] {
+extension [String: AIProxyJSONValue] {
+    public var untypedDictionary: [String: Any] {
         return convertToUntypedDictionary(self)
     }
 }

@@ -23,7 +23,6 @@ public final class GeminiService {
     public func generateContentRequest(
         body: GeminiGenerateContentRequestBody
     ) async throws -> GeminiGenerateContentResponseBody {
-        var body = body
         let session = AIProxyURLSession.create()
         let proxyPath = "/v1beta/models/\(body.model):generateContent"
 

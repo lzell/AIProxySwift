@@ -94,8 +94,8 @@ public struct FalFluxLoRAInputSchema: Encodable {
 }
 
 // MARK: - InputSchema.ImageSize
-public extension FalFluxLoRAInputSchema {
-    enum ImageSize: String, Encodable {
+extension FalFluxLoRAInputSchema {
+    public enum ImageSize: String, Encodable {
         case landscape16x9 = "landscape_16_9"
         case landscape4x3 = "landscape_4_3"
         case portrait16x9 = "portrait_16_9"
@@ -106,8 +106,8 @@ public extension FalFluxLoRAInputSchema {
 }
 
 // MARK: - InputSchema.Lora
-public extension FalFluxLoRAInputSchema {
-    struct Lora: Encodable {
+extension FalFluxLoRAInputSchema {
+    public struct Lora: Encodable {
         // Required
         /// URL to the LoRA weights.
         public let path: URL
@@ -127,8 +127,8 @@ public extension FalFluxLoRAInputSchema {
 }
 
 // MARK: - InputSchema.OutputFormat
-public extension FalFluxLoRAInputSchema {
-    enum OutputFormat: String, Encodable {
+extension FalFluxLoRAInputSchema {
+    public enum OutputFormat: String, Encodable {
         case jpeg
         case png
     }

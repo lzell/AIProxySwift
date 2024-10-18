@@ -24,8 +24,8 @@ public struct GroqChatCompletionResponseBody: Decodable {
 }
 
 // MARK: - ResponseBody.Choice
-public extension GroqChatCompletionResponseBody {
-    struct Choice: Decodable {
+extension GroqChatCompletionResponseBody {
+    public struct Choice: Decodable {
         /// The reason the model stopped generating tokens. This will be `stop` if the model hit a
         /// natural stop point or a provided stop sequence, `length` if the maximum number of
         /// tokens specified in the request was reached, `content_filter` if content was omitted
@@ -44,8 +44,8 @@ public extension GroqChatCompletionResponseBody {
 }
 
 // MARK: - ResponseBody.Choice.Message
-public extension GroqChatCompletionResponseBody.Choice {
-    struct Message: Decodable {
+extension GroqChatCompletionResponseBody.Choice {
+    public struct Message: Decodable {
         /// The contents of the message.
         public let content: String?
 
@@ -64,8 +64,8 @@ public extension GroqChatCompletionResponseBody.Choice {
 }
 
 // MARK: - ResponseBody.Usage
-public extension GroqChatCompletionResponseBody {
-    struct Usage: Decodable {
+extension GroqChatCompletionResponseBody {
+    public struct Usage: Decodable {
         public let completionTime: Double?
         public let completionTokens: Int?
         public let promptTime: Double?

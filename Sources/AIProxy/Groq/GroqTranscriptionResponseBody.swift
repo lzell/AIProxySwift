@@ -33,9 +33,9 @@ public struct GroqTranscriptionResponseBody: Decodable {
 }
 
 // MARK: - ResponseBody.Word
-public extension GroqTranscriptionResponseBody {
+extension GroqTranscriptionResponseBody {
     /// See https://platform.openai.com/docs/api-reference/audio/verbose-json-object#audio/verbose-json-object-words
-    struct Word: Decodable {
+    public struct Word: Decodable {
         /// End time of the word in seconds.
         public let end: Double?
 
@@ -48,10 +48,10 @@ public extension GroqTranscriptionResponseBody {
 }
 
 // MARK: - ResponseBody.Segment
-public extension GroqTranscriptionResponseBody {
+extension GroqTranscriptionResponseBody {
 
     /// See https://platform.openai.com/docs/api-reference/audio/verbose-json-object#audio/verbose-json-object-segments
-    struct Segment: Decodable {
+    public struct Segment: Decodable {
 
         /// Average logprob of the segment. If the value is lower than -1, consider the
         /// logprobs failed.

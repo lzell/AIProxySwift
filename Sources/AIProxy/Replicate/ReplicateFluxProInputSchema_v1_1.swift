@@ -104,8 +104,8 @@ public struct ReplicateFluxProInputSchema_v1_1: Encodable {
 }
 
 // MARK: - InputSchema.OutputFormat
-public extension ReplicateFluxProInputSchema_v1_1 {
-    enum OutputFormat: String, Encodable {
+extension ReplicateFluxProInputSchema_v1_1 {
+    public enum OutputFormat: String, Encodable {
         case jpg
         case png
         case webp

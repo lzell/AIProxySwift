@@ -58,23 +58,23 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
 }
 
 // MARK: - OpenAITextToSpeechRequestBody.Model
-public extension OpenAITextToSpeechRequestBody {
-    enum Model: String, Encodable {
+extension OpenAITextToSpeechRequestBody {
+    public enum Model: String, Encodable {
         case tts1 = "tts-1"
         case tts1HD = "tts-1-hd"
     }
 }
 
 // MARK: - OpenAITextToSpeechRequestBody.ResponseFormat
-public extension OpenAITextToSpeechRequestBody {
-    enum ResponseFormat: String, Encodable {
+extension OpenAITextToSpeechRequestBody {
+    public enum ResponseFormat: String, Encodable {
         case mp3, opus, aac, flac, wav, pcm
     }
 }
 
 // MARK: - OpenAITextToSpeechRequestBody.Voice
-public extension OpenAITextToSpeechRequestBody {
-    enum Voice: String, Encodable {
+extension OpenAITextToSpeechRequestBody {
+    public enum Voice: String, Encodable {
         case alloy, echo, fable, onyx, nova, shimmer
     }
 }

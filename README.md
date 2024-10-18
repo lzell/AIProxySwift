@@ -446,10 +446,15 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     )
 
     do {
-        let response = try await geminiService.generateContentRequest(body: .init(
+        let requestBody = GeminiGenerateContentRequestBody(
             model: "gemini-1.5-flash",
-            contents: [Content(parts: [.init(text: "Tell me a joke")])]
-        ))
+            contents: [
+                .init(
+                    parts: [.init(text: "Tell me a joke")]
+                )
+            ]
+        )
+        let response = try await geminiService.generateContentRequest(body: requestBody)
         for part in response.candidates?.first?.content?.parts ?? [] {
             switch part {
             case .text(let text):

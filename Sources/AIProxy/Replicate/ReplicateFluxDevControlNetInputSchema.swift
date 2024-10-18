@@ -157,8 +157,8 @@ public struct ReplicateFluxDevControlNetInputSchema: Encodable {
 }
 
 // MARK: - InputSchema.ControlType
-public extension ReplicateFluxDevControlNetInputSchema {
-    enum ControlType: String, Encodable {
+extension ReplicateFluxDevControlNetInputSchema {
+    public enum ControlType: String, Encodable {
         case canny
         case depth
         case softEdge = "soft_edge"
@@ -166,8 +166,8 @@ public extension ReplicateFluxDevControlNetInputSchema {
 }
 
 // MARK: - InputSchema.DepthPreprocessor
-public extension ReplicateFluxDevControlNetInputSchema {
-    enum DepthPreprocessor: String, Encodable {
+extension ReplicateFluxDevControlNetInputSchema {
+    public enum DepthPreprocessor: String, Encodable {
         case midas = "Midas"
         case zoe = "Zoe"
         case depthAnything = "DepthAnything"
@@ -176,8 +176,8 @@ public extension ReplicateFluxDevControlNetInputSchema {
 }
 
 // MARK: - InputSchema.OutputFormat
-public extension ReplicateFluxDevControlNetInputSchema {
-    enum OutputFormat: String, Encodable {
+extension ReplicateFluxDevControlNetInputSchema {
+    public enum OutputFormat: String, Encodable {
         case webp
         case jpg
         case png
@@ -185,8 +185,8 @@ public extension ReplicateFluxDevControlNetInputSchema {
 }
 
 // MARK: - InputSchema.SoftEdgePreprocessor
-public extension ReplicateFluxDevControlNetInputSchema {
-    enum SoftEdgePreprocessor: String, Encodable {
+extension ReplicateFluxDevControlNetInputSchema {
+    public enum SoftEdgePreprocessor: String, Encodable {
         case hed = "HED"
         case teed = "TEED"
         case piDiNet = "PiDiNet"

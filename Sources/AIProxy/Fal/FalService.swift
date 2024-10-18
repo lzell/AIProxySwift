@@ -174,7 +174,7 @@ public final class FalService {
         var uploadReq = URLRequest(url: initiateRes.uploadURL)
         uploadReq.httpMethod = "PUT"
         uploadReq.setValue(contentType, forHTTPHeaderField: "Content-Type")
-        let (storageResponseData, storageResponse) = try await URLSession.shared.upload(for: uploadReq, from: fileData)
+        let (_, storageResponse) = try await URLSession.shared.upload(for: uploadReq, from: fileData)
 
         guard let httpStorageResponse = storageResponse as? HTTPURLResponse else {
             throw AIProxyError.assertion("Network response is not an http response")

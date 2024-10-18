@@ -23,8 +23,8 @@ public struct FalFluxLoRAFastTrainingOutputSchema: Decodable {
 }
 
 // MARK: - OutputSchema.File
-public extension FalFluxLoRAFastTrainingOutputSchema {
-    struct File: Decodable {
+extension FalFluxLoRAFastTrainingOutputSchema {
+    public struct File: Decodable {
         /// The mime type of the file.
         public let contentType: String?
 

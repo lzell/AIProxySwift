@@ -16,8 +16,8 @@ public struct GroqChatCompletionStreamingChunk: Decodable {
 }
 
 // MARK: - Chunk.Choice
-public extension GroqChatCompletionStreamingChunk {
-    struct Choice: Codable {
+extension GroqChatCompletionStreamingChunk {
+    public struct Choice: Codable {
         public let delta: Delta
         public let finishReason: String?
 
@@ -29,8 +29,8 @@ public extension GroqChatCompletionStreamingChunk {
 }
 
 // MARK: - Chunk.Choice.Delta
-public extension GroqChatCompletionStreamingChunk.Choice {
-    struct Delta: Codable {
+extension GroqChatCompletionStreamingChunk.Choice {
+    public struct Delta: Codable {
         public let role: String?
         public let content: String?
     }

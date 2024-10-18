@@ -46,7 +46,7 @@ public struct AnthropicAsyncChunks: AsyncSequence {
                     return nil // No more streaming lines to consume
                 }
                 if value.starts(with: #"data: {"type":"content_block_start""#) {
-                    if let blockStart = try AnthropicMessageStreamingContentBlockStart.from(line: value) {
+                    if let blockStart = AnthropicMessageStreamingContentBlockStart.from(line: value) {
                         if case .toolUse(name: let name) = blockStart.contentBlock {
                             toolName = name
                         }
