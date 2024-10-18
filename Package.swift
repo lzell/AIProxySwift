@@ -20,9 +20,14 @@ let package = Package(
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "AIProxy"),
+            name: "AIProxy",
+            resources: [
+                .process("Resources/PrivacyInfo.xcprivacy")
+            ]
+        ),
         .testTarget(
             name: "AIProxyTests",
-            dependencies: ["AIProxy"]),
+            dependencies: ["AIProxy"]
+        ),
     ]
 )
