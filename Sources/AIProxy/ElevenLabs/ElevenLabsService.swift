@@ -36,7 +36,7 @@ public final class ElevenLabsService {
         body: ElevenLabsTTSRequestBody
     ) async throws -> Data {
         let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
+        var request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -45,6 +45,7 @@ public final class ElevenLabsService {
             verb: .post,
             contentType: "application/json"
         )
+        request.timeoutInterval = 1000
 
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
@@ -60,4 +61,36 @@ public final class ElevenLabsService {
 
         return data
     }
+
+    /// //    https://api.elevenlabs.io/v1/projects/{project_id}
+
+    public func getProject(
+        projectID: String
+    ) async throws -> Void {
+        let session = AIProxyURLSession.create()
+        var request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/projects/\(projectID)",
+            body: nil,
+            verb: .get
+        )
+
+        let (data, res) = try await session.data(for: request)
+        guard let httpResponse = res as? HTTPURLResponse else {
+            throw AIProxyError.assertion("Network response is not an http response")
+        }
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        //return data
+    }
+
+
 }
