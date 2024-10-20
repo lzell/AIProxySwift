@@ -26,7 +26,7 @@ public final class GeminiService {
         let session = AIProxyURLSession.create()
         let proxyPath = "/v1beta/models/\(body.model):generateContent"
 
-        let request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,

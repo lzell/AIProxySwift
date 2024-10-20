@@ -663,7 +663,7 @@ public final class ReplicateService {
                 input: input
             )
         )
-        var request = try await AIProxyURLRequest.create(
+        var request = try await AIProxyURLRequest.createHTTP(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
