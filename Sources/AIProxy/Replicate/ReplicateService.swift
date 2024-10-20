@@ -35,6 +35,11 @@ public final class ReplicateService {
     ///   secondsBetweenPollAttempts`
     ///
     /// - Returns: An array of image URLs
+    @available(*, deprecated, message: """
+        Use one of the following methods as a replacement:
+          - ReplicateService.createFluxSchnellImages(input:secondsToWait:)
+          - ReplicateService.createFluxschnellImageURLs(input:secondsToWait:)
+        """)
     public func createFluxSchnellImage(
         input: ReplicateFluxSchnellInputSchema,
         pollAttempts: Int = 30,
@@ -47,6 +52,61 @@ public final class ReplicateService {
             pollAttempts: pollAttempts,
             secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
+    }
+
+    /// Convenience method for creating images through Black Forest Lab's Flux-Schnell model:
+    /// https://replicate.com/black-forest-labs/flux-schnell
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxSchnellInputSchema.swift
+    ///
+    ///   - secondsToWait: Seconds to wait before failing
+    ///
+    /// - Returns: An array of images as Data. The number of images in the result will be equal
+    ///            to `numOutputs` that you pass in the input schema. Use the `UIImage` or
+    ///            `NSImage` helpers to render the image data, e.g. `UIImage(data:)`
+    public func createFluxSchnellImages(
+        input: ReplicateFluxSchnellInputSchema,
+        secondsToWait: Int = 10
+    ) async throws -> [Data] {
+        let output: ReplicateSynchronousAPIOutput<[String]> = try await self.createSynchronousPredictionUsingOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-schnell",
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        guard let imageDataAsDataURI = output.output else {
+            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
+        }
+        return mapBase64DataURIsToData(imageDataAsDataURI)
+    }
+
+    /// Convenience method for creating image URLs through Black Forest Lab's Flux-Schnell model.
+    /// https://replicate.com/black-forest-labs/flux-schnell
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxSchnellInputSchema.swift
+    ///
+    ///   - secondsToWait: Seconds to wait before failing
+    ///
+    /// - Returns: An array of URLs. The number of urls in the result will be equal to
+    ///            `numOutputs` that you pass in the input schema.
+    public func createFluxSchnellImageURLs(
+        input: ReplicateFluxSchnellInputSchema,
+        secondsToWait: Int = 10
+    ) async throws -> [URL] {
+        let output: ReplicateSynchronousAPIOutput<[String]> = try await self.createSynchronousPredictionUsingOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-schnell",
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        if output.output == nil {
+            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
+        }
+        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
     }
 
     /// Convenience method for creating an image through Black Forest Lab's Flux-Pro model:
@@ -64,6 +124,12 @@ public final class ReplicateService {
     ///   secondsBetweenPollAttempts`
     ///
     /// - Returns: An image URL
+    ///
+    @available(*, deprecated, message: """
+        Use one of the following methods as a replacement:
+          - ReplicateService.createFluxProImage(input:secondsToWait:)
+          - ReplicateService.createFluxProImageURL(input:secondsToWait:)
+        """)
     public func createFluxProImage(
         input: ReplicateFluxProInputSchema,
         pollAttempts: Int = 30,
@@ -76,6 +142,62 @@ public final class ReplicateService {
             pollAttempts: pollAttempts,
             secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
+    }
+
+    /// Convenience method for creating images through Black Forest Lab's Flux-Pro model:
+    /// https://replicate.com/black-forest-labs/flux-pro
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxProInputSchema.swift
+    ///
+    ///   - secondsToWait: Seconds to wait before failing
+    ///
+    /// - Returns: The generated image data. Use the `UIImage` or `NSImage` helpers to render
+    ///            the image data, e.g. `UIImage(data:)`
+    public func createFluxProImage(
+        input: ReplicateFluxProInputSchema,
+        secondsToWait: Int = 30
+    ) async throws -> Data {
+        let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-pro",
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        guard let imageDataAsDataURI = output.output else {
+            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
+        }
+        guard let data = mapBase64DataURIToData(imageDataAsDataURI) else {
+            throw AIProxyError.assertion("Could not map replicate dataURI to Data")
+        }
+        return data
+    }
+
+    /// Convenience method for creating image URL through Black Forest Lab's Flux-Pro model.
+    /// https://replicate.com/black-forest-labs/flux-pro
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxProInputSchema.swift
+    ///
+    ///   - secondsToWait: Seconds to wait before failing
+    ///
+    /// - Returns: The URL of the generated image
+    public func createFluxProImageURL(
+        input: ReplicateFluxProInputSchema,
+        secondsToWait: Int = 30
+    ) async throws -> URL {
+        let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-pro",
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        if output.output == nil {
+            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
+        }
+        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
     }
 
     /// Convenience method for creating an image through Black Forest Lab's Flux-Pro v1.1 model:
@@ -93,6 +215,10 @@ public final class ReplicateService {
     ///   secondsBetweenPollAttempts`
     ///
     /// - Returns: An image URL
+    @available(*, deprecated, message: """
+        Use one of the following methods as a replacement:
+          - ReplicateService.createFluxProImageURL_v1_1(input:secondsToWait:)
+        """)
     public func createFluxProImage_v1_1(
         input: ReplicateFluxProInputSchema_v1_1,
         pollAttempts: Int = 30,
@@ -105,6 +231,32 @@ public final class ReplicateService {
             pollAttempts: pollAttempts,
             secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
+    }
+
+    /// Convenience method for creating image URL through Black Forest Lab's Flux-Pro model.
+    /// https://replicate.com/black-forest-labs/flux-1.1-pro
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the images you'd like to generate. See `ReplicateFluxProInputSchema_v1_1.swift`
+    ///
+    ///   - secondsToWait: Seconds to wait before failing
+    ///
+    /// - Returns: The URL of the generated image
+    public func createFluxProImageURL_v1_1(
+        input: ReplicateFluxProInputSchema_v1_1,
+        secondsToWait: Int = 30
+    ) async throws -> URL {
+        let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-1.1-pro",
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        if output.output == nil {
+            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
+        }
+        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
     }
 
     /// Convenience method for creating an image through Black Forest Lab's Flux-Dev model:
@@ -122,6 +274,11 @@ public final class ReplicateService {
     ///   secondsBetweenPollAttempts`
     ///
     /// - Returns: An array of image URLs
+    @available(*, deprecated, message: """
+    Use one of the following methods as a replacement:
+      - ReplicateService.createFluxDevImages(input:secondsToWait:)
+      - ReplicateService.createFluxDevImageURLs(input:secondsToWait:)
+    """)
     public func createFluxDevImage(
         input: ReplicateFluxDevInputSchema,
         pollAttempts: Int = 30,
@@ -134,6 +291,61 @@ public final class ReplicateService {
             pollAttempts: pollAttempts,
             secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
+    }
+
+    /// Convenience method for creating images through Black Forest Lab's Flux-Dev model:
+    /// https://replicate.com/black-forest-labs/flux-dev
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxDevInputSchema.swift
+    ///
+    ///   - secondsToWait: Seconds to wait before failing
+    ///
+    /// - Returns: An array of images as Data. The number of images in the result will be equal
+    ///            to `numOutputs` that you pass in the input schema.  Use the `UIImage` or
+    ///            `NSImage` helpers to render the image data, e.g. `UIImage(data:)`
+    public func createFluxDevImages(
+        input: ReplicateFluxDevInputSchema,
+        secondsToWait: Int = 30
+    ) async throws -> [Data] {
+        let output: ReplicateSynchronousAPIOutput<[String]> = try await self.createSynchronousPredictionUsingOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-dev",
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        guard let imageDataAsDataURI = output.output else {
+            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
+        }
+        return mapBase64DataURIsToData(imageDataAsDataURI)
+    }
+
+    /// Convenience method for creating image URLs through Black Forest Lab's Flux-Dev model.
+    /// https://replicate.com/black-forest-labs/flux-dev
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxDevInputSchema.swift
+    ///
+    ///   - secondsToWait: Seconds to wait before failing
+    ///
+    /// - Returns: An array of URLs. The number of urls in the result will be equal to
+    ///           `numOutputs` that you pass in the input schema.
+    public func createFluxDevImageURLs(
+        input: ReplicateFluxDevInputSchema,
+        secondsToWait: Int = 10
+    ) async throws -> [URL] {
+        let output: ReplicateSynchronousAPIOutput<[String]> = try await self.createSynchronousPredictionUsingOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-dev",
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        if output.output == nil {
+            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
+        }
+        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
     }
 
     /// Convenience method for creating an image using https://replicate.com/zsxkib/flux-pulid
@@ -425,6 +637,56 @@ public final class ReplicateService {
         return try JSONDecoder().decode(output, from: data)
     }
 
+    /// Makes a POST request to the 'create a prediction using an official model' endpoint described here:
+    /// https://replicate.com/docs/reference/http#create-a-prediction-using-an-official-model
+    ///
+    /// Uses the synchronous API announced here: https://replicate.com/changelog/2024-10-09-synchronous-api
+    ///
+    /// - Parameters:
+    ///
+    ///   - modelOwner: The owner of the model
+    ///
+    ///   - modelName: The name of the model
+    ///
+    ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
+    ///
+    /// - Returns: The inference results wrapped in ReplicateSynchronousAPIOutput
+    public func createSynchronousPredictionUsingOfficialModel<T: Encodable, U: Encodable>(
+        modelOwner: String,
+        modelName: String,
+        input: T,
+        secondsToWait: Int
+    )  async throws -> ReplicateSynchronousAPIOutput<U> {
+        let encoder = JSONEncoder()
+        let body = try encoder.encode(
+            ReplicatePredictionRequestBody(
+                input: input
+            )
+        )
+        var request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/models/\(modelOwner)/\(modelName)/predictions",
+            body: body,
+            verb: .post,
+            contentType: "application/json"
+        )
+        request.addValue("wait=\(secondsToWait)", forHTTPHeaderField: "Prefer")
+
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
+    }
+
+
     /// Makes a POST request to the 'create a prediction' endpoint described here:
     /// https://replicate.com/docs/reference/http#create-a-prediction
     ///
@@ -652,4 +914,30 @@ public final class ReplicateService {
             secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
     }
+
+    private func mapPredictionResultURLToOutput<T: Decodable>(
+        _ predictionResultURL: URL?
+    ) async throws -> T {
+        guard let predictionResultURL = predictionResultURL else {
+            throw AIProxyError.assertion("Replicate prediction URL is nil")
+        }
+        let prediction = try await self.actorGetPredictionResult(
+            url: predictionResultURL,
+            output: ReplicatePredictionResponseBody<T>.self
+        )
+        guard let predictionOutput = prediction.output else {
+            throw AIProxyError.assertion("Replicate prediction does not have any output")
+        }
+        return predictionOutput
+    }
+}
+
+private func mapBase64DataURIsToData(_ dataURIs: [String]) -> [Data] {
+    return dataURIs.map {
+        mapBase64DataURIToData($0)
+    }.compactMap { $0 }
+}
+
+private func mapBase64DataURIToData(_ dataURI: String) -> Data? {
+    return dataURI.split(separator: ",").last.flatMap { Data(base64Encoded: String($0)) }
 }
