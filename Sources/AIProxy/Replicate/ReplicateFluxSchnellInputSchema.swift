@@ -10,11 +10,12 @@ import Foundation
 /// Input schema for use with requests to Black Forest Lab's Flux Schnell model:
 /// https://replicate.com/black-forest-labs/flux-schnell/api/schema#input-schema
 public struct ReplicateFluxSchnellInputSchema: Encodable {
+    // Required
 
     /// Prompt for generated image
     public let prompt: String
 
-    // MARK: Optional
+    // Optional
 
     /// Aspect ratio for the generated image
     /// Valid ratios are: `1:1`, `16:9`, `21:9`, `2:3`, `3:2`, `4:5`, `5:4`, `9:16`, `9:21`
@@ -22,6 +23,10 @@ public struct ReplicateFluxSchnellInputSchema: Encodable {
 
     /// Disable safety checker for generated images.
     public let disableSafetyChecker: Bool?
+
+    /// Run faster predictions with model optimized for speed (currently fp8 quantized); disable to run in original bf16
+    /// Defaults to `true`
+    public let goFast: Bool?
 
     /// Number of outputs to generate
     public let numOutputs: Int?
@@ -39,6 +44,7 @@ public struct ReplicateFluxSchnellInputSchema: Encodable {
     private enum CodingKeys: String, CodingKey {
         case aspectRatio = "aspect_ratio"
         case disableSafetyChecker = "disable_safety_checker"
+        case goFast = "go_fast"
         case numOutputs = "num_outputs"
         case outputFormat = "output_format"
         case outputQuality = "output_quality"
@@ -53,6 +59,7 @@ public struct ReplicateFluxSchnellInputSchema: Encodable {
         prompt: String,
         aspectRatio: String? = nil,
         disableSafetyChecker: Bool? = nil,
+        goFast: Bool? = nil,
         numOutputs: Int? = nil,
         outputFormat: ReplicateFluxSchnellInputSchema.OutputFormat? = nil,
         outputQuality: Int? = nil,
@@ -61,6 +68,7 @@ public struct ReplicateFluxSchnellInputSchema: Encodable {
         self.prompt = prompt
         self.aspectRatio = aspectRatio
         self.disableSafetyChecker = disableSafetyChecker
+        self.goFast = goFast
         self.numOutputs = numOutputs
         self.outputFormat = outputFormat
         self.outputQuality = outputQuality
@@ -68,6 +76,7 @@ public struct ReplicateFluxSchnellInputSchema: Encodable {
     }
 }
 
+// MARK: - InputSchema.OutputFormat
 extension ReplicateFluxSchnellInputSchema {
     public enum OutputFormat: String, Encodable {
         case jpg

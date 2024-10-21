@@ -12,14 +12,14 @@ import Foundation
 final class GeminiGenerateContentResponseBodyTests: XCTestCase {
 
     func testUploadFileResponseIsDecodable() throws {
-        let sampleResponse = """
+        let sampleResponse = #"""
         {
             "candidates": [
                 {
                 "content": {
                     "parts": [
                     {
-                        "text": "Why don't scientists trust atoms? \n\nBecause they make up everything! \n"
+                        "text": "findme"
                     }
                     ],
                     "role": "model"
@@ -52,8 +52,12 @@ final class GeminiGenerateContentResponseBodyTests: XCTestCase {
                 "totalTokenCount": 20
             }
         }
-        """
-        let body = GeminiGenerateContentResponseBody.deserialize(from: sampleResponse)
-        XCTAssertEqual(body.candidates?.first?.content?.parts?.first?.text, "Why don't scientists trust atoms")
+        """#
+        let body = try GeminiGenerateContentResponseBody.deserialize(from: sampleResponse)
+        if case .text(let generated) = body.candidates?.first?.content?.parts?.first {
+            XCTAssertEqual(generated, "findme")
+        } else {
+            XCTFail()
+        }
     }
 }
