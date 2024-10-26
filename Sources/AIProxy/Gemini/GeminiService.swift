@@ -20,6 +20,9 @@ public final class GeminiService {
         self.clientID = clientID
     }
 
+    /// Generate content using Gemini. Google puts chat completions, audio transcriptions, and
+    /// video capabilities all under the term 'generate content':
+    /// https://ai.google.dev/api/generate-content#v1beta.models.generateContent
     public func generateContentRequest(
         body: GeminiGenerateContentRequestBody
     ) async throws -> GeminiGenerateContentResponseBody {
@@ -51,13 +54,23 @@ public final class GeminiService {
         return try GeminiGenerateContentResponseBody.deserialize(from: data)
     }
 
-    /// Uploads a file to Google's short term storage
-    /// The File API lets you store up to 20 GB of files per project, with a per-file maximum size of 2 GB. Files are stored for 48 hours. They can be accessed in that period with your API key, but they cannot be downloaded using any API. It is available at no cost in all regions where the Gemini API is available.
+    /// Uploads a file to Google's short term storage.
+    ///
+    /// The File API lets you store up to 20 GB of files per project, with a per-file maximum
+    /// size of 2 GB. Files are stored for 48 hours. They can be accessed in that period with
+    /// your API key, but they cannot be downloaded using any API. It is available at no cost
+    /// in all regions where the Gemini API is available.
     /// https://ai.google.dev/gemini-api/docs/vision?lang=python#technical-details-video
+    ///
     /// - Parameters:
+    ///
     ///   - fileData: The binary representation of your file
+    ///
     ///   - mimeType: The mime type of the uploaded data, e.g.`video/mp4`, `image/png`,  and `application/zip` are all valid mime types.
-    /// - Returns: The URL of the file on Google's short term storage.  Add this URL to any content generation request using `GeminiGenerateContentRequestBody`. You can also use this URL to delete the file from Google's storage
+    ///
+    /// - Returns: A GeminiFile that contains the URL of the file on Google's short term storage. Add this
+    ///            URL to any content generation request using `GeminiGenerateContentRequestBody`. You can
+    ///            also use this URL to delete the file from Google's storage
     public func uploadFile(
         fileData: Data,
         mimeType: String
@@ -88,6 +101,9 @@ public final class GeminiService {
         return try await self.pollForFileUploadComplete(fileURL: response.file.uri)
     }
 
+    /// Deletes a file from Google's temporary storage
+    ///
+    /// - Parameter fileURL: The location of the file to delete
     public func deleteFile(
         fileURL: URL
     ) async throws {
@@ -110,8 +126,6 @@ public final class GeminiService {
             )
         }
     }
-
-
 
     /// Polls for the completion of a file upload, where the polling URL is Gemini's `url`
     /// returned in `GeminiFileUploadResponseBody`

@@ -12,6 +12,7 @@ import Foundation
 /// Docstrings are taken from this reference:
 /// https://ai.google.dev/api/generate-content#v1beta.models.generateContent
 public struct GeminiGenerateContentRequestBody: Encodable {
+
     // Required
 
     /// The model to use for generating the completion. Format: models/{model}
@@ -45,13 +46,13 @@ public struct GeminiGenerateContentRequestBody: Encodable {
     // To format, place the cursor in the initializer's parameter list and use `ctrl-m`
     public init(
         model: String,
-        contents: [GeminiGenerateContentRequestBody.Content],
+        contents: [Content],
         cachedContent: String? = nil,
-        generationConfig: GeminiGenerateContentRequestBody.GenerationConfig? = nil,
-        safetySettings: [GeminiGenerateContentRequestBody.SafetySetting]? = nil,
-        systemInstruction: GeminiGenerateContentRequestBody.SystemInstruction? = nil,
-        tools: [GeminiGenerateContentRequestBody.Tool]? = nil,
-        toolConfig: GeminiGenerateContentRequestBody.ToolConfig? = nil
+        generationConfig: GenerationConfig? = nil,
+        safetySettings: [SafetySetting]? = nil,
+        systemInstruction: SystemInstruction? = nil,
+        tools: [Tool]? = nil,
+        toolConfig: ToolConfig? = nil
     ) {
         self.model = model
         self.contents = contents
