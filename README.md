@@ -450,7 +450,7 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
             model: "gemini-1.5-flash",
             contents: [
                 .init(
-                    parts: [.init(text: "Tell me a joke")]
+                    parts: [.text("Tell me a joke")]
                 )
             ]
         )
