@@ -11,7 +11,7 @@ import Foundation
 
 final class GeminiGenerateContentResponseBodyTests: XCTestCase {
 
-    func testUploadFileResponseIsDecodable() throws {
+    func testResponseIsDecodable() throws {
         let sampleResponse = #"""
         {
             "candidates": [

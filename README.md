@@ -450,7 +450,7 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
             model: "gemini-1.5-flash",
             contents: [
                 .init(
-                    parts: [.init(text: "Tell me a joke")]
+                    parts: [.text("Tell me a joke")]
                 )
             ]
         )
@@ -476,6 +476,179 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create Gemini generate content request: \(error.localizedDescription)")
+    }
+
+
+### How to transcribe audio with Gemini
+
+Add a file called `helloworld.m4a` to your Xcode assets before running this sample snippet:
+
+    import AIProxy
+
+    let geminiService = AIProxy.geminiService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    guard let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a") else {
+        print("Could not find an audio file named helloworld.m4a in your app bundle")
+        return
+    }
+
+    do {
+        let requestBody = GeminiGenerateContentRequestBody(
+            model: "gemini-1.5-flash",
+            contents: [
+                .init(
+                    parts: [
+                        .text("""
+                              Can you transcribe this interview, in the format of timecode, speaker, caption?
+                              Use speaker A, speaker B, etc. to identify speakers.
+                              """),
+                        .inline(data: try Data(contentsOf: url), mimeType: "audio/mp4")
+                    ]
+                )
+            ]
+        )
+        let response = try await geminiService.generateContentRequest(body: requestBody)
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            switch part {
+            case .text(let text):
+                print("Gemini transcript: \(text)")
+            }
+        }
+        if let usage = response.usageMetadata {
+            print(
+                """
+                Used:
+                 \(usage.promptTokenCount ?? 0) prompt tokens
+                 \(usage.cachedContentTokenCount ?? 0) cached tokens
+                 \(usage.candidatesTokenCount ?? 0) candidate tokens
+                 \(usage.totalTokenCount ?? 0) total tokens
+                """
+            )
+        }
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Gemini transcription request: \(error.localizedDescription)")
+    }
+
+
+### How to upload a video file to Gemini temporary storage
+
+Add a file called `my-movie.mov` to your Xcode assets before running this sample snippet.
+If you use a file like `my-movie.mp4`, change the mime type from `video/quicktime` to `video/mp4` in the snippet below.
+
+    import AIProxy
+
+    let geminiService = AIProxy.geminiService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    // Try to upload the zip file in Xcode assets
+    // Get the images to train with:
+    guard let movieAsset = NSDataAsset(name: "my-movie") else {
+        print("""
+              Drop my-movie.mov into Assets first.
+              """)
+        return
+    }
+
+    do {
+        let geminiFile = try await geminiService.uploadFile(
+            fileData: movieAsset.data,
+            mimeType: "video/quicktime"
+        )
+        print("""
+              Video file uploaded to Gemini's media storage.
+              It will be available for 48 hours.
+              Find it at \(geminiFile.uri.absoluteString)
+              """)
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not upload file to Gemini: \(error.localizedDescription)")
+    }
+
+
+### How to convert video contents to text with Gemini
+
+Use the file URL returned from the snippet above.
+
+    import AIProxy
+
+    let fileURL = URL(string: "url-from-snippet-above")!
+    let geminiService = AIProxy.geminiService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let requestBody = GeminiGenerateContentRequestBody(
+            model: "gemini-1.5-flash",
+            contents: [
+                .init(
+                    parts: [
+                        .text("Dump the text content in markdown from this video"),
+                        .file(
+                            url: fileURL,
+                            mimeType: "video/quicktime"
+                        )
+                    ]
+                )
+            ],
+            safetySettings: [
+                .init(category: .dangerousContent, threshold: .none),
+                .init(category: .civicIntegrity, threshold: .none),
+                .init(category: .harassment, threshold: .none),
+                .init(category: .hateSpeech, threshold: .none),
+                .init(category: .sexuallyExplicit, threshold: .none)
+            ]
+        )
+        let response = try await geminiService.generateContentRequest(body: requestBody)
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            switch part {
+            case .text(let text):
+                print("Gemini transcript: \(text)")
+            }
+        }
+        if let usage = response.usageMetadata {
+            print(
+                """
+                Used:
+                 \(usage.promptTokenCount ?? 0) prompt tokens
+                 \(usage.cachedContentTokenCount ?? 0) cached tokens
+                 \(usage.candidatesTokenCount ?? 0) candidate tokens
+                 \(usage.totalTokenCount ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Gemini vision request: \(error.localizedDescription)")
+    }
+
+
+### How to delete a temporary file from Gemini storage
+
+    import AIProxy
+
+    let fileURL = URL(string: "url-from-snippet-above")!
+    let geminiService = AIProxy.geminiService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        try await geminiService.deleteFile(fileURL: fileURL)
+        print("File deleted from \(fileURL.absoluteString)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not delete file from Gemini temporary storage: \(error.localizedDescription)")
     }
 
 
