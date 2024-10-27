@@ -535,6 +535,75 @@ Add a file called `helloworld.m4a` to your Xcode assets before running this samp
     }
 
 
+### How to use images in the prompt to Gemini
+
+Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
+
+
+    import AIProxy
+
+    let geminiService = AIProxy.geminiService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    guard let image = NSImage(named: "my-image") else {
+        print("Could not find an image named 'my-image' in your app assets")
+        return
+    }
+
+    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.9) else {
+        print("Could not encode image as Jpeg")
+        return
+    }
+
+    do {
+        let requestBody = GeminiGenerateContentRequestBody(
+            model: "gemini-1.5-flash",
+            contents: [
+                .init(
+                    parts: [
+                        .text("What do you see?"),
+                        .inline(
+                            data: jpegData,
+                            mimeType: "image/jpeg"
+                        )
+                    ]
+                )
+            ],
+            safetySettings: [
+                .init(category: .dangerousContent, threshold: .none),
+                .init(category: .civicIntegrity, threshold: .none),
+                .init(category: .harassment, threshold: .none),
+                .init(category: .hateSpeech, threshold: .none),
+                .init(category: .sexuallyExplicit, threshold: .none)
+            ]
+        )
+        let response = try await geminiService.generateContentRequest(body: requestBody)
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            switch part {
+            case .text(let text):
+                print("Gemini sees: \(text)")
+            }
+        }
+        if let usage = response.usageMetadata {
+            print(
+                """
+                Used:
+                 \(usage.promptTokenCount ?? 0) prompt tokens
+                 \(usage.cachedContentTokenCount ?? 0) cached tokens
+                 \(usage.candidatesTokenCount ?? 0) candidate tokens
+                 \(usage.totalTokenCount ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not use image as input to Gemini: \(error.localizedDescription)")
+    }
+
+
 ### How to upload a video file to Gemini temporary storage
 
 Add a file called `my-movie.mov` to your Xcode assets before running this sample snippet.
