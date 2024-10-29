@@ -77,17 +77,16 @@ public final class GeminiService {
     ) async throws -> GeminiFile {
         let body = GeminiFileUploadRequestBody(fileData: fileData, mimeType: mimeType)
         let boundary = UUID().uuidString
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/upload/v1beta/files",
             body: body.serialize(withBoundary: boundary),
             verb: .post,
-            contentType: "multipart/related; boundary=\(boundary)"
+            contentType: "multipart/related; boundary=\(boundary)",
+            headers: ["X-Goog-Upload-Protocol": "multipart"]
         )
-
-        request.addValue("multipart", forHTTPHeaderField: "X-Goog-Upload-Protocol")
 
         let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
         if httpResponse.statusCode > 299 {

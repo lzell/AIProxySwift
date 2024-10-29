@@ -663,16 +663,16 @@ public final class ReplicateService {
                 input: input
             )
         )
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/v1/models/\(modelOwner)/\(modelName)/predictions",
             body: body,
             verb: .post,
-            contentType: "application/json"
+            contentType: "application/json",
+            headers: ["Prefer": "wait=\(secondsToWait)"]
         )
-        request.addValue("wait=\(secondsToWait)", forHTTPHeaderField: "Prefer")
 
         let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
 

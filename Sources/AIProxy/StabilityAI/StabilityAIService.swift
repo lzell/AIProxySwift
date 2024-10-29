@@ -58,16 +58,16 @@ public final class StabilityAIService {
     ) async throws -> StabilityAIImageResponse {
         let session = AIProxyURLSession.create()
         let boundary = UUID().uuidString
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: path,
             body: formEncode(body, boundary),
             verb: .post,
-            contentType: "multipart/form-data; boundary=\(boundary)"
+            contentType: "multipart/form-data; boundary=\(boundary)",
+            headers: ["Accept": "image/*"]
         )
-        request.addValue("image/*", forHTTPHeaderField: "Accept")
 
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
