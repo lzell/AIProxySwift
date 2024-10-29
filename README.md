@@ -143,7 +143,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
         return
     }
 
-    guard let imageURL = AIProxy.encodeImageAsURL(image: image) else {
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.8) else {
         print("Could not convert image to OpenAI's imageURL format")
         return
     }
@@ -552,7 +552,7 @@ Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
         return
     }
 
-    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.9) else {
+    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.8) else {
         print("Could not encode image as Jpeg")
         return
     }
