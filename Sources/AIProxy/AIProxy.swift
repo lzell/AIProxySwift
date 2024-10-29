@@ -34,6 +34,10 @@ public struct AIProxy {
     ///   - verb: The HTTP verb to use for this request. If you leave the default selection of 'automatic', then requests that
     ///     contain a body will default to `POST` while requests with no body will default to `GET`
     ///
+    ///   - contentType: The optional content type of the request body.
+    ///
+    ///   - headers: An optional set of additional headers to include in the request.
+    ///
     /// - Returns: A request containing all headers that AIProxy expects. The request is ready to be used with a url session
     ///            that you create with `AIProxy.session()`
     public static func request(
@@ -42,7 +46,9 @@ public struct AIProxy {
         clientID: String? = nil,
         proxyPath: String,
         body: Data? = nil,
-        verb: AIProxyHTTPVerb = .automatic
+        verb: AIProxyHTTPVerb = .automatic,
+        contentType: String? = nil,
+        headers: [String: String] = [:]
     ) async throws -> URLRequest {
         return try await AIProxyURLRequest.create(
             partialKey: partialKey,
@@ -50,7 +56,9 @@ public struct AIProxy {
             clientID: clientID,
             proxyPath: proxyPath,
             body: body,
-            verb: verb
+            verb: verb,
+            contentType: contentType,
+            headers: headers
         )
     }
 
