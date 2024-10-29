@@ -7,7 +7,9 @@
 
 import Foundation
 
-#if canImport(UIKit)
+#if os(watchOS)
+import WatchKit
+#elseif canImport(UIKit)
 import UIKit
 #elseif canImport(IOKit)
 import IOKit
@@ -17,7 +19,9 @@ struct AIProxyIdentifier {
     /// Generates a clientID for this device.
     /// - Returns: a UIDevice ID on iOS, an IOKit ID on macOS
     internal static func getClientID() -> String? {
-#if canImport(UIKit)
+#if os(watchOS)
+        return WKInterfaceDevice.current().identifierForVendor?.uuidString
+#elseif canImport(UIKit)
         return UIDevice.current.identifierForVendor?.uuidString
 #elseif canImport(IOKit)
         return getIdentifierFromIOKit()
