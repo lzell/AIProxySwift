@@ -7,7 +7,7 @@ private let legacyURL = "https://api.aiproxy.pro"
 private let aiproxyChatPath = "/v1/chat/completions"
 
 
-public open class OpenAIService {
+open class OpenAIService {
     private let partialKey: String
     private let serviceURL: String?
     private let clientID: String?
