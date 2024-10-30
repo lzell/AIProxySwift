@@ -7,7 +7,7 @@
 import Foundation
 
 
-public final class ReplicateService {
+public open class ReplicateService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?

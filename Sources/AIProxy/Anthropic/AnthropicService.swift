@@ -7,7 +7,7 @@
 
 import Foundation
 
-public final class AnthropicService {
+public open class AnthropicService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?

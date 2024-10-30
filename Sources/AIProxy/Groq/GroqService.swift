@@ -7,7 +7,7 @@
 
 import Foundation
 
-public final class GroqService {
+public open class GroqService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?

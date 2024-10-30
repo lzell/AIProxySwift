@@ -7,7 +7,7 @@
 
 import Foundation
 
-public final class DeepLService {
+public open class DeepLService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?

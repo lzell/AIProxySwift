@@ -3,7 +3,7 @@
 
 import Foundation
 
-public final class GeminiService {
+public open class GeminiService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
