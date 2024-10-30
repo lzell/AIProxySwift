@@ -8,7 +8,7 @@
 import Foundation
 
 /// AIProxy's swift client for Together.ai
-public final class TogetherAIService {
+public open class TogetherAIService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?

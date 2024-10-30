@@ -7,7 +7,7 @@
 
 import Foundation
 
-public final class ElevenLabsService {
+public open class ElevenLabsService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
