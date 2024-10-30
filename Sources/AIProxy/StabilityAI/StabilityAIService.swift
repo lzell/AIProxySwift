@@ -7,7 +7,7 @@
 
 import Foundation
 
-public open class StabilityAIService {
+open class StabilityAIService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
