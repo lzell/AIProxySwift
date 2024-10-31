@@ -1,6 +1,6 @@
 import Foundation
 
-enum ReplicateError: LocalizedError {
+public enum ReplicateError: LocalizedError {
     case predictionCanceled
     case predictionDidNotIncludeOutput
     case predictionDidNotIncludeURL
@@ -8,7 +8,7 @@ enum ReplicateError: LocalizedError {
     case missingModelURL
     case reachedRetryLimit
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .predictionCanceled:
             return "The prediction was canceled"

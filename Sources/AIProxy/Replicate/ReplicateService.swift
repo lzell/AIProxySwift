@@ -685,6 +685,53 @@ open class ReplicateService {
 
         return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
     }
+    
+    /// Makes a POST request to the 'create a prediction using community model' endpoint described here:
+    /// https://replicate.com/docs/reference/http#predictions.create
+    ///
+    /// Uses the synchronous API announced here: https://replicate.com/changelog/2024-10-09-synchronous-api
+    ///
+    /// - Parameters:
+    ///
+    ///   - modelVersion: The version of the model
+    ///
+    ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
+    ///
+    /// - Returns: The inference results wrapped in ReplicateSynchronousAPIOutput
+    public func createSynchronousPredictionUsingVersion<T: Encodable, U: Encodable>(
+        modelVersion: String,
+        input: T,
+        secondsToWait: Int
+    )  async throws -> ReplicateSynchronousAPIOutput<U> {
+        let encoder = JSONEncoder()
+        let body = try encoder.encode(
+            ReplicatePredictionRequestBody(
+                input: input,
+                version: modelVersion
+            )
+        )
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/predictions",
+            body: body,
+            verb: .post,
+            contentType: "application/json",
+            headers: ["Prefer": "wait=\(secondsToWait)"]
+        )
+
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
+    }
 
 
     /// Makes a POST request to the 'create a prediction' endpoint described here:
@@ -915,7 +962,7 @@ open class ReplicateService {
         )
     }
 
-    private func mapPredictionResultURLToOutput<T: Decodable>(
+    public func mapPredictionResultURLToOutput<T: Decodable>(
         _ predictionResultURL: URL?
     ) async throws -> T {
         guard let predictionResultURL = predictionResultURL else {
