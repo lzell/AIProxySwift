@@ -164,8 +164,8 @@ extension ElevenLabsTTSRequestBody {
         public init(
             similarityBoost: Double,
             stability: Double,
-            speakerBoost: Bool?,
-            style: Double?
+            speakerBoost: Bool? = nil,
+            style: Double? = nil
         ) {
             self.similarityBoost = similarityBoost
             self.stability = stability
