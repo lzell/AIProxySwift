@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AIProxyURLRequest {
+public struct AIProxyURLRequest {
 
     /// Creates a URLRequest that is configured for use with an AIProxy URLSession.
     static func create(
