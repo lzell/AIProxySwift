@@ -915,7 +915,7 @@ open class ReplicateService {
         )
     }
 
-    private func mapPredictionResultURLToOutput<T: Decodable>(
+    public func mapPredictionResultURLToOutput<T: Decodable>(
         _ predictionResultURL: URL?
     ) async throws -> T {
         guard let predictionResultURL = predictionResultURL else {
