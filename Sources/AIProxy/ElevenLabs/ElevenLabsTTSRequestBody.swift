@@ -110,6 +110,14 @@ extension ElevenLabsTTSRequestBody {
     public struct PronunciationDictionaryLocator: Encodable {
         public let pronunciationDictionaryID: String
         public let versionID: String
+        
+        public init(
+            pronunciationDictionaryID: String,
+            versionID: String
+        ) {
+            self.pronunciationDictionaryID = pronunciationDictionaryID
+            self.versionID = versionID
+        }
 
         private enum CodingKeys: String, CodingKey {
             case pronunciationDictionaryID = "pronunciation_dictionary_id"
@@ -152,6 +160,18 @@ extension ElevenLabsTTSRequestBody {
         ///
         /// In general, we recommend keeping this setting at 0 at all times.
         public let style: Double?
+        
+        public init(
+            similarityBoost: Double,
+            stability: Double,
+            speakerBoost: Bool? = nil,
+            style: Double? = nil
+        ) {
+            self.similarityBoost = similarityBoost
+            self.stability = stability
+            self.speakerBoost = speakerBoost
+            self.style = style
+        }
 
         private enum CodingKeys: String, CodingKey {
             case similarityBoost = "similarity_boost"
