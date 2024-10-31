@@ -686,8 +686,20 @@ open class ReplicateService {
         return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
     }
     
+    /// Makes a POST request to the 'create a prediction using community model' endpoint described here:
+    /// https://replicate.com/docs/reference/http#predictions.create
+    ///
+    /// Uses the synchronous API announced here: https://replicate.com/changelog/2024-10-09-synchronous-api
+    ///
+    /// - Parameters:
+    ///
+    ///   - modelVersion: The version of the model
+    ///
+    ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
+    ///
+    /// - Returns: The inference results wrapped in ReplicateSynchronousAPIOutput
     public func createSynchronousPredictionUsingVersion<T: Encodable, U: Encodable>(
-        version: String,
+        modelVersion: String,
         input: T,
         secondsToWait: Int
     )  async throws -> ReplicateSynchronousAPIOutput<U> {
@@ -695,7 +707,7 @@ open class ReplicateService {
         let body = try encoder.encode(
             ReplicatePredictionRequestBody(
                 input: input,
-                version: version
+                version: modelVersion
             )
         )
         let request = try await AIProxyURLRequest.create(
