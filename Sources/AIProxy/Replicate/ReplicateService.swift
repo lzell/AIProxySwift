@@ -685,6 +685,40 @@ open class ReplicateService {
 
         return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
     }
+    
+    public func createSynchronousPredictionUsingVersion<T: Encodable, U: Encodable>(
+        version: String,
+        input: T,
+        secondsToWait: Int
+    )  async throws -> ReplicateSynchronousAPIOutput<U> {
+        let encoder = JSONEncoder()
+        let body = try encoder.encode(
+            ReplicatePredictionRequestBody(
+                input: input,
+                version: version
+            )
+        )
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/predictions",
+            body: body,
+            verb: .post,
+            contentType: "application/json"
+        )
+
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
+    }
 
 
     /// Makes a POST request to the 'create a prediction' endpoint described here:
