@@ -705,7 +705,8 @@ open class ReplicateService {
             proxyPath: "/v1/predictions",
             body: body,
             verb: .post,
-            contentType: "application/json"
+            contentType: "application/json",
+            headers: ["Prefer": "wait=\(secondsToWait)"]
         )
 
         let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
