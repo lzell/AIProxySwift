@@ -111,7 +111,10 @@ extension ElevenLabsTTSRequestBody {
         public let pronunciationDictionaryID: String
         public let versionID: String
         
-        public init(pronunciationDictionaryID: String, versionID: String) {
+        public init(
+            pronunciationDictionaryID: String,
+            versionID: String
+        ) {
             self.pronunciationDictionaryID = pronunciationDictionaryID
             self.versionID = versionID
         }
@@ -158,7 +161,12 @@ extension ElevenLabsTTSRequestBody {
         /// In general, we recommend keeping this setting at 0 at all times.
         public let style: Double?
         
-        public init(similarityBoost: Double, stability: Double, speakerBoost: Bool?, style: Double?) {
+        public init(
+            similarityBoost: Double,
+            stability: Double,
+            speakerBoost: Bool?,
+            style: Double?
+        ) {
             self.similarityBoost = similarityBoost
             self.stability = stability
             self.speakerBoost = speakerBoost
