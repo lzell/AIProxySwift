@@ -1193,9 +1193,6 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
 
 ### How to generate a Flux-Schnell image by Black Forest Labs, using Replicate
 
-You can get image data directly by switching the call from `createFluxSchnellImageURLs` to `createFluxSchnellImages`
-in the snippet below:
-
     import AIProxy
 
     let replicateService = AIProxy.replicateService(
@@ -1223,9 +1220,6 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 
 ### How to generate a Flux-Dev image by Black Forest Labs, using Replicate
 
-You can get image data directly by switching the call from `createFluxDevImageURLs` to `createFluxDevImages`
-in the snippet below:
-
     import AIProxy
 
     let replicateService = AIProxy.replicateService(
@@ -1252,9 +1246,6 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 
 
 ### How to generate a Flux-Pro image by Black Forest Labs, using Replicate
-
-You can get image data directly by switching the call from `createFluxProImageURL` to `createFluxProImage`
-in the snippet below.
 
 This snippet generates a version 1.1 image. If you would like to generate version 1, make the
 following substitutions:
