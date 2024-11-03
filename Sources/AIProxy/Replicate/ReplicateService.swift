@@ -36,8 +36,7 @@ open class ReplicateService {
     ///
     /// - Returns: An array of image URLs
     @available(*, deprecated, message: """
-        Use one of the following methods as a replacement:
-          - ReplicateService.createFluxSchnellImages(input:secondsToWait:)
+        Use the following method as a replacement:
           - ReplicateService.createFluxschnellImageURLs(input:secondsToWait:)
         """)
     public func createFluxSchnellImage(
@@ -52,34 +51,6 @@ open class ReplicateService {
             pollAttempts: pollAttempts,
             secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
-    }
-
-    /// Convenience method for creating images through Black Forest Lab's Flux-Schnell model:
-    /// https://replicate.com/black-forest-labs/flux-schnell
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxSchnellInputSchema.swift
-    ///
-    ///   - secondsToWait: Seconds to wait before failing
-    ///
-    /// - Returns: An array of images as Data. The number of images in the result will be equal
-    ///            to `numOutputs` that you pass in the input schema. Use the `UIImage` or
-    ///            `NSImage` helpers to render the image data, e.g. `UIImage(data:)`
-    public func createFluxSchnellImages(
-        input: ReplicateFluxSchnellInputSchema,
-        secondsToWait: Int = 10
-    ) async throws -> [Data] {
-        let output: ReplicateSynchronousAPIOutput<[String]> = try await self.createSynchronousPredictionUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-schnell",
-            input: input,
-            secondsToWait: secondsToWait
-        )
-        guard let imageDataAsDataURI = output.output else {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return mapBase64DataURIsToData(imageDataAsDataURI)
     }
 
     /// Convenience method for creating image URLs through Black Forest Lab's Flux-Schnell model.
@@ -126,8 +97,7 @@ open class ReplicateService {
     /// - Returns: An image URL
     ///
     @available(*, deprecated, message: """
-        Use one of the following methods as a replacement:
-          - ReplicateService.createFluxProImage(input:secondsToWait:)
+        Use the following method as a replacement:
           - ReplicateService.createFluxProImageURL(input:secondsToWait:)
         """)
     public func createFluxProImage(
@@ -142,36 +112,6 @@ open class ReplicateService {
             pollAttempts: pollAttempts,
             secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
-    }
-
-    /// Convenience method for creating images through Black Forest Lab's Flux-Pro model:
-    /// https://replicate.com/black-forest-labs/flux-pro
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxProInputSchema.swift
-    ///
-    ///   - secondsToWait: Seconds to wait before failing
-    ///
-    /// - Returns: The generated image data. Use the `UIImage` or `NSImage` helpers to render
-    ///            the image data, e.g. `UIImage(data:)`
-    public func createFluxProImage(
-        input: ReplicateFluxProInputSchema,
-        secondsToWait: Int = 30
-    ) async throws -> Data {
-        let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-pro",
-            input: input,
-            secondsToWait: secondsToWait
-        )
-        guard let imageDataAsDataURI = output.output else {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        guard let data = mapBase64DataURIToData(imageDataAsDataURI) else {
-            throw AIProxyError.assertion("Could not map replicate dataURI to Data")
-        }
-        return data
     }
 
     /// Convenience method for creating image URL through Black Forest Lab's Flux-Pro model.
@@ -275,8 +215,7 @@ open class ReplicateService {
     ///
     /// - Returns: An array of image URLs
     @available(*, deprecated, message: """
-    Use one of the following methods as a replacement:
-      - ReplicateService.createFluxDevImages(input:secondsToWait:)
+    Use the following method as a replacement:
       - ReplicateService.createFluxDevImageURLs(input:secondsToWait:)
     """)
     public func createFluxDevImage(
@@ -291,34 +230,6 @@ open class ReplicateService {
             pollAttempts: pollAttempts,
             secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
-    }
-
-    /// Convenience method for creating images through Black Forest Lab's Flux-Dev model:
-    /// https://replicate.com/black-forest-labs/flux-dev
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxDevInputSchema.swift
-    ///
-    ///   - secondsToWait: Seconds to wait before failing
-    ///
-    /// - Returns: An array of images as Data. The number of images in the result will be equal
-    ///            to `numOutputs` that you pass in the input schema.  Use the `UIImage` or
-    ///            `NSImage` helpers to render the image data, e.g. `UIImage(data:)`
-    public func createFluxDevImages(
-        input: ReplicateFluxDevInputSchema,
-        secondsToWait: Int = 30
-    ) async throws -> [Data] {
-        let output: ReplicateSynchronousAPIOutput<[String]> = try await self.createSynchronousPredictionUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-dev",
-            input: input,
-            secondsToWait: secondsToWait
-        )
-        guard let imageDataAsDataURI = output.output else {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return mapBase64DataURIsToData(imageDataAsDataURI)
     }
 
     /// Convenience method for creating image URLs through Black Forest Lab's Flux-Dev model.
@@ -685,7 +596,7 @@ open class ReplicateService {
 
         return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
     }
-    
+
     /// Makes a POST request to the 'create a prediction using community model' endpoint described here:
     /// https://replicate.com/docs/reference/http#predictions.create
     ///
