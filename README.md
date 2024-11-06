@@ -76,6 +76,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
 * [ElevenLabs](#elevenlabs)
 * [Fal](#fal)
 * [Groq](#groq)
+* [Perplexity](#perplexity)
 * [Advanced Settings](#advanced-settings)
 
 
@@ -1858,6 +1859,70 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     }
     ```
 
+
+***
+
+## Perplexity
+
+### How to create a chat completion with Perplexity
+
+    import AIProxy
+
+    let perplexityService = AIProxy.perplexityService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let response = try await perplexityService.chatCompletionRequest(body: .init(
+            messages: [.user(content: "How many national parks in the US?")],
+            model: "llama-3.1-sonar-small-128k-online"
+        ))
+        print(response.choices.first?.message?.content ?? "")
+        if let usage = response.usage {
+            print(
+                """
+                Used:
+                 \(usage.promptTokens ?? 0) prompt tokens
+                 \(usage.completionTokens ?? 0) completion tokens
+                 \(usage.totalTokens ?? 0) total tokens
+                """
+            )
+        }
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create perplexity chat completion: \(error.localizedDescription)")
+    }
+
+
+### How to create a streaming chat completion with Perplexity
+
+    import AIProxy
+
+    let perplexityService = AIProxy.perplexityService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    let perplexityService = AIProxy.perplexityService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let stream = try await perplexityService.streamingChatCompletionRequest(body: .init(
+            messages: [.user(content: "How many national parks in the US?")],
+            model: "llama-3.1-sonar-small-128k-online"
+        ))
+        for try await chunk in stream {
+            print(chunk.choices.first?.delta?.content ?? "")
+        }
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create perplexity streaming chat completion: \(error.localizedDescription)")
+    }
 
 ***
 
