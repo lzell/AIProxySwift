@@ -62,6 +62,48 @@ open class PerplexityService {
         return try PerplexityChatCompletionResponseBody.deserialize(from: data)
     }
 
+    /// Initiates a streaming chat completion request to Perplexity.
+    ///
+    /// - Parameters:
+    ///
+    ///   - body: The chat completion request body. See this reference:
+    ///   https://platform.openai.com/docs/api-reference/chat/object
+    ///
+    /// - Returns: An async sequence of completion chunks.
+    public func streamingChatCompletionRequest(
+        body: PerplexityChatCompletionRequestBody
+    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, PerplexityChatCompletionResponseBody> {
+        var body = body
+        body.stream = true
+        let session = AIProxyURLSession.create()
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/chat/completions",
+            body:  try body.serialize(),
+            verb: .post,
+            contentType: "application/json"
+        )
+
+        let (asyncBytes, res) = try await session.bytes(for: request)
+
+        guard let httpResponse = res as? HTTPURLResponse else {
+            throw AIProxyError.assertion("Network response is not an http response")
+        }
+
+        if (httpResponse.statusCode > 299) {
+            let responseBody = try await asyncBytes.lines.reduce(into: "") { $0 += $1 }
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: responseBody
+            )
+        }
+
+        return asyncBytes.lines.compactMap { PerplexityChatCompletionResponseBody.from(line: $0) }
+    }
+
+
 //    /// Initiates a streaming chat completion request to Groq.
 //    ///
 //    /// - Parameters:
