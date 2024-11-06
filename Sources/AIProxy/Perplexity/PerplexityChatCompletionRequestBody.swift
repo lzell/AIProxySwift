@@ -128,9 +128,6 @@ public struct PerplexityChatCompletionRequestBody: Encodable {
         self.topK = topK
         self.topP = topP
     }
-
-
-
 }
 
 // MARK: - RequestBody.Message
@@ -139,12 +136,12 @@ extension PerplexityChatCompletionRequestBody {
         case assistant(content: String)
         case system(content: String)
         case user(content: String)
-        
+
         private enum RootKey: String, CodingKey {
             case content
             case role
         }
- 
+
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: RootKey.self)
             switch self {
@@ -161,7 +158,6 @@ extension PerplexityChatCompletionRequestBody {
         }
     }
 }
-
 
 // MARK: - RequestBody.SearchRecencyFilter
 extension PerplexityChatCompletionRequestBody {

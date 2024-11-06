@@ -81,26 +81,6 @@ extension PerplexityChatCompletionResponseBody.Choice {
     }
 }
 
-
-//
-// The incrementally streamed next tokens. Only meaningful when stream = true.
-// choices.delta.content
-// string
-// required
-//
-// The contents of the message in this turn of conversation.
-// choices.delta.role
-// enum<string>
-// required
-//
-// The role of the speaker in this turn of conversation. After the (optional) system message, user and assistant roles should alternate with user then assistant, ending in user.
-// Available options: system,
-// user,
-// assistant
-// usage
-// object
-//
-
 // MARK: - ResponseBody.Usage
 extension PerplexityChatCompletionResponseBody {
     public struct Usage: Decodable {
@@ -120,7 +100,6 @@ extension PerplexityChatCompletionResponseBody {
         }
     }
 }
-
 
 extension PerplexityChatCompletionResponseBody {
     /// Creates a PerplexityChatCompletionResponseBody from a streamed line of the /chat/completions response
