@@ -1363,10 +1363,10 @@ There are many controls to play with for this use case. Please see
         let input = ReplicateSDXLInputSchema(
             prompt: "Monument valley, Utah"
         )
-        let output = try await replicateService.createSDXLImage(
+        let urls = try await replicateService.createSDXLImageURLs(
             input: input
         )
-        print("Done creating SDXL image: ", output.first ?? "")
+        print("Done creating SDXL image: ", urls.first ?? "")
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {

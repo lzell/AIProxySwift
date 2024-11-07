@@ -302,6 +302,10 @@ open class ReplicateService {
     ///   secondsBetweenPollAttempts`
     ///
     /// - Returns: An array of image URLs
+    @available(*, deprecated, message: """
+    Use the following method as a replacement:
+      - ReplicateService.createSDXLImageURLs(input:secondsToWait:)
+    """)
     public func createSDXLImage(
         input: ReplicateSDXLInputSchema,
         version: String = "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
@@ -314,6 +318,52 @@ open class ReplicateService {
             pollAttempts: pollAttempts,
             secondsBetweenPollAttempts: secondsBetweenPollAttempts
         )
+    }
+
+    /// Convenience method for creating an image through StabilityAI's SDXL model.
+    /// https://replicate.com/stability-ai/sdxl
+    ///
+    /// - Parameters:
+    ///   - input: The input specification of the image you'd like to generate. See ReplicateSDXLInputSchema.swift
+    ///   - secondsToWait: The number of seconds to wait before raising `unsuccessfulRequest`
+    /// - Returns: An array of image URLs
+    public func createSDXLImageURLs(
+        input: ReplicateSDXLInputSchema,
+        version: String = "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
+        secondsToWait: Int = 60
+    ) async throws -> [URL] {
+        let apiResult: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingVersion(
+            modelVersion: version,
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        guard let output = apiResult.output else {
+            throw ReplicateError.predictionDidNotIncludeOutput
+        }
+        return output
+    }
+
+    /// Convenience method for creating an image through fofr's fresh ink SDXL model
+    /// https://replicate.com/fofr/sdxl-fresh-ink
+    ///
+    /// - Parameters:
+    ///   - input: The input specification of the image you'd like to generate. See ReplicateSDXLFreshInkInputSchema.swift
+    ///   - secondsToWait: The number of seconds to wait before raising `unsuccessfulRequest`
+    /// - Returns: An array of image URLs
+    public func createSDXLFreshInkImageURLs(
+        input: ReplicateSDXLFreshInkInputSchema,
+        version: String = "8515c238222fa529763ec99b4ba1fa9d32ab5d6ebc82b4281de99e4dbdcec943",
+        secondsToWait: Int = 60
+    ) async throws -> [URL] {
+        let apiResult: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingVersion(
+            modelVersion: version,
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        guard let output = apiResult.output else {
+            throw ReplicateError.predictionDidNotIncludeOutput
+        }
+        return output
     }
 
     /// Convenience method for creating an image using Flux-Dev ControlNet:
