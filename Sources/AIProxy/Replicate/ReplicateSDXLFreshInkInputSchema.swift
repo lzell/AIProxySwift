@@ -22,7 +22,7 @@ public struct ReplicateSDXLFreshInkInputSchema: Encodable {
 
     // Required
 
-    /// For example, "An astronaut riding a rainbow unicorn"
+    /// For example, "A fresh ink TOK tattoo of monument valley, Utah"
     public let prompt: String
 
     // Optional
