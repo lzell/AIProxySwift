@@ -346,6 +346,16 @@ open class ReplicateService {
     /// Convenience method for creating an image through fofr's fresh ink SDXL model
     /// https://replicate.com/fofr/sdxl-fresh-ink
     ///
+    /// It's recommended to use a negative prompt with this model, for example:
+    ///
+    ///     let input = ReplicateSDXLFreshInkInputSchema(
+    ///         prompt: "A fresh ink TOK tattoo of monument valley, Utah",
+    ///         negativePrompt: "ugly, broken, distorted"
+    ///     )
+    ///     let urls = try await replicateService.createSDXLFreshInkImageURLs(
+    ///         input: input
+    ///     )
+    ///
     /// - Parameters:
     ///   - input: The input specification of the image you'd like to generate. See ReplicateSDXLFreshInkInputSchema.swift
     ///   - secondsToWait: The number of seconds to wait before raising `unsuccessfulRequest`

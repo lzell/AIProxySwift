@@ -8,6 +8,16 @@ import Foundation
 
 /// Input schema for use with requests to  fofr/sdxl-fresh-ink SDXL model:
 /// https://replicate.com/fofr/sdxl-fresh-ink/versions/8515c238222fa529763ec99b4ba1fa9d32ab5d6ebc82b4281de99e4dbdcec943/api
+///
+/// It's recommended to use a negative prompt with this model, for example:
+///
+///     let input = ReplicateSDXLFreshInkInputSchema(
+///         prompt: "A fresh ink TOK tattoo of monument valley, Utah",
+///         negativePrompt: "ugly, broken, distorted"
+///     )
+///     let urls = try await replicateService.createSDXLFreshInkImageURLs(
+///         input: input
+///     )
 public struct ReplicateSDXLFreshInkInputSchema: Encodable {
 
     // Required
