@@ -1363,10 +1363,10 @@ There are many controls to play with for this use case. Please see
         let input = ReplicateSDXLInputSchema(
             prompt: "Monument valley, Utah"
         )
-        let output = try await replicateService.createSDXLImage(
+        let urls = try await replicateService.createSDXLImageURLs(
             input: input
         )
-        print("Done creating SDXL image: ", output.first ?? "")
+        print("Done creating SDXL image: ", urls.first ?? "")
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
@@ -1374,6 +1374,33 @@ There are many controls to play with for this use case. Please see
     }
 
 See the full range of controls for generating an image by viewing `ReplicateSDXLInputSchema.swift`
+
+
+### How to generate an SDXL Fresh Ink image by fofr, using Replicate
+
+    import AIProxy
+
+    let replicateService = AIProxy.replicateService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let input = ReplicateSDXLFreshInkInputSchema(
+            prompt: "A fresh ink TOK tattoo of monument valley, Utah",
+            negativePrompt: "ugly, broken, distorted"
+        )
+        let urls = try await replicateService.createSDXLFreshInkImageURLs(
+            input: input
+        )
+        print("Done creating SDXL fresh ink image: ", urls.first ?? "")
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create SDXL fresh ink image: \(error.localizedDescription)")
+    }
+
+See the full range of controls for generating an image by viewing `ReplicateSDXLFreshInkInputSchema.swift`
 
 
 ### How to call your own models on Replicate.
