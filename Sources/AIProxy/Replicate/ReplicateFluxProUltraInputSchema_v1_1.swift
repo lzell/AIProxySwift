@@ -19,7 +19,7 @@ public struct ReplicateFluxProUltraInputSchema_v1_1: Encodable {
 
     /// Aspect ratio of the image between 21:9 and 9:21
     ///
-    /// default: 16:9
+    /// default: 1:1 (BlackForest's default is 16:9)
     public let aspectRatio: String?
 
     /// Format of the output images.
