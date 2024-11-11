@@ -66,7 +66,7 @@ open class ReplicateService {
     ///            `numOutputs` that you pass in the input schema.
     public func createFluxSchnellImageURLs(
         input: ReplicateFluxSchnellInputSchema,
-        secondsToWait: Int = 10
+        secondsToWait: Int = 30
     ) async throws -> [URL] {
         let output: ReplicateSynchronousAPIOutput<[String]> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
@@ -102,7 +102,7 @@ open class ReplicateService {
         """)
     public func createFluxProImage(
         input: ReplicateFluxProInputSchema,
-        pollAttempts: Int = 30,
+        pollAttempts: Int = 60,
         secondsBetweenPollAttempts: UInt64 = 2
     ) async throws -> URL {
         return try await self.predictAndPollUsingOfficialModel(
@@ -126,7 +126,7 @@ open class ReplicateService {
     /// - Returns: The URL of the generated image
     public func createFluxProImageURL(
         input: ReplicateFluxProInputSchema,
-        secondsToWait: Int = 30
+        secondsToWait: Int = 60
     ) async throws -> URL {
         let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
@@ -185,7 +185,7 @@ open class ReplicateService {
     /// - Returns: The URL of the generated image
     public func createFluxProImageURL_v1_1(
         input: ReplicateFluxProInputSchema_v1_1,
-        secondsToWait: Int = 30
+        secondsToWait: Int = 60
     ) async throws -> URL {
         let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
@@ -198,7 +198,7 @@ open class ReplicateService {
         }
         return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
     }
-    
+
     /// Convenience method for creating image URL through Black Forest Lab's Flux-Pro model.
     /// https://replicate.com/black-forest-labs/flux-1.1-pro-ultra
     ///
@@ -211,7 +211,7 @@ open class ReplicateService {
     /// - Returns: The URL of the generated image
     public func createFluxProUltraImageURL_v1_1(
         input: ReplicateFluxProUltraInputSchema_v1_1,
-        secondsToWait: Int = 30
+        secondsToWait: Int = 60
     ) async throws -> URL {
         let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
