@@ -198,6 +198,32 @@ open class ReplicateService {
         }
         return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
     }
+    
+    /// Convenience method for creating image URL through Black Forest Lab's Flux-Pro model.
+    /// https://replicate.com/black-forest-labs/flux-1.1-pro-ultra
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: The input specification of the images you'd like to generate. See `ReplicateFluxProInputSchema_v1_1.swift`
+    ///
+    ///   - secondsToWait: Seconds to wait before failing
+    ///
+    /// - Returns: The URL of the generated image
+    public func createFluxProUltraImageURL_v1_1(
+        input: ReplicateFluxProUltraInputSchema_v1_1,
+        secondsToWait: Int = 30
+    ) async throws -> URL {
+        let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-1.1-pro-ultra",
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        if output.output == nil {
+            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
+        }
+        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
+    }
 
     /// Convenience method for creating an image through Black Forest Lab's Flux-Dev model:
     /// https://replicate.com/black-forest-labs/flux-dev
