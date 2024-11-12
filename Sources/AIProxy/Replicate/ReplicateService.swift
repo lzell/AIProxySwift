@@ -6,6 +6,9 @@
 
 import Foundation
 
+private let kTimeoutBufferForSyncAPIInSeconds: TimeInterval = 5
+
+
 open class ReplicateService {
     private let partialKey: String
     private let serviceURL: String
@@ -59,7 +62,7 @@ open class ReplicateService {
                 input: input
             )
         )
-        let request = try await AIProxyURLRequest.create(
+        var request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -69,6 +72,7 @@ open class ReplicateService {
             contentType: "application/json",
             headers: ["Prefer": "wait=\(secondsToWait)"]
         )
+        request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
 
         let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
 
@@ -117,7 +121,7 @@ open class ReplicateService {
                 version: modelVersion
             )
         )
-        let request = try await AIProxyURLRequest.create(
+        var request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -127,6 +131,7 @@ open class ReplicateService {
             contentType: "application/json",
             headers: ["Prefer": "wait=\(secondsToWait)"]
         )
+        request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
 
         let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
 
