@@ -6,7 +6,6 @@
 
 import Foundation
 
-
 open class ReplicateService {
     private let partialKey: String
     private let serviceURL: String
@@ -19,6 +18,128 @@ open class ReplicateService {
         self.serviceURL = serviceURL
         self.clientID = clientID
     }
+
+    /// This is the general purpose method for running official replicate models.
+    /// It is generic in the input and output, so it's up to you to pass appropriate types.
+    /// To craft the appropriate types, look at the model's schema on replicate.
+    /// You can find the schema by browsing to the model and tapping on `API` in the top nav and then `Schema` in the side nav.
+    /// If the output schema is a `URI`, for example, you can call this with:
+    ///
+    ///     let myPredictionResult: ReplicateSynchronousAPIOutput<URL> = replicateService.createSynchronousPredictionUsingOfficialModel(...)
+    ///     let myURL = myPredictionResult.output
+    ///
+    /// note the specialization of `<URL>` in the type annotation.
+    ///
+    /// There are convenience methods for running specific replicate models lower in this file, which are easier to call and
+    /// not generic. You can use those for guidance on how to call this general purpose method with your own model.
+    ///
+    /// Makes a POST request to the 'create a prediction using an official model' endpoint described here:
+    /// https://replicate.com/docs/reference/http#create-a-prediction-using-an-official-model
+    ///
+    /// Uses the synchronous API announced here: https://replicate.com/changelog/2024-10-09-synchronous-api
+    ///
+    /// - Parameters:
+    ///
+    ///   - modelOwner: The owner of the model
+    ///
+    ///   - modelName: The name of the model
+    ///
+    ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
+    ///
+    /// - Returns: The inference results wrapped in ReplicateSynchronousAPIOutput
+    public func createSynchronousPredictionUsingOfficialModel<T: Encodable, U: Encodable>(
+        modelOwner: String,
+        modelName: String,
+        input: T,
+        secondsToWait: Int
+    )  async throws -> ReplicateSynchronousAPIOutput<U> {
+        let encoder = JSONEncoder()
+        let body = try encoder.encode(
+            ReplicatePredictionRequestBody(
+                input: input
+            )
+        )
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/models/\(modelOwner)/\(modelName)/predictions",
+            body: body,
+            verb: .post,
+            contentType: "application/json",
+            headers: ["Prefer": "wait=\(secondsToWait)"]
+        )
+
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
+    }
+
+    /// This is the general purpose method for running community replicate models.
+    /// It is generic in the input and output, so it's up to you to pass appropriate types.
+    /// To craft the appropriate types, look at the model's schema on replicate.
+    /// You can find the schema by browsing to the model and tapping on `API` in the top nav and then `Schema` in the side nav.
+    /// If the output schema is a `URI`, for example, you can call this with:
+    ///
+    ///     let myPredictionResult: ReplicateSynchronousAPIOutput<URL> = replicateService.createSynchronousPredictionUsingVersion(...)
+    ///     let myURL = myPredictionResult.output
+    ///
+    /// note the specialization of `<URL>` in the type annotation.
+    ///
+    /// Makes a POST request to the 'create a prediction using community model' endpoint described here:
+    /// https://replicate.com/docs/reference/http#predictions.create
+    ///
+    /// Uses the synchronous API announced here: https://replicate.com/changelog/2024-10-09-synchronous-api
+    ///
+    /// - Parameters:
+    ///
+    ///   - modelVersion: The version of the model
+    ///
+    ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
+    ///
+    /// - Returns: The inference results wrapped in ReplicateSynchronousAPIOutput
+    public func createSynchronousPredictionUsingVersion<T: Encodable, U: Encodable>(
+        modelVersion: String,
+        input: T,
+        secondsToWait: Int
+    )  async throws -> ReplicateSynchronousAPIOutput<U> {
+        let encoder = JSONEncoder()
+        let body = try encoder.encode(
+            ReplicatePredictionRequestBody(
+                input: input,
+                version: modelVersion
+            )
+        )
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/predictions",
+            body: body,
+            verb: .post,
+            contentType: "application/json",
+            headers: ["Prefer": "wait=\(secondsToWait)"]
+        )
+
+        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
+    }
+
 
     /// Convenience method for creating an image through Black Forest Lab's Flux-Schnell model:
     /// https://replicate.com/black-forest-labs/flux-schnell
@@ -633,103 +754,6 @@ open class ReplicateService {
 
         return try JSONDecoder().decode(output, from: data)
     }
-
-    /// Makes a POST request to the 'create a prediction using an official model' endpoint described here:
-    /// https://replicate.com/docs/reference/http#create-a-prediction-using-an-official-model
-    ///
-    /// Uses the synchronous API announced here: https://replicate.com/changelog/2024-10-09-synchronous-api
-    ///
-    /// - Parameters:
-    ///
-    ///   - modelOwner: The owner of the model
-    ///
-    ///   - modelName: The name of the model
-    ///
-    ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
-    ///
-    /// - Returns: The inference results wrapped in ReplicateSynchronousAPIOutput
-    public func createSynchronousPredictionUsingOfficialModel<T: Encodable, U: Encodable>(
-        modelOwner: String,
-        modelName: String,
-        input: T,
-        secondsToWait: Int
-    )  async throws -> ReplicateSynchronousAPIOutput<U> {
-        let encoder = JSONEncoder()
-        let body = try encoder.encode(
-            ReplicatePredictionRequestBody(
-                input: input
-            )
-        )
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: "/v1/models/\(modelOwner)/\(modelName)/predictions",
-            body: body,
-            verb: .post,
-            contentType: "application/json",
-            headers: ["Prefer": "wait=\(secondsToWait)"]
-        )
-
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
-    }
-
-    /// Makes a POST request to the 'create a prediction using community model' endpoint described here:
-    /// https://replicate.com/docs/reference/http#predictions.create
-    ///
-    /// Uses the synchronous API announced here: https://replicate.com/changelog/2024-10-09-synchronous-api
-    ///
-    /// - Parameters:
-    ///
-    ///   - modelVersion: The version of the model
-    ///
-    ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
-    ///
-    /// - Returns: The inference results wrapped in ReplicateSynchronousAPIOutput
-    public func createSynchronousPredictionUsingVersion<T: Encodable, U: Encodable>(
-        modelVersion: String,
-        input: T,
-        secondsToWait: Int
-    )  async throws -> ReplicateSynchronousAPIOutput<U> {
-        let encoder = JSONEncoder()
-        let body = try encoder.encode(
-            ReplicatePredictionRequestBody(
-                input: input,
-                version: modelVersion
-            )
-        )
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: "/v1/predictions",
-            body: body,
-            verb: .post,
-            contentType: "application/json",
-            headers: ["Prefer": "wait=\(secondsToWait)"]
-        )
-
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
-    }
-
 
     /// Makes a POST request to the 'create a prediction' endpoint described here:
     /// https://replicate.com/docs/reference/http#create-a-prediction
