@@ -96,15 +96,23 @@ open class FalService {
         return try await self.getResponse(url: responseURL)
     }
 
-
     /// Convenience method for creating a `fal-ai/runway-gen3/turbo/image-to-video` video.
     ///
-    /// - Parameter input: The input schema. See `FalRunwayGen3AlphaInputSchema.swift` for the controls that you
+    /// Select `pollAttempts` and `secondsBetweenPollAttempts` such that the multiplication of their values is the
+    /// total amount of time you want to wait for the generation to complete. For example, the default values are 60 and 10,
+    /// meaning by default this method will wait 600 seconds, or ten minutes, before raising `FalError.reachedRetryLimit`
+    ///
+    /// - Parameters:
+    ///   - input: The input schema. See `FalRunwayGen3AlphaInputSchema.swift` for the controls that you
     ///                    can use to adjust the video generation.
+    ///   - pollAttempts: The number of times to poll before `FalError.reachedRetryLimit` is raised
+    ///   - secondsBetweenPollAttempts: The number of seconds between polls
     ///
     /// - Returns: The inference result. The `video` property of the returned value has a `url` that you can use to fetch the video contents.
     public func createRunwayGen3AlphaVideo(
-        input: FalRunwayGen3AlphaInputSchema
+        input: FalRunwayGen3AlphaInputSchema,
+        pollAttempts: Int = 60,
+        secondsBetweenPollAttempts: UInt64 = 10
     ) async throws -> FalRunwayGen3AlphaOutputSchema {
         let queueResponse = try await self.createInference(
             model: "fal-ai/runway-gen3/turbo/image-to-video",
@@ -113,7 +121,11 @@ open class FalService {
         guard let statusURL = queueResponse.statusURL else {
             throw FalError.missingStatusURL
         }
-        let completedResponse = try await self.pollForInferenceComplete(statusURL: statusURL)
+        let completedResponse = try await self.pollForInferenceComplete(
+            statusURL: statusURL,
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
+        )
 
         guard let responseURL = completedResponse.responseURL else {
             throw FalError.missingResultURL
