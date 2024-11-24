@@ -1953,6 +1953,79 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
 ***
 
+## Mistral
+
+### How to create a chat completion with Mistral
+
+Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in the developer dashboard.
+
+    import AIProxy
+
+    let mistralService = AIProxy.mistralService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let response = try await mistralService.chatCompletionRequest(body: .init(
+            messages: [.user(content: "Hello world")],
+            model: "mistral-small-latest"
+        ))
+        print(response.choices.first?.message.content ?? "")
+        if let usage = response.usage {
+            print(
+                """
+                Used:
+                 \(usage.promptTokens ?? 0) prompt tokens
+                 \(usage.completionTokens ?? 0) completion tokens
+                 \(usage.totalTokens ?? 0) total tokens
+                """
+            )
+        }
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create mistral chat completion: \(error.localizedDescription)")
+    }
+
+
+### How to create a streaming chat completion with Perplexity
+
+Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in the developer dashboard.
+
+    import AIProxy
+
+    let mistralService = AIProxy.mistralService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    do {
+        let stream = try await mistralService.streamingChatCompletionRequest(body: .init(
+            messages: [.user(content: "Hello world")],
+            model: "mistral-small-latest"
+        ))
+        for try await chunk in stream {
+            print(chunk.choices.first?.delta.content ?? "")
+            if let usage = chunk.usage {
+                print(
+                    """
+                    Used:
+                     \(usage.promptTokens ?? 0) prompt tokens
+                     \(usage.completionTokens ?? 0) completion tokens
+                     \(usage.totalTokens ?? 0) total tokens
+                    """
+                )
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create mistral streaming chat completion: \(error.localizedDescription)")
+    }
+
+***
+
 
 ## OpenMeteo
 
