@@ -20,7 +20,7 @@ public struct MistralChatCompletionResponseBody: Decodable {
     public let model: String
 
     /// Usage statistics for the completion request.
-    public let usage: Usage?
+    public let usage: MistralChatUsage?
 }
 
 // MARK: - ResponseBody.Choice
@@ -59,21 +59,6 @@ extension MistralChatCompletionResponseBody.Choice {
             case content
             case role
             // case toolCalls = "tool_calls"
-        }
-    }
-}
-
-// MARK: - ResponseBody.Usage
-extension MistralChatCompletionResponseBody {
-    public struct Usage: Decodable {
-        public let completionTokens: Int?
-        public let promptTokens: Int?
-        public let totalTokens: Int?
-
-        private enum CodingKeys: String, CodingKey {
-            case completionTokens = "completion_tokens"
-            case promptTokens = "prompt_tokens"
-            case totalTokens = "total_tokens"
         }
     }
 }
