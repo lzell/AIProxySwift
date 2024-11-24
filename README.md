@@ -77,6 +77,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
 * [Fal](#fal)
 * [Groq](#groq)
 * [Perplexity](#perplexity)
+* [Mistral](#mistral)
 * [Advanced Settings](#advanced-settings)
 
 
@@ -1989,7 +1990,7 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     }
 
 
-### How to create a streaming chat completion with Perplexity
+### How to create a streaming chat completion with Mistral
 
 Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in the developer dashboard.
 
