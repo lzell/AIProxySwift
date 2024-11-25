@@ -53,7 +53,7 @@ struct AIProxyURLRequest {
             request.addValue("v1|\(appVersion)", forHTTPHeaderField: "aiproxy-metadata")
         }
 
-    #if DEBUG && targetEnvironment(simulator)
+    #if targetEnvironment(simulator)
         if let deviceCheckBypass = ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] {
             request.addValue(deviceCheckBypass, forHTTPHeaderField: "aiproxy-devicecheck-bypass")
         }
