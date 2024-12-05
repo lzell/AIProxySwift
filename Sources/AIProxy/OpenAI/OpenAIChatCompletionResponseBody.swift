@@ -24,8 +24,15 @@ public struct OpenAIChatCompletionResponseBody: Decodable {
     /// This fingerprint represents the backend configuration that the model runs with.
     /// Can be used in conjunction with the `seed` request parameter to understand when
     /// backend changes have been made that might impact determinism.
-    /// Add in https://github.com/lzell/aiproxy/issues/592
-    // public let systemFingerprint: String?
+    public let systemFingerprint: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case choices
+        case created
+        case model
+        case usage
+        case systemFingerprint = "system_fingerprint"
+    }
 }
 
 public struct OpenAIChatChoice: Decodable {
