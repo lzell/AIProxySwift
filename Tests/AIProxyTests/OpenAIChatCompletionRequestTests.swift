@@ -17,7 +17,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
     }()
 
     func testStreamOptionsIsEncodable() throws {
-        let streamOptions = OpenAIChatStreamOptions(includeUsage: true)
+        let streamOptions = OpenAIChatCompletionRequestBody.StreamOptions(includeUsage: true)
         XCTAssertEqual(
             """
             {
@@ -29,7 +29,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
     }
 
     func testResponseFormatIsEncodable() throws {
-        let responseFormat = OpenAIChatResponseFormat.jsonObject
+        let responseFormat = OpenAIChatCompletionRequestBody.ResponseFormat.jsonObject
         XCTAssertEqual(
             """
             {
@@ -41,7 +41,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
     }
 
     func testTextChatContentPartIsEncodable() throws {
-        let chatContentPart: OpenAIChatCompletionContentPart = .text("abc")
+        let chatContentPart: OpenAIChatCompletionRequestBody.Message.UserContent.Part = .text("abc")
         XCTAssertEqual(
             """
             {
@@ -55,8 +55,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testImageChatContentPartIsEncodable() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.openAIEncodedImage(image: image)!
-        let chatContentPart: OpenAIChatCompletionContentPart = .imageURL(localURL)
+        let localURL = AIProxy.encodeImageAsURL(image: image)!
+        let chatContentPart: OpenAIChatCompletionRequestBody.Message.UserContent.Part = .imageURL(localURL)
         XCTAssertEqual(
             #"""
             {
@@ -70,19 +70,11 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
         )
     }
 
-    func testChatContentOfSingleTextIsEncodable() throws {
-        let chatContent: OpenAIChatCompletionUserContent = .text("abc")
-        XCTAssertEqual(
-            #""abc""#,
-            try chatContent.serialize()
-        )
-    }
-
     func testChatContentOfMultipleTextIsEncodable() throws {
-        let chatContent: OpenAIChatCompletionUserContent = .parts([
+        let chatContent: [OpenAIChatCompletionRequestBody.Message.UserContent.Part] = [
             .text("a"),
             .text("b")
-        ])
+        ]
         XCTAssertEqual(
             """
             [
@@ -102,11 +94,11 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testChatContentContainingImageIsEncodable() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.openAIEncodedImage(image: image)!
-        let chatContent: OpenAIChatCompletionUserContent = .parts([
+        let localURL = AIProxy.encodeImageAsURL(image: image)!
+        let chatContent: [OpenAIChatCompletionRequestBody.Message.UserContent.Part] = [
             .text("hello"),
             .imageURL(localURL)
-        ])
+        ]
         XCTAssertEqual(
             #"""
             [
@@ -127,7 +119,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
     }
 
     func testUserMessageWithTextContentIsEncodable() throws {
-        let userMessage = OpenAIChatCompletionMessage.user(content: .text("hello"))
+        let userMessage: OpenAIChatCompletionRequestBody.Message = .user(content: .text("hello"))
         XCTAssertEqual(
             """
             {
@@ -140,14 +132,12 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
     }
 
     func testUserMessageWithMultipleTextContentIsEncodable() throws {
-        let userMessage = OpenAIChatCompletionMessage.user(
-            content: .parts(
-                [
-                    .text("A"),
-                    .text("B")
-                ]
-            )
-        )
+        let userMessage: OpenAIChatCompletionRequestBody.Message = .user(content: .parts(
+            [
+                .text("A"),
+                .text("B")
+            ]
+        ))
         XCTAssertEqual(
             """
             {
@@ -170,8 +160,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testUserMessageWithImageURLIsEncodable() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.openAIEncodedImage(image: image)!
-        let userMessage = OpenAIChatCompletionMessage.user(
+        let localURL = AIProxy.encodeImageAsURL(image: image)!
+        let userMessage: OpenAIChatCompletionRequestBody.Message = .user(
             content: .parts(
                 [
                     .text("A"),
@@ -202,7 +192,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
     }
 
     func testMessageArrayOfUserAndSystemIsEncodable() throws {
-        let messages: [OpenAIChatCompletionMessage] = [
+        let messages: [OpenAIChatCompletionRequestBody.Message] = [
             .system(content: .text("hello")),
             .user(content: .text("hello"))
         ]
@@ -365,15 +355,15 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
     func testToolChoiceIsEncodable() throws {
         XCTAssertEqual(
             #""auto""#,
-            try OpenAIChatCompletionToolChoice.auto.serialize()
+            try OpenAIChatCompletionRequestBody.ToolChoice.auto.serialize()
         )
         XCTAssertEqual(
             #""none""#,
-            try OpenAIChatCompletionToolChoice.none.serialize()
+            try OpenAIChatCompletionRequestBody.ToolChoice.none.serialize()
         )
         XCTAssertEqual(
             #""required""#,
-            try OpenAIChatCompletionToolChoice.required.serialize()
+            try OpenAIChatCompletionRequestBody.ToolChoice.required.serialize()
         )
         XCTAssertEqual(
             """
@@ -384,7 +374,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               "type" : "function"
             }
             """,
-            try OpenAIChatCompletionToolChoice.specific(functionName: "xyz").serialize(pretty: true)
+            try OpenAIChatCompletionRequestBody.ToolChoice.specific(functionName: "xyz").serialize(pretty: true)
         )
     }
 
@@ -513,7 +503,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
             "additionalProperties": false
         ]
 
-        let responseFormat = OpenAIChatResponseFormat.jsonSchema(
+        let responseFormat = OpenAIChatCompletionRequestBody.ResponseFormat.jsonSchema(
             name: "research_paper_extraction",
             schema: schema,
             strict: true
