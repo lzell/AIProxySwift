@@ -433,7 +433,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testChatCompletionRequestBodyWithImageIsEncodableToJson() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.openAIEncodedImage(image: image)!
+        let localURL = AIProxy.encodeImageAsURL(image: image)!
         let requestBody = OpenAIChatCompletionRequestBody(
             model: "gpt-4o",
             messages: [

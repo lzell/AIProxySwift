@@ -26,23 +26,15 @@ open class EachAIService {
 
     /// Runs a workflow on EachAI
     ///
-    ///     ///   - voiceID: The Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the
-    ///              available voices.
-    ///
-    ///   - body: The request body to send to ElevenLabs through AIProxy. See this reference:
-    ///           https://elevenlabs.io/docs/api-reference/text-to-speech
-    ///
-
-    ///
     /// - Parameters:
     ///   - workflowID: The workflow ID to trigger. You can find your ID in the EachAI dashboard. It will be included in the URL of the workflow that you are viewing, e.g. `https://console.eachlabs.ai/flow/<your-id>`
     ///   - body: The workflow request body. See this reference:
     ///           https://docs.eachlabs.ai/api-reference/flows/trigger-ai-workflow
-    /// - Returns: TODO.
+    /// - Returns: A trigger workflow response, which contains a triggerID that you can use to poll for the result.
     public func triggerWorkflow(
         workflowID: String,
-        body: EachAITriggerWorkflowRequestBody  // Could just pass params here
-    ) async throws -> Void /* EachAIChatCompletionResponseBody */ {
+        body: EachAITriggerWorkflowRequestBody
+    ) async throws -> EachAITriggerWorkflowResponseBody {
         let session = AIProxyURLSession.create()
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
@@ -66,7 +58,7 @@ open class EachAIService {
             )
         }
 
-        // return try EachAIChatCompletionResponseBody.deserialize(from: data)
+        return try EachAITriggerWorkflowResponseBody.deserialize(from: data)
     }
 
 //    public func pollForExecutionComplete(

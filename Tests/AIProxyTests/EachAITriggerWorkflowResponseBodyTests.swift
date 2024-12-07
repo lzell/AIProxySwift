@@ -1,5 +1,5 @@
 //
-//  EachAITriggerWorkloadResponseBodyTests.swift
+//  EachAITriggerWorkflowResponseBodyTests.swift
 //
 //
 //  Created by Lou Zell on 12/7/24.
@@ -9,7 +9,7 @@ import XCTest
 import Foundation
 @testable import AIProxy
 
-final class EachAITriggerWorkloadResponseBodyTests: XCTestCase {
+final class EachAITriggerWorkflowResponseBodyTests: XCTestCase {
 
     func testResponseIsDecodable() throws {
         let sampleResponse = #"""
@@ -19,8 +19,10 @@ final class EachAITriggerWorkloadResponseBodyTests: XCTestCase {
           "trigger_id": "mp0tnsxinwymncyio"
         }
         """#
-        let res = try EachAITriggerWorkloadResponseBody.deserialize(from: sampleResponse)
+        let res = try EachAITriggerWorkflowResponseBody.deserialize(from: sampleResponse)
         XCTAssertEqual("mp0tnsxinwymncyio", res.triggerID)
+        XCTAssertEqual("success", res.status)
+        XCTAssertEqual("Workflow triggered successfully", res.message)
     }
 }
 

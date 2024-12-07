@@ -1,5 +1,5 @@
 //
-//  EachAITriggerWorkloadResponseBody.swift
+//  EachAITriggerWorkflowResponseBody.swift
 //
 //
 //  Created by Lou Zell on 12/7/24.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct EachAITriggerWorkloadResponseBody: Decodable {
+public struct EachAITriggerWorkflowResponseBody: Decodable {
     public let triggerID: String
     public let message: String?
     public let status: String?
