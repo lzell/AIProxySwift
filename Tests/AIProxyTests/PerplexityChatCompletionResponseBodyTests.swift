@@ -45,7 +45,7 @@ final class PerplexityChatCompletionResponseBodyTests: XCTestCase {
         let res = try PerplexityChatCompletionResponseBody.deserialize(
             from: responseBody
         )
-        XCTAssertEqual("Hello world.", res.choices.first?.message.content)
-        XCTAssertEqual(.assistant, res.choices.first?.message.role)
+        XCTAssertEqual("Hello world.", res.choices.first?.message?.content)
+        XCTAssertEqual(.assistant, res.choices.first?.message?.role)
     }
 }
