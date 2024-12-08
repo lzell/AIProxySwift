@@ -93,5 +93,74 @@ final class EachAIWorkflowTests: XCTestCase {
         XCTAssertEqual("\"https://storage.googleapis.com/1019uploads/output/af240bcd-e993-4479-9722-db9251564b08/0.jpeg\"", res.output)
         XCTAssertEqual("Face Swap", res.stepResults?.last?.stepName)
     }
+
+    func testPendingFlowExecutionResponseIsDecodable() throws {
+        let sampleResponse = #"""
+        {
+          "flow_id": "bda5f7e3-d146-454d-bdb6-befb47adb2b1",
+          "average_percent": 9.816666666666666,
+          "flow_name": "1940's - Clone",
+          "organization_id": "1049",
+          "api_key": "MP1019YB1TSIBUCMOWNQL3V54NY2CC6GZGXM",
+          "execution_id": "mpzzednstsokliyjz",
+          "source_ip_address": "",
+          "parameters": [
+            {
+              "name": "img",
+              "value": "https://storage.googleapis.com/magicpoint/models/women.png"
+            }
+          ],
+          "step_results": [
+            {
+              "step_id": "step1",
+              "step_name": "Face Analyzer",
+              "model": "1019-face-analyzer",
+              "version": "0.0.1",
+              "started_at": "2024-12-08T09:50:34Z",
+              "ended_at": "2024-12-08T09:50:40Z",
+              "status": "succeeded",
+              "output": "{\"age\":27,\"gender\":\"Woman\",\"race\":\"white\"}",
+              "output_json": null,
+              "input": "{\"image_url\":\"https://storage.googleapis.com/magicpoint/models/women.png\"}"
+            },
+            {
+              "step_id": "step2",
+              "step_name": "Image Generation",
+              "model": "photomaker",
+              "version": "0.0.1",
+              "started_at": "",
+              "ended_at": "",
+              "status": "queued",
+              "output": "",
+              "output_json": null,
+              "input": ""
+            },
+            {
+              "step_id": "step3",
+              "step_name": "Face Swap",
+              "model": "face-swap-new",
+              "version": "0.0.1",
+              "started_at": "",
+              "ended_at": "",
+              "status": "queued",
+              "output": "",
+              "output_json": null,
+              "input": ""
+            }
+          ],
+          "status": "running",
+          "output": "",
+          "output_json": null,
+          "created_at": "2024-12-08T09:50:29Z",
+          "started_at": "2024-12-08T09:50:29Z",
+          "ended_at": "",
+          "updated_at": "",
+          "deleted_at": ""
+        }
+        """#
+        let res = try EachAIWorkflowExecutionResponseBody.deserialize(from: sampleResponse)
+
+
+    }
 }
 

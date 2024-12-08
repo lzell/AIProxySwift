@@ -61,11 +61,47 @@ open class EachAIService {
         return try EachAITriggerWorkflowResponseBody.deserialize(from: data)
     }
 
-    public func pollForExecutionComplete(
+    public func pollForWorkflowExecutionComplete(
         workflowID: String,
         triggerID: String,
         pollAttempts: Int = 60,
         secondsBetweenPollAttempts: UInt64 = 10
+    ) async throws -> EachAIWorkflowExecutionResponseBody {
+        return try await self.actorPollForWorkflowExecutionComplete(
+            workflowID: workflowID,
+            triggerID: triggerID,
+            numTries: pollAttempts,
+            nsBetweenPollAttempts: secondsBetweenPollAttempts * 1_000_000_000
+        )
+    }
+
+    @NetworkActor
+    private func actorPollForWorkflowExecutionComplete(
+        workflowID: String,
+        triggerID: String,
+        numTries: Int,
+        nsBetweenPollAttempts: UInt64
+    ) async throws -> EachAIWorkflowExecutionResponseBody {
+        try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
+        for _ in 0..<numTries {
+            let response = try await self.actorGetWorkflowExecution(
+                workflowID: workflowID,
+                triggerID: triggerID
+            )
+            if response.status == "succeeded" {
+                return response
+            }
+            print("Status is \(response.status)")
+            try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
+        }
+        throw EachAIError.reachedRetryLimit
+    }
+
+    /// https://docs.eachlabs.ai/api-reference/execution/get-flow-execution
+    @NetworkActor
+    private func actorGetWorkflowExecution(
+        workflowID: String,
+        triggerID: String
     ) async throws -> EachAIWorkflowExecutionResponseBody {
         let session = AIProxyURLSession.create()
         let request = try await AIProxyURLRequest.create(
