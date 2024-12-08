@@ -61,31 +61,34 @@ open class EachAIService {
         return try EachAITriggerWorkflowResponseBody.deserialize(from: data)
     }
 
-//    public func pollForExecutionComplete(
-//        workflowID: String,
-//        triggerID: String
-//    ) async throws {
-//        let session = AIProxyURLSession.create()
-//        let request = try await AIProxyURLRequest.create(
-//            partialKey: self.partialKey,
-//            serviceURL: self.serviceURL,
-//            clientID: self.clientID,
-//            proxyPath: "/api/v1/\(workflowID)/trigger",
-//            body: try body.serialize(),
-//            verb: .post,
-//            contentType: "application/json"
-//        )
-//
-//        let (data, res) = try await session.data(for: request)
-//        guard let httpResponse = res as? HTTPURLResponse else {
-//            throw AIProxyError.assertion("Network response is not an http response")
-//        }
-//
-//        if (httpResponse.statusCode > 299) {
-//            throw AIProxyError.unsuccessfulRequest(
-//                statusCode: httpResponse.statusCode,
-//                responseBody: String(data: data, encoding: .utf8) ?? ""
-//            )
-//        }
-//    }
+    public func pollForExecutionComplete(
+        workflowID: String,
+        triggerID: String,
+        pollAttempts: Int = 60,
+        secondsBetweenPollAttempts: UInt64 = 10
+    ) async throws -> EachAIWorkflowExecutionResponseBody {
+        let session = AIProxyURLSession.create()
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/api/v1/\(workflowID)/executions/\(triggerID)",
+            body: nil,
+            verb: .get
+        )
+
+        let (data, res) = try await session.data(for: request)
+        guard let httpResponse = res as? HTTPURLResponse else {
+            throw AIProxyError.assertion("Network response is not an http response")
+        }
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        return try EachAIWorkflowExecutionResponseBody.deserialize(from: data)
+    }
 }
