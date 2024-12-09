@@ -78,6 +78,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
 * [Groq](#groq)
 * [Perplexity](#perplexity)
 * [Mistral](#mistral)
+* [EachAI](#eachai)
 * [Advanced Settings](#advanced-settings)
 
 
@@ -2027,6 +2028,45 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
 
 ***
 
+## EachAI
+
+### How to kick off an EachAI workflow
+
+Use `flows.eachlabs.ai` as the proxy domain when creating your AIProxy service in the developer dashboard.
+
+    import AIProxy
+
+    let eachAIService = AIProxy.eachAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+
+    // Update the arguments here based on your eachlabs use case:
+    let workflowID = "your-workflow-id"
+    let requestBody = EachAITriggerWorkflowRequestBody(
+        parameters: [
+            "img": "https://storage.googleapis.com/magicpoint/models/women.png"
+        ]
+    )
+
+    do {
+        let triggerResponse = try await eachAIService.triggerWorkflow(
+            workflowID: workflowID,
+            body: requestBody
+        )
+        let executionResponse = try await eachAIService.pollForWorkflowExecutionComplete(
+            workflowID: workflowID,
+            triggerID: triggerResponse.triggerID
+        )
+        print("Workflow result is available at \(executionResponse.output ?? "output missing")")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not execute EachAI workflow: \(error.localizedDescription)")
+    }
+
+
+***
 
 ## OpenMeteo
 
