@@ -75,7 +75,8 @@ open class AnthropicDirectService: AnthropicService {
             verb: .post,
             contentType: "application/json",
             headers: [
-                "Authorization": "Bearer \(self.unprotectedAPIKey)"
+                "x-api-key": self.unprotectedAPIKey,
+                "anthropic-version": "2023-06-01"
             ]
         )
 
