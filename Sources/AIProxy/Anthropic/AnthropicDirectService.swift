@@ -28,30 +28,18 @@ open class AnthropicDirectService: AnthropicService {
     ) async throws -> AnthropicMessageResponseBody {
         var body = body
         body.stream = false
-        let session = URLSession(configuration: .ephemeral)
         let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.anthropic.com",
             path: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
             contentType: "application/json",
-            headers: [
+            additionalHeaders: [
                 "x-api-key": self.unprotectedAPIKey,
-                "anthropic-version": "2023-06-01"
+                "anthropic-version": "2023-06-01",
             ]
         )
-        let (data, res) = try await session.data(for: request)
-        guard let httpResponse = res as? HTTPURLResponse else {
-            throw AIProxyError.assertion("Network response is not an http response")
-        }
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try AnthropicMessageResponseBody.deserialize(from: data)
     }
 
@@ -67,34 +55,19 @@ open class AnthropicDirectService: AnthropicService {
     ) async throws -> AnthropicAsyncChunks {
         var body = body
         body.stream = true
-        let session = URLSession(configuration: .ephemeral)
         let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.anthropic.com",
             path: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
             contentType: "application/json",
-            headers: [
+            additionalHeaders: [
                 "x-api-key": self.unprotectedAPIKey,
-                "anthropic-version": "2023-06-01"
+                "anthropic-version": "2023-06-01",
             ]
         )
 
-        let (asyncBytes, res) = try await session.bytes(for: request)
-
-        guard let httpResponse = res as? HTTPURLResponse else {
-            throw AIProxyError.assertion("Network response is not an http response")
-        }
-
-        if (httpResponse.statusCode > 299) {
-            let responseBody = try await asyncBytes.lines.reduce(into: "") { $0 += $1 }
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: responseBody
-            )
-        }
-
+        let asyncBytes: URLSession.AsyncBytes = try await BackgroundNetworker.makeDirectRequest(request)
         return AnthropicAsyncChunks(asyncLines: asyncBytes.lines)
     }
 }
-

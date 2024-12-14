@@ -47,7 +47,6 @@ public struct AIProxy {
         proxyPath: String,
         body: Data? = nil,
         verb: AIProxyHTTPVerb = .automatic,
-        contentType: String? = nil,
         headers: [String: String] = [:]
     ) async throws -> URLRequest {
         return try await AIProxyURLRequest.create(
@@ -57,8 +56,7 @@ public struct AIProxy {
             proxyPath: proxyPath,
             body: body,
             verb: verb,
-            contentType: contentType,
-            headers: headers
+            additionalHeaders: headers
         )
     }
 
@@ -96,13 +94,28 @@ public struct AIProxy {
         clientID: String? = nil,
         requestFormat: OpenAIRequestFormat = .standard
     ) -> OpenAIService {
-        return OpenAIService(
+        return OpenAIProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID,
             requestFormat: requestFormat
         )
     }
+
+//    /// Service that makes request directly to OpenAI. No protections are built-in for this service.
+//    /// Please only use this for BYOK use cases.
+//    ///
+//    /// - Parameters:
+//    ///   - unprotectedAPIKey: Your OpenAI API key
+//    /// - Returns: An instance of OpenAIService configured and ready to make requests
+//    public static func openAIDirectService(
+//        unprotectedAPIKey: String
+//    ) -> OpenAIService {
+//        return OpenAIDirectService(
+//            unprotectedAPIKey: unprotectedAPIKey
+//        )
+//    }
+
 
     /// AIProxy's Gemini service
     ///
@@ -164,6 +177,12 @@ public struct AIProxy {
         )
     }
 
+    /// Service that makes request directly to Anthropic. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Anthropic API key
+    /// - Returns: An instance of AnthropicService configured and ready to make requests
     public static func anthropicDirectService(
         unprotectedAPIKey: String
     ) -> AnthropicService {

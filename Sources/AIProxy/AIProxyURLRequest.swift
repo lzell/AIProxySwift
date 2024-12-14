@@ -18,7 +18,7 @@ struct AIProxyURLRequest {
         body: Data?,
         verb: AIProxyHTTPVerb,
         contentType: String? = nil,
-        headers: [String: String] = [:]
+        additionalHeaders: [String: String] = [:]
     ) async throws -> URLRequest {
         let deviceCheckToken = await AIProxyDeviceCheck.getToken()
 
@@ -63,7 +63,7 @@ struct AIProxyURLRequest {
             request.addValue(contentType, forHTTPHeaderField: "Content-Type")
         }
 
-        for (headerField, value) in headers {
+        for (headerField, value) in additionalHeaders {
             request.addValue(value, forHTTPHeaderField: headerField)
         }
 
@@ -78,7 +78,7 @@ struct AIProxyURLRequest {
         body: Data?,
         verb: AIProxyHTTPVerb,
         contentType: String? = nil,
-        headers: [String: String] = [:]
+        additionalHeaders: [String: String] = [:]
     ) throws -> URLRequest {
         guard var urlComponents = URLComponents(string: baseURL),
               let pathComponents = URLComponents(string: path) else {
@@ -102,7 +102,7 @@ struct AIProxyURLRequest {
             request.addValue(contentType, forHTTPHeaderField: "Content-Type")
         }
 
-        for (headerField, value) in headers {
+        for (headerField, value) in additionalHeaders {
             request.addValue(value, forHTTPHeaderField: headerField)
         }
 

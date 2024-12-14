@@ -85,17 +85,10 @@ open class GeminiService {
             body: body.serialize(withBoundary: boundary),
             verb: .post,
             contentType: "multipart/related; boundary=\(boundary)",
-            headers: ["X-Goog-Upload-Protocol": "multipart"]
+            additionalHeaders: ["X-Goog-Upload-Protocol": "multipart"]
         )
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-        if httpResponse.statusCode > 299 {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
+        let data: Data = try await BackgroundNetworker.makeProxiedRequest(request)
         let response = try GeminiFileUploadResponseBody.deserialize(from: data)
         return try await self.pollForFileUploadComplete(fileURL: response.file.uri)
     }
@@ -117,13 +110,7 @@ open class GeminiService {
             body: nil,
             verb: .delete
         )
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-        if httpResponse.statusCode > 299 {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
+        let _: Data = try await BackgroundNetworker.makeProxiedRequest(request)
     }
 
     /// Polls for the completion of a file upload, where the polling URL is Gemini's `url`
@@ -184,15 +171,7 @@ open class GeminiService {
             verb: .get
         )
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try GeminiFile.deserialize(from: data)
     }
 }

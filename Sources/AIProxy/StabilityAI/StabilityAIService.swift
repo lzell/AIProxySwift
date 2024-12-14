@@ -66,7 +66,7 @@ open class StabilityAIService {
             body: formEncode(body, boundary),
             verb: .post,
             contentType: "multipart/form-data; boundary=\(boundary)",
-            headers: ["Accept": "image/*"]
+            additionalHeaders: ["Accept": "image/*"]
         )
 
         let (data, res) = try await session.data(for: request)

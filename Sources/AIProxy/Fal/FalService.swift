@@ -174,14 +174,7 @@ open class FalService {
             contentType: "application/json"
         )
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-        if httpResponse.statusCode > 299 {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         let initiateRes = try FalInitiateUploadResponseBody.deserialize(from: data)
         var uploadReq = URLRequest(url: initiateRes.uploadURL)
         uploadReq.httpMethod = "PUT"
@@ -194,7 +187,7 @@ open class FalService {
 
         if httpStorageResponse.statusCode > 299 {
             throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
+                statusCode: httpStorageResponse.statusCode,
                 responseBody: String(data: data, encoding: .utf8) ?? ""
             )
         }
@@ -229,13 +222,7 @@ open class FalService {
             verb: .post,
             contentType: "application/json"
         )
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try FalQueueResponseBody.deserialize(from: data)
     }
 
@@ -286,15 +273,7 @@ open class FalService {
             verb: .get
         )
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try T.deserialize(from: data)
     }
 
@@ -335,15 +314,7 @@ open class FalService {
             verb: .get
         )
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try FalQueueResponseBody.deserialize(from: data)
     }
 }

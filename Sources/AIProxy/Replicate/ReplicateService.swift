@@ -70,19 +70,11 @@ open class ReplicateService {
             body: body,
             verb: .post,
             contentType: "application/json",
-            headers: ["Prefer": "wait=\(secondsToWait)"]
+            additionalHeaders: ["Prefer": "wait=\(secondsToWait)"]
         )
         request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
     }
 
@@ -129,19 +121,11 @@ open class ReplicateService {
             body: body,
             verb: .post,
             contentType: "application/json",
-            headers: ["Prefer": "wait=\(secondsToWait)"]
+            additionalHeaders: ["Prefer": "wait=\(secondsToWait)"]
         )
         request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
     }
 
@@ -616,15 +600,8 @@ open class ReplicateService {
             verb: .post,
             contentType: "application/json"
         )
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
         let responseModel = try ReplicateModelResponseBody.deserialize(from: data)
         guard let url = responseModel.url else {
             throw ReplicateError.missingModelURL
@@ -661,14 +638,7 @@ open class ReplicateService {
             contentType: "multipart/form-data; boundary=\(boundary)"
         )
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try ReplicateFileUploadResponseBody.deserialize(from: data)
     }
 
@@ -700,14 +670,8 @@ open class ReplicateService {
             verb: .post,
             contentType: "application/json"
         )
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
 
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try ReplicateTrainingResponseBody.deserialize(from: data)
     }
 
@@ -748,15 +712,7 @@ open class ReplicateService {
             contentType: "application/json"
         )
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try JSONDecoder().decode(output, from: data)
     }
 
@@ -795,15 +751,7 @@ open class ReplicateService {
             contentType: "application/json"
         )
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try JSONDecoder().decode(output, from: data)
     }
 
@@ -940,13 +888,7 @@ open class ReplicateService {
             body: nil,
             verb: .get
         )
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
+        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
         return try output.deserialize(from: data)
     }
 
