@@ -737,6 +737,19 @@ Use the file URL returned from the snippet above.
         partialKey: "partial-key-from-your-developer-dashboard",
         serviceURL: "service-url-from-your-developer-dashboard"
     )
+
+    //
+    // To communicate directly to Anthropic without going through
+    // AIProxy, you can use the following initialization code.
+    //
+    // Do not release an app with this unless users of your app
+    // supply their own keys.
+    //
+    //     let anthropicService = AIProxy.anthropicDirectService(
+    //         unprotectedAPIKey: "your-secret-key"
+    //     )
+    //
+
     do {
         let response = try await anthropicService.messageRequest(body: AnthropicMessageRequestBody(
             maxTokens: 1024,
@@ -768,6 +781,19 @@ Use the file URL returned from the snippet above.
         partialKey: "partial-key-from-your-developer-dashboard",
         serviceURL: "service-url-from-your-developer-dashboard"
     )
+
+    //
+    // To communicate directly to Anthropic without going through
+    // AIProxy, you can use the following initialization code.
+    //
+    // Do not release an app with this unless users of your app
+    // supply their own keys.
+    //
+    //     let anthropicService = AIProxy.anthropicDirectService(
+    //         unprotectedAPIKey: "your-secret-key"
+    //     )
+    //
+
     do {
         let requestBody = AnthropicMessageRequestBody(
             maxTokens: 1024,

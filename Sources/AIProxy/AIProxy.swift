@@ -157,10 +157,18 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> AnthropicService {
-        return AnthropicService(
+        return AnthropicProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    public static func anthropicDirectService(
+        unprotectedAPIKey: String
+    ) -> AnthropicService {
+        return AnthropicDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 

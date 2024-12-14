@@ -112,7 +112,6 @@ open class EachAIService {
             if response.status == "succeeded" {
                 return response
             }
-            print("Status is \(response.status)")
             try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
         }
         throw EachAIError.reachedRetryLimit
