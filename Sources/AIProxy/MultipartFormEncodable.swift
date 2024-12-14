@@ -8,11 +8,11 @@
 import Foundation
 
 
-protocol MultipartFormEncodable {
+public protocol MultipartFormEncodable {
     var formFields: [FormField] { get}
 }
 
-enum FormField {
+public enum FormField {
     case fileField(name: String, content: Data, contentType: String, filename: String)
     case textField(name: String, content: String)
 }

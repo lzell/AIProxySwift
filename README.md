@@ -1,8 +1,30 @@
 # About
 
-Use this package to add [AIProxy](https://www.aiproxy.pro) support to your iOS and macOS apps.
-AIProxy lets you depend on AI APIs safely without building your own backend.
-Five levels of security are applied to keep your API key secure and your AI bill predictable:
+Use this library to adopt AI APIs in your app. Swift clients for the following providers are
+included:
+
+- OpenAI
+- Gemini
+- Anthropic
+- Stability AI
+- DeepL
+- Together AI
+- Replicate
+- ElevenLabs
+- Fal
+- Groq
+- Perplexity
+- Mistral
+- EachAI
+
+Your initialization code determines whether requests go straight to the provider or are
+protected through the [AIProxy](https://www.aiproxy.pro) backend.
+
+We only recommend making requests straight to the provider during prototyping and for BYOK
+use-cases.
+
+Requests that are proxied through AIProxy have five levels of security applied to keep your API
+key secure and your AI bill predictable:
 
 - Certificate pinning
 - DeviceCheck verification
@@ -25,22 +47,15 @@ Five levels of security are applied to keep your API key secure and your AI bill
 
    <img src="https://github.com/lzell/AIProxySwift/assets/35940/fd76b588-5e19-4d4d-9748-8db3fd64df8e" alt="Set package rule" width="720">
 
-3. Add an `AIPROXY_DEVICE_CHECK_BYPASS` env variable to Xcode. This token is provided to you in the AIProxy
-   developer dashboard, and is necessary for the iOS simulator to communicate with the AIProxy backend.
-    - Type `cmd shift ,` to open up the "Edit Schemes" menu (or `Product > Scheme > Edit Scheme`)
-    - Select `Run` in the sidebar
-    - Select `Arguments` from the top nav
-    - Add to the "Environment Variables" section an env variable with name
-      `AIPROXY_DEVICE_CHECK_BYPASS` and value that we provided you in the AIProxy dashboard
 
-      <img src="https://github.com/lzell/AIProxySwift/assets/35940/33ce2c0a-69ac-4beb-aefb-3d6c43b5e97a" alt="Add env variable" width="720">
+### How to configure the package for use with AIProxy
 
+See the [AIProxy integration video](https://www.aiproxy.pro/docs/integration-guide.html).
+Note that this is not required if you are shipping an app where the customers provide their own
+API keys (known as BYOK for "bring your own key").
 
-The `AIPROXY_DEVICE_CHECK_BYPASS` is intended for the simulator only. Do not let it leak into
-a distribution build of your app (including a TestFlight distribution). If you follow the steps above,
-then the constant won't leak because env variables are not packaged into the app bundle.
-
-See the FAQ for more details on the DeviceCheck bypass constant.
+If you are shipping an app using a personal or company API key, we highly recommend setting up
+AIProxy as an alternative to building, monitoring, and maintaining your own backend.
 
 
 ## How to update the package
@@ -88,10 +103,17 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
 
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let response = try await openAIService.chatCompletionRequest(body: .init(
             model: "gpt-4o",
@@ -109,10 +131,17 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
 
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     let requestBody = OpenAIChatCompletionRequestBody(
         model: "gpt-4o-mini",
         messages: [.user(content: .text("hello world"))]
@@ -137,10 +166,17 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     guard let image = UIImage(named: "myImage") else {
         print("Could not find an image named 'myImage' in your app assets")
         return
@@ -182,10 +218,17 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
 
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let requestBody = OpenAICreateImageRequestBody(
             prompt: "a skier",
@@ -206,10 +249,17 @@ Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON 
 
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let requestBody = OpenAIChatCompletionRequestBody(
             model: "gpt-4o",
@@ -235,10 +285,16 @@ in its response:
 
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let schema: [String: AIProxyJSONValue] = [
@@ -269,7 +325,7 @@ in its response:
         let requestBody = OpenAIChatCompletionRequestBody(
             model: "gpt-4o-2024-08-06",
             messages: [
-                .system(content: .text("Return valid JSON only")),
+                .system(content: .text("Return valid JSON only, and follow the specified JSON structure")),
                 .user(content: .text("Return a peaches and cream color palette"))
             ],
             responseFormat: .jsonSchema(
@@ -297,10 +353,16 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
 
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let schema: [String: AIProxyJSONValue] = [
@@ -360,10 +422,17 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     ```
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a")!
         let requestBody = OpenAICreateTranscriptionRequestBody(
@@ -391,10 +460,16 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     ```swift
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let requestBody = OpenAITextToSpeechRequestBody(
@@ -428,10 +503,17 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     ```swift
     import AIProxy
 
-    let openAIService = AIProxy.openAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     let requestBody = OpenAIModerationRequestBody(
         input: [
             .text("is this bad"),
@@ -479,10 +561,16 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
 
     import AIProxy
 
-    let geminiService = AIProxy.geminiService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let requestBody = GeminiGenerateContentRequestBody(
@@ -524,10 +612,16 @@ Add a file called `helloworld.m4a` to your Xcode assets before running this samp
 
     import AIProxy
 
-    let geminiService = AIProxy.geminiService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     guard let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a") else {
         print("Could not find an audio file named helloworld.m4a in your app bundle")
@@ -581,10 +675,16 @@ Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
 
     import AIProxy
 
-    let geminiService = AIProxy.geminiService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     guard let image = NSImage(named: "my-image") else {
         print("Could not find an image named 'my-image' in your app assets")
@@ -650,10 +750,16 @@ If you use a file like `my-movie.mp4`, change the mime type from `video/quicktim
 
     import AIProxy
 
-    let geminiService = AIProxy.geminiService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     // Try to upload the zip file in Xcode assets
     // Get the images to train with:
@@ -688,10 +794,17 @@ Use the file URL returned from the snippet above.
     import AIProxy
 
     let fileURL = URL(string: "url-from-snippet-above")!
-    let geminiService = AIProxy.geminiService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let requestBody = GeminiGenerateContentRequestBody(
@@ -745,10 +858,17 @@ Use the file URL returned from the snippet above.
     import AIProxy
 
     let fileURL = URL(string: "url-from-snippet-above")!
-    let geminiService = AIProxy.geminiService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         try await geminiService.deleteFile(fileURL: fileURL)
@@ -769,10 +889,17 @@ Use the file URL returned from the snippet above.
 
     import AIProxy
 
-    let anthropicService = AIProxy.anthropicService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let anthropicService = AIProxy.anthropicDirectService(
+    //     unprotectedAPIKey: "your-anthropic-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let anthropicService = AIProxy.anthropicService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let response = try await anthropicService.messageRequest(body: AnthropicMessageRequestBody(
             maxTokens: 1024,
@@ -800,10 +927,17 @@ Use the file URL returned from the snippet above.
 
     import AIProxy
 
-    let anthropicService = AIProxy.anthropicService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let anthropicService = AIProxy.anthropicDirectService(
+    //     unprotectedAPIKey: "your-anthropic-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let anthropicService = AIProxy.anthropicService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let requestBody = AnthropicMessageRequestBody(
             maxTokens: 1024,
@@ -836,10 +970,16 @@ Use the file URL returned from the snippet above.
 
     import AIProxy
 
-    let anthropicService = AIProxy.anthropicService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let anthropicService = AIProxy.anthropicDirectService(
+    //     unprotectedAPIKey: "your-anthropic-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let anthropicService = AIProxy.anthropicService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let requestBody = AnthropicMessageRequestBody(
@@ -902,10 +1042,17 @@ Use `UIImage` in place of `NSImage` for iOS apps:
         return
     }
 
-    let anthropicService = AIProxy.anthropicService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let anthropicService = AIProxy.anthropicDirectService(
+    //     unprotectedAPIKey: "your-anthropic-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let anthropicService = AIProxy.anthropicService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let response = try await anthropicService.messageRequest(body: AnthropicMessageRequestBody(
             maxTokens: 1024,
@@ -936,10 +1083,17 @@ Use `UIImage` in place of `NSImage` for iOS apps:
 
     import AIProxy
 
-    let anthropicService = AIProxy.anthropicService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let anthropicService = AIProxy.anthropicDirectService(
+    //     unprotectedAPIKey: "your-anthropic-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let anthropicService = AIProxy.anthropicService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let requestBody = AnthropicMessageRequestBody(
             maxTokens: 1024,
@@ -995,10 +1149,17 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
 
     import AIProxy
 
-    let service = AIProxy.stabilityAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let stabilityService = AIProxy.stabilityDirectService(
+    //     unprotectedAPIKey: "your-stability-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let service = AIProxy.stabilityAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let body = StabilityAIUltraRequestBody(prompt: "Lighthouse on a cliff overlooking the ocean")
         let response = try await service.ultraRequest(body: body)
@@ -1018,10 +1179,16 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
 
     import AIProxy
 
-    let service = AIProxy.deepLService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let deepLService = AIProxy.deepLDirectService(
+    //     unprotectedAPIKey: "your-deepL-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let service = AIProxy.deepLService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let body = DeepLTranslateRequestBody(targetLang: "ES", text: ["hello world"])
@@ -1044,10 +1211,17 @@ options to pass as the `model` argument:
 
     import AIProxy
 
-    let togetherAIService = AIProxy.togetherAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let togetherAIService = AIProxy.togetherAIDirectService(
+    //     unprotectedAPIKey: "your-togetherAI-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let togetherAIService = AIProxy.togetherAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let requestBody = TogetherAIChatCompletionRequestBody(
             messages: [TogetherAIMessage(content: "Hello world", role: .user)],
@@ -1069,10 +1243,17 @@ options to pass as the `model` argument:
 
     import AIProxy
 
-    let togetherAIService = AIProxy.togetherAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let togetherAIService = AIProxy.togetherAIDirectService(
+    //     unprotectedAPIKey: "your-togetherAI-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let togetherAIService = AIProxy.togetherAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let requestBody = TogetherAIChatCompletionRequestBody(
             messages: [TogetherAIMessage(content: "Hello world", role: .user)],
@@ -1097,10 +1278,17 @@ support JSON mode. See [this guide](https://docs.together.ai/docs/json-mode) for
 
     import AIProxy
 
-    let togetherAIService = AIProxy.togetherAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let togetherAIService = AIProxy.togetherAIDirectService(
+    //     unprotectedAPIKey: "your-togetherAI-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let togetherAIService = AIProxy.togetherAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let schema: [String: AIProxyJSONValue] = [
             "type": "object",
@@ -1152,14 +1340,24 @@ support JSON mode. See [this guide](https://docs.together.ai/docs/json-mode) for
 
 ### How to make a tool call request with Llama and TogetherAI
 
+If you need this use case, please open a github issue. We don't currently get the tool call
+result out of the response!
+
 This example is a Swift port of [this guide](https://docs.together.ai/docs/llama-3-function-calling):
 
     import AIProxy
 
-    let togetherAIService = AIProxy.togetherAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let togetherAIService = AIProxy.togetherAIDirectService(
+    //     unprotectedAPIKey: "your-togetherAI-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let togetherAIService = AIProxy.togetherAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let function = TogetherAIFunction(
             description: "Call this when the user wants the weather",
@@ -1234,10 +1432,16 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
 
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let input = ReplicateFluxSchnellInputSchema(
@@ -1261,10 +1465,16 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let input = ReplicateFluxDevInputSchema(
@@ -1295,10 +1505,16 @@ following substitutions:
     ```
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let input = ReplicateFluxProInputSchema_v1_1(
@@ -1324,10 +1540,16 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     guard let image = UIImage(named: "face") else {
         print("Could not find an image named 'face' in your app assets")
@@ -1367,10 +1589,17 @@ There are many controls to play with for this use case. Please see
 
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let input = ReplicateFluxDevControlNetInputSchema(
             controlImage: URL(string: "https://example.com/your/image")!,
@@ -1392,10 +1621,16 @@ There are many controls to play with for this use case. Please see
 
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let input = ReplicateSDXLInputSchema(
@@ -1418,10 +1653,16 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
 
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let input = ReplicateSDXLFreshInkInputSchema(
@@ -1461,10 +1702,16 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
     ```
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let input = YourInputSchema(
@@ -1494,12 +1741,25 @@ Replace `<your-account>`:
 
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
-        let modelURL = try await replicateService.createModel(owner: "<your-account>", name: "my-model", description: "My great model")
+        let modelURL = try await replicateService.createModel(
+            owner: "<your-account>", 
+            name: "my-model", 
+            description: "My great model",
+            hardware: "gpu-t4",
+            visibility: .private
+        )
         print("Your model is at \(modelURL)")
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
@@ -1516,10 +1776,16 @@ for tips on what to include in the zip file. Then run:
 
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     guard let trainingData = NSDataAsset(name: "training") else {
         print("""
@@ -1554,10 +1820,16 @@ Use the `<model-name>` that you used from the snippet above that.
 
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         // You should experiment with the settings in `ReplicateFluxTrainingInput.swift` to
@@ -1595,10 +1867,16 @@ Use the `<url>` that is returned from the snippet above.
 
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     // This URL comes from the output of the sample above
     let url = URL(string: "<url>")!
@@ -1627,10 +1905,16 @@ model owner and model name in the string.
 
     import AIProxy
 
-    let replicateService = AIProxy.replicateService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     let input = ReplicateFluxFineTuneInputSchema(
         prompt: "an oil painting of my face on a blimp",
@@ -1667,10 +1951,17 @@ model owner and model name in the string.
 
     import AIProxy
 
-    let elevenLabsService = AIProxy.elevenLabsService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let elevenLabsService = AIProxy.elevenLabsDirectService(
+    //     unprotectedAPIKey: "your-elevenLabs-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let elevenLabsService = AIProxy.elevenLabsService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
     do {
         let body = ElevenLabsTTSRequestBody(
             text: "Hello world"
@@ -1710,10 +2001,16 @@ model owner and model name in the string.
 
     import AIProxy
 
-    let falService = AIProxy.falService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let falService = AIProxy.falDirectService(
+    //     unprotectedAPIKey: "your-fal-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let falService = AIProxy.falService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     let input = FalFastSDXLInputSchema(
         prompt: "Yosemite Valley",
@@ -1743,10 +2040,16 @@ I do here), or construct the zip in memory:
 
     import AIProxy
 
-    let falService = AIProxy.falService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let falService = AIProxy.falDirectService(
+    //     unprotectedAPIKey: "your-fal-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let falService = AIProxy.falService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     // Get the images to train with:
     guard let trainingData = NSDataAsset(name: "training") else {
@@ -1827,10 +2130,16 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
     import AIProxy
 
-    let groqService = AIProxy.groqService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let groqService = AIProxy.groqDirectService(
+    //     unprotectedAPIKey: "your-groq-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let groqService = AIProxy.groqService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let response = try await groqService.chatCompletionRequest(body: .init(
@@ -1849,10 +2158,16 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
     import AIProxy
 
-    let groqService = AIProxy.groqService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let groqService = AIProxy.groqDirectService(
+    //     unprotectedAPIKey: "your-groq-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let groqService = AIProxy.groqService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let stream = try await groqService.streamingChatCompletionRequest(body: .init(
@@ -1879,10 +2194,16 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     ```
     import AIProxy
 
-    let groqService = AIProxy.groqService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let groqService = AIProxy.groqDirectService(
+    //     unprotectedAPIKey: "your-groq-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let groqService = AIProxy.groqService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a")!
@@ -1910,10 +2231,16 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
     import AIProxy
 
-    let perplexityService = AIProxy.perplexityService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let perplexityService = AIProxy.perplexityDirectService(
+    //     unprotectedAPIKey: "your-perplexity-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let perplexityService = AIProxy.perplexityService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let response = try await perplexityService.chatCompletionRequest(body: .init(
@@ -1942,15 +2269,16 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
     import AIProxy
 
-    let perplexityService = AIProxy.perplexityService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let perplexityService = AIProxy.perplexityDirectService(
+    //     unprotectedAPIKey: "your-perplexity-key"
+    // )
 
-    let perplexityService = AIProxy.perplexityService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for all other production use cases */
+    // let perplexityService = AIProxy.perplexityService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let stream = try await perplexityService.streamingChatCompletionRequest(body: .init(
@@ -1976,10 +2304,16 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
 
     import AIProxy
 
-    let mistralService = AIProxy.mistralService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let mistralService = AIProxy.mistralDirectService(
+    //     unprotectedAPIKey: "your-mistral-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let mistralService = AIProxy.mistralService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let response = try await mistralService.chatCompletionRequest(body: .init(
@@ -2010,10 +2344,16 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
 
     import AIProxy
 
-    let mistralService = AIProxy.mistralService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let mistralService = AIProxy.mistralDirectService(
+    //     unprotectedAPIKey: "your-mistral-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let mistralService = AIProxy.mistralService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     do {
         let stream = try await mistralService.streamingChatCompletionRequest(body: .init(
@@ -2049,10 +2389,16 @@ Use `flows.eachlabs.ai` as the proxy domain when creating your AIProxy service i
 
     import AIProxy
 
-    let eachAIService = AIProxy.eachAIService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
+    /* Uncomment for BYOK use cases */
+    // let eachAIService = AIProxy.eachAIDirectService(
+    //     unprotectedAPIKey: "your-eachAI-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let eachAIService = AIProxy.eachAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
 
     // Update the arguments here based on your eachlabs use case:
     let workflowID = "your-workflow-id"
@@ -2262,6 +2608,11 @@ DeviceCheck integrity check. The token is intended for use by developers only. I
 the token, they can make requests to your AIProxy project without including a DeviceCheck token, and
 thus remove one level of protection.
 
+The `AIPROXY_DEVICE_CHECK_BYPASS` is intended for the simulator only. Do not let it leak into
+a distribution build of your app (including a TestFlight distribution). If you follow the
+[integration steps](https://www.aiproxy.pro/docs/integration-guide.html) we provide, then the
+constant won't leak because env variables are not packaged into the app bundle.
+
 ## What is the `aiproxyPartialKey` constant?
 
 This constant is intended to be **included** in the distributed version of your app. As the name implies, it is a
@@ -2272,12 +2623,25 @@ are paired, decrypted, and used to fulfill the request to OpenAI.
 
 ## Community contributions
 
-Contributions are welcome! In order to contribute, we require that you grant
-AIProxy an irrevocable license to use your contributions as we see fit.
-Please read [CONTRIBUTIONS.md](https://github.com/lzell/AIProxySwift/blob/main/CONTRIBUTIONS.md) for details
+Contributions are welcome! This library uses the MIT license.
 
 
 ## Contribution style guidelines
+
+- Services should conform to a NameService protocol that defines the interface that the direct
+  service and proxied service adopt. Factory methods on AIProxy.swift are typed to return an
+  existential (e.g. NameService) rather than a concrete type (e.g. NameProxiedService)
+  - Why do we do this? Two reason:
+      1. We want to make it as easy as possible for lib users to swap between the BYOK use case
+         and the proxied use case. By returning an existential, callers can use conditional
+         logic in their app to select which service to use:
+
+            ```  
+            let service = byok ? AIProxy.openaiDirectService() : AIProxy.openaiProxiedService()
+            ```
+      2. We prevent the direct and proxied concrete types from diverging in the public
+         interface. As we add more functionality to the service's protocol, the compiler helps
+         us ensure that the functionality is implemented for our two major use cases.
 
 - In codable representations, fields that are required by the API should be above fields that
   are optional. Within the two groups (required and optional) all fields should be

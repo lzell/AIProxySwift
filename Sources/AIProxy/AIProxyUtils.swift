@@ -14,6 +14,14 @@ import UIKit
 
 struct AIProxyUtils {
 
+    static func directURLSession() -> URLSession {
+        return URLSession(configuration: .ephemeral)
+    }
+
+    static func proxiedURLSession() -> URLSession {
+        return AIProxyURLSession.create()
+    }
+
 #if canImport(AppKit)
     static func encodeImageAsJpeg(
         _ image: NSImage,
