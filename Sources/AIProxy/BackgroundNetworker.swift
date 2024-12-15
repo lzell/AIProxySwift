@@ -9,43 +9,11 @@ import Foundation
 @NetworkActor
 struct BackgroundNetworker {
 
-    // MARK: - Proxied Requests
-    static func makeProxiedRequest(_ request: URLRequest) async throws -> Data {
-        return try await self.makeRequestAndWaitForData(
-            AIProxyURLSession.create(),
-            request
-        )
-    }
-
-    static func makeProxiedRequest(_ request: URLRequest) async throws -> URLSession.AsyncBytes {
-        return try await self.makeRequestAndWaitForAsyncBytes(
-            AIProxyURLSession.create(),
-            request
-        )
-    }
-
-    // MARK: - Direct Requests
-    static func makeDirectRequest(_ request: URLRequest) async throws -> Data {
-        return try await self.makeRequestAndWaitForData(
-            URLSession(configuration: .ephemeral),
-            request
-        )
-    }
-
-    static func makeDirectRequest(_ request: URLRequest) async throws -> URLSession.AsyncBytes {
-        return try await self.makeRequestAndWaitForAsyncBytes(
-            URLSession(configuration: .ephemeral),
-            request
-        )
-    }
-
-    // MARK: - Private
-
     /// Throws AIProxyError.unsuccessfulRequest if the returned status code is non-200
-    private static func makeRequestAndWaitForData(
+    static func makeRequestAndWaitForData(
         _ session: URLSession,
         _ request: URLRequest
-    ) async throws -> Data {
+    ) async throws -> (Data, HTTPURLResponse) {
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
             throw AIProxyError.assertion("Network response is not an http response")
@@ -56,14 +24,14 @@ struct BackgroundNetworker {
                 responseBody: String(data: data, encoding: .utf8) ?? ""
             )
         }
-        return data
+        return (data, httpResponse)
     }
 
     /// Throws AIProxyError.unsuccessfulRequest if the returned status code is non-200
-    private static func makeRequestAndWaitForAsyncBytes(
+    static func makeRequestAndWaitForAsyncBytes(
         _ session: URLSession,
         _ request: URLRequest
-    ) async throws -> URLSession.AsyncBytes {
+    ) async throws -> (URLSession.AsyncBytes, HTTPURLResponse) {
         let (asyncBytes, res) = try await session.bytes(for: request)
 
         guard let httpResponse = res as? HTTPURLResponse else {
@@ -78,6 +46,6 @@ struct BackgroundNetworker {
             )
         }
 
-        return asyncBytes
+        return (asyncBytes, httpResponse)
     }
 }

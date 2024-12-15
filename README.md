@@ -269,7 +269,7 @@ in its response:
         let requestBody = OpenAIChatCompletionRequestBody(
             model: "gpt-4o-2024-08-06",
             messages: [
-                .system(content: .text("Return valid JSON only")),
+                .system(content: .text("Return valid JSON only, and follow the specified JSON structure")),
                 .user(content: .text("Return a peaches and cream color palette"))
             ],
             responseFormat: .jsonSchema(

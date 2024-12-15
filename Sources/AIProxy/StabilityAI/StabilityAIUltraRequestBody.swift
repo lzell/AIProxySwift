@@ -40,7 +40,7 @@ public struct StabilityAIUltraRequestBody: MultipartFormEncodable {
     public let seed: Int?
 
 
-    var formFields: [FormField] {
+    public var formFields: [FormField] {
         return [
             .textField(name: "prompt", content: self.prompt),
             self.aspectRatio.flatMap { .textField(name: "aspect_ratio", content: $0) },

@@ -102,19 +102,19 @@ public struct AIProxy {
         )
     }
 
-//    /// Service that makes request directly to OpenAI. No protections are built-in for this service.
-//    /// Please only use this for BYOK use cases.
-//    ///
-//    /// - Parameters:
-//    ///   - unprotectedAPIKey: Your OpenAI API key
-//    /// - Returns: An instance of OpenAIService configured and ready to make requests
-//    public static func openAIDirectService(
-//        unprotectedAPIKey: String
-//    ) -> OpenAIService {
-//        return OpenAIDirectService(
-//            unprotectedAPIKey: unprotectedAPIKey
-//        )
-//    }
+    /// Service that makes request directly to OpenAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your OpenAI API key
+    /// - Returns: An instance of OpenAIService configured and ready to make requests
+    public static func openAIDirectService(
+        unprotectedAPIKey: String
+    ) -> OpenAIService {
+        return OpenAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
+        )
+    }
 
 
     /// AIProxy's Gemini service
@@ -214,10 +214,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> StabilityAIService {
-        return StabilityAIService(
+        return StabilityAIProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to StabilityAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your StabilityAI API key
+    /// - Returns: An instance of StabilityAIService configured and ready to make requests
+    public static func stabilityAIDirectService(
+        unprotectedAPIKey: String
+    ) -> StabilityAIService {
+        return StabilityAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 

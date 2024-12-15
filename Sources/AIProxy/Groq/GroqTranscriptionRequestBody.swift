@@ -40,7 +40,7 @@ public struct GroqTranscriptionRequestBody: MultipartFormEncodable {
     /// temperature until certain thresholds are hit: https://en.wikipedia.org/wiki/Log_probability
     public let temperature: Double?
 
-    var formFields: [FormField] {
+    public var formFields: [FormField] {
         return [
             .fileField(name: "file", content: self.file, contentType: "audio/mpeg", filename: "aiproxy.m4a"),
             .textField(name: "model", content: self.model),

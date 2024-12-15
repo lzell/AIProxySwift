@@ -174,7 +174,10 @@ open class FalService {
             contentType: "application/json"
         )
 
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         let initiateRes = try FalInitiateUploadResponseBody.deserialize(from: data)
         var uploadReq = URLRequest(url: initiateRes.uploadURL)
         uploadReq.httpMethod = "PUT"
@@ -222,7 +225,10 @@ open class FalService {
             verb: .post,
             contentType: "application/json"
         )
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         return try FalQueueResponseBody.deserialize(from: data)
     }
 
@@ -272,8 +278,10 @@ open class FalService {
             body: nil,
             verb: .get
         )
-
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         return try T.deserialize(from: data)
     }
 
@@ -313,8 +321,10 @@ open class FalService {
             body: nil,
             verb: .get
         )
-
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         return try FalQueueResponseBody.deserialize(from: data)
     }
 }

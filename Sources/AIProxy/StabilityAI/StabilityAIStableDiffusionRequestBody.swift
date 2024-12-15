@@ -68,7 +68,7 @@ public struct StabilityAIStableDiffusionRequestBody: MultipartFormEncodable {
     /// Important: This parameter is only valid for image-to-image requests.
     public let strength: Double?
 
-    var formFields: [FormField] {
+    public var formFields: [FormField] {
         let theFields: [FormField] = [
             .textField(name: "prompt", content: self.prompt),
             self.aspectRatio.flatMap { .textField(name: "aspect_ratio", content: $0) },

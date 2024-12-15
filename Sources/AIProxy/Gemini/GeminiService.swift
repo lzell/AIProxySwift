@@ -87,8 +87,10 @@ open class GeminiService {
             contentType: "multipart/related; boundary=\(boundary)",
             additionalHeaders: ["X-Goog-Upload-Protocol": "multipart"]
         )
-
-        let data: Data = try await BackgroundNetworker.makeProxiedRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         let response = try GeminiFileUploadResponseBody.deserialize(from: data)
         return try await self.pollForFileUploadComplete(fileURL: response.file.uri)
     }
@@ -110,7 +112,10 @@ open class GeminiService {
             body: nil,
             verb: .delete
         )
-        let _: Data = try await BackgroundNetworker.makeProxiedRequest(request)
+        let (_, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
     }
 
     /// Polls for the completion of a file upload, where the polling URL is Gemini's `url`
@@ -170,8 +175,10 @@ open class GeminiService {
             body: nil,
             verb: .get
         )
-
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         return try GeminiFile.deserialize(from: data)
     }
 }

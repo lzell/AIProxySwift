@@ -73,8 +73,10 @@ open class ReplicateService {
             additionalHeaders: ["Prefer": "wait=\(secondsToWait)"]
         )
         request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
-
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
     }
 
@@ -124,8 +126,10 @@ open class ReplicateService {
             additionalHeaders: ["Prefer": "wait=\(secondsToWait)"]
         )
         request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
-
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
     }
 
@@ -600,8 +604,10 @@ open class ReplicateService {
             verb: .post,
             contentType: "application/json"
         )
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
-
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         let responseModel = try ReplicateModelResponseBody.deserialize(from: data)
         guard let url = responseModel.url else {
             throw ReplicateError.missingModelURL
@@ -637,8 +643,10 @@ open class ReplicateService {
             verb: .post,
             contentType: "multipart/form-data; boundary=\(boundary)"
         )
-
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         return try ReplicateFileUploadResponseBody.deserialize(from: data)
     }
 
@@ -670,8 +678,10 @@ open class ReplicateService {
             verb: .post,
             contentType: "application/json"
         )
-
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         return try ReplicateTrainingResponseBody.deserialize(from: data)
     }
 
@@ -711,8 +721,10 @@ open class ReplicateService {
             verb: .post,
             contentType: "application/json"
         )
-
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         return try JSONDecoder().decode(output, from: data)
     }
 
@@ -750,8 +762,10 @@ open class ReplicateService {
             verb: .post,
             contentType: "application/json"
         )
-
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         return try JSONDecoder().decode(output, from: data)
     }
 
@@ -888,7 +902,10 @@ open class ReplicateService {
             body: nil,
             verb: .get
         )
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.proxiedURLSession(),
+            request
+        )
         return try output.deserialize(from: data)
     }
 

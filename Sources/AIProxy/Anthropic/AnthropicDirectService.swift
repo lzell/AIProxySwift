@@ -39,7 +39,10 @@ open class AnthropicDirectService: AnthropicService {
                 "anthropic-version": "2023-06-01",
             ]
         )
-        let data: Data = try await BackgroundNetworker.makeDirectRequest(request)
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            AIProxyUtils.directURLSession(),
+            request
+        )
         return try AnthropicMessageResponseBody.deserialize(from: data)
     }
 
@@ -67,7 +70,10 @@ open class AnthropicDirectService: AnthropicService {
             ]
         )
 
-        let asyncBytes: URLSession.AsyncBytes = try await BackgroundNetworker.makeDirectRequest(request)
+        let (asyncBytes, _) = try await BackgroundNetworker.makeRequestAndWaitForAsyncBytes(
+            AIProxyUtils.directURLSession(),
+            request
+        )
         return AnthropicAsyncChunks(asyncLines: asyncBytes.lines)
     }
 }

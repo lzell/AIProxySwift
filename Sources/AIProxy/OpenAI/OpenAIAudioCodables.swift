@@ -42,7 +42,7 @@ public struct OpenAICreateTranscriptionRequestBody: MultipartFormEncodable {
     /// additional latency for segment timestamps, but generating word timestamps incurs additional latency.
     public let timestampGranularities: [OpenAITranscriptionTimestampGranularity]?
 
-    var formFields: [FormField] {
+    public var formFields: [FormField] {
         var fields: [FormField] = [
             .fileField(name: "file", content: self.file, contentType: "audio/mpeg", filename: "aiproxy.m4a"),
             .textField(name: "model", content: self.model),
