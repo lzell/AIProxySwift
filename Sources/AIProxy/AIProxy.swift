@@ -258,10 +258,27 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> DeepLService {
-        return DeepLService(
+        return DeepLProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to DeepL. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your DeepL API key
+    ///   - accountType: Free or paid
+    /// - Returns: An instance of DeepLService configured and ready to make requests
+    public static func deepLDirectService(
+        unprotectedAPIKey: String,
+        accountType: DeepLAccountType
+    ) -> DeepLService {
+        return DeepLDirectService(
+            unprotectedAPIKey: unprotectedAPIKey,
+            accountType: accountType
         )
     }
 
