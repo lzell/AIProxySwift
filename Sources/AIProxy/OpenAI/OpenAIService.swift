@@ -223,6 +223,42 @@ open class OpenAIService {
         return data
     }
 
+    /// Initiates a moderation request to /v1/moderations
+    ///
+    /// - Parameters:
+    ///   - body: The request body to send to aiproxy and openai. See this reference:
+    ///           https://platform.openai.com/docs/api-reference/moderations
+    /// - Returns: A moderation response that contains a `flagged` boolean. See this reference:
+    ///            https://platform.openai.com/docs/api-reference/moderations/object
+    public func moderationRequest(
+        body: OpenAIModerationRequestBody
+    ) async throws -> OpenAIModerationResponseBody {
+        let session = AIProxyURLSession.create()
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL ?? legacyURL,
+            clientID: self.clientID,
+            proxyPath: self.resolvedPath("moderations"),
+            body:  try JSONEncoder().encode(body),
+            verb: .post,
+            contentType: "application/json"
+        )
+
+        let (data, res) = try await session.data(for: request)
+        guard let httpResponse = res as? HTTPURLResponse else {
+            throw AIProxyError.assertion("Network response is not an http response")
+        }
+
+        if (httpResponse.statusCode > 299) {
+            throw AIProxyError.unsuccessfulRequest(
+                statusCode: httpResponse.statusCode,
+                responseBody: String(data: data, encoding: .utf8) ?? ""
+            )
+        }
+
+        return try JSONDecoder().decode(OpenAIModerationResponseBody.self, from: data)
+    }
+
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
         switch self.requestFormat {

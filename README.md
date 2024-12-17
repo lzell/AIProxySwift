@@ -385,6 +385,7 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     }
     ```
 
+
 ### How to use OpenAI text-to-speech
 
     ```swift
@@ -418,6 +419,41 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create OpenAI TTS audio: \(error.localizedDescription)")
+    }
+    ```
+
+
+### How to classify text and images as potentially harmful with OpenAI
+
+    ```swift
+    import AIProxy
+
+    let openAIService = AIProxy.openAIService(
+        partialKey: "partial-key-from-your-developer-dashboard",
+        serviceURL: "service-url-from-your-developer-dashboard"
+    )
+    let requestBody = OpenAIModerationRequestBody(
+        input: [
+            .text("is this bad"),
+        ],
+        model: "omni-moderation-latest"
+    )
+    do {
+        let response = try await openAIService.moderationRequest(body: requestBody)
+        print("Is this content flagged: \(response.results.first?.flagged ?? false)")
+        //
+        // For a more detailed assessment of the input content, inspect:
+        //
+        //     response.results.first?.categories
+        //
+        // and
+        //
+        //     response.results.first?.categoryScores
+        //
+    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not perform moderation request to OpenAI")
     }
     ```
 
