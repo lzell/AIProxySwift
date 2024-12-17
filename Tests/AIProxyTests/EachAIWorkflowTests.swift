@@ -159,8 +159,6 @@ final class EachAIWorkflowTests: XCTestCase {
         }
         """#
         let res = try EachAIWorkflowExecutionResponseBody.deserialize(from: sampleResponse)
-
-
     }
 }
 

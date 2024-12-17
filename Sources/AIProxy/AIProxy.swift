@@ -349,10 +349,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> ReplicateService {
-        return ReplicateService(
+        return ReplicateProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Replicate. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Replicate API key
+    /// - Returns: An instance of ReplicateService configured and ready to make requests
+    public static func replicateDirectService(
+        unprotectedAPIKey: String
+    ) -> ReplicateService {
+        return ReplicateDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
