@@ -39,6 +39,8 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
     /// Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the `content` of `message`.
     /// Defaults to false
     public let logprobs: Bool?
+    
+    public let maxTokens: Int?
 
     /// An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and reasoning tokens: https://platform.openai.com/docs/guides/reasoning
     public let maxCompletionTokens: Int?
@@ -124,6 +126,7 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
         case frequencyPenalty = "frequency_penalty"
         case logitBias = "logit_bias"
         case logprobs
+        case maxTokens = "max_tokens"
         case maxCompletionTokens = "max_completion_tokens"
         case metadata
         case n
@@ -152,6 +155,7 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
         frequencyPenalty: Double? = nil,
         logitBias: [String : Double]? = nil,
         logprobs: Bool? = nil,
+        maxTokens: Int? = nil,
         maxCompletionTokens: Int? = nil,
         metadata: [String : AIProxyJSONValue]? = nil,
         n: Int? = nil,
@@ -175,6 +179,7 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
         self.frequencyPenalty = frequencyPenalty
         self.logitBias = logitBias
         self.logprobs = logprobs
+        self.maxTokens = maxTokens
         self.maxCompletionTokens = maxCompletionTokens
         self.metadata = metadata
         self.n = n
