@@ -1142,6 +1142,9 @@ support JSON mode. See [this guide](https://docs.together.ai/docs/json-mode) for
 
 ### How to make a tool call request with Llama and TogetherAI
 
+If you need this use case, please open a github issue. We don't currently get the tool call
+result out of the response!
+
 This example is a Swift port of [this guide](https://docs.together.ai/docs/llama-3-function-calling):
 
     import AIProxy

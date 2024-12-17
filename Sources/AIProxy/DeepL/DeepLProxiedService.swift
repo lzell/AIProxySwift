@@ -7,7 +7,7 @@
 
 import Foundation
 
-open class DeepLProxiedService: DeepLService {
+open class DeepLProxiedService: DeepLService, ProxiedService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
@@ -38,10 +38,6 @@ open class DeepLProxiedService: DeepLService {
             verb: .post,
             contentType: "application/json"
         )
-        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            AIProxyUtils.proxiedURLSession(),
-            request
-        )
-        return try DeepLTranslateResponseBody.deserialize(from: data)
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 }

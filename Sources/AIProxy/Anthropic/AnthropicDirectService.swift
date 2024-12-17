@@ -7,7 +7,7 @@
 
 import Foundation
 
-open class AnthropicDirectService: AnthropicService {
+open class AnthropicDirectService: AnthropicService, DirectService {
     private let unprotectedAPIKey: String
 
     /// This initializer is not public on purpose.
@@ -39,11 +39,7 @@ open class AnthropicDirectService: AnthropicService {
                 "anthropic-version": "2023-06-01",
             ]
         )
-        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            AIProxyUtils.directURLSession(),
-            request
-        )
-        return try AnthropicMessageResponseBody.deserialize(from: data)
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 
     /// Initiates a streaming request to /v1/messages.
@@ -69,11 +65,7 @@ open class AnthropicDirectService: AnthropicService {
                 "anthropic-version": "2023-06-01",
             ]
         )
-
-        let (asyncBytes, _) = try await BackgroundNetworker.makeRequestAndWaitForAsyncBytes(
-            AIProxyUtils.directURLSession(),
-            request
-        )
+        let (asyncBytes, _) = try await BackgroundNetworker.makeRequestAndWaitForAsyncBytes(self.urlSession, request)
         return AnthropicAsyncChunks(asyncLines: asyncBytes.lines)
     }
 }

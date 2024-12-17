@@ -98,6 +98,6 @@ open class MistralService {
             )
         }
 
-        return asyncBytes.lines.compactMap { MistralChatCompletionStreamingChunk.from(line: $0) }
+        return asyncBytes.lines.compactMap { MistralChatCompletionStreamingChunk.deserialize(fromLine: $0) }
     }
 }

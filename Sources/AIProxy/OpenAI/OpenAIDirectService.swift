@@ -7,7 +7,7 @@
 
 import Foundation
 
-open class OpenAIDirectService: OpenAIService {
+open class OpenAIDirectService: OpenAIService, DirectService {
     private let unprotectedAPIKey: String
     private let requestFormat: OpenAIRequestFormat
 
@@ -44,11 +44,7 @@ open class OpenAIDirectService: OpenAIService {
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
-        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            AIProxyUtils.directURLSession(),
-            request
-        )
-        return try OpenAIChatCompletionResponseBody.deserialize(from: data)
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 
     /// Initiates a streaming chat completion request to /v1/chat/completions.
@@ -74,11 +70,7 @@ open class OpenAIDirectService: OpenAIService {
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
-        let (asyncBytes, _) = try await BackgroundNetworker.makeRequestAndWaitForAsyncBytes(
-            AIProxyUtils.directURLSession(),
-            request
-        )
-        return asyncBytes.lines.compactMap { OpenAIChatCompletionChunk.from(line: $0) }
+        return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 
     /// Initiates a create image request to /v1/images/generations
@@ -101,11 +93,7 @@ open class OpenAIDirectService: OpenAIService {
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
-        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            AIProxyUtils.proxiedURLSession(),
-            request
-        )
-        return try OpenAICreateImageResponseBody.deserialize(from: data)
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 
     /// Initiates a create transcription request to v1/audio/transcriptions
@@ -130,7 +118,7 @@ open class OpenAIDirectService: OpenAIService {
             ]
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            AIProxyUtils.proxiedURLSession(),
+            self.urlSession,
             request
         )
         if body.responseFormat == "text" {
@@ -164,7 +152,7 @@ open class OpenAIDirectService: OpenAIService {
             ]
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            AIProxyUtils.proxiedURLSession(),
+            self.urlSession,
             request
         )
         return data

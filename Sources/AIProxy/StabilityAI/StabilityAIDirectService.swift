@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  StabilityAIDirectService.swift
 //  
 //
 //  Created by Lou Zell on 12/15/24.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-open class StabilityAIDirectService: StabilityAIService {
+open class StabilityAIDirectService: StabilityAIService, DirectService {
     private let unprotectedAPIKey: String
 
     /// This initializer is not public on purpose.
@@ -67,7 +67,7 @@ open class StabilityAIDirectService: StabilityAIService {
             ]
         )
         let (data, httpResponse) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            AIProxyUtils.directURLSession(),
+            self.urlSession,
             request
         )
         return StabilityAIImageResponse(

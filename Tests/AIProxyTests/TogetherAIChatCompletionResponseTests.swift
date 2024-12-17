@@ -74,4 +74,46 @@ final class TogetherAIChatCompletionResponseTests: XCTestCase {
             responseBody.choices.first!.message.content
         )
     }
+
+    func testToolResponseWithEmptyContentIsDecodable() throws {
+        let serializedBody = #"""
+        {
+          "id": "8f335f059cf215a6-SJC",
+          "object": "chat.completion",
+          "created": 1734401367,
+          "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+          "prompt": [],
+          "choices": [
+            {
+              "finish_reason": "tool_calls",
+              "seed": 12601840720722268000,
+              "logprobs": null,
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": null,
+                "tool_calls": [
+                  {
+                    "index": 0,
+                    "id": "call_rl70039f6p72yhvvo1pkds8a",
+                    "type": "function",
+                    "function": {
+                      "arguments": "{\"location\":\"Tokyo, Japan\",\"num_days\":\"3\"}",
+                      "name": "get_weather"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "prompt_tokens": 553,
+            "completion_tokens": 24,
+            "total_tokens": 577
+          }
+        }
+        """#
+        let responseBody = try TogetherAIChatCompletionResponseBody.deserialize(from: serializedBody)
+        XCTAssertEqual(.toolCalls, responseBody.choices.first?.finishReason)
+    }
 }

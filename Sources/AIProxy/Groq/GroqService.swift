@@ -99,7 +99,7 @@ open class GroqService {
             )
         }
 
-        return asyncBytes.lines.compactMap { GroqChatCompletionStreamingChunk.from(line: $0) }
+        return asyncBytes.lines.compactMap { GroqChatCompletionStreamingChunk.deserialize(fromLine: $0) }
     }
 
     /// Initiates a transcription request to /openai/v1/audio/transcriptions

@@ -305,10 +305,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> TogetherAIService {
-        return TogetherAIService(
+        return TogetherAIProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to TogetherAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your TogetherAI API key
+    /// - Returns: An instance of TogetherAIService configured and ready to make requests
+    public static func togetherAIDirectService(
+        unprotectedAPIKey: String
+    ) -> TogetherAIService {
+        return TogetherAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 

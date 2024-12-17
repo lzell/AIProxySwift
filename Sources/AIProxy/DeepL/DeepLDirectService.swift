@@ -7,7 +7,7 @@
 
 import Foundation
 
-open class DeepLDirectService: DeepLService {
+open class DeepLDirectService: DeepLService, DirectService {
     private let unprotectedAPIKey: String
     private let accountType: DeepLAccountType
 
@@ -37,10 +37,6 @@ open class DeepLDirectService: DeepLService {
                 "Authorization": "DeepL-Auth-Key \(self.unprotectedAPIKey)"
             ]
         )
-        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            AIProxyUtils.directURLSession(),
-            request
-        )
-        return try DeepLTranslateResponseBody.deserialize(from: data)
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 }

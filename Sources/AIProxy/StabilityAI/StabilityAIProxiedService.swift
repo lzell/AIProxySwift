@@ -7,7 +7,7 @@
 
 import Foundation
 
-open class StabilityAIProxiedService: StabilityAIService {
+open class StabilityAIProxiedService: StabilityAIService, ProxiedService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
@@ -68,7 +68,7 @@ open class StabilityAIProxiedService: StabilityAIService {
             additionalHeaders: ["Accept": "image/*"]
         )
         let (data, httpResponse) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            AIProxyUtils.proxiedURLSession(),
+            self.urlSession,
             request
         )
         return StabilityAIImageResponse(

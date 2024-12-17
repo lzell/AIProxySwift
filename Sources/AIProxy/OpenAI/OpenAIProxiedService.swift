@@ -1,13 +1,14 @@
-//  AIProxy.swift
-//  Created by Lou Zell on 6/12/24.
+//  OpenAIProxiedService.swift
+//
+//
+//  Created by Lou Zell on 12/14/24.
+//
 
 import Foundation
 
 private let legacyURL = "https://api.aiproxy.pro"
-private let aiproxyChatPath = "/v1/chat/completions"
 
-
-open class OpenAIProxiedService: OpenAIService {
+open class OpenAIProxiedService: OpenAIService, ProxiedService {
     private let partialKey: String
     private let serviceURL: String?
     private let clientID: String?
@@ -50,20 +51,7 @@ open class OpenAIProxiedService: OpenAIService {
             verb: .post,
             contentType: "application/json"
         )
-
-        let (data, res) = try await session.data(for: request)
-        guard let httpResponse = res as? HTTPURLResponse else {
-            throw AIProxyError.assertion("Network response is not an http response")
-        }
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try JSONDecoder().decode(OpenAIChatCompletionResponseBody.self, from: data)
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 
     /// Initiates a streaming chat completion request to /v1/chat/completions.
@@ -89,22 +77,7 @@ open class OpenAIProxiedService: OpenAIService {
             verb: .post,
             contentType: "application/json"
         )
-
-        let (asyncBytes, res) = try await session.bytes(for: request)
-
-        guard let httpResponse = res as? HTTPURLResponse else {
-            throw AIProxyError.assertion("Network response is not an http response")
-        }
-
-        if (httpResponse.statusCode > 299) {
-            let responseBody = try await asyncBytes.lines.reduce(into: "") { $0 += $1 }
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: responseBody
-            )
-        }
-
-        return asyncBytes.lines.compactMap { OpenAIChatCompletionChunk.from(line: $0) }
+        return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 
     /// Initiates a create image request to /v1/images/generations
@@ -127,20 +100,7 @@ open class OpenAIProxiedService: OpenAIService {
             verb: .post,
             contentType: "application/json"
         )
-
-        let (data, res) = try await session.data(for: request)
-        guard let httpResponse = res as? HTTPURLResponse else {
-            throw AIProxyError.assertion("Network response is not an http response")
-        }
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try JSONDecoder().decode(OpenAICreateImageResponseBody.self, from: data)
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 
     /// Initiates a create transcription request to v1/audio/transcriptions
@@ -164,27 +124,18 @@ open class OpenAIProxiedService: OpenAIService {
             verb: .post,
             contentType: "multipart/form-data; boundary=\(boundary)"
         )
-
-        let (data, res) = try await session.data(for: request)
-        guard let httpResponse = res as? HTTPURLResponse else {
-            throw AIProxyError.assertion("Network response is not an http response")
-        }
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        if (body.responseFormat == "text") {
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            self.urlSession,
+            request
+        )
+        if body.responseFormat == "text" {
             guard let text = String(data: data, encoding: .utf8) else {
                 throw AIProxyError.assertion("Could not represent OpenAI's whisper response as string")
             }
             return OpenAICreateTranscriptionResponseBody(text: text, language: nil, duration: nil, words: nil, segments: nil)
         }
 
-        return try JSONDecoder().decode(OpenAICreateTranscriptionResponseBody.self, from: data)
+        return try OpenAICreateTranscriptionResponseBody.deserialize(from: data)
     }
     
     /// Initiates a create text to speech request to v1/audio/speech
@@ -197,7 +148,6 @@ open class OpenAIProxiedService: OpenAIService {
     public func createTextToSpeechRequest(
         body: OpenAITextToSpeechRequestBody
     ) async throws -> Data {
-        let session = AIProxyURLSession.create()
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
@@ -207,19 +157,10 @@ open class OpenAIProxiedService: OpenAIService {
             verb: .post,
             contentType: "application/json"
         )
-
-        let (data, res) = try await session.data(for: request)
-        guard let httpResponse = res as? HTTPURLResponse else {
-            throw AIProxyError.assertion("Network response is not an http response")
-        }
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-        
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            self.urlSession,
+            request
+        )
         return data
     }
 

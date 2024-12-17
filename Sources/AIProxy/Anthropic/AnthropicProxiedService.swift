@@ -7,7 +7,7 @@
 
 import Foundation
 
-open class AnthropicProxiedService: AnthropicService {
+open class AnthropicProxiedService: AnthropicService, ProxiedService {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
@@ -32,7 +32,6 @@ open class AnthropicProxiedService: AnthropicService {
     ) async throws -> AnthropicMessageResponseBody {
         var body = body
         body.stream = false
-        let session = AIProxyURLSession.create()
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
@@ -42,20 +41,7 @@ open class AnthropicProxiedService: AnthropicService {
             verb: .post,
             contentType: "application/json"
         )
-
-        let (data, res) = try await session.data(for: request)
-        guard let httpResponse = res as? HTTPURLResponse else {
-            throw AIProxyError.assertion("Network response is not an http response")
-        }
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try AnthropicMessageResponseBody.deserialize(from: data)
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 
     /// Initiates a streaming request to /v1/messages.
@@ -80,21 +66,7 @@ open class AnthropicProxiedService: AnthropicService {
             verb: .post,
             contentType: "application/json"
         )
-
-        let (asyncBytes, res) = try await session.bytes(for: request)
-
-        guard let httpResponse = res as? HTTPURLResponse else {
-            throw AIProxyError.assertion("Network response is not an http response")
-        }
-
-        if (httpResponse.statusCode > 299) {
-            let responseBody = try await asyncBytes.lines.reduce(into: "") { $0 += $1 }
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: responseBody
-            )
-        }
-
+        let (asyncBytes, _) = try await BackgroundNetworker.makeRequestAndWaitForAsyncBytes(self.urlSession, request)
         return AnthropicAsyncChunks(asyncLines: asyncBytes.lines)
     }
 }
