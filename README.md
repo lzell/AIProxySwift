@@ -1733,29 +1733,6 @@ model owner and model name in the string.
 
 See the full range of controls for generating an image by viewing `FalFastSDXLInputSchema.swift`
 
-### How to generate a Runway Gen3 Alpha video using Fal
-
-    import AIProxy
-
-    let falService = AIProxy.falService(
-        partialKey: "partial-key-from-your-developer-dashboard",
-        serviceURL: "service-url-from-your-developer-dashboard"
-    )
-
-    let input = FalRunwayGen3AlphaInputSchema(
-        imageUrl: "https://www.sonomacounty.com/wp-content/uploads/2023/09/activities_ballooning_Sonoma_Ballooning_Sonoma_County_900x675.png",
-        prompt: "A hot air balloon floating in the sky."
-    )
-    do {
-        let output = try await falService.createRunwayGen3AlphaVideo(input: input)
-        print(output.video?.url?.absoluteString ?? "No video URL")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
-    } catch {
-        print("Could not create Fal Runway Gen3 Alpha video: \(error.localizedDescription)")
-    }
-
-See the full range of controls for generating an image by viewing `FalRunwayGen3AlphaInputSchema.swift`
 
 ### How to train Flux on your own images using Fal
 

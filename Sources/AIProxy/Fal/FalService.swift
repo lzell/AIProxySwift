@@ -96,43 +96,6 @@ open class FalService {
         return try await self.getResponse(url: responseURL)
     }
 
-    /// Convenience method for creating a `fal-ai/runway-gen3/turbo/image-to-video` video.
-    ///
-    /// Select `pollAttempts` and `secondsBetweenPollAttempts` such that the multiplication of their values is the
-    /// total amount of time you want to wait for the generation to complete. For example, the default values are 60 and 10,
-    /// meaning by default this method will wait 600 seconds, or ten minutes, before raising `FalError.reachedRetryLimit`
-    ///
-    /// - Parameters:
-    ///   - input: The input schema. See `FalRunwayGen3AlphaInputSchema.swift` for the controls that you
-    ///                    can use to adjust the video generation.
-    ///   - pollAttempts: The number of times to poll before `FalError.reachedRetryLimit` is raised
-    ///   - secondsBetweenPollAttempts: The number of seconds between polls
-    ///
-    /// - Returns: The inference result. The `video` property of the returned value has a `url` that you can use to fetch the video contents.
-    public func createRunwayGen3AlphaVideo(
-        input: FalRunwayGen3AlphaInputSchema,
-        pollAttempts: Int = 60,
-        secondsBetweenPollAttempts: UInt64 = 10
-    ) async throws -> FalRunwayGen3AlphaOutputSchema {
-        let queueResponse = try await self.createInference(
-            model: "fal-ai/runway-gen3/turbo/image-to-video",
-            input: input
-        )
-        guard let statusURL = queueResponse.statusURL else {
-            throw FalError.missingStatusURL
-        }
-        let completedResponse = try await self.pollForInferenceComplete(
-            statusURL: statusURL,
-            pollAttempts: pollAttempts,
-            secondsBetweenPollAttempts: secondsBetweenPollAttempts
-        )
-
-        guard let responseURL = completedResponse.responseURL else {
-            throw FalError.missingResultURL
-        }
-        return try await self.getResponse(url: responseURL)
-    }
-
     /// Uploads a zip file to Fal for use in training Flux fine-tunes.
     /// See https://fal.ai/models/fal-ai/flux-lora-fast-training/api#files-upload
     ///
@@ -151,7 +114,7 @@ open class FalService {
     ) async throws -> URL {
         try await uploadFile(fileData: zipData, name: name, contentType: "application/zip")
     }
-    
+
     /// Uploads a file to Fal's short term storage, for instance a reference image for Runway or ControlNet
     /// - Parameters:
     ///   - fileData: The binary representation of your file
