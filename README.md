@@ -23,7 +23,7 @@ protected through the [AIProxy](https://www.aiproxy.pro) backend.
 We only recommend making requests straight to the provider during prototyping and for BYOK
 use-cases.
 
-Requests that are proxied through AIProxy have five levels of security applied to keep your API
+Requests that are protected through AIProxy have five levels of security applied to keep your API
 key secure and your AI bill predictable:
 
 - Certificate pinning
