@@ -47,7 +47,6 @@ public struct AIProxy {
         proxyPath: String,
         body: Data? = nil,
         verb: AIProxyHTTPVerb = .automatic,
-        contentType: String? = nil,
         headers: [String: String] = [:]
     ) async throws -> URLRequest {
         return try await AIProxyURLRequest.create(
@@ -57,8 +56,7 @@ public struct AIProxy {
             proxyPath: proxyPath,
             body: body,
             verb: verb,
-            contentType: contentType,
-            headers: headers
+            additionalHeaders: headers
         )
     }
 
@@ -96,11 +94,25 @@ public struct AIProxy {
         clientID: String? = nil,
         requestFormat: OpenAIRequestFormat = .standard
     ) -> OpenAIService {
-        return OpenAIService(
+        return OpenAIProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID,
             requestFormat: requestFormat
+        )
+    }
+
+    /// Service that makes request directly to OpenAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your OpenAI API key
+    /// - Returns: An instance of OpenAIService configured and ready to make requests
+    public static func openAIDirectService(
+        unprotectedAPIKey: String
+    ) -> OpenAIService {
+        return OpenAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -127,10 +139,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> GeminiService {
-        return GeminiService(
+        return GeminiProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Gemini. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Gemini API key
+    /// - Returns: An instance of  GeminiService configured and ready to make requests
+    public static func geminiDirectService(
+        unprotectedAPIKey: String
+    ) -> GeminiService {
+        return GeminiDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -157,10 +183,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> AnthropicService {
-        return AnthropicService(
+        return AnthropicProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Anthropic. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Anthropic API key
+    /// - Returns: An instance of AnthropicService configured and ready to make requests
+    public static func anthropicDirectService(
+        unprotectedAPIKey: String
+    ) -> AnthropicService {
+        return AnthropicDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -187,10 +227,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> StabilityAIService {
-        return StabilityAIService(
+        return StabilityAIProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to StabilityAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your StabilityAI API key
+    /// - Returns: An instance of StabilityAIService configured and ready to make requests
+    public static func stabilityAIDirectService(
+        unprotectedAPIKey: String
+    ) -> StabilityAIService {
+        return StabilityAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -217,10 +271,27 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> DeepLService {
-        return DeepLService(
+        return DeepLProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to DeepL. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your DeepL API key
+    ///   - accountType: Free or paid
+    /// - Returns: An instance of DeepLService configured and ready to make requests
+    public static func deepLDirectService(
+        unprotectedAPIKey: String,
+        accountType: DeepLAccountType
+    ) -> DeepLService {
+        return DeepLDirectService(
+            unprotectedAPIKey: unprotectedAPIKey,
+            accountType: accountType
         )
     }
 
@@ -247,10 +318,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> TogetherAIService {
-        return TogetherAIService(
+        return TogetherAIProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to TogetherAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your TogetherAI API key
+    /// - Returns: An instance of TogetherAIService configured and ready to make requests
+    public static func togetherAIDirectService(
+        unprotectedAPIKey: String
+    ) -> TogetherAIService {
+        return TogetherAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -277,10 +362,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> ReplicateService {
-        return ReplicateService(
+        return ReplicateProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Replicate. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Replicate API key
+    /// - Returns: An instance of ReplicateService configured and ready to make requests
+    public static func replicateDirectService(
+        unprotectedAPIKey: String
+    ) -> ReplicateService {
+        return ReplicateDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -307,10 +406,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> ElevenLabsService {
-        return ElevenLabsService(
+        return ElevenLabsProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to ElevenLabs. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your ElevenLabs API key
+    /// - Returns: An instance of  ElevenLabsService configured and ready to make requests
+    public static func elevenLabsDirectService(
+        unprotectedAPIKey: String
+    ) -> ElevenLabsService {
+        return ElevenLabsDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -337,10 +450,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> FalService {
-        return FalService(
+        return FalProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to ElevenLabs. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your ElevenLabs API key
+    /// - Returns: An instance of  ElevenLabsService configured and ready to make requests
+    public static func falDirectService(
+        unprotectedAPIKey: String
+    ) -> FalService {
+        return FalDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -367,10 +494,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> GroqService {
-        return GroqService(
+        return GroqProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Groq. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Groq API key
+    /// - Returns: An instance of  GroqService configured and ready to make requests
+    public static func groqDirectService(
+        unprotectedAPIKey: String
+    ) -> GroqService {
+        return GroqDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -397,10 +538,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> PerplexityService {
-        return PerplexityService(
+        return PerplexityProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Perplexity. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Perplexity API key
+    /// - Returns: An instance of  PerplexityService configured and ready to make requests
+    public static func perplexityDirectService(
+        unprotectedAPIKey: String
+    ) -> PerplexityService {
+        return PerplexityDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -427,10 +582,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> MistralService {
-        return MistralService(
+        return MistralProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Mistral. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Mistral API key
+    /// - Returns: An instance of  MistralService configured and ready to make requests
+    public static func mistralDirectService(
+        unprotectedAPIKey: String
+    ) -> MistralService {
+        return MistralDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -457,10 +626,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> EachAIService {
-        return EachAIService(
+        return EachAIProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to EachAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your EachAI API key
+    /// - Returns: An instance of  EachAI configured and ready to make requests
+    public static func eachAIDirectService(
+        unprotectedAPIKey: String
+    ) -> EachAIService {
+        return EachAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 

@@ -2,28 +2,12 @@
 //  EachAIService.swift
 //
 //
-//  Created by Lou Zell on 12/07/24.
+//  Created by Lou Zell on 12/19/24.
 //
 
 import Foundation
 
-open class EachAIService {
-    private let partialKey: String
-    private let serviceURL: String
-    private let clientID: String?
-
-    /// Creates an instance of EachAIService. Note that the initializer is not public.
-    /// Customers are expected to use the factory `AIProxy.eachAIService` defined in AIProxy.swift
-    internal init(
-        partialKey: String,
-        serviceURL: String,
-        clientID: String?
-    ) {
-        self.partialKey = partialKey
-        self.serviceURL = serviceURL
-        self.clientID = clientID
-    }
-
+public protocol EachAIService {
     /// Runs a workflow on EachAI
     ///
     /// - Parameters:
@@ -36,36 +20,21 @@ open class EachAIService {
     ///
     /// - Returns: A trigger workflow response, which contains a triggerID that you can use to
     ///           poll for the result.
-    public func triggerWorkflow(
+    func triggerWorkflow(
         workflowID: String,
         body: EachAITriggerWorkflowRequestBody
-    ) async throws -> EachAITriggerWorkflowResponseBody {
-        let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: "/api/v1/\(workflowID)/trigger",
-            body: try body.serialize(),
-            verb: .post,
-            contentType: "application/json"
-        )
+    ) async throws -> EachAITriggerWorkflowResponseBody
 
-        let (data, res) = try await session.data(for: request)
-        guard let httpResponse = res as? HTTPURLResponse else {
-            throw AIProxyError.assertion("Network response is not an http response")
-        }
+    /// You probably want to use `pollForWorkflowExecutionComplete`, defined below.
+    /// This method gets the workflow execution response a single time, which may still be in the processing state.
+    /// https://docs.eachlabs.ai/api-reference/execution/get-flow-execution
+    func getWorkflowExecution(
+        workflowID: String,
+        triggerID: String
+    ) async throws -> EachAIWorkflowExecutionResponseBody
+}
 
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try EachAITriggerWorkflowResponseBody.deserialize(from: data)
-    }
-
+extension EachAIService {
     /// Polls for the completion of a workflow. By default, the time between polls is 10 seconds.
     /// If you have a workflow that completes quickly, consider dropping `secondsBetweenPollingAttempts`
     ///
@@ -88,64 +57,17 @@ open class EachAIService {
         pollAttempts: Int = 60,
         secondsBetweenPollAttempts: UInt64 = 10
     ) async throws -> EachAIWorkflowExecutionResponseBody {
-        return try await self.actorPollForWorkflowExecutionComplete(
-            workflowID: workflowID,
-            triggerID: triggerID,
-            numTries: pollAttempts,
-            nsBetweenPollAttempts: secondsBetweenPollAttempts * 1_000_000_000
-        )
-    }
-
-    @NetworkActor
-    private func actorPollForWorkflowExecutionComplete(
-        workflowID: String,
-        triggerID: String,
-        numTries: Int,
-        nsBetweenPollAttempts: UInt64
-    ) async throws -> EachAIWorkflowExecutionResponseBody {
-        try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
-        for _ in 0..<numTries {
-            let response = try await self.actorGetWorkflowExecution(
+        try await Task.sleep(nanoseconds: secondsBetweenPollAttempts * 1_000_000_000)
+        for _ in 0..<pollAttempts {
+            let response = try await self.getWorkflowExecution(
                 workflowID: workflowID,
                 triggerID: triggerID
             )
             if response.status == "succeeded" {
                 return response
             }
-            print("Status is \(response.status)")
-            try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
+            try await Task.sleep(nanoseconds: secondsBetweenPollAttempts * 1_000_000_000)
         }
         throw EachAIError.reachedRetryLimit
-    }
-
-    /// https://docs.eachlabs.ai/api-reference/execution/get-flow-execution
-    @NetworkActor
-    private func actorGetWorkflowExecution(
-        workflowID: String,
-        triggerID: String
-    ) async throws -> EachAIWorkflowExecutionResponseBody {
-        let session = AIProxyURLSession.create()
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: "/api/v1/\(workflowID)/executions/\(triggerID)",
-            body: nil,
-            verb: .get
-        )
-
-        let (data, res) = try await session.data(for: request)
-        guard let httpResponse = res as? HTTPURLResponse else {
-            throw AIProxyError.assertion("Network response is not an http response")
-        }
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try EachAIWorkflowExecutionResponseBody.deserialize(from: data)
     }
 }

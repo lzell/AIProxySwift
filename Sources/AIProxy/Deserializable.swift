@@ -19,4 +19,26 @@ extension Decodable {
         }
         return try self.deserialize(from: data)
     }
+
+    static func deserialize(fromLine line: String) -> Self? {
+        guard line.hasPrefix("data: ") else {
+            aiproxyLogger.warning("Received unexpected line from aiproxy: \(line)")
+            return nil
+        }
+
+        guard line != "data: [DONE]" else {
+            aiproxyLogger.debug("Streaming response has finished")
+            return nil
+        }
+
+        guard let chunkJSON = line.dropFirst(6).data(using: .utf8),
+              let chunk = try? JSONDecoder().decode(Self.self, from: chunkJSON) else
+        {
+            aiproxyLogger.warning("Received unexpected JSON from aiproxy: \(line)")
+            return nil
+        }
+
+        // aiproxyLogger.debug("Received a chunk: \(line)")
+        return chunk
+    }
 }

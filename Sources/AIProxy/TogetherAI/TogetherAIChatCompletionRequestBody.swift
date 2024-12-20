@@ -156,7 +156,7 @@ public struct TogetherAIChatCompletionRequestBody: Encodable {
 
 public struct TogetherAIMessage: Codable {
     /// The contents of the message.
-    public let content: String
+    public let content: String?
 
     /// The role of the messages author. Choice between: system, user, or assistant.
     public let role: TogetherAIRole
