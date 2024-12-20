@@ -579,7 +579,8 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
                 .init(
                     parts: [.text("Tell me a joke")]
                 )
-            ]
+            ],
+            generationConfig: .init(maxOutputTokens: 1024) // Optional
         )
         let response = try await geminiService.generateContentRequest(body: requestBody)
         for part in response.candidates?.first?.content?.parts ?? [] {

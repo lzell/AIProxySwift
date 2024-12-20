@@ -156,6 +156,10 @@ extension GeminiGenerateContentRequestBody {
         public init(functionCallingConfig: FunctionCallingConfig? = nil) {
             self.functionCallingConfig = functionCallingConfig
         }
+
+        private enum CodingKeys: String, CodingKey {
+            case functionCallingConfig = "function_calling_config"
+        }
     }
 }
 
@@ -207,7 +211,7 @@ extension GeminiGenerateContentRequestBody {
 extension GeminiGenerateContentRequestBody {
     /// Configuration options for model generation and outputs.
     public struct GenerationConfig: Encodable {
-        public let maxTokens: Int?
+        public let maxOutputTokens: Int?
         public let temperature: Double?
         public let topP: Double?
         public let topK: Int?
@@ -215,19 +219,28 @@ extension GeminiGenerateContentRequestBody {
         public let frequencyPenalty: Double?
 
         public init(
-            maxTokens: Int? = nil,
+            maxOutputTokens: Int? = nil,
             temperature: Double? = nil,
             topP: Double? = nil,
             topK: Int? = nil,
             presencePenalty: Double? = nil,
             frequencyPenalty: Double? = nil
         ) {
-            self.maxTokens = maxTokens
+            self.maxOutputTokens = maxOutputTokens
             self.temperature = temperature
             self.topP = topP
             self.topK = topK
             self.presencePenalty = presencePenalty
             self.frequencyPenalty = frequencyPenalty
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case maxOutputTokens = "max_output_tokens"
+            case temperature
+            case topP = "top_p"
+            case topK = "top_k"
+            case presencePenalty = "presence_penalty"
+            case frequencyPenalty = "frequency_penalty"
         }
     }
 }
@@ -286,13 +299,17 @@ extension GeminiGenerateContentRequestBody.ToolConfig {
             case none = "NONE"
             case any = "ANY"
         }
+        public let mode: Mode
+        public let allowedFunctionNames: [String]
 
-        public let mode: Mode?
-        public let allowedFunctionNames: [String]?
-
-        public init(mode: Mode? = nil, allowedFunctionNames: [String]? = nil) {
+        public init(mode: Mode, allowedFunctionNames: [String]) {
             self.mode = mode
             self.allowedFunctionNames = allowedFunctionNames
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case mode
+            case allowedFunctionNames = "allowed_function_names"
         }
     }
 }
