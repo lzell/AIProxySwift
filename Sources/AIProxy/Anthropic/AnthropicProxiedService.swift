@@ -32,6 +32,12 @@ open class AnthropicProxiedService: AnthropicService, ProxiedService {
     ) async throws -> AnthropicMessageResponseBody {
         var body = body
         body.stream = false
+        var additionalHeaders = [
+            "anthropic-version": "2023-06-01",
+        ]
+        if body.needsPDFBeta {
+            additionalHeaders["anthropic-beta"] = "pdfs-2024-09-25"
+        }
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
@@ -39,7 +45,8 @@ open class AnthropicProxiedService: AnthropicService, ProxiedService {
             proxyPath: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
-            contentType: "application/json"
+            contentType: "application/json",
+            additionalHeaders: additionalHeaders
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }
@@ -56,6 +63,12 @@ open class AnthropicProxiedService: AnthropicService, ProxiedService {
     ) async throws -> AnthropicAsyncChunks {
         var body = body
         body.stream = true
+        var additionalHeaders = [
+            "anthropic-version": "2023-06-01",
+        ]
+        if body.needsPDFBeta {
+            additionalHeaders["anthropic-beta"] = "pdfs-2024-09-25"
+        }
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
@@ -63,7 +76,8 @@ open class AnthropicProxiedService: AnthropicService, ProxiedService {
             proxyPath: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
-            contentType: "application/json"
+            contentType: "application/json",
+            additionalHeaders: additionalHeaders
         )
         let (asyncBytes, _) = try await BackgroundNetworker.makeRequestAndWaitForAsyncBytes(self.urlSession, request)
         return AnthropicAsyncChunks(asyncLines: asyncBytes.lines)

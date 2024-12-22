@@ -1138,6 +1138,113 @@ Use `UIImage` in place of `NSImage` for iOS apps:
     }
 
 
+## How to use Anthropic's pdf support in a buffered chat completion
+
+This snippet includes a pdf `mydocument.pdf` in the Anthropic request. Adjust the filename to
+match the pdf included in your Xcode project. The snippet expects the pdf in the app bundle.
+
+    ```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let anthropicService = AIProxy.anthropicDirectService(
+    //     unprotectedAPIKey: "your-anthropic-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let anthropicService = AIProxy.anthropicService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let pdfFileURL = Bundle.main.url(forResource: "mydocument", withExtension: "pdf"),
+          let pdfData = try? Data(contentsOf: pdfFileURL)
+    else {
+        print("""
+              Drop mydocument.pdf file into your Xcode project first.
+              """)
+        return
+    }
+
+    do {
+        let response = try await anthropicService.messageRequest(body: AnthropicMessageRequestBody(
+            maxTokens: 1024,
+            messages: [
+                AnthropicInputMessage(content: [.pdf(data: pdfData.base64EncodedString())], role: .user),
+                AnthropicInputMessage(content: [.text("Summarize this")], role: .user)
+            ],
+            model: "claude-3-5-sonnet-20241022"
+        ))
+        for content in response.content {
+            switch content {
+            case .text(let message):
+                print("Claude sent a message: \(message)")
+            case .toolUse(id: _, name: let toolName, input: let toolInput):
+                print("Claude used a tool \(toolName) with input: \(toolInput)")
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not use Anthropic's buffered pdf support: \(error.localizedDescription)")
+    }
+    ```
+
+
+## How to use Anthropic's pdf support in a streaming chat completion
+
+This snippet includes a pdf `mydocument.pdf` in the Anthropic request. Adjust the filename to
+match the pdf included in your Xcode project. The snippet expects the pdf in the app bundle.
+
+    ```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let anthropicService = AIProxy.anthropicDirectService(
+    //     unprotectedAPIKey: "your-anthropic-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let anthropicService = AIProxy.anthropicService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let pdfFileURL = Bundle.main.url(forResource: "mydocument", withExtension: "pdf"),
+          let pdfData = try? Data(contentsOf: pdfFileURL)
+    else {
+        print("""
+              Drop mydocument.pdf file into your Xcode project first.
+              """)
+        return
+    }
+
+    do {
+        let stream = try await anthropicService.streamingMessageRequest(body: AnthropicMessageRequestBody(
+            maxTokens: 1024,
+            messages: [
+                AnthropicInputMessage(content: [.pdf(data: pdfData.base64EncodedString())], role: .user),
+                AnthropicInputMessage(content: [.text("Summarize this")], role: .user)
+            ],
+            model: "claude-3-5-sonnet-20241022"
+        ))
+        for try await chunk in stream {
+            switch chunk {
+            case .text(let text):
+                print(text)
+            case .toolUse(name: let toolName, input: let toolInput):
+                print("Claude wants to call tool \(toolName) with input \(toolInput)")
+            }
+        }
+        print("Done with stream")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not use Anthropic's streaming pdf support: \(error.localizedDescription)")
+    }
+    ```
+
+
 ***
 
 
