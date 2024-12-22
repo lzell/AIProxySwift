@@ -1242,7 +1242,6 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
     } catch {
         print("Could not use Anthropic's streaming pdf support: \(error.localizedDescription)")
     }
-
     ```
 
 
