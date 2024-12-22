@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct AIProxyURLSession {
-    private static let delegate = AIProxyCertificatePinningDelegate()
+public struct AIProxyURLSession {
+    public static var delegate = AIProxyCertificatePinningDelegate()
 
     /// Creates a URLSession that is configured for communication with aiproxy.pro
     static func create() -> URLSession {

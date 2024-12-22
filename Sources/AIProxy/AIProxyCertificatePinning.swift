@@ -49,9 +49,9 @@ import Foundation
 ///
 /// If you encounter other calls in the wild that do not invoke `urlSession:didReceiveChallenge:` on this class,
 /// please report them to me.
-final class AIProxyCertificatePinningDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+open class AIProxyCertificatePinningDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
 
-   func urlSession(
+   public func urlSession(
       _ session: URLSession,
       task: URLSessionTask,
       didReceive challenge: URLAuthenticationChallenge
@@ -59,7 +59,7 @@ final class AIProxyCertificatePinningDelegate: NSObject, URLSessionDelegate, URL
       return self.answerChallenge(challenge)
    }
 
-   func urlSession(
+   public func urlSession(
       _ session: URLSession,
       didReceive challenge: URLAuthenticationChallenge
    ) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
