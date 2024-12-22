@@ -192,6 +192,18 @@ public struct AnthropicMessageRequestBody: Encodable {
     /// Recommended for advanced use cases only. You usually only need to use `temperature`.
     public let topP: Double?
 
+    /// Returns true if this message request requires the pdf beta header to be applied
+    public var needsPDFBeta: Bool {
+        for msg in self.messages {
+            for content in msg.content {
+                if case let .pdf(_) = content {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
     private enum CodingKeys: String, CodingKey {
         // Required
         case maxTokens = "max_tokens"
@@ -253,6 +265,7 @@ public enum AnthropicImageMediaType: String {
 
 public enum AnthropicInputContent: Encodable {
     case image(mediaType: AnthropicImageMediaType, data: String)
+    case pdf(data: String)
     case text(String)
 
     private enum CodingKeys: String, CodingKey {
@@ -276,6 +289,12 @@ public enum AnthropicInputContent: Encodable {
             var nested = container.nestedContainer(keyedBy: SourceCodingKeys.self, forKey: .source)
             try nested.encode("base64", forKey: .type)
             try nested.encode(mediaType.rawValue, forKey: .mediaType)
+            try nested.encode(data, forKey: .data)
+        case .pdf(data: let data):
+            try container.encode("document", forKey: .type)
+            var nested = container.nestedContainer(keyedBy: SourceCodingKeys.self, forKey: .source)
+            try nested.encode("base64", forKey: .type)
+            try nested.encode("application/pdf", forKey: .mediaType)
             try nested.encode(data, forKey: .data)
         case .text(let txt):
             try container.encode("text", forKey: .type)

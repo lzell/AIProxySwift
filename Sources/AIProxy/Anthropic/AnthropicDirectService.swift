@@ -28,16 +28,20 @@ open class AnthropicDirectService: AnthropicService, DirectService {
     ) async throws -> AnthropicMessageResponseBody {
         var body = body
         body.stream = false
+        var additionalHeaders = [
+            "x-api-key": self.unprotectedAPIKey,
+            "anthropic-version": "2023-06-01",
+        ]
+        if body.needsPDFBeta {
+            additionalHeaders["anthropic-beta"] = "pdfs-2024-09-25"
+        }
         let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.anthropic.com",
             path: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
             contentType: "application/json",
-            additionalHeaders: [
-                "x-api-key": self.unprotectedAPIKey,
-                "anthropic-version": "2023-06-01",
-            ]
+            additionalHeaders: additionalHeaders
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }
@@ -54,16 +58,20 @@ open class AnthropicDirectService: AnthropicService, DirectService {
     ) async throws -> AnthropicAsyncChunks {
         var body = body
         body.stream = true
+        var additionalHeaders = [
+            "x-api-key": self.unprotectedAPIKey,
+            "anthropic-version": "2023-06-01",
+        ]
+        if body.needsPDFBeta {
+            additionalHeaders["anthropic-beta"] = "pdfs-2024-09-25"
+        }
         let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.anthropic.com",
             path: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
             contentType: "application/json",
-            additionalHeaders: [
-                "x-api-key": self.unprotectedAPIKey,
-                "anthropic-version": "2023-06-01",
-            ]
+            additionalHeaders: additionalHeaders
         )
         let (asyncBytes, _) = try await BackgroundNetworker.makeRequestAndWaitForAsyncBytes(self.urlSession, request)
         return AnthropicAsyncChunks(asyncLines: asyncBytes.lines)
