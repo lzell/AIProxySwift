@@ -42,5 +42,3 @@ extension OpenRouterChatCompletionChunk.Choice {
         public let content: String
     }
 }
-
-

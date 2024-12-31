@@ -691,7 +691,6 @@ public struct AIProxy {
         )
     }
 
-
 #if canImport(AppKit)
     public static func encodeImageAsJpeg(
         image: NSImage,

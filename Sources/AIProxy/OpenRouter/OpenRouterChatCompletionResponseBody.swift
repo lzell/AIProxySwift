@@ -103,7 +103,6 @@ extension OpenRouterChatCompletionResponseBody.Choice.Message {
     }
 }
 
-
 // MARK: - ResponseBody.Choice.Message.ToolCall.Function
 extension OpenRouterChatCompletionResponseBody.Choice.Message.ToolCall {
     public struct Function: Decodable {
