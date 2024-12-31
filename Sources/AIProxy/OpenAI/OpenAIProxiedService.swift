@@ -46,7 +46,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
             proxyPath: self.resolvedPath("chat/completions"),
-            body:  try JSONEncoder().encode(body),
+            body: try body.serialize(),
             verb: .post,
             contentType: "application/json"
         )
@@ -71,7 +71,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
             proxyPath: self.resolvedPath("chat/completions"),
-            body:  try JSONEncoder().encode(body),
+            body: try body.serialize(),
             verb: .post,
             contentType: "application/json"
         )

@@ -35,31 +35,3 @@ extension GroqChatCompletionStreamingChunk.Choice {
         public let content: String?
     }
 }
-
-extension GroqChatCompletionStreamingChunk {
-    /// Creates a ChatCompletionChunk from a streamed line of the /openai//v1/chat/completions response
-    internal static func from(line: String) -> Self? {
-        guard line.hasPrefix("data: ") else {
-            aiproxyLogger.warning("Received unexpected line from aiproxy: \(line)")
-            return nil
-        }
-
-        guard line != "data: [DONE]" else {
-            aiproxyLogger.debug("Streaming response has finished")
-            return nil
-        }
-
-        guard let chunkJSON = line.dropFirst(6).data(using: .utf8),
-              let chunk = try? JSONDecoder().decode(
-                GroqChatCompletionStreamingChunk.self,
-                from: chunkJSON
-              ) else
-        {
-            aiproxyLogger.warning("Received unexpected JSON from aiproxy: \(line)")
-            return nil
-        }
-
-        // aiproxyLogger.debug("Received a chunk: \(line)")
-        return chunk
-    }
-}
