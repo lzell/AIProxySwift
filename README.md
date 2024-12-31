@@ -16,6 +16,7 @@ included:
 - Perplexity
 - Mistral
 - EachAI
+- OpenRouter
 
 Your initialization code determines whether requests go straight to the provider or are
 protected through the [AIProxy](https://www.aiproxy.pro) backend.
@@ -94,6 +95,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
 * [Perplexity](#perplexity)
 * [Mistral](#mistral)
 * [EachAI](#eachai)
+* [OpenRouter](#openrouter)
 * [Advanced Settings](#advanced-settings)
 
 
@@ -1029,12 +1031,12 @@ Use the file URL returned from the snippet above.
 
 ### How to send an image to Anthropic
 
-Use `UIImage` in place of `NSImage` for iOS apps:
+On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
     import AIProxy
 
-    guard let image = NSImage(named: "marina") else {
-        print("Could not find an image named 'marina' in your app assets")
+    guard let image = UIImage(named: "myImage") else {
+        print("Could not find an image named 'myImage' in your app assets")
         return
     }
 
@@ -2532,6 +2534,258 @@ Use `flows.eachlabs.ai` as the proxy domain when creating your AIProxy service i
         print("Could not execute EachAI workflow: \(error.localizedDescription)")
     }
 
+***
+
+## OpenRouter
+
+### How to make a non-streaming chat completion with OpenRouter
+
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openRouterService = AIProxy.openRouterDirectService(
+    //     unprotectedAPIKey: "your-openRouter-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openRouterService = AIProxy.openRouterService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let requestBody = OpenRouterChatCompletionRequestBody(
+            messages: [.user(content: .text("hello world"))],
+            models: [
+                "deepseek/deepseek-chat",
+                "google/gemini-2.0-flash-exp:free",
+                // ...
+            ],
+            route: .fallback
+        )
+        let response = try await openRouterService.chatCompletionRequest(requestBody)
+        print("""
+            Received: \(response.choices.first?.message.content ?? "")
+            Served by \(response.provider ?? "unspecified")
+            using model \(response.model ?? "unspecified")
+            """
+        )
+        if let usage = response.usage {
+            print(
+                """
+                Used:
+                 \(usage.promptTokens ?? 0) prompt tokens
+                 \(usage.completionTokens ?? 0) completion tokens
+                 \(usage.totalTokens ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get OpenRouter buffered chat completion: \(error.localizedDescription)")
+    }
+
+
+### How to make a streaming chat completion with OpenRouter
+
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openRouterService = AIProxy.openRouterDirectService(
+    //     unprotectedAPIKey: "your-openRouter-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openRouterService = AIProxy.openRouterService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenRouterChatCompletionRequestBody(
+        messages: [.user(content: .text("hello world"))],
+        models: [
+            "deepseek/deepseek-chat",
+            "google/gemini-2.0-flash-exp:free",
+            // ...
+        ],
+        route: .fallback
+    )
+
+    do {
+        let stream = try await openRouterService.streamingChatCompletionRequest(body: requestBody)
+        for try await chunk in stream {
+            print(chunk.choices.first?.delta.content ?? "")
+            if let usage = chunk.usage {
+                print(
+                    """
+                    Served by \(chunk.provider ?? "unspecified")
+                    using model \(chunk.model ?? "unspecified")
+                    Used:
+                     \(usage.promptTokens ?? 0) prompt tokens
+                     \(usage.completionTokens ?? 0) completion tokens
+                     \(usage.totalTokens ?? 0) total tokens
+                    """
+                )
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get OpenRouter streaming chat completion: \(error.localizedDescription)")
+    }
+
+
+### How to make a structured outputs chat completion with OpenRouter
+
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openRouterService = AIProxy.openRouterDirectService(
+    //     unprotectedAPIKey: "your-openRouter-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openRouterService = AIProxy.openRouterService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let schema: [String: AIProxyJSONValue] = [
+            "type": "object",
+            "properties": [
+                "colors": [
+                    "type": "array",
+                    "items": [
+                        "type": "object",
+                        "properties": [
+                            "name": [
+                                "type": "string",
+                                "description": "A descriptive name to give the color"
+                            ],
+                            "hex_code": [
+                                "type": "string",
+                                "description": "The hex code of the color"
+                            ]
+                        ],
+                        "required": ["name", "hex_code"],
+                        "additionalProperties": false
+                    ]
+                ]
+            ],
+            "required": ["colors"],
+            "additionalProperties": false
+        ]
+        let requestBody = OpenRouterChatCompletionRequestBody(
+            messages: [
+                .system(content: .text("Return valid JSON only, and follow the specified JSON structure")),
+                .user(content: .text("Return a peaches and cream color palette"))
+            ],
+            models: [
+                "cohere/command-r7b-12-2024",
+                "meta-llama/llama-3.3-70b-instruct",
+                // ...
+            ],
+            responseFormat: .jsonSchema(
+                name: "palette_creator",
+                description: "A list of colors that make up a color pallete",
+                schema: schema,
+                strict: true
+            ),
+            route: .fallback
+        )
+        let response = try await openRouterService.chatCompletionRequest(body: requestBody)
+        print("""
+            Received: \(response.choices.first?.message.content ?? "")
+            Served by \(response.provider ?? "unspecified")
+            using model \(response.model ?? "unspecified")
+            """
+        )
+        if let usage = response.usage {
+            print(
+                """
+                Used:
+                 \(usage.promptTokens ?? 0) prompt tokens
+                 \(usage.completionTokens ?? 0) completion tokens
+                 \(usage.totalTokens ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get structured outputs response from OpenRouter: \(error.localizedDescription)")
+    }
+
+
+### How to use vision requests on OpenRouter (multi-modal chat)
+On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
+
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openRouterService = AIProxy.openRouterDirectService(
+    //     unprotectedAPIKey: "your-openRouter-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openRouterService = AIProxy.openRouterService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+    guard let image = NSImage(named: "myImage") else {
+        print("Could not find an image named 'myImage' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image) else {
+        print("Could not encode image as a data URI")
+        return
+    }
+
+    do {
+        let response = try await openRouterService.chatCompletionRequest(body: .init(
+            messages: [
+                .system(
+                    content: .text("Tell me what you see")
+                ),
+                .user(
+                    content: .parts(
+                        [
+                            .text("What do you see?"),
+                            .imageURL(imageURL)
+                        ]
+                    )
+                )
+            ],
+            models: [
+                "x-ai/grok-2-vision-1212",
+                "openai/gpt-4o"
+            ],
+            route: .fallback
+        ))
+        print("""
+            Received: \(response.choices.first?.message.content ?? "")
+            Served by \(response.provider ?? "unspecified")
+            using model \(response.model ?? "unspecified")
+            """
+        )
+        if let usage = response.usage {
+            print(
+                """
+                Used:
+                 \(usage.promptTokens ?? 0) prompt tokens
+                 \(usage.completionTokens ?? 0) completion tokens
+                 \(usage.totalTokens ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not make a vision request to OpenRouter: \(error.localizedDescription)"
+    }
 
 ***
 
