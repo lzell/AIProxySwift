@@ -37,7 +37,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.openai.com",
             path: self.resolvedPath("chat/completions"),
-            body: try JSONEncoder().encode(body),
+            body: try body.serialize(),
             verb: .post,
             contentType: "application/json",
             additionalHeaders: [

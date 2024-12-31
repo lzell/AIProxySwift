@@ -196,7 +196,7 @@ public struct AnthropicMessageRequestBody: Encodable {
     public var needsPDFBeta: Bool {
         for msg in self.messages {
             for content in msg.content {
-                if case let .pdf(_) = content {
+                if case .pdf(_) = content {
                     return true
                 }
             }
