@@ -19,20 +19,12 @@ extension FalService {
     public func createFastSDXLImage(
         input: FalFastSDXLInputSchema
     ) async throws -> FalFastSDXLOutputSchema {
-        let queueResponse = try await self.createInference(
-            model: "fal-ai/fast-sdxl",  // Add lightning to this!
-            input: input
+        return try await self.createInferenceAndPollForResult(
+            model: "fal-ai/fast-sdxl",
+            input: input,
+            pollAttempts: 60,
+            secondsBetweenPollAttempts: 2
         )
-        guard let statusURL = queueResponse.statusURL else {
-            throw FalError.missingStatusURL
-        }
-        let completedResponse = try await self.pollForInferenceComplete(
-            statusURL: statusURL
-        )
-        guard let responseURL = completedResponse.responseURL else {
-            throw FalError.missingResultURL
-        }
-        return try await self.getResponse(url: responseURL)
     }
 
     /// Convenience method for training using `fal-ai/flux-lora-fast-training`
@@ -44,22 +36,12 @@ extension FalService {
     public func createFluxLoRAFastTraining(
         input: FalFluxLoRAFastTrainingInputSchema
     ) async throws -> FalFluxLoRAFastTrainingOutputSchema {
-        let queueResponse = try await self.createInference(
+        return try await self.createInferenceAndPollForResult(
             model: "fal-ai/flux-lora-fast-training",
-            input: input
-        )
-        guard let statusURL = queueResponse.statusURL else {
-            throw FalError.missingStatusURL
-        }
-        let completedResponse = try await self.pollForInferenceComplete(
-            statusURL: statusURL,
+            input: input,
             pollAttempts: 30,
             secondsBetweenPollAttempts: 10
         )
-        guard let responseURL = completedResponse.responseURL else {
-            throw FalError.missingResultURL
-        }
-        return try await self.getResponse(url: responseURL)
     }
 
     /// Convenience method for running inference on your trained Flux LoRA
@@ -71,20 +53,31 @@ extension FalService {
     public func createFluxLoRAImage(
         input: FalFluxLoRAInputSchema
     ) async throws -> FalFluxLoRAOutputSchema {
-        let queueResponse = try await self.createInference(
+        return try await self.createInferenceAndPollForResult(
             model: "fal-ai/flux-lora",
-            input: input
+            input: input,
+            pollAttempts: 60,
+            secondsBetweenPollAttempts: 2
         )
-        guard let statusURL = queueResponse.statusURL else {
-            throw FalError.missingStatusURL
-        }
-        let completedResponse = try await self.pollForInferenceComplete(
-            statusURL: statusURL
+    }
+
+    /// Convenience method for creating a `fashn/tryon` image.
+    ///
+    /// - Parameter input: The input schema. See `FalTryonInputSchema.swift` for the range of controls that you
+    ///                    can use to adjust the image generation.
+    ///
+    /// - Returns: The inference result. The `images` property of the returned value contains a list of
+    ///            generated images. Each image has a `url` that you can use to fetch the image contents
+    ///            (or use with AsyncImage)
+    public func createTryonImage(
+        input: FalTryonInputSchema
+    ) async throws -> FalTryonOutputSchema {
+        return try await self.createInferenceAndPollForResult(
+            model: "fashn/tryon",
+            input: input,
+            pollAttempts: 60,
+            secondsBetweenPollAttempts: 2
         )
-        guard let responseURL = completedResponse.responseURL else {
-            throw FalError.missingResultURL
-        }
-        return try await self.getResponse(url: responseURL)
     }
 
 #if false
