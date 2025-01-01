@@ -47,7 +47,7 @@ public protocol ReplicateService {
     ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
     ///
     /// - Returns: The inference results wrapped in ReplicateSynchronousAPIOutput
-    func createSynchronousPredictionUsingOfficialModel<T: Encodable, U: Encodable>(
+    func createSynchronousPredictionUsingOfficialModel<T: Encodable, U: Decodable>(
         modelOwner: String,
         modelName: String,
         input: T,
@@ -77,7 +77,7 @@ public protocol ReplicateService {
     ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
     ///
     /// - Returns: The inference results wrapped in ReplicateSynchronousAPIOutput
-    func createSynchronousPredictionUsingVersion<T: Encodable, U: Encodable>(
+    func createSynchronousPredictionUsingVersion<T: Encodable, U: Decodable>(
         modelVersion: String,
         input: T,
         secondsToWait: Int
