@@ -61,6 +61,40 @@ public protocol FalService {
 }
 
 extension FalService {
+    /// Use this helper to kick off an inference request and wait for the result to be available.
+    /// - Parameters:
+    ///   - model: The model to run
+    ///   - input: The input schema of the model.
+    ///            Find this by browing to your model on fal and tapping on "API" then "Schema > Input" in the left sidebar
+    ///   - pollAttempts: The number of poll attempts to make before raising FalError.reachedRetryLimit
+    ///   - secondsBetweenPollAttempts: Seconds between poll attempts. Set this so that `pollAttempts * secondsBetweenPollAttempts`
+    ///                                 is the longest you'd like to wait for a result.
+    /// - Returns: The output schema of your model.
+    ///            Find this by browing to your model on Fal and tapping on "API" then "Schema > Output" in the left sidebar
+    public func createInferenceAndPollForResult<T: Encodable, U: Decodable>(
+        model: String,
+        input: T,
+        pollAttempts: Int,
+        secondsBetweenPollAttempts: UInt64
+    ) async throws -> U {
+        let queueResponse = try await self.createInference(
+            model: model,
+            input: input
+        )
+        guard let statusURL = queueResponse.statusURL else {
+            throw FalError.missingStatusURL
+        }
+        let completedResponse = try await self.pollForInferenceComplete(
+            statusURL: statusURL,
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
+        )
+        guard let responseURL = completedResponse.responseURL else {
+            throw FalError.missingResultURL
+        }
+        return try await self.getResponse(url: responseURL)
+    }
+
     /// Polls for the completion of a model inference, where the polling URL is Fal's
     /// `status_url` described here: https://fal.ai/docs/model-endpoints/queue
     ///

@@ -2141,6 +2141,36 @@ model owner and model name in the string.
 See the full range of controls for generating an image by viewing `FalFastSDXLInputSchema.swift`
 
 
+### How to use the fashn/tryon model on Fal
+
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let falService = AIProxy.falDirectService(
+    //     unprotectedAPIKey: "your-fal-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let falService = AIProxy.falService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let input = FalTryonInputSchema(
+        category: .tops,
+        garmentImage: URL(string: "https://utfs.io/f/wXFHUNfTHmLjtkhepmqOUnkr8XxZbNIFmRWldShDLu320TeC")!,
+        modelImage: URL(string: "https://utfs.io/f/wXFHUNfTHmLj4prvqbRMQ6JXFyUr3IT0avK2HSOmZWiAsxg9")!
+    )
+    do {
+        let output = try await falService.createTryonImage(input: input)
+        print("Tryon image is available at: \(output.images.first?.url.absoluteString ?? "No URL")")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create fashn/tryon image on Fal: \(error.localizedDescription)")
+    }
+
+
 ### How to train Flux on your own images using Fal
 
 #### Upload training data to Fal
@@ -2784,7 +2814,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not make a vision request to OpenRouter: \(error.localizedDescription)"
+        print("Could not make a vision request to OpenRouter: \(error.localizedDescription)")
     }
 
 ***
