@@ -424,4 +424,30 @@ extension ReplicateService {
         )
     }
 
+    /// Convenience method for creating face-swapped images using
+    /// https://replicate.com/xiankgx/face-swap
+    ///
+    /// - Parameters:
+    ///
+    ///   - input: See ReplicateFaceSwapInputSchema.swift for the range of input controls.
+    ///            Most likely, you will want to populate `localSource` and `localTarget`.
+    ///
+    ///   - secondsToWait: Seconds to wait before failing
+    ///
+    /// - Returns: A generation output. If generation succeeded, the `imageURL` property will be set.
+    public func createFaceSwapImage(
+        input: ReplicateFaceSwapInputSchema,
+        version: String = "cff87316e31787df12002c9e20a78a017a36cb31fde9862d8dedd15ab29b7288",
+        secondsToWait: Int = 30
+    ) async throws -> ReplicateFaceSwapOutputSchema {
+        let apiResult: ReplicateSynchronousAPIOutput<ReplicateFaceSwapOutputSchema> = try await self.createSynchronousPredictionUsingVersion(
+            modelVersion: version,
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        guard let output = apiResult.output else {
+            throw ReplicateError.predictionDidNotIncludeOutput
+        }
+        return output
+    }
 }
