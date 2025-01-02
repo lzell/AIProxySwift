@@ -1794,19 +1794,26 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
 
 ### How to call your own models on Replicate.
 
-1. Generate the Encodable representation of your input schema. You can use input schemas in
-   this library as inspiration. Take a look at `ReplicateFluxProInputSchema.swift` as
-   inspiration. Find the schema format that you should conform to using replicate's web
-   dashboard and tapping through `Your Model > API > Schema > Input Schema`
+Look in the `ReplicateService+Convenience.swift` file for inspiration on how to do this.
+
+1. Generate the Encodable representation of your input schema. Take a look at any of the input
+   schemas used in `ReplicateService+Convenience.swift` for inspiration. Find the schema format
+   that you should conform to using replicate's web dashboard and tapping through `Your Model >
+   API > Schema > Input Schema`
 
 2. Generate the Decodable representation of your output schema. The output schema is defined on
-   replicate's site at `Your Model > API > Schema > Output Schema`. For simple cases, a typealias
-   will do (for example, if the output schema is just a string or an array of strings). Look at
-   `ReplicateFluxOutputSchema.swift` for inspiration. If you need help doing this, please reach out.
+   replicate's site at `Your Model > API > Schema > Output Schema`. I find that unfortunately
+   these schemas are not always accurate, so sometimes you have to look at the network response
+   manually. For simple cases, a typealias will do (for example, if the output schema is just a
+   string or an array of strings). Look at `ReplicateFluxOutputSchema.swift` for inspiration.
+   If you need help doing this, please reach out.
 
-3. Call the `createPrediction` method, followed by `pollForPredictionOutput` method. Note that
-   you'll need to change `YourInputSchema`, `YourOutputSchema` and `your-model-version` in this
-   snippet:
+3. Call the `createSynchronousPredictionUsingVersion` or
+   `createSynchronousPredictionUsingOfficialModel` method and grab the `output` of off the
+   response. See `createFaceSwapImage` in `ReplicateService+Convenience.swift` as an example.
+
+You'll need to change `YourInputSchema`, `YourOutputSchema` and `your-model-version` in this
+snippet:
 
 
     ```
@@ -1828,20 +1835,21 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
             prompt: "Monument valley, Utah"
         )
 
-        let predictionResponse = try await replicateService.createPrediction(
-            version: "your-model-version",
+        let apiResult: ReplicateSynchronousAPIOutput<YourOutputSchema> = try await replicateService.createSynchronousPredictionUsingVersion(
+            modelVersion: "your-model-version",
             input: input,
-            output: ReplicatePredictionResponseBody<YourOutputSchema>.self
+            secondsToWait: secondsToWait
         )
-        let predictionOutput: YourOutputSchema = try await replicateService.pollForPredictionOutput(
-            predictionResponse: predictionResponse,
-            pollAttempts: 30
-        )
-        print("Done creating predictionOutput")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+
+        guard let output = apiResult.output else {
+            throw ReplicateError.predictionDidNotIncludeOutput
+        }
+
+        // Do something with output
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create replicate prediction: \(error.localizedDescription)")
+        print("Could not create replicate synchronous prediction: \(error.localizedDescription)")
     }
     ```
 
