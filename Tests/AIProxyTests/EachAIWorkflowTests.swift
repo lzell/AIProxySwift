@@ -158,7 +158,7 @@ final class EachAIWorkflowTests: XCTestCase {
           "deleted_at": ""
         }
         """#
-        let res = try EachAIWorkflowExecutionResponseBody.deserialize(from: sampleResponse)
+        let _ = try EachAIWorkflowExecutionResponseBody.deserialize(from: sampleResponse)
     }
 }
 

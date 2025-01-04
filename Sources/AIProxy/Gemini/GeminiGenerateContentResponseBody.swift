@@ -61,13 +61,25 @@ extension GeminiGenerateContentResponseBody.Candidate.Content {
     /// See: https://ai.google.dev/api/caching#Part
     public enum Part: Decodable {
         case text(String)
+        case functionCall(name: String, args: [String: Any]?)
+
         private enum CodingKeys: String, CodingKey {
             case text
+            case functionCall
+        }
+
+        private struct _FunctionCall: Decodable {
+            let name: String
+            let args: [String: AIProxyJSONValue]?
         }
 
         public init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            self = .text(try container.decode(String.self, forKey: .text))
+            if let functionCall = try container.decodeIfPresent(_FunctionCall.self, forKey: .functionCall) {
+                self = .functionCall(name: functionCall.name, args: functionCall.args?.untypedDictionary)
+            } else {
+                self = .text(try container.decode(String.self, forKey: .text))
+            }
         }
     }
 }
