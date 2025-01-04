@@ -577,10 +577,11 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     let requestBody = GeminiGenerateContentRequestBody(
         contents: [
             .init(
-                parts: [.text("Tell me a joke")]
+                parts: [.text("How do I use product xyz?")]
             )
         ],
-        generationConfig: .init(maxOutputTokens: 512)
+        generationConfig: .init(maxOutputTokens: 1024),
+        systemInstruction: .init(parts: [.text("Introduce yourself as a customer support person")])
     )
     do {
         let response = try await geminiService.generateContentRequest(
