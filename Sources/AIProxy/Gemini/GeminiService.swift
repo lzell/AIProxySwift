@@ -11,9 +11,14 @@ public protocol GeminiService {
 
     /// Generate content using Gemini. Google puts chat completions, audio transcriptions, and
     /// video capabilities all under the term 'generate content':
-    /// https://ai.google.dev/api/generate-content#v1beta.models.generateContent
+    /// https://ai.google.dev/api/generate-content#method:-models.generatecontent
+    /// - Parameters:
+    ///   - body: Request body
+    ///   - model: The model to use for generating the completion, e.g. "gemini-1.5-flash"
+    /// - Returns: Content generated with Gemini
     func generateContentRequest(
-        body: GeminiGenerateContentRequestBody
+        body: GeminiGenerateContentRequestBody,
+        model: String
     ) async throws -> GeminiGenerateContentResponseBody
 
     /// Uploads a file to Google's short term storage.

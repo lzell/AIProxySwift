@@ -574,21 +574,26 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
+    let requestBody = GeminiGenerateContentRequestBody(
+        contents: [
+            .init(
+                parts: [.text("How do I use product xyz?")]
+            )
+        ],
+        generationConfig: .init(maxOutputTokens: 1024),
+        systemInstruction: .init(parts: [.text("Introduce yourself as a customer support person")])
+    )
     do {
-        let requestBody = GeminiGenerateContentRequestBody(
-            model: "gemini-1.5-flash",
-            contents: [
-                .init(
-                    parts: [.text("Tell me a joke")]
-                )
-            ],
-            generationConfig: .init(maxOutputTokens: 1024) // Optional
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-2.0-flash-exp"
         )
-        let response = try await geminiService.generateContentRequest(body: requestBody)
         for part in response.candidates?.first?.content?.parts ?? [] {
             switch part {
             case .text(let text):
                 print("Gemini sent: \(text)")
+            case .functionCall(name: let functionName, args: let arguments):
+                print("Gemini wants us to call function \(functionName) with arguments: \(arguments ?? [:])")
             }
         }
         if let usage = response.usageMetadata {
@@ -602,10 +607,165 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
                 """
             )
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create Gemini generate content request: \(error.localizedDescription)")
+    }
+
+
+### How to make a tool call with Gemini
+
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let functionParameters: [String: AIProxyJSONValue] = [
+        "type": "OBJECT",
+        "properties": [
+            "brightness": [
+                "description": "Light level from 0 to 100. Zero is off and 100 is full brightness.",
+                "type": "NUMBER"
+            ],
+            "colorTemperature": [
+                "description": "Color temperature of the light fixture which can be `daylight`, `cool` or `warm`.",
+                "type": "STRING"
+            ]
+        ],
+        "required": [
+            "brightness",
+            "colorTemperature"
+        ]
+    ]
+
+    let requestBody = GeminiGenerateContentRequestBody(
+        contents: [
+            .init(
+                parts: [.text("Dim the lights so the room feels cozy and warm.")],
+                role: "user"
+            )
+        ],
+        /* Uncomment this to enforce that a function is called regardless of prompt contents. */
+        // toolConfig: .init(
+        //     functionCallingConfig: .init(
+        //         allowedFunctionNames: ["controlLight"],
+        //         mode: .anyFunction
+        //     )
+        // ),
+        tools: [
+            .functionDeclarations(
+                [
+                    .init(
+                        name: "controlLight",
+                        description: "Set the brightness and color temperature of a room light.",
+                        parameters: functionParameters
+                    )
+                ]
+            )
+        ]
+    )
+
+    do {
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-2.0-flash-exp"
+        )
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            switch part {
+            case .text(let text):
+                print("Gemini sent: \(text)")
+            case .functionCall(name: let functionName, args: let arguments):
+                print("Gemini wants us to call function \(functionName) with arguments: \(arguments ?? [:])")
+            }
+        }
+        if let usage = response.usageMetadata {
+            print(
+                """
+                Used:
+                 \(usage.promptTokenCount ?? 0) prompt tokens
+                 \(usage.cachedContentTokenCount ?? 0) cached tokens
+                 \(usage.candidatesTokenCount ?? 0) candidate tokens
+                 \(usage.totalTokenCount ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Gemini tool (function) call: \(error.localizedDescription)")
+    }
+
+
+### How to make a search grounding call with Gemini
+
+It's important that you connect a GCP billing account to your Gemini API key to use this
+feature. Otherwise, Gemini will return 429s for every call. You can connect your billing
+account for the API keys you use [here](https://aistudio.google.com/app/apikey).
+
+Consider applying to [google for startups](https://cloud.google.com/startup?hl=en) to gain
+credits that you can put towards Gemini.
+
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = GeminiGenerateContentRequestBody(
+        contents: [
+            .init(
+                parts: [.text("What is the price of Google stock today")],
+                role: "user"
+            )
+        ],
+        tools: [
+            .googleSearchRetrieval(.init(dynamicThreshold: 0.7, mode: .dynamic))
+        ]
+    )
+    do {
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-1.5-flash"
+        )
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            switch part {
+            case .text(let text):
+                print("Gemini sent: \(text)")
+            case .functionCall(name: let functionName, args: let arguments):
+                print("Gemini wants us to call function \(functionName) with arguments: \(arguments ?? [:])")
+            }
+        }
+        if let usage = response.usageMetadata {
+            print(
+                """
+                Used:
+                 \(usage.promptTokenCount ?? 0) prompt tokens
+                 \(usage.cachedContentTokenCount ?? 0) cached tokens
+                 \(usage.candidatesTokenCount ?? 0) candidate tokens
+                 \(usage.totalTokenCount ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Gemini grounding search request: \(error.localizedDescription)")
     }
 
 
@@ -633,7 +793,6 @@ Add a file called `helloworld.m4a` to your Xcode assets before running this samp
 
     do {
         let requestBody = GeminiGenerateContentRequestBody(
-            model: "gemini-1.5-flash",
             contents: [
                 .init(
                     parts: [
@@ -646,11 +805,16 @@ Add a file called `helloworld.m4a` to your Xcode assets before running this samp
                 )
             ]
         )
-        let response = try await geminiService.generateContentRequest(body: requestBody)
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-1.5-flash"
+        )
         for part in response.candidates?.first?.content?.parts ?? [] {
             switch part {
             case .text(let text):
                 print("Gemini transcript: \(text)")
+            case .functionCall(name: let functionName, args: let arguments):
+                print("Gemini wants us to call function \(functionName) with arguments: \(arguments ?? [:])")
             }
         }
         if let usage = response.usageMetadata {
@@ -664,10 +828,10 @@ Add a file called `helloworld.m4a` to your Xcode assets before running this samp
                 """
             )
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Gemini transcription request: \(error.localizedDescription)")
+        print("Could not create transcript with Gemini: \(error.localizedDescription)")
     }
 
 
@@ -694,14 +858,13 @@ Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
         return
     }
 
-    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.8) else {
+    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.9) else {
         print("Could not encode image as Jpeg")
         return
     }
 
     do {
         let requestBody = GeminiGenerateContentRequestBody(
-            model: "gemini-1.5-flash",
             contents: [
                 .init(
                     parts: [
@@ -721,11 +884,16 @@ Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
                 .init(category: .sexuallyExplicit, threshold: .none)
             ]
         )
-        let response = try await geminiService.generateContentRequest(body: requestBody)
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-1.5-flash"
+        )
         for part in response.candidates?.first?.content?.parts ?? [] {
             switch part {
             case .text(let text):
                 print("Gemini sees: \(text)")
+            case .functionCall(name: let functionName, args: let arguments):
+                print("Gemini wants us to call function \(functionName) with arguments: \(arguments ?? [:])")
             }
         }
         if let usage = response.usageMetadata {
@@ -742,7 +910,7 @@ Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not use image as input to Gemini: \(error.localizedDescription)")
+        print("Could not create Gemini generate content request: \(error.localizedDescription)")
     }
 
 
@@ -809,33 +977,39 @@ Use the file URL returned from the snippet above.
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
+    let requestBody = GeminiGenerateContentRequestBody(
+        model: "gemini-1.5-flash",
+        contents: [
+            .init(
+                parts: [
+                    .text("Dump the text content in markdown from this video"),
+                    .file(
+                        url: fileURL,
+                        mimeType: "video/quicktime"
+                    )
+                ]
+            )
+        ],
+        safetySettings: [
+            .init(category: .dangerousContent, threshold: .none),
+            .init(category: .civicIntegrity, threshold: .none),
+            .init(category: .harassment, threshold: .none),
+            .init(category: .hateSpeech, threshold: .none),
+            .init(category: .sexuallyExplicit, threshold: .none)
+        ]
+    )
+
     do {
-        let requestBody = GeminiGenerateContentRequestBody(
-            model: "gemini-1.5-flash",
-            contents: [
-                .init(
-                    parts: [
-                        .text("Dump the text content in markdown from this video"),
-                        .file(
-                            url: fileURL,
-                            mimeType: "video/quicktime"
-                        )
-                    ]
-                )
-            ],
-            safetySettings: [
-                .init(category: .dangerousContent, threshold: .none),
-                .init(category: .civicIntegrity, threshold: .none),
-                .init(category: .harassment, threshold: .none),
-                .init(category: .hateSpeech, threshold: .none),
-                .init(category: .sexuallyExplicit, threshold: .none)
-            ]
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-1.5-flash"
         )
-        let response = try await geminiService.generateContentRequest(body: requestBody)
         for part in response.candidates?.first?.content?.parts ?? [] {
             switch part {
             case .text(let text):
                 print("Gemini transcript: \(text)")
+            case .functionCall(name: let functionName, args: let arguments):
+                print("Gemini wants us to call function \(functionName) with arguments: \(arguments ?? [:])")
             }
         }
         if let usage = response.usageMetadata {
@@ -1809,7 +1983,7 @@ Look in the `ReplicateService+Convenience.swift` file for inspiration on how to 
    If you need help doing this, please reach out.
 
 3. Call the `createSynchronousPredictionUsingVersion` or
-   `createSynchronousPredictionUsingOfficialModel` method and grab the `output` of off the
+   `createSynchronousPredictionUsingOfficialModel` method and grab the `output` off the
    response. See `createFaceSwapImage` in `ReplicateService+Convenience.swift` as an example.
 
 You'll need to change `YourInputSchema`, `YourOutputSchema` and `your-model-version` in this
