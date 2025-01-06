@@ -20,7 +20,7 @@ open class ElevenLabsProxiedService: ElevenLabsService, ProxiedService {
         self.clientID = clientID
     }
 
-    /// Initiates a non-streaming request to /v1/messages.
+    /// Converts text to speech with a request to /v1/text-to-speech/<voice-id>
     ///
     /// - Parameters:
     ///
@@ -43,6 +43,38 @@ open class ElevenLabsProxiedService: ElevenLabsService, ProxiedService {
             body: try body.serialize(),
             verb: .post,
             contentType: "application/json"
+        )
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            self.urlSession,
+            request
+        )
+        return data
+    }
+
+    /// Converts speech to speech with a request to `/v1/speech-to-speech/<voice-id>`
+    ///
+    /// - Parameters:
+    ///
+    ///   - voiceID: The Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the
+    ///              available voices.
+    ///
+    ///   - body: The request body to send to ElevenLabs, protected through AIProxy. See this reference:
+    ///           https://elevenlabs.io/docs/api-reference/speech-to-speech/convert
+    ///
+    /// - Returns: Returns audio/mpeg data
+    public func speechToSpeechRequest(
+        voiceID: String,
+        body: ElevenLabsSpeechToSpeechRequestBody
+    ) async throws -> Data {
+        let boundary = UUID().uuidString
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/speech-to-speech/\(voiceID)",
+            body: formEncode(body, boundary),
+            verb: .post,
+            contentType: "multipart/form-data; boundary=\(boundary)"
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
             self.urlSession,
