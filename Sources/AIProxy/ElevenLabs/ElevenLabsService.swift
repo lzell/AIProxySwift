@@ -8,14 +8,14 @@
 import Foundation
 
 public protocol ElevenLabsService {
-    /// Initiates a non-streaming request to /v1/messages.
+    /// Converts text to speech with a request to `/v1/text-to-speech/<voice-id>`
     ///
     /// - Parameters:
     ///
     ///   - voiceID: The Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the
     ///              available voices.
     ///
-    ///   - body: The request body to send to ElevenLabs through AIProxy. See this reference:
+    ///   - body: The request body to send to ElevenLabs. See this reference:
     ///           https://elevenlabs.io/docs/api-reference/text-to-speech
     ///
     /// - Returns: Returns audio/mpeg data
@@ -23,4 +23,21 @@ public protocol ElevenLabsService {
         voiceID: String,
         body: ElevenLabsTTSRequestBody
     ) async throws -> Data
+
+    /// Converts speech to speech with a request to `/v1/speech-to-speech/<voice-id>`
+    ///
+    /// - Parameters:
+    ///
+    ///   - voiceID: The Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the
+    ///              available voices.
+    ///
+    ///   - body: The request body to send to ElevenLabs. See this reference:
+    ///           https://elevenlabs.io/docs/api-reference/speech-to-speech/convert
+    ///
+    /// - Returns: Returns audio/mpeg data
+    func speechToSpeechRequest(
+        voiceID: String,
+        body: ElevenLabsSpeechToSpeechRequestBody
+    ) async throws -> Data
+
 }

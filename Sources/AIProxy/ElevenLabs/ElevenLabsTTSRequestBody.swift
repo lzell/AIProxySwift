@@ -7,7 +7,9 @@
 
 import Foundation
 
-// Note that voiceID is not part of the body. The voiceID is part of the request path
+/// Request body for a text-to-speech request to ElevenLabs.
+/// https://elevenlabs.io/docs/api-reference/text-to-speech/convert
+/// Note that `voiceID` is set on the path, not in the request body.
 public struct ElevenLabsTTSRequestBody: Encodable {
     // Required
     public let text: String
