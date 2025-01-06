@@ -2317,15 +2317,70 @@ On macOS, use `NSImage(named:) in place of `UIImage(named:)`
         audioPlayer = try AVAudioPlayer(data: mpegData)
         audioPlayer?.prepareToPlay()
         audioPlayer?.play()
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create ElevenLabs TTS audio: \(error.localizedDescription)")
     }
+    ```
 
 - See the full range of TTS controls by viewing `ElevenLabsTTSRequestBody.swift`.
 - See https://api.elevenlabs.io/v1/voices for the IDs that you can pass to `voiceID`.
 
+
+### How to use ElevenLabs for speech-to-speech
+
+1. Record an audio file in quicktime and save it as "helloworld.m4a"
+2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
+3. Run this snippet:
+
+    ```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let elevenLabsService = AIProxy.elevenLabsDirectService(
+    //     unprotectedAPIKey: "your-elevenLabs-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let elevenLabsService = AIProxy.elevenLabsService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let localAudioURL = Bundle.main.url(forResource: "helloworld", withExtension: "m4a") else {
+        print("Could not find an audio file named helloworld.m4a in your app bundle")
+        return
+    }
+
+    do {
+        let body = ElevenLabsSpeechToSpeechRequestBody(
+            audio: try Data(contentsOf: localAudioURL),
+            modelID: "eleven_english_sts_v2",
+            removeBackgroundNoise: true
+        )
+        let mpegData = try await elevenLabsService.speechToSpeechRequest(
+            voiceID: "EXAVITQu4vr4xnSDxMaL",
+            body: body
+        )
+
+        // Do not use a local `let` or `var` for AVAudioPlayer.
+        // You need the lifecycle of the player to live beyond the scope of this function.
+        // Instead, use file scope or set the player as a member of a reference type with long life.
+        // For example, at the top of this file you may define:
+        //
+        //   fileprivate var audioPlayer: AVAudioPlayer? = nil
+        //
+        // And then use the code below to play the TTS result:
+        audioPlayer = try AVAudioPlayer(data: mpegData)
+        audioPlayer?.prepareToPlay()
+        audioPlayer?.play()
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create ElevenLabs STS audio: \(error.localizedDescription)")
+    }
+    ```
 
 ***
 
