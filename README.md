@@ -2373,6 +2373,7 @@ The `garmentImage` and `modelImage` arguments may be:
 1. A remote URL to the image hosted on a public site
 2. A local data URL that you construct using `AIProxy.encodeImageAsURL`
 
+    ```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2411,6 +2412,7 @@ The `garmentImage` and `modelImage` arguments may be:
     } catch {
         print("Could not create fashn/tryon image on Fal: \(error.localizedDescription)")
     }
+    ```
 
 
 ### How to train Flux on your own images using Fal
