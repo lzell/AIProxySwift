@@ -2368,6 +2368,11 @@ See the full range of controls for generating an image by viewing `FalFastSDXLIn
 
 ### How to use the fashn/tryon model on Fal
 
+The `garmentImage` and `modelImage` arguments may be:
+
+1. A remote URL to the image hosted on a public site
+2. A local data URL that you construct using `AIProxy.encodeImageAsURL`
+
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2381,10 +2386,22 @@ See the full range of controls for generating an image by viewing `FalFastSDXLIn
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
+    guard let garmentImage = NSImage(named: "garment-image"),
+          let garmentImageURL = AIProxy.encodeImageAsURL(image: garmentImage) else {
+        print("Could not find an image named 'garment-image' in your app assets")
+        return
+    }
+
+    guard let modelImage = NSImage(named: "model-image"),
+          let modelImageURL = AIProxy.encodeImageAsURL(image: modelImage) else {
+        print("Could not find an image named 'model-image' in your app assets")
+        return
+    }
+
     let input = FalTryonInputSchema(
         category: .tops,
-        garmentImage: URL(string: "https://utfs.io/f/wXFHUNfTHmLjtkhepmqOUnkr8XxZbNIFmRWldShDLu320TeC")!,
-        modelImage: URL(string: "https://utfs.io/f/wXFHUNfTHmLj4prvqbRMQ6JXFyUr3IT0avK2HSOmZWiAsxg9")!
+        garmentImage: garmentImageURL,
+        modelImage: modelImageURL
     )
     do {
         let output = try await falService.createTryonImage(input: input)
