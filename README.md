@@ -2668,6 +2668,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
 ### How to create a chat completion with Perplexity
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2686,26 +2687,31 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
             messages: [.user(content: "How many national parks in the US?")],
             model: "llama-3.1-sonar-small-128k-online"
         ))
-        print(response.choices.first?.message?.content ?? "")
-        if let usage = response.usage {
-            print(
-                """
-                Used:
-                 \(usage.promptTokens ?? 0) prompt tokens
-                 \(usage.completionTokens ?? 0) completion tokens
-                 \(usage.totalTokens ?? 0) total tokens
-                """
-            )
-        }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+
+        print(
+            """
+            Received from Perplexity:
+            \(response.choices.first?.message?.content ?? "no content")
+
+            With citations:
+            \(response.citations ?? ["none"])
+
+            Using:
+            \(response.usage?.promptTokens ?? 0) prompt tokens
+            \(response.usage?.completionTokens ?? 0) completion tokens
+            \(response.usage?.totalTokens ?? 0) total tokens
+            """
+        )
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not create perplexity chat completion: \(error.localizedDescription)")
     }
-
+```
 
 ### How to create a streaming chat completion with Perplexity
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2724,14 +2730,32 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
             messages: [.user(content: "How many national parks in the US?")],
             model: "llama-3.1-sonar-small-128k-online"
         ))
+
+        var lastChunk: PerplexityChatCompletionResponseBody?
         for try await chunk in stream {
             print(chunk.choices.first?.delta?.content ?? "")
+            lastChunk = chunk
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+
+        if let lastChunk = lastChunk {
+            print(
+                """
+                Citations:
+                \(lastChunk.citations ?? ["none"])
+
+                Using:
+                \(lastChunk.usage?.promptTokens ?? 0) prompt tokens
+                \(lastChunk.usage?.completionTokens ?? 0) completion tokens
+                \(lastChunk.usage?.totalTokens ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not create perplexity streaming chat completion: \(error.localizedDescription)")
     }
+```
 
 ***
 
