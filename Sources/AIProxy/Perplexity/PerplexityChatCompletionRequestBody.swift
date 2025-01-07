@@ -7,6 +7,8 @@ public struct PerplexityChatCompletionRequestBody: Encodable {
     public let messages: [Message]
 
     /// The name of the model that will complete your prompt.
+    /// Refer to Supported Models to find all the models offered:
+    /// https://docs.perplexity.ai/guides/model-cards
     public let model: String
 
 

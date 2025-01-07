@@ -12,6 +12,9 @@ public struct PerplexityChatCompletionResponseBody: Decodable {
     /// The list of completion choices the model generated for the input prompt.
     public let choices: [Choice]
 
+    /// Citations for the generated answer.
+    public let citations: [String]?
+
     /// The Unix timestamp (in seconds) of when the completion was created.
     public let created: Int?
 
