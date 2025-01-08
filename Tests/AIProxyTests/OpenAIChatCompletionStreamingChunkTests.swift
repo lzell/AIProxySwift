@@ -30,4 +30,20 @@ final class OpenAIChatCompletionStreamingChunkTests: XCTestCase {
         XCTAssertEqual(18, res?.usage?.totalTokens)
         XCTAssertEqual(0, res?.usage?.completionTokensDetails?.reasoningTokens)
     }
+
+    func testFunctionCallIsDecodable() {
+        let line = #"""
+        data: {"id":"chatcmpl-AmzGvtW0SKhVtUcwDhcNoRSvxAZ3M","object":"chat.completion.chunk","created":1736238637,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_5f20662549","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"location"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+        """#
+        let res = OpenAIChatCompletionChunk.deserialize(fromLine: line)
+        XCTAssertEqual("location", res?.choices.first?.delta.toolCalls?.first?.function?.arguments)
+    }
+
+    func testFunctionCallIsAlsoDecodable() {
+        let line = #"""
+        data: {"id":"chatcmpl-AnKQL2c5yoJxoeqrnZl01bkmR7M3c","object":"chat.completion.chunk","created":1736319945,"model":"gpt-4o-2024-08-06","system_fingerprint":"fp_5f20662549","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\""}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+        """#
+        let res = OpenAIChatCompletionChunk.deserialize(fromLine: line)
+        XCTAssertEqual("{\"", res?.choices.first?.delta.toolCalls?.first?.function?.arguments)
+    }
 }

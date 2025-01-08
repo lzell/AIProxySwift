@@ -415,6 +415,104 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     }
 
 
+### How to stream structured outputs tool calls with OpenAI
+
+This example shows streaming tool use, where one tool is for getting the weather and another
+tool is for chatting with the user.
+
+If the user's prompt is not weather related, then OpenAI will call the 'chat' tool. You can use
+a strategy like this to build experiences where the main purpose is to call at tool, but also
+have chat functionality alongside it.
+
+```swift
+    let systemInstructions = """
+        You are a friendly assistant that chats with the user or provides them
+        with the weather.
+
+        If the user is just trying to chat, use the 'chat' tool.
+        If the user wants the weather, use the 'get_weather' tool.
+        """
+
+    let weatherSchema: [String: AIProxyJSONValue] = [
+        "type": "object",
+        "properties": [
+            "location": [
+                "type": "string",
+                "description": "The city and state, e.g. San Francisco, CA"
+            ],
+            "unit": [
+              "type": "string",
+              "enum": ["celsius", "fahrenheit"],
+              "description": "The unit of temperature. If not specified in the prompt, always default to fahrenheit",
+              "default": "fahrenheit"
+            ]
+        ],
+        "required": ["location", "unit"],
+        "additionalProperties": false
+    ]
+
+    let chatSchema: [String: AIProxyJSONValue] = [
+        "type": "object",
+        "properties": [
+            "message": [
+                "type": "string",
+                "description": "A message to chat with the user"
+            ]
+        ],
+        "required": ["message"],
+        "additionalProperties": false
+    ]
+
+    let requestBody = OpenAIChatCompletionRequestBody(
+        model: "gpt-4o",
+        messages: [
+            .system(content: .text(systemInstructions)),
+            .user(content: .text("How are you doing?")),
+        ],
+        tools: [
+            .function(
+                name: "get_weather",
+                description: "Gets the weather",
+                parameters: weatherSchema,
+                strict: true
+            ),
+            .function(
+                name: "chat",
+                description: "Chat with the user",
+                parameters: chatSchema,
+                strict: true
+            )
+        ]
+    )
+
+    do {
+        let stream = try await openAIService.streamingChatCompletionRequest(body: requestBody)
+        for try await chunk in stream {
+            let toolCall = chunk.choices.first?.delta.toolCalls?.first
+            if let functionName = toolCall?.function?.name {
+                print("ChatGPT wants to call function \(functionName) with arguments...")
+            }
+            print(toolCall?.function?.arguments ?? "")
+            if let usage = chunk.usage {
+                print(
+                    """
+                    Used:
+                     \(usage.promptTokens ?? 0) prompt tokens
+                     \(usage.completionTokens ?? 0) completion tokens
+                     \(usage.completionTokensDetails?.reasoningTokens ?? 0) reasoning tokens
+                     \(usage.totalTokens ?? 0) total tokens
+                    """
+                )
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not make a streaming tool call to OpenAI: \(error.localizedDescription)")
+    }
+```
+
+
 ### How to get Whisper word-level timestamps in an audio transcription
 
 1. Record an audio file in quicktime and save it as "helloworld.m4a"
@@ -3261,6 +3359,10 @@ If you encounter the error
 
     networkd_settings_read_from_file Sandbox is preventing this process from reading networkd settings file at "/Library/Preferences/com.apple.networkd.plist", please add an exception.
 
+or
+
+     A server with the specified hostname could not be found
+
 Modify your macOS project settings by tapping on your project in the Xcode project tree, then
 select `Signing & Capabilities` and enable `Outgoing Connections (client)`
 
@@ -3364,7 +3466,7 @@ Contributions are welcome! This library uses the MIT license.
 
 - Decodables should all have optional properties. Why? We don't want to fail decoding in live
   apps if the provider changes something out from under us (which can happen purposefully due
-  to deprecations, or by accident due to bad deploys). If we use non-optionals in decodable
+  to deprecations, or by accident due to regressions). If we use non-optionals in decodable
   definitions, then a provider removing a field, changing the type of a field, or removing an
   enum case would cause decoding to fail. You may think this isn't too bad, since the
   JSONDecoder throws anyway, and therefore client code will already be wrapped in a do/catch.
@@ -3373,17 +3475,12 @@ Contributions are welcome! This library uses the MIT license.
   property unused by the client, we want the client application to continue functioning
   correctly, not to throw an error and enter the catch branch of the client's call site.
 
-- When a request or response object is deeply nested by the API provider, create nested structs
-  in the same namespace as the top level object. This lib started with a flat namespace, so
-  some structs do not follow this pattern. Going forward, though, nesting is preferred to flat.
-  A flat namespace leads to long struct names to avoid collision between providers. Use this
-  instead:
+- When a request or response object is deeply nested by the API provider, create nested types
+  in the same namespace as the top level struct. For examples:
 
-    ```
-    // An example provider response
+    ```swift
     public struct ProviderResponseBody: Decodable {
 
-        // An examples status
         public let status: Status?
 
         // ... other fields ...
@@ -3398,8 +3495,24 @@ Contributions are welcome! This library uses the MIT license.
     }
     ```
 
-  This pattern avoids collisions, works well with Xcode's click to jump-to-definition, and
+  This pattern avoids collisions, works well with Xcode's cmd-click to jump to definition, and
   improves source understanding for folks that use `ctrl-6` to navigate through a file.
+
+  You may wonder why we don't nest all types within the original top level type definition:
+
+  ```swift
+  public struct ProviderResponseBody: Decodable {
+      public enum Status: String, Decodable {
+          ...
+      }
+  }
+  ```
+
+  This approach is readable when the nested types are small and the nesting level is
+  not too deep. When either of those conditions flip, readability suffers. This is particularly
+  true for nested types that require their own coding keys and encodable/decodable logic, which
+  balloon line count with implementation detail that a user of the top level type has no
+  interest in.
 
 - If you are implementing an API contract that could reuse a provider's nested structure, and
   it's reasonable to suppose that the two objects will change together, then pull the nested
