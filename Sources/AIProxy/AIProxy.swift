@@ -727,13 +727,13 @@ public struct AIProxy {
     /// - Parameters:
     ///   - unprotectedAPIKey: Your BlackForestLabs API key
     /// - Returns: An instance of  BlackForestLabs configured and ready to make requests
-//    public static func blackForestLabsDirectService(
-//        unprotectedAPIKey: String
-//    ) -> BlackForestLabsService {
-//        return BlackForestLabsDirectService(
-//            unprotectedAPIKey: unprotectedAPIKey
-//        )
-//    }
+    public static func blackForestLabsDirectService(
+        unprotectedAPIKey: String
+    ) -> BlackForestLabsService {
+        return BlackForestLabsDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
+        )
+    }
 
 #if canImport(AppKit)
     public static func encodeImageAsJpeg(

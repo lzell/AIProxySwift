@@ -20,6 +20,10 @@ public protocol BlackForestLabsService {
         body: BlackForestLabsFluxProRequestBody_v1_1
     ) async throws -> Void
 
+
+    func getResult(
+        id: String
+    ) async throws -> Void
 }
 
 

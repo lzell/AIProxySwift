@@ -63,6 +63,7 @@ extension ReplicateService {
             input: input,
             secondsToWait: secondsToWait
         )
+
         if output.output == nil {
             throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
         }
