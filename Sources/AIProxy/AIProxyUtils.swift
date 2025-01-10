@@ -6,7 +6,7 @@
 //
 
 import Foundation
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 #elseif canImport(UIKit)
 import UIKit
@@ -22,7 +22,7 @@ struct AIProxyUtils {
         return AIProxyURLSession.create()
     }
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
     static func encodeImageAsJpeg(
         _ image: NSImage,
         _ compressionQuality: CGFloat
@@ -64,7 +64,7 @@ struct AIProxyUtils {
 }
 
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 extension NSImage {
     func jpegData(compressionQuality: CGFloat = 1.0) -> Data? {
         guard let tiffData = self.tiffRepresentation else {

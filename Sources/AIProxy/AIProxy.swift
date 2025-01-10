@@ -1,5 +1,5 @@
 import OSLog
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 #elseif canImport(UIKit)
 import UIKit
@@ -691,7 +691,7 @@ public struct AIProxy {
         )
     }
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
     public static func encodeImageAsJpeg(
         image: NSImage,
         compressionQuality: CGFloat = 1.0
