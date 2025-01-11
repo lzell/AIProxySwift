@@ -66,7 +66,7 @@ final class AnonymousAccountStorage {
         // meaning the one that was created earliest. The design of this class is to eventually resolve out
         // to the earliest account across multiple devices.
         if !AIProxyStorage.ukvsSync() {
-            aiproxyLogger.error("Could not synchronize NSUbiquitousKeyValueStore. Please ensure you enabled the key/value store in Target > Signing & Capabilities > iCloud > Key-Value storage?")
+            if ll(.error) { aiproxyLogger.error("Could not synchronize NSUbiquitousKeyValueStore. Please ensure you enabled the key/value store in Target > Signing & Capabilities > iCloud > Key-Value storage?") }
         }
         if let ukvsAccountData = AIProxyStorage.ukvsAccountData() {
             let ukvsAccount = try AnonymousAccount.deserialize(from: ukvsAccountData)
@@ -78,7 +78,7 @@ final class AnonymousAccountStorage {
                     localAccount = ukvsAccount
                     self.localAccountChain.append(ukvsAccount)
                     if try await AIProxyStorage.updateLocalAccountChainInKeychain(self.localAccountChain) != noErr {
-                        aiproxyLogger.warning("Could not update the local account chain")
+                        if ll(.warning) { aiproxyLogger.warning("Could not update the local account chain") }
                     }
                 } else {
                     try AIProxyStorage.updateUKVS(localAccount)
@@ -108,17 +108,17 @@ final class AnonymousAccountStorage {
                         localAccount = remoteAccount
                         self.localAccountChain.append(remoteAccount)
                         if try await AIProxyStorage.updateLocalAccountChainInKeychain(self.localAccountChain) != noErr {
-                            aiproxyLogger.warning("Could not update the local account chain")
+                            if ll(.warning) { aiproxyLogger.warning("Could not update the local account chain") }
                         }
                         try AIProxyStorage.updateUKVS(localAccount)
                     } else {
                         if try await AIProxyStorage.updateRemoteAccountInKeychain(localAccount) != noErr {
-                            aiproxyLogger.warning("Could not update the remote account")
+                            if ll(.warning) { aiproxyLogger.warning("Could not update the remote account") }
                         }
                     }
                 }
             } else {
-                aiproxyLogger.warning("Keychain cloud sync claims that there is a duplicate item, but we can't fetch it.")
+                if ll(.warning) { aiproxyLogger.warning("Keychain cloud sync claims that there is a duplicate item, but we can't fetch it.") }
             }
         }
 
@@ -129,10 +129,8 @@ final class AnonymousAccountStorage {
                                                name: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
                                                object: NSUbiquitousKeyValueStore.default)
 
-        #if false
-        aiproxyLogger.info("Local account chain is \(localAccountChain)")
-        aiproxyLogger.info("Anonymous account identifier is \(self.resolvedAccount!.uuid)")
-        #endif
+        if ll(.debug) { aiproxyLogger.debug("Local account chain is \(localAccountChain)") }
+        if ll(.debug) { aiproxyLogger.debug("Anonymous account identifier is \(self.resolvedAccount?.uuid ?? "unknown")") }
 
         return localAccount.uuid
     }
@@ -156,10 +154,10 @@ final class AnonymousAccountStorage {
         }
 
         switch changeReason.intValue {
-        case NSUbiquitousKeyValueStoreServerChange: aiproxyLogger.info("AIProxy account changed due to remote server change")
-        case NSUbiquitousKeyValueStoreInitialSyncChange: aiproxyLogger.info("AIProxy account changed due to initial sync change")
-        case NSUbiquitousKeyValueStoreQuotaViolationChange: aiproxyLogger.info("AIProxy account changed due to quota violation")
-        case NSUbiquitousKeyValueStoreAccountChange: aiproxyLogger.info("AIProxy account changed due to icloud account change")
+        case NSUbiquitousKeyValueStoreServerChange: if ll(.info) { aiproxyLogger.info("AIProxy account changed due to remote server change") }
+        case NSUbiquitousKeyValueStoreInitialSyncChange: if ll(.info) { aiproxyLogger.info("AIProxy account changed due to initial sync change") }
+        case NSUbiquitousKeyValueStoreQuotaViolationChange: if ll(.info) { aiproxyLogger.info("AIProxy account changed due to quota violation") }
+        case NSUbiquitousKeyValueStoreAccountChange: if ll(.info) { aiproxyLogger.info("AIProxy account changed due to icloud account change") }
         default:
             return
         }
@@ -174,12 +172,12 @@ final class AnonymousAccountStorage {
         }
 
         guard ukvsAccount != resolvedAccount else {
-            aiproxyLogger.info("UKVS remote sync is already up to date")
+            if ll(.info) { aiproxyLogger.info("UKVS remote sync is already up to date") }
             return
         }
 
         if ukvsAccount.timestamp <= resolvedAccount.timestamp {
-            aiproxyLogger.info("UKVS account is older than our existing resolved account. Switching to the older account.")
+            if ll(.info) { aiproxyLogger.info("UKVS account is older than our existing resolved account. Switching to the older account.") }
             self.resolvedAccount = ukvsAccount
             self.localAccountChain.append(ukvsAccount)
             DispatchQueue.main.async {
@@ -189,16 +187,16 @@ final class AnonymousAccountStorage {
             Task.detached {
                 let updateLocal = try? await AIProxyStorage.updateLocalAccountChainInKeychain(self.localAccountChain)
                 if updateLocal == nil || updateLocal! != noErr {
-                    aiproxyLogger.warning("Could not update the local account chain")
+                    if ll(.warning) { aiproxyLogger.warning("Could not update the local account chain") }
                 }
 
                 let updateRemote = try? await AIProxyStorage.updateRemoteAccountInKeychain(ukvsAccount)
                 if updateRemote == nil || updateRemote! != noErr {
-                    aiproxyLogger.warning("Could not update the remote account")
+                    if ll(.warning) { aiproxyLogger.warning("Could not update the remote account") }
                 }
             }
         } else {
-            aiproxyLogger.info("UKVS account is newer than our existing resolved account. Updating UKVS to use the older account.")
+            if ll(.info) { aiproxyLogger.info("UKVS account is newer than our existing resolved account. Updating UKVS to use the older account.") }
             try? AIProxyStorage.updateUKVS(resolvedAccount)
         }
     }

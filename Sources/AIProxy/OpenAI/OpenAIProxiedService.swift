@@ -210,6 +210,42 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
+    /// Starts a realtime session.
+    ///
+    /// To protect this connection through AIProxy's backend, your project must have websocket support enabled.
+    /// If you would like to be added to the private beta for websocket support, please reach out.
+    ///
+    /// - Parameters:
+    ///   - model: The model to use. See the available model names here:
+    ///            https://platform.openai.com/docs/models#gpt-4o-realtime
+    ///   - configuration: The session configuration object, see this reference:
+    ///                    https://platform.openai.com/docs/api-reference/realtime-client-events/session/update#realtime-client-events/session/update-session
+    ///   - logLevel: The threshold level that this library begins emitting log messages.
+    ///               For example, if you set this to `info`, then you'll see all `info`, `warning`, `error`, and `critical` logs.
+    ///
+    /// - Returns: A realtime session manager that the caller can send and receive messages with.
+    public func realtimeSession(
+        model: String,
+        configuration: OpenAIRealtimeSessionConfiguration,
+        logLevel: AIProxyLogLevel
+    ) async throws -> OpenAIRealtimeSession {
+        aiproxyCallerDesiredLogLevel = logLevel
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL ?? legacyURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/realtime?model=\(model)",
+            body: nil,
+            verb: .get,
+            additionalHeaders: [
+                "openai-beta": "realtime=v1"
+            ]
+        )
+        return await OpenAIRealtimeSession(
+            webSocketTask: self.urlSession.webSocketTask(with: request),
+            sessionConfiguration: configuration
+        )
+    }
 
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
