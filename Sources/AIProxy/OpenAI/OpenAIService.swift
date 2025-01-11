@@ -74,4 +74,8 @@ public protocol OpenAIService {
     func moderationRequest(
         body: OpenAIModerationRequestBody
     ) async throws -> OpenAIModerationResponseBody
+
+    func realtimeSession(
+        sessionConfiguration: OpenAIRealtimeSessionUpdate.SessionConfiguration
+    ) async throws -> OpenAIRealtimeSession
 }

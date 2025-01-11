@@ -1,14 +1,9 @@
-import OSLog
+import AVFoundation
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 #elseif canImport(UIKit)
 import UIKit
 #endif
-
-let aiproxyLogger = Logger(
-    subsystem: Bundle.main.bundleIdentifier ?? "UnknownApp",
-    category: "AIProxy"
-)
 
 public struct AIProxy {
     /// - Parameters:
@@ -737,6 +732,21 @@ public struct AIProxy {
         return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
     }
 #endif
+
+    public static func base64EncodeAudioPCMBuffer(from buffer: AVAudioPCMBuffer) -> String? {
+        guard buffer.format.channelCount == 1 else {
+            aiproxyLogger.error("This encoding routine assumes a single channel")
+            return nil
+        }
+
+        guard let audioBufferPtr = buffer.audioBufferList.pointee.mBuffers.mData else {
+            aiproxyLogger.error("No audio buffer list available to encode")
+            return nil
+        }
+
+        let audioBufferLenth = Int(buffer.audioBufferList.pointee.mBuffers.mDataByteSize)
+        return Data(bytes: audioBufferPtr, count: audioBufferLenth).base64EncodedString()
+    }
 
     private init() {
         fatalError("This type is not designed to be instantiated")

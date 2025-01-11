@@ -182,6 +182,26 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
+    public func realtimeSession(
+        sessionConfiguration: OpenAIRealtimeSessionUpdate.SessionConfiguration
+    ) async throws -> OpenAIRealtimeSession {
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL ?? legacyURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/realtime?model=gpt-4o-mini-realtime-preview-2024-12-17",
+            body: nil,
+            verb: .get,
+            additionalHeaders: [
+                "openai-beta": "realtime=v1"
+            ]
+        )
+        return await OpenAIRealtimeSession(
+            webSocketTask: self.urlSession.webSocketTask(with: request),
+            sessionConfiguration: sessionConfiguration
+        )
+    }
+
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
         switch self.requestFormat {

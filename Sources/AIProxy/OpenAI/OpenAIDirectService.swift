@@ -181,6 +181,27 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
+    public func realtimeSession(
+        sessionConfiguration: OpenAIRealtimeSessionUpdate.SessionConfiguration
+    ) async throws -> OpenAIRealtimeSession {
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: "https://api.openai.com",
+            path: "/v1/realtime?model=gpt-4o-mini-realtime-preview-2024-12-17",
+            body: nil,
+            verb: .get,
+            additionalHeaders: [
+                "Authorization": "Bearer \(self.unprotectedAPIKey)",
+                "OpenAI-Beta": "realtime=v1",
+//                "Upgrade": "websocket",
+//                "Connection": "Upgrade"
+            ]
+        )
+        return await OpenAIRealtimeSession(
+            webSocketTask: self.urlSession.webSocketTask(with: request),
+            sessionConfiguration: sessionConfiguration
+        )
+    }
+
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
         switch self.requestFormat {
