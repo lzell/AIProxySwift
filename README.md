@@ -184,7 +184,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
         return
     }
 
-    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.8) else {
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.6) else {
         print("Could not convert image to OpenAI's imageURL format")
         return
     }
@@ -956,7 +956,7 @@ Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
         return
     }
 
-    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.9) else {
+    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.6) else {
         print("Could not encode image as Jpeg")
         return
     }
@@ -1312,7 +1312,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
         return
     }
 
-    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.8) else {
+    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.6) else {
         print("Could not convert image to jpeg")
         return
     }
@@ -1938,7 +1938,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
         return
     }
 
-    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.8) else {
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.6) else {
         print("Could not convert image to a local data URI")
         return
     }
@@ -2498,13 +2498,15 @@ The `garmentImage` and `modelImage` arguments may be:
     // )
 
     guard let garmentImage = NSImage(named: "garment-image"),
-          let garmentImageURL = AIProxy.encodeImageAsURL(image: garmentImage) else {
+          let garmentImageURL = AIProxy.encodeImageAsURL(image: garmentImage
+                                                         compressionQuality: 0.6) else {
         print("Could not find an image named 'garment-image' in your app assets")
         return
     }
 
     guard let modelImage = NSImage(named: "model-image"),
-          let modelImageURL = AIProxy.encodeImageAsURL(image: modelImage) else {
+          let modelImageURL = AIProxy.encodeImageAsURL(image: modelImage,
+                                                       compressionQuality: 0.6) else {
         print("Could not find an image named 'model-image' in your app assets")
         return
     }
@@ -3147,7 +3149,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
         return
     }
 
-    guard let imageURL = AIProxy.encodeImageAsURL(image: image) else {
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.6) else {
         print("Could not encode image as a data URI")
         return
     }
