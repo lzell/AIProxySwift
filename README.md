@@ -2144,8 +2144,8 @@ Replace `<your-account>`:
 
     do {
         let modelURL = try await replicateService.createModel(
-            owner: "<your-account>", 
-            name: "my-model", 
+            owner: "<your-account>",
+            name: "my-model",
             description: "My great model",
             hardware: "gpu-t4",
             visibility: .private
@@ -2331,49 +2331,6 @@ model owner and model name in the string.
         print("Could not create replicate prediction: \(error.localizedDescription)")
     }
 
-
-### How to use xiankgx/face-swap on Replicate
-
-On macOS, use `NSImage(named:) in place of `UIImage(named:)`
-
-    import AIProxy
-
-    /* Uncomment for BYOK use cases */
-    // let replicateService = AIProxy.replicateDirectService(
-    //     unprotectedAPIKey: "your-replicate-key"
-    // )
-
-    /* Uncomment for all other production use cases */
-    // let replicateService = AIProxy.replicateService(
-    //     partialKey: "partial-key-from-your-developer-dashboard",
-    //     serviceURL: "service-url-from-your-developer-dashboard"
-    // )
-
-    guard let louFace = UIImage(named: "lou_face") else {
-        print("Could not find an image named 'lou_face' in your app assets")
-        return
-    }
-
-    guard let toddFace = UIImage(named: "todd_face") else {
-        print("Could not find an image named 'todd_face' in your app assets")
-        return
-    }
-    do {
-        let input = ReplicateFaceSwapInputSchema(
-            localSource: AIProxy.encodeImageAsURL(image: louFace),
-            localTarget: AIProxy.encodeImageAsURL(image: toddFace)
-        )
-        let output = try await replicateService.createFaceSwapImage(input: input)
-        if let imageURL = output.imageURL {
-            print("Done creating xiankgx/face-swap image: ", imageURL)
-        } else {
-            print("face-swap returned status \(output.status) with error: \(output.msg ?? "unspecified")")
-        }
-    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
-    } catch {
-        print("Could not create xiankgx/face-swap image: \(error.localizedDescription)")
-    }
 
 ***
 
@@ -3453,7 +3410,7 @@ Contributions are welcome! This library uses the MIT license.
          and the proxied use case. By returning an existential, callers can use conditional
          logic in their app to select which service to use:
 
-            ```  
+            ```
             let service = byok ? AIProxy.openaiDirectService() : AIProxy.openaiProxiedService()
             ```
       2. We prevent the direct and proxied concrete types from diverging in the public
