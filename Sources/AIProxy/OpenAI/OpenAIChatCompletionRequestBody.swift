@@ -95,6 +95,7 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
     /// A list of tools the model may call. Currently, only functions are supported as a tool. Use this to
     /// provide a list of functions the model may generate JSON inputs for. A max of 128 functions are
     /// supported.
+    /// See the function calling guide here: https://platform.openai.com/docs/guides/function-calling
     public let tools: [Tool]?
 
     /// Controls which (if any) tool is called by the model.

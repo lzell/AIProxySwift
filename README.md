@@ -417,92 +417,64 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
 
 ### How to stream structured outputs tool calls with OpenAI
 
-This example shows streaming tool use, where one tool is for getting the weather and another
-tool is for chatting with the user.
-
-If the user's prompt is not weather related, then OpenAI will call the 'chat' tool. You can use
-a strategy like this to build experiences where the main purpose is to call at tool, but also
-have chat functionality alongside it.
+This example it taken from OpenAI's [function calling guide](https://platform.openai.com/docs/guides/function-calling).
 
 ```swift
-    let systemInstructions = """
-        You are a friendly assistant that chats with the user or provides them
-        with the weather.
+    import AIProxy
 
-        If the user is just trying to chat, use the 'chat' tool.
-        If the user wants the weather, use the 'get_weather' tool.
-        """
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
 
-    let weatherSchema: [String: AIProxyJSONValue] = [
-        "type": "object",
-        "properties": [
-            "location": [
-                "type": "string",
-                "description": "The city and state, e.g. San Francisco, CA"
-            ],
-            "unit": [
-              "type": "string",
-              "enum": ["celsius", "fahrenheit"],
-              "description": "The unit of temperature. If not specified in the prompt, always default to fahrenheit",
-              "default": "fahrenheit"
-            ]
-        ],
-        "required": ["location", "unit"],
-        "additionalProperties": false
-    ]
-
-    let chatSchema: [String: AIProxyJSONValue] = [
-        "type": "object",
-        "properties": [
-            "message": [
-                "type": "string",
-                "description": "A message to chat with the user"
-            ]
-        ],
-        "required": ["message"],
-        "additionalProperties": false
-    ]
-
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
     let requestBody = OpenAIChatCompletionRequestBody(
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
-            .system(content: .text(systemInstructions)),
-            .user(content: .text("How are you doing?")),
+            .user(content: .text("What is the weather like in Paris today?")),
         ],
         tools: [
             .function(
                 name: "get_weather",
-                description: "Gets the weather",
-                parameters: weatherSchema,
+                description: "Get current temperature for a given location.",
+                parameters: [
+                    "type": "object",
+                    "properties": [
+                        "location": [
+                            "type": "string",
+                            "description": "City and country e.g. Bogotá, Colombia"
+                        ],
+                    ],
+                    "required": ["location"],
+                    "additionalProperties": false
+                ],
                 strict: true
             ),
-            .function(
-                name: "chat",
-                description: "Chat with the user",
-                parameters: chatSchema,
-                strict: true
-            )
         ]
     )
 
     do {
         let stream = try await openAIService.streamingChatCompletionRequest(body: requestBody)
         for try await chunk in stream {
-            let toolCall = chunk.choices.first?.delta.toolCalls?.first
-            if let functionName = toolCall?.function?.name {
-                print("ChatGPT wants to call function \(functionName) with arguments...")
+            guard let delta = chunk.choices.first?.delta else {
+                continue
             }
-            print(toolCall?.function?.arguments ?? "")
-            if let usage = chunk.usage {
-                print(
-                    """
-                    Used:
-                     \(usage.promptTokens ?? 0) prompt tokens
-                     \(usage.completionTokens ?? 0) completion tokens
-                     \(usage.completionTokensDetails?.reasoningTokens ?? 0) reasoning tokens
-                     \(usage.totalTokens ?? 0) total tokens
-                    """
-                )
+
+            // If the model decided to call a function, this branch will be entered:
+            if let toolCall = delta.toolCalls?.first {
+                if let functionName = toolCall.function?.name {
+                    print("ChatGPT wants to call function \(functionName) with arguments...")
+                }
+                print(toolCall.function?.arguments ?? "")
+            }
+
+            // If the model decided to chat, this branch will be entered:
+            if let content = delta.content {
+                print(content)
             }
         }
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
