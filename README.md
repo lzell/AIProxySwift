@@ -103,6 +103,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
 
 ### Get a non-streaming chat completion from OpenAI:
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -119,7 +120,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
     do {
         let response = try await openAIService.chatCompletionRequest(body: .init(
             model: "gpt-4o",
-            messages: [.system(content: .text("hello world"))]
+            messages: [.user(content: .text("hello world"))]
         ))
         print(response.choices.first?.message.content ?? "")
     }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
@@ -127,10 +128,12 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
     } catch {
         print("Could not create OpenAI chat completion: \(error.localizedDescription)")
     }
+```
 
 
 ### Get a streaming chat completion from OpenAI:
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -159,13 +162,97 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
     } catch {
         print("Could not create OpenAI streaming chat completion: \(error.localizedDescription)")
     }
+```
 
+### How to include history in chat completion requests to OpenAI
+
+Use this approach to have a conversation with ChatGPT. All previous chat messages, whether
+issued by the user or the assistant (chatGPT), are fed back into the model on each request.
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    // We'll start the conversation by asking about the color of a blackberry.
+    // There is no prior history, so we only send up a single user message.
+    //
+    // You can optionally include a .system message to give the model
+    // instructions on how it should behave.
+    let userMessage1: OpenAIChatCompletionRequestBody.Message = .user(
+        content: .text("What color is a blackberry?")
+    )
+
+    // Create the first chat completion.
+    var completion1: OpenAIChatCompletionResponseBody? = nil
+    do {
+        completion1 = try await openAIService.chatCompletionRequest(body: .init(
+            model: "gpt-4o-mini",
+            messages: [
+                userMessage1
+            ]
+        ))
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get first chat completion: \(error.localizedDescription)")
+    }
+
+    // Get the contents of the model's first response:
+    guard let assistantContent1 = completion1?.choices.first?.message.content else {
+        print("Completion1: ChatGPT did not respond with any assistant content")
+        return
+    }
+    print("Completion1: \(assistantContent1)")
+
+    // Continue the converstaion by asking about a strawberry.
+    // If the history were absent from the request, ChatGPT would respond with general facts.
+    // By including the history, the model continues the conversation, understanding that we
+    // are specifically interested in the strawberry's color.
+    let userMessage2: OpenAIChatCompletionRequestBody.Message = .user(
+        content: .text("And a strawberry?")
+    )
+
+    // Create the second chat completion, note the `messages` array.
+    var completion2: OpenAIChatCompletionResponseBody? = nil
+    do {
+        completion2 = try await openAIService.chatCompletionRequest(body: .init(
+            model: "gpt-4o-mini",
+            messages: [
+                userMessage1,
+                .assistant(content: .text(assistantContent1)),
+                userMessage2
+            ]
+        ))
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get second chat completion: \(error.localizedDescription)")
+    }
+
+    // Get the contents of the model's second response:
+    guard let assistantContent2 = completion2?.choices.first?.message.content else {
+        print("Completion2: ChatGPT did not respond with any assistant content")
+        return
+    }
+    print("Completion2: \(assistantContent2)")
+```
 
 ### Send a multi-modal chat completion request to OpenAI:
 
 On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -212,12 +299,13 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch {
         print("Could not create OpenAI multi-modal chat completion: \(error.localizedDescription)")
     }
-
+```
 
 ### How to generate an image with DALLE
 
 This snippet will print out the URL of an image generated with `dall-e-3`:
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -243,12 +331,13 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     } catch {
         print("Could not generate an image with OpenAI's DALLE: \(error.localizedDescription)")
     }
-
+```
 
 ### How to ensure OpenAI returns JSON as the chat message content
 
 Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON only:
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -278,13 +367,14 @@ Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON 
     } catch {
         print("Could not create OpenAI chat completion in JSON mode: \(error.localizedDescription)")
     }
-
+```
 
 ### How to use OpenAI structured outputs (JSON schemas) in a chat response
 
 This example prompts chatGPT to construct a color palette and conform to a strict JSON schema
 in its response:
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -344,6 +434,7 @@ in its response:
     } catch {
         print("Could not create OpenAI chat completion with structured outputs: \(error.localizedDescription)")
     }
+```
 
 
 ### How to use OpenAI structured outputs (JSON schemas) in a tool call
@@ -353,6 +444,7 @@ https://openai.com/index/introducing-structured-outputs-in-the-api/
 
 It asks ChatGPT to call a function with the correct arguments to look up a business's unfulfilled orders:
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -413,6 +505,7 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     } catch {
         print("Could not make an OpenAI structured output tool call: \(error.localizedDescription)")
     }
+```
 
 
 ### How to stream structured outputs tool calls with OpenAI
@@ -491,7 +584,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
 2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
 3. Run this snippet:
 
-    ```
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -524,12 +617,11 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     } catch {
         print("Could not get word-level timestamps from OpenAI: \(error.localizedDescription)")
     }
-    ```
-
+```
 
 ### How to use OpenAI text-to-speech
 
-    ```swift
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -567,12 +659,12 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     } catch {
         print("Could not create OpenAI TTS audio: \(error.localizedDescription)")
     }
-    ```
+```
 
 
 ### How to classify text and images as potentially harmful with OpenAI
 
-    ```swift
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -609,7 +701,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     } catch {
         print("Could not perform moderation request to OpenAI")
     }
-    ```
+```
 
 ### How to use OpenAI through an Azure deployment
 
