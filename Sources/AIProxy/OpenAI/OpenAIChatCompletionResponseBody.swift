@@ -70,6 +70,9 @@ public struct OpenAIChoiceMessage: Decodable {
 }
 
 public struct OpenAIToolCall: Decodable {
+    /// The ID of the tool call.
+    public let id: String
+
     /// The type of the tool. Currently, only `function` is supported.
     public let type: String
 
@@ -88,7 +91,16 @@ public struct OpenAIFunction: Decodable {
     ///
     /// Implementor's note: I no longer think the above warning is true, now that this launched:
     /// https://openai.com/index/introducing-structured-outputs-in-the-api/
+    ///
+    /// The keys of the `[String: Any]` dictionary are the argument names, e.g. `location` in the guide below.
+    /// The values of the `[String: Any]` dictionary are the arguments values, e.g. `Bogotá, Colombia` in this guide:
+    /// https://platform.openai.com/docs/guides/function-calling.
     public let arguments: [String: Any]?
+
+    /// The raw arguments string, unmapped to a `[String: Any]`. The unmapped string is useful for
+    /// continuing the converstation with the model. The model expects you to feed the raw argument string
+    /// back to the model on susbsequent requests.
+    public let argumentsRaw: String?
 
     private enum CodingKeys: CodingKey {
         case name
@@ -98,10 +110,11 @@ public struct OpenAIFunction: Decodable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.name = try container.decode(String.self, forKey: .name)
-        if let argumentsRaw = try? container.decode(String.self, forKey: .arguments),
-           let argumentsData = argumentsRaw.data(using: .utf8) {
-            self.arguments = try JSONSerialization.jsonObject(with: argumentsData, options: []) as? [String: Any]
-        } else{
+        if let argumentsRaw = try? container.decode(String.self, forKey: .arguments) {
+            self.argumentsRaw = argumentsRaw
+            self.arguments = (try [String: AIProxyJSONValue].deserialize(from: argumentsRaw)).untypedDictionary
+        } else {
+            self.argumentsRaw = nil
             self.arguments = nil
         }
     }

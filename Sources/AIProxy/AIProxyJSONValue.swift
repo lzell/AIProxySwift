@@ -43,6 +43,7 @@ public enum AIProxyJSONValue: Codable {
     case array([AIProxyJSONValue])
     case object([String: AIProxyJSONValue])
 
+
     public func encode(to encoder: Encoder) throws {
          var container = encoder.singleValueContainer()
          switch self {
@@ -93,6 +94,14 @@ extension [String: AIProxyJSONValue] {
         return convertToUntypedDictionary(self)
     }
 }
+
+#if false
+extension [String: Any] {
+    public var jsonDictionary: [String: AIProxyJSONValue] {
+        return convertToTypedDictionary(self)
+    }
+}
+#endif
 
 extension AIProxyJSONValue: ExpressibleByNilLiteral {
   public init(nilLiteral: ()) {
@@ -177,3 +186,35 @@ private func convertToUntypedDictionary(
         }
     }
 }
+
+#if false
+private func convertToTyped(_ input: Any) -> AIProxyJSONValue {
+    switch input {
+    case is NSNull:
+        return .null(NSNull())
+    case let bool as Bool:
+        return .bool(bool)
+    case let int as Int:
+        return .int(int)
+    case let double as Double:
+        return .double(double)
+    case let string as String:
+        return .string(string)
+    case let array as [Any]:
+        return .array(array.map { convertToTyped($0) })
+    case let dictionary as [String: Any]:
+        return .object(convertToTypedDictionary(dictionary))
+    default:
+        return .string("\(input)")
+    }
+}
+
+private func convertToTypedDictionary(
+    _ input: [String: Any]
+) -> [String: AIProxyJSONValue] {
+    return input.mapValues { v in
+        return convertToTyped(v)
+    }
+}
+#endif
+

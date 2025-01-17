@@ -7,9 +7,7 @@
 
 import Foundation
 
-/// Chat completion request body. See the OpenAI reference for available fields.
-/// Contributions are welcome if you need something beyond the simple fields I've added so far.
-/// Docstrings are taken from this reference:
+/// Chat completion request body. Docstrings are taken from this reference:
 /// https://platform.openai.com/docs/api-reference/chat/create
 public struct OpenAIChatCompletionRequestBody: Encodable {
     // Required
@@ -198,126 +196,130 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
 
 // MARK: - RequestBody.Message
 extension OpenAIChatCompletionRequestBody {
+    /// https://platform.openai.com/docs/api-reference/chat/create#chat-create-messages
     public enum Message: Encodable {
-        /// Assistant message
+        /// Messages sent by the model in response to user messages
+        ///
         /// - Parameters:
-        ///   - content: The contents of the assistant message
+        ///   - content: The contents of the assistant message. Can be a single string or multiple strings
         ///   - name: An optional name for the participant. Provides the model information to differentiate
         ///           between participants of the same role.
-        case assistant(content: AssistantContent, name: String? = nil)
+        ///   - refusal: The refusal message by the assistant.
+        case assistant(
+            content: MessageContent<String, [String]>? = nil,
+            name: String? = nil,
+            refusal: String? = nil,
+            toolCalls: [ToolCall]? = nil
+        )
 
-        /// A system message
+        /// Developer-provided instructions that the model should follow, regardless of messages sent by the user.
+        /// With o1 models and newer, `developer` messages replace the previous `system` messages.
+        ///
         /// - Parameters:
-        ///   - content: The contents of the system message.
+        ///   - content: The contents of the developer message. Can be a single string or multiple strings
         ///   - name: An optional name for the participant. Provides the model information to differentiate
         ///           between participants of the same role.
-        case system(content: SystemContent, name: String? = nil)
+        case developer(
+            content: MessageContent<String, [String]>,
+            name: String? = nil
+        )
 
-        /// A user message
+        /// Developer-provided instructions that the model should follow, regardless of messages sent by the user. With o1 models and newer, use `developer` messages for this purpose instead.
+        ///
+        /// - Parameters:
+        ///   - content: The contents of the system message. Can be a single string or multiple strings
+        ///   - name: An optional name for the participant. Provides the model information to differentiate
+        ///           between participants of the same role.
+        case system(
+            content: MessageContent<String, [String]>,
+            name: String? = nil
+        )
+
+        case tool(
+            content: MessageContent<String, [String]>,
+            toolCallID: String
+        )
+
+        /// Messages sent by an end user, containing prompts or additional context information.
+        ///
         /// - Parameters:
         ///   - content: The contents of the user message.
+        ///              The contents can be a single string or an array of content parts.
+        ///              Content parts can be text, image, or audio.
+        ///              You can pass multiple images by adding multiple imageURL content parts.
+        ///              Image input is only supported when using the gpt-4o model.
         ///   - name: An optional name for the participant. Provides the model information to differentiate
         ///           between participants of the same role.
-        case user(content: UserContent, name: String? = nil)
+        case user(
+            content: MessageContent<String, [ContentPart]>,
+            name: String? = nil
+        )
 
+        var role: String {
+            switch self {
+            case .assistant: return "assistant"
+            case .developer: return "developer"
+            case .system: return "system"
+            case .tool: return "tool"
+            case .user: return "user"
+            }
+        }
         private enum RootKey: String, CodingKey {
             case content
-            case role
             case name
+            case refusal
+            case role
+            case toolCallID = "tool_call_id"
+            case toolCalls = "tool_calls"
         }
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: RootKey.self)
+            try container.encode(self.role, forKey: .role)
             switch self {
-            case .assistant(let content, let name):
+            case .assistant(let content, let name, let refusal, let toolCalls):
+                try container.encodeIfPresent(content, forKey: .content)
+                try container.encodeIfPresent(name, forKey: .name)
+                try container.encodeIfPresent(refusal, forKey: .refusal)
+                try container.encodeIfPresent(toolCalls, forKey: .toolCalls)
+            case .developer(let content, let name):
                 try container.encode(content, forKey: .content)
-                try container.encode("assistant", forKey: .role)
-                if let name = name {
-                    try container.encode(name, forKey: .name)
-                }
+                try container.encodeIfPresent(name, forKey: .name)
             case .system(let content, let name):
                 try container.encode(content, forKey: .content)
-                try container.encode("system", forKey: .role)
-                if let name = name {
-                    try container.encode(name, forKey: .name)
-                }
+                try container.encodeIfPresent(name, forKey: .name)
+            case .tool(let content, let toolCallID):
+                try container.encode(content, forKey: .content)
+                try container.encode(toolCallID, forKey: .toolCallID)
             case .user(let content, let name):
                 try container.encode(content, forKey: .content)
-                try container.encode("user", forKey: .role)
-                if let name = name {
-                    try container.encode(name, forKey: .name)
-                }
+                try container.encodeIfPresent(name, forKey: .name)
             }
         }
     }
 }
 
-// MARK: - RequestBody.Message.AssistantContent
+// MARK: - RequestBody.Message.MessageContent
 extension OpenAIChatCompletionRequestBody.Message {
-    /// Assistant messages can consist of a single string or an array of strings
-    public enum AssistantContent: Encodable {
-        case text(String)
-        case parts([String])
+    public enum MessageContent<
+        SingleType: Encodable,
+        PartsType: Encodable
+    >: Encodable, SingleOrPartsEncodable {
+        case text(SingleType)
+        case parts(PartsType)
 
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.singleValueContainer()
+        var encodableItem: Encodable {
             switch self {
-            case .text(let text):
-                try container.encode(text)
-            case .parts(let parts):
-                try container.encode(parts)
+            case .text(let single): return single
+            case .parts(let parts): return parts
             }
         }
     }
 }
 
-
-// MARK: - RequestBody.Message.SystemContent
+// MARK: - RequestBody.Message.ContentPart
 extension OpenAIChatCompletionRequestBody.Message {
-    /// System messages can consist of a single string or an array of strings
-    public enum SystemContent: Encodable {
-        case text(String)
-        case parts([String])
-
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.singleValueContainer()
-            switch self {
-            case .text(let text):
-                try container.encode(text)
-            case .parts(let parts):
-                try container.encode(parts)
-            }
-        }
-    }
-}
-
-// MARK: - RequestBody.Message.UserContent
-extension OpenAIChatCompletionRequestBody.Message {
-    /// User messages can consist of a single string or an array of parts, each part capable of containing a
-    /// string or image
-    public enum UserContent: Encodable {
-        /// The text contents of the message.
-        case text(String)
-
-        /// An array of content parts. You can pass multiple images by adding multiple imageURL content parts.
-        /// Image input is only supported when using the gpt-4o model.
-        case parts([Part])
-
-        public func encode(to encoder: any Encoder) throws {
-            var container = encoder.singleValueContainer()
-            switch self {
-            case .text(let text):
-                try container.encode(text)
-            case .parts(let parts):
-                try container.encode(parts)
-            }
-        }
-    }
-}
-
-// MARK: - RequestBody.Message.UserContent.Part
-extension OpenAIChatCompletionRequestBody.Message.UserContent {
-    public enum Part: Encodable {
+    public enum ContentPart: Encodable {
         /// The text content.
         case text(String)
 
@@ -366,13 +368,58 @@ extension OpenAIChatCompletionRequestBody.Message.UserContent {
 }
 
 // MARK: - RequestBody.Message.UserContent.Part.ImageDetail
-extension OpenAIChatCompletionRequestBody.Message.UserContent.Part {
+extension OpenAIChatCompletionRequestBody.Message.ContentPart {
     public enum ImageDetail: String, Encodable {
         case auto
         case low
         case high
     }
 }
+
+// MARK: - RequestBody.Message.ToolCall
+extension OpenAIChatCompletionRequestBody.Message {
+    public struct ToolCall: Encodable {
+        /// The ID of the tool call.
+        let id: String
+
+        /// The type of the tool. Currently, only `function` is supported.
+        let type = "function"
+
+        /// The function that the model called
+        let function: Function
+
+        public init(
+            id: String,
+            function: OpenAIChatCompletionRequestBody.Message.ToolCall.Function
+        ) {
+            self.id = id
+            self.function = function
+        }
+    }
+}
+
+// MARK: - RequestBody.Message.ToolCall.Function
+extension OpenAIChatCompletionRequestBody.Message.ToolCall {
+    /// Represents the 'Function' object at `messages > assistant message > tool_calls > function`
+    /// https://platform.openai.com/docs/api-reference/chat/create#chat-create-messages
+    public struct Function: Encodable {
+        /// The name of the function that the assistant asked you to call.
+        public let name: String
+
+        /// The arguments that the assistant asked you to call your function with.
+        /// After you call the function natively, you pass this information back up to OpenAI to continue the conversation.
+        public let arguments: String?
+
+        public init(
+            name: String,
+            arguments: String? = nil
+        ) {
+            self.name = name
+            self.arguments = arguments
+        }
+    }
+}
+
 
 // MARK: - RequestBody.ResponseFormat
 extension OpenAIChatCompletionRequestBody {
