@@ -123,7 +123,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
             messages: [.user(content: .text("hello world"))]
         ))
         print(response.choices.first?.message.content ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create OpenAI chat completion: \(error.localizedDescription)")
@@ -157,7 +157,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
         for try await chunk in stream {
             print(chunk.choices.first?.delta.content ?? "")
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create OpenAI streaming chat completion: \(error.localizedDescription)")
@@ -214,7 +214,7 @@ issued by the user or the assistant (chatGPT), are fed back into the model on ea
     }
     print("Completion1: \(assistantContent1)")
 
-    // Continue the converstaion by asking about a strawberry.
+    // Continue the conversation by asking about a strawberry.
     // If the history were absent from the request, ChatGPT would respond with general facts.
     // By including the history, the model continues the conversation, understanding that we
     // are specifically interested in the strawberry's color.
@@ -294,7 +294,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
             ]
         ))
         print(response.choices.first?.message.content ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create OpenAI multi-modal chat completion: \(error.localizedDescription)")
@@ -326,7 +326,7 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
         )
         let response = try await openAIService.createImageRequest(body: requestBody)
         print(response.data.first?.url ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not generate an image with OpenAI's DALLE: \(error.localizedDescription)")
@@ -335,7 +335,15 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
 
 ### How to ensure OpenAI returns JSON as the chat message content
 
-Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON only:
+If you need to enforce a strict JSON contract, please use Structured Outputs (the next example)
+instead of this approach. This approach is referred to as 'JSON mode' in the OpenAI docs, and
+is the predecessor to Structured Outputs.
+
+JSON mode is enabled with `responseFormat: .jsonObject`, while Structured Outputs is enabled
+with `responseFormat: .jsonSchema`.
+
+If you use JSON mode, set `responseFormat` *and* specify in the prompt that OpenAI should
+return JSON only:
 
 ```swift
     import AIProxy
@@ -362,7 +370,7 @@ Use `responseFormat` *and* specify in the prompt that OpenAI should return JSON 
         )
         let response = try await openAIService.chatCompletionRequest(body: requestBody)
         print(response.choices.first?.message.content ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create OpenAI chat completion in JSON mode: \(error.localizedDescription)")
@@ -429,7 +437,7 @@ in its response:
         )
         let response = try await openAIService.chatCompletionRequest(body: requestBody)
         print(response.choices.first?.message.content ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create OpenAI chat completion with structured outputs: \(error.localizedDescription)")
@@ -437,12 +445,11 @@ in its response:
 ```
 
 
-### How to use OpenAI structured outputs (JSON schemas) in a tool call
+### How to use OpenAI structured outputs with a function call
 
-This example is taken from the structured outputs announcement:
-https://openai.com/index/introducing-structured-outputs-in-the-api/
+This implements the example in OpenAI's new [function calling guide](https://platform.openai.com/docs/guides/function-calling).
 
-It asks ChatGPT to call a function with the correct arguments to look up a business's unfulfilled orders:
+For more examples, see the [original structured outputs announcement](https://openai.com/index/introducing-structured-outputs-in-the-api).
 
 ```swift
     import AIProxy
@@ -457,54 +464,112 @@ It asks ChatGPT to call a function with the correct arguments to look up a busin
     //     partialKey: "partial-key-from-your-developer-dashboard",
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
+        func getWeather(location: String?) -> String {
+        // Fill this with your native function logic.
+        // Using a stub for this example.
+        return "Sunny and 65 degrees"
+    }
 
+    // We'll start the conversation by asking about the weather.
+    // There is no prior history, so we only send up a single user message.
+    //
+    // You can optionally include a .system message to give the model
+    // instructions on how it should behave.
+    let userMessage: OpenAIChatCompletionRequestBody.Message = .user(
+        content: .text("What is the weather in SF?")
+    )
+
+    var completion1: OpenAIChatCompletionResponseBody? = nil
     do {
-        let schema: [String: AIProxyJSONValue] = [
-            "type": "object",
-            "properties": [
-                "location": [
-                    "type": "string",
-                    "description": "The city and state, e.g. San Francisco, CA"
-                ],
-                "unit": [
-                    "type": "string",
-                    "enum": ["celsius", "fahrenheit"],
-                    "description": "The unit of temperature. If not specified in the prompt, always default to fahrenheit",
-                    "default": "fahrenheit"
-                ]
-            ],
-            "required": ["location", "unit"],
-            "additionalProperties": false
-        ]
-
-        let requestBody = OpenAIChatCompletionRequestBody(
-            model: "gpt-4o-2024-08-06",
+        completion1 = try await openAIService.chatCompletionRequest(body: .init(
+            model: "gpt-4o-mini",
             messages: [
-                .user(content: .text("How cold is it today in SF?"))
+                userMessage
             ],
             tools: [
                 .function(
                     name: "get_weather",
-                    description: "Call this when the user wants the weather",
-                    parameters: schema,
-                    strict: true)
+                    description: "Get current temperature for a given location.",
+                    parameters: [
+                        "type": "object",
+                        "properties": [
+                            "location": [
+                                "type": "string",
+                                "description": "City and country e.g. Bogotá, Colombia"
+                            ]
+                        ],
+                        "required": ["location"],
+                        "additionalProperties": false
+                    ],
+                    strict: true
+                )
             ]
-        )
-
-        let response = try await openAIService.chatCompletionRequest(body: requestBody)
-        if let toolCall = response.choices.first?.message.toolCalls?.first {
-            let functionName = toolCall.function.name
-            let arguments = toolCall.function.arguments ?? [:]
-            print("ChatGPT wants us to call function \(functionName) with arguments: \(arguments)")
-        } else {
-            print("Could not get function arguments")
-        }
-
+        ))
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received \(statusCode) status code with response body: \(responseBody)")
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not make an OpenAI structured output tool call: \(error.localizedDescription)")
+        print("Could not get first chat completion: \(error.localizedDescription)")
     }
+
+    // Get the contents of the model's first response:
+    guard let toolCall = completion1?.choices.first?.message.toolCalls?.first else {
+        print("Completion1: ChatGPT did not respond with a tool call")
+        return
+    }
+
+    // Invoke the function call natively.
+    guard toolCall.function.name == "get_weather" else {
+        print("We only know how to get the weather")
+        return
+    }
+    let weather = getWeather(location: toolCall.function.arguments?["location"] as? String)
+
+    // Pass the results of the function call back to OpenAI.
+    // We create a second chat completion, note the `messages` array in
+    // the completion request. It passes back up:
+    //   1. the original user message
+    //   2. the response from the assistant, which told us to call the get_weather function
+    //   3. the result of our `getWeather` invocation
+    let toolMessage: OpenAIChatCompletionRequestBody.Message = .tool(
+        content: .text(weather),
+        toolCallID: toolCall.id
+    )
+
+    var completion2: OpenAIChatCompletionResponseBody? = nil
+    do {
+        completion2 = try await openAIService.chatCompletionRequest(
+            body: .init(
+                model: "gpt-4o-mini",
+                messages: [
+                    userMessage,
+                    .assistant(
+                        toolCalls: [
+                            .init(
+                                id: toolCall.id,
+                                function: .init(
+                                    name: toolCall.function.name,
+                                    arguments: toolCall.function.argumentsRaw
+                                )
+                            )
+                        ]
+                    ),
+                    toolMessage
+                ]
+            )
+        )
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get second chat completion: \(error.localizedDescription)")
+    }
+
+    // Get the contents of the model's second response:
+    guard let assistantContent2 = completion2?.choices.first?.message.content else {
+        print("Completion2: ChatGPT did not respond with any assistant content")
+        return
+    }
+    print(assistantContent2)
+    // Prints: "The weather in San Francisco is sunny with a temperature of 65 degrees Fahrenheit."
 ```
 
 
@@ -612,7 +677,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
                 print("\(word.word) from \(word.start) to \(word.end)")
             }
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not get word-level timestamps from OpenAI: \(error.localizedDescription)")
