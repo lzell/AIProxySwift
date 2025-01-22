@@ -3623,3 +3623,9 @@ Contributions are welcome! This library uses the MIT license.
         case canceled
     }
     ```
+
+### Release naming guidelines
+
+Give each release a semantic version *without* a `v` prefix on the version name. That is the
+most reliable way to make Xcode's `File > Add Package Dependency` flow default to sane version
+values.
