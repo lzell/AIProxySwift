@@ -112,7 +112,7 @@ open class OpenAIRealtimeSession {
 
         switch messageType {
         case "session.created":
-            break
+            self.continuation?.yield(.sessionCreated)
         case "response.audio.delta":
             print("Received audio data")
             if let base64Audio = json["delta"] as? String {
