@@ -60,7 +60,7 @@ open class OpenAIRealtimeSession {
             aiproxyLogger.warning("Can't send a websocket message. WS disconnected.")
             return
         }
-        let wsMessage = URLSessionWebSocketTask.Message.data(try encodable.serialize())
+        let wsMessage = URLSessionWebSocketTask.Message.string(try encodable.serialize())
         try await self.webSocketTask.send(wsMessage)
     }
 
