@@ -82,7 +82,8 @@ public struct InternalAudioPlayer {
 
             if !(audioEngine?.isRunning ?? false) {
                 #if !os(macOS)
-                try? AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playAndRecord, options: AVAudioSession.CategoryOptions.defaultToSpeaker)
+                try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .defaultToSpeaker)
+                try? AVAudioSession.sharedInstance().setActive(true)
                 #endif
                 audioEngine = AVAudioEngine()
                 playerNode = AVAudioPlayerNode()
