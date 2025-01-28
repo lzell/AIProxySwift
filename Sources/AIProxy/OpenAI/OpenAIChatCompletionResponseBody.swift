@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// https://platform.openai.com/docs/api-reference/chat/object
 public struct OpenAIChatCompletionResponseBody: Decodable {
     /// A list of chat completion choices.
     /// Can be more than one if `n` on `OpenAIChatCompletionRequestBody` is greater than 1.

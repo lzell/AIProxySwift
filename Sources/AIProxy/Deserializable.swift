@@ -22,8 +22,8 @@ extension Decodable {
 
     static func deserialize(fromLine line: String) -> Self? {
         guard line.hasPrefix("data: ") else {
-            // Special case to ignore OpenRouter's implementation of SSE comments
-            if line != ": OPENROUTER PROCESSING" {
+            // Special case to ignore OpenRouter and DeepSeek SSE comments
+            if line != ": OPENROUTER PROCESSING" && line != ": keep-alive" {
                 aiproxyLogger.warning("Received unexpected line from aiproxy: \(line)")
             }
             return nil
