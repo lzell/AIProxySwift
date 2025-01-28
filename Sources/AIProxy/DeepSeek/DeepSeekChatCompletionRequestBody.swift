@@ -13,7 +13,7 @@ public struct DeepSeekChatCompletionRequestBody: Encodable {
     /// A list of messages comprising the conversation so far.
     public let messages: [Message]
 
-    /// ID of the model to use. Possible values are deepseek-chat, deepseek-reasoner.
+    /// ID of the model to use. Possible values are `deepseek-chat`, `deepseek-reasoner`.
     /// You can find the list of possible values at any time by curling this endpoint:
     /// https://api-docs.deepseek.com/api/list-models
     public let model: String

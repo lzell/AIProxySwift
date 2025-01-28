@@ -17,6 +17,7 @@ included:
 - Mistral
 - EachAI
 - OpenRouter
+- DeepSeek
 
 Your initialization code determines whether requests go straight to the provider or are
 protected through the [AIProxy](https://www.aiproxy.pro) backend.
@@ -96,6 +97,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
 * [Mistral](#mistral)
 * [EachAI](#eachai)
 * [OpenRouter](#openrouter)
+* [DeepSeek](#deepseek)
 * [Advanced Settings](#advanced-settings)
 
 
@@ -3325,6 +3327,110 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch {
         print("Could not make a vision request to OpenRouter: \(error.localizedDescription)")
     }
+
+***
+
+## DeepSeek
+
+### How to make a chat completion request with DeepSeek
+
+Available models are `deepseek-chat` and `deepseek-reasoner`:
+
+```swift
+    import AIProxySwift
+
+    /* Uncomment for BYOK use cases */
+    // let deepSeekService = AIProxy.deepSeekDirectService(
+    //     unprotectedAPIKey: "your-deepseek-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let deepSeekService = AIProxy.deepSeekService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = DeepSeekChatCompletionRequestBody(
+        messages: [
+            .system(content: "You are a helpful assistant."),
+            .user(content: "Hello!")
+        ],
+        model: "deepseek-chat" /* Use "deepseek-reasoner" for reasoning */
+    )
+
+    do {
+        let response = try await deepSeekService.chatCompletionRequest(body: requestBody)
+        print("response.choices.first?.message.content ?? "")
+        if let usage = response.usage {
+            print(
+                """
+                Used:
+                 \(usage.completionTokens ?? 0) completion tokens
+                 \(usage.completionTokensDetails?.reasoningTokens ?? 0) reasoning tokens
+                 \(usage.promptCacheHitTokens ?? 0) prompt cache hit tokens
+                 \(usage.promptCacheMissTokens ?? 0) prompt cache miss tokens
+                 \(usage.promptTokens ?? 0) prompt tokens
+                 \(usage.totalTokens ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get DeepSeek buffered chat completion: \(error.localizedDescription)")
+    }
+```
+
+### How to make a streaming chat completion with DeepSeek
+
+Available models are `deepseek-chat` and `deepseek-reasoner`:
+
+```swift
+    import AIProxySwift
+
+    /* Uncomment for BYOK use cases */
+    // let deepSeekService = AIProxy.deepSeekDirectService(
+    //     unprotectedAPIKey: "your-deepseek-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let deepSeekService = AIProxy.deepSeekService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = DeepSeekChatCompletionRequestBody(
+        messages: [
+            .system(content: "You are a helpful assistant."),
+            .user(content: "Hello!")
+        ],
+        model: "deepseek-chat" /* Use "deepseek-reasoner" for reasoning */
+    )
+
+    do {
+        let stream = try await deepSeekService.streamingChatCompletionRequest(body: requestBody)
+        for try await chunk in stream {
+            print(chunk.choices.first?.delta.content ?? "")
+            if let usage = chunk.usage {
+                print(
+                    """
+                    Used:
+                    \(usage.completionTokens ?? 0) completion tokens
+                    \(usage.completionTokensDetails?.reasoningTokens ?? 0) reasoning tokens
+                    \(usage.promptCacheHitTokens ?? 0) prompt cache hit tokens
+                    \(usage.promptCacheMissTokens ?? 0) prompt cache miss tokens
+                    \(usage.promptTokens ?? 0) prompt tokens
+                    \(usage.totalTokens ?? 0) total tokens
+                    """
+                )
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not make streaming DeepSeek request")
+    }
+```
 
 ***
 
