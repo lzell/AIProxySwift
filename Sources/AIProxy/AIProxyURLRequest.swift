@@ -49,8 +49,9 @@ struct AIProxyURLRequest {
             request.addValue(deviceCheckToken, forHTTPHeaderField: "aiproxy-devicecheck")
         }
 
-        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
-            request.addValue("v1|\(appVersion)", forHTTPHeaderField: "aiproxy-metadata")
+        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as?  String,
+           let bundleID = Bundle.main.bundleIdentifier{
+            request.addValue("v2|\(bundleID)|\(appVersion)|\(AIProxy.sdkVersion)", forHTTPHeaderField: "aiproxy-metadata")
         }
 
     #if targetEnvironment(simulator)

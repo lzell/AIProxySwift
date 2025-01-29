@@ -11,6 +11,10 @@ let aiproxyLogger = Logger(
 )
 
 public struct AIProxy {
+
+    /// The current sdk version
+    public static let sdkVersion = "0.60.0"
+
     /// - Parameters:
     ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your provider's key.
     ///     AIProxy takes your key, encrypts it, and stores part of the result on our servers. The part that you include
