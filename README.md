@@ -18,6 +18,7 @@ included:
 - EachAI
 - OpenRouter
 - DeepSeek
+- Fireworks AI
 
 Your initialization code determines whether requests go straight to the provider or are
 protected through the [AIProxy](https://www.aiproxy.pro) backend.
@@ -98,6 +99,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
 * [EachAI](#eachai)
 * [OpenRouter](#openrouter)
 * [DeepSeek](#deepseek)
+* [Fireworks AI](#fireworks-ai)
 * [Advanced Settings](#advanced-settings)
 
 
@@ -3429,6 +3431,114 @@ Available models are `deepseek-chat` and `deepseek-reasoner`:
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not make streaming DeepSeek request")
+    }
+```
+
+***
+
+
+## Fireworks AI
+
+### How to make a streaming DeepSeek R1 request to Fireworks AI
+
+```swift
+    import AIProxySwift
+
+    /* Uncomment for BYOK use cases */
+    // let fireworksAIService = AIProxy.fireworksAIDirectService(
+    //     unprotectedAPIKey: "your-fireworks-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let fireworksAIService = AIProxy.fireworksAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = DeepSeekChatCompletionRequestBody(
+        messages: [
+            .system(content: "You are a math assistant"),
+            .user(content: "Here's why Burger's equation leads to a breaking nonlinearity in shallow water")
+        ],
+        model: "accounts/fireworks/models/deepseek-r1",
+        temperature: 0.0 /* Set this based on your use case: https://api-docs.deepseek.com/quick_start/parameter_settings*/
+    )
+
+    do {
+        let stream = try await fireworksAIService.streamingDeepSeekR1Request(
+            body: requestBody,
+            secondsToWait: 300
+        )
+        for try await chunk in stream {
+            print(chunk.choices.first?.delta.content ?? "")
+            if let usage = chunk.usage {
+                print(
+                    """
+                    Used:
+                    \(usage.completionTokens ?? 0) completion tokens
+                    \(usage.promptTokens ?? 0) prompt tokens
+                    \(usage.totalTokens ?? 0) total tokens
+                    """
+                )
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch let err as URLError where err.code == URLError.timedOut {
+        print("R1 request to FireworksAI timed out")
+    } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
+        print("Could not complete R1 request to FireworksAI. Please check your internet connection")
+    } catch {
+        print("Could not complete R1 request to FireworksAI: \(error.localizedDescription)")
+    }
+```
+
+### How to make a buffered DeepSeek R1 request to Fireworks AI
+
+```swift
+    /* Uncomment for BYOK use cases */
+    // let fireworksAIService = AIProxy.fireworksAIDirectService(
+    //     unprotectedAPIKey: "your-fireworks-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let fireworksAIService = AIProxy.fireworksAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = DeepSeekChatCompletionRequestBody(
+        messages: [
+            .system(content: "You are a math assistant"),
+            .user(content: "Here's why Burger's equation leads to a breaking nonlinearity in shallow water")
+        ],
+        model: "accounts/fireworks/models/deepseek-r1",
+        temperature: 0.0 /* Set this based on your use case: https://api-docs.deepseek.com/quick_start/parameter_settings*/
+    )
+    do {
+        let response = try await fireworksAIService.deepSeekR1Request(
+            body: requestBody,
+            secondsToWait: 300
+        )
+        print(response.choices.first?.message.content ?? "")
+        if let usage = response.usage {
+            print(
+                """
+                Used:
+                 \(usage.completionTokens ?? 0) completion tokens
+                 \(usage.promptTokens ?? 0) prompt tokens
+                 \(usage.totalTokens ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch let err as URLError where err.code == URLError.timedOut {
+        print("R1 request to FireworksAI timed out")
+    } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
+        print("Could not complete R1 request to FireworksAI. Please check your internet connection")
+    } catch {
+        print("Could not complete R1 request to FireworksAI: \(error.localizedDescription)")
     }
 ```
 
