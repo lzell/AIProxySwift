@@ -398,19 +398,38 @@ extension ReplicateService {
         throw ReplicateError.reachedRetryLimit
     }
 
-    func mapPredictionResultURLToOutput<T: Decodable>(
-        _ predictionResultURL: URL?
-    ) async throws -> T {
-        guard let predictionResultURL = predictionResultURL else {
-            throw AIProxyError.assertion("Replicate prediction URL is nil")
+    /// See the usage examples in ReplicateService+Convenience.
+    public func synchronousResponseBodyToOutput<T>(_ responseBody: ReplicateSynchronousResponseBody<T>) async throws -> T {
+        if let error = responseBody.error {
+            throw ReplicateError.predictionFailed(error)
         }
+
+        // If the sync API returned the inference output as part of the initial response, return it
+        if let output = responseBody.output {
+            return output
+        }
+
+        // Otherwise, fall back to making a request to `predictionResultURL`
+        guard let predictionResultURL = responseBody.predictionResultURL else {
+            throw ReplicateError.predictionFailed("Replicate prediction did not include a result URL.")
+        }
+
         let prediction = try await self.getPredictionResult(
             url: predictionResultURL,
             output: ReplicatePredictionResponseBody<T>.self
         )
+
         guard let predictionOutput = prediction.output else {
-            throw AIProxyError.assertion("Replicate prediction does not have any output")
+            throw ReplicateError.predictionFailed("""
+                Your replicate prediction failed. This could be due to a number of reasons:
+                1. Your `secondsToWait` is not long enough for the generation to complete
+                2. You are trying to use the replicate sync API for a model that doesn't support it
+                3. The replicate API is having stability problems
+                4. The replicate model that you are trying to call was removed
+                """
+            )
         }
+
         return predictionOutput
     }
 }

@@ -55,18 +55,15 @@ extension ReplicateService {
     ///            `numOutputs` that you pass in the input schema.
     public func createFluxSchnellImageURLs(
         input: ReplicateFluxSchnellInputSchema,
-        secondsToWait: Int = 30
+        secondsToWait: Int /* = 30 */
     ) async throws -> [URL] {
-        let output: ReplicateSynchronousAPIOutput<[String]> = try await self.createSynchronousPredictionUsingOfficialModel(
+        let responseBody: ReplicateSynchronousResponseBody<[URL]> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-schnell",
             input: input,
             secondsToWait: secondsToWait
         )
-        if output.output == nil {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
+        return try await self.synchronousResponseBodyToOutput(responseBody)
     }
 
     /// Convenience method for creating an image through Black Forest Lab's Flux-Pro model:
@@ -115,18 +112,15 @@ extension ReplicateService {
     /// - Returns: The URL of the generated image
     public func createFluxProImageURL(
         input: ReplicateFluxProInputSchema,
-        secondsToWait: Int = 60
+        secondsToWait: Int /* = 60 */
     ) async throws -> URL {
-        let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
+        let responseBody: ReplicateSynchronousAPIOutput<URL> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-pro",
             input: input,
             secondsToWait: secondsToWait
         )
-        if output.output == nil {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
+        return try await self.synchronousResponseBodyToOutput(responseBody)
     }
 
     /// Convenience method for creating an image through Black Forest Lab's Flux-Pro v1.1 model:
@@ -174,18 +168,15 @@ extension ReplicateService {
     /// - Returns: The URL of the generated image
     public func createFluxProImageURL_v1_1(
         input: ReplicateFluxProInputSchema_v1_1,
-        secondsToWait: Int = 60
+        secondsToWait: Int /* = 60 */
     ) async throws -> URL {
-        let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
+        let responseBody: ReplicateSynchronousAPIOutput<URL> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-1.1-pro",
             input: input,
             secondsToWait: secondsToWait
         )
-        if output.output == nil {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
+        return try await self.synchronousResponseBodyToOutput(responseBody)
     }
 
     /// Convenience method for creating image URL through Black Forest Lab's Flux-Pro model.
@@ -200,18 +191,15 @@ extension ReplicateService {
     /// - Returns: The URL of the generated image
     public func createFluxProUltraImageURL_v1_1(
         input: ReplicateFluxProUltraInputSchema_v1_1,
-        secondsToWait: Int = 60
+        secondsToWait: Int /* = 60 */
     ) async throws -> URL {
-        let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
+        let responseBody: ReplicateSynchronousAPIOutput<URL> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-1.1-pro-ultra",
             input: input,
             secondsToWait: secondsToWait
         )
-        if output.output == nil {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
+        return try await self.synchronousResponseBodyToOutput(responseBody)
     }
 
     /// Convenience method for creating an image through Black Forest Lab's Flux-Dev model:
@@ -260,18 +248,15 @@ extension ReplicateService {
     ///           `numOutputs` that you pass in the input schema.
     public func createFluxDevImageURLs(
         input: ReplicateFluxDevInputSchema,
-        secondsToWait: Int = 10
+        secondsToWait: Int /* = 10 */
     ) async throws -> [URL] {
-        let output: ReplicateSynchronousAPIOutput<[String]> = try await self.createSynchronousPredictionUsingOfficialModel(
+        let responseBody: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-dev",
             input: input,
             secondsToWait: secondsToWait
         )
-        if output.output == nil {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
+        return try await self.synchronousResponseBodyToOutput(responseBody)
     }
 
     /// Convenience method for creating an image using https://replicate.com/zsxkib/flux-pulid
@@ -345,17 +330,14 @@ extension ReplicateService {
     public func createSDXLImageURLs(
         input: ReplicateSDXLInputSchema,
         version: String = "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
-        secondsToWait: Int = 60
+        secondsToWait: Int /* = 60 */
     ) async throws -> [URL] {
-        let apiResult: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingVersion(
+        let responseBody: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingVersion(
             modelVersion: version,
             input: input,
             secondsToWait: secondsToWait
         )
-        guard let output = apiResult.output else {
-            throw ReplicateError.predictionDidNotIncludeOutput
-        }
-        return output
+        return try await self.synchronousResponseBodyToOutput(responseBody)
     }
 
     /// Convenience method for creating an image through fofr's fresh ink SDXL model
@@ -378,17 +360,14 @@ extension ReplicateService {
     public func createSDXLFreshInkImageURLs(
         input: ReplicateSDXLFreshInkInputSchema,
         version: String = "8515c238222fa529763ec99b4ba1fa9d32ab5d6ebc82b4281de99e4dbdcec943",
-        secondsToWait: Int = 60
+        secondsToWait: Int /* = 60 */
     ) async throws -> [URL] {
-        let apiResult: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingVersion(
+        let responseBody: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingVersion(
             modelVersion: version,
             input: input,
             secondsToWait: secondsToWait
         )
-        guard let output = apiResult.output else {
-            throw ReplicateError.predictionDidNotIncludeOutput
-        }
-        return output
+        return try await self.synchronousResponseBodyToOutput(responseBody)
     }
 
     /// Convenience method for creating an image using Flux-Dev ControlNet:
