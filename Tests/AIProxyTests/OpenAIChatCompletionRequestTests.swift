@@ -225,7 +225,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
             toolCalls: [
                 .init(
                     id: "abc",
-                    function: .init(name: "get_weather", arguments: ["location": "San Francisco, California"])
+                    function: .init(name: "get_weather", arguments: #"args"#)
                 )
             ]
         )
@@ -237,9 +237,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
               "tool_calls" : [
                 {
                   "function" : {
-                    "arguments" : {
-                      "location" : "San Francisco, California"
-                    },
+                    "arguments" : "args",
                     "name" : "get_weather"
                   },
                   "id" : "abc",

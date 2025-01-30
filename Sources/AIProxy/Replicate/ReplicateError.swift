@@ -17,10 +17,7 @@ public enum ReplicateError: LocalizedError {
         case .predictionDidNotIncludeURL:
             return "A prediction was created, but replicate did not respond with a URL to poll"
         case .predictionFailed(let message):
-            if let message = message {
-                return "The prediction failed with error message: \(message)."
-            }
-            return "The prediction failed with an unspecificed error from replicate."
+            return message ?? "The prediction failed with an unspecificed error from replicate."
         case .missingModelURL:
             return "The replicate model does not contain a URL"
         case .reachedRetryLimit:

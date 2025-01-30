@@ -13,7 +13,7 @@ let aiproxyLogger = Logger(
 public struct AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.60.0"
+    public static let sdkVersion = "0.62.0"
 
     /// - Parameters:
     ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your provider's key.
@@ -786,7 +786,7 @@ public struct AIProxy {
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
     public static func encodeImageAsJpeg(
         image: NSImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> Data? {
         return AIProxyUtils.encodeImageAsJpeg(image, compressionQuality)
     }
@@ -794,14 +794,14 @@ public struct AIProxy {
     @available(*, deprecated, message: "This function is deprecated. Use AIProxy.encodeImageAsURL instead.")
     public static func openAIEncodedImage(
         image: NSImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> URL? {
         return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
     }
 
     public static func encodeImageAsURL(
         image: NSImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> URL? {
         return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
     }
@@ -809,7 +809,7 @@ public struct AIProxy {
 #elseif canImport(UIKit)
     public static func encodeImageAsJpeg(
         image: UIImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> Data? {
         return AIProxyUtils.encodeImageAsJpeg(image, compressionQuality)
     }
@@ -817,14 +817,14 @@ public struct AIProxy {
     @available(*, deprecated, message: "This function is deprecated. Use AIProxy.encodeImageAsURL instead.")
     public static func openAIEncodedImage(
         image: UIImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> URL? {
         return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
     }
 
     public static func encodeImageAsURL(
         image: UIImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> URL? {
         return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
     }
