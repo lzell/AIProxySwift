@@ -830,6 +830,14 @@ public struct AIProxy {
     }
 #endif
 
+    public static func configure_BETA() async {
+        do {
+            try await AnonymousAccountStorage.sync()
+        } catch {
+            aiproxyLogger.critical("Could not configure an AIProxy anonymous account: \(error.localizedDescription)")
+        }
+    }
+
     private init() {
         fatalError("This type is not designed to be instantiated")
     }
