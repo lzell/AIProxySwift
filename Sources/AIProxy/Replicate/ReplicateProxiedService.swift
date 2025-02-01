@@ -54,7 +54,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
         modelName: String,
         input: T,
         secondsToWait: Int
-    )  async throws -> ReplicateSynchronousAPIOutput<U> {
+    )  async throws -> ReplicateSynchronousResponseBody<U> {
         let requestBody = ReplicatePredictionRequestBody(input: input)
         var request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
@@ -97,7 +97,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
         modelVersion: String,
         input: T,
         secondsToWait: Int
-    )  async throws -> ReplicateSynchronousAPIOutput<U> {
+    )  async throws -> ReplicateSynchronousResponseBody<U> {
         let requestBody = ReplicatePredictionRequestBody(
             input: input,
             version: modelVersion

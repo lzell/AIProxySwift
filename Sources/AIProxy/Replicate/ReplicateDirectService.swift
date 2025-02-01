@@ -51,7 +51,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
         modelName: String,
         input: T,
         secondsToWait: Int
-    )  async throws -> ReplicateSynchronousAPIOutput<U> {
+    )  async throws -> ReplicateSynchronousResponseBody<U> {
         let requestBody = ReplicatePredictionRequestBody(input: input)
         var request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.replicate.com",
@@ -95,7 +95,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
         modelVersion: String,
         input: T,
         secondsToWait: Int
-    )  async throws -> ReplicateSynchronousAPIOutput<U> {
+    )  async throws -> ReplicateSynchronousResponseBody<U> {
         let requestBody = ReplicatePredictionRequestBody(
             input: input,
             version: modelVersion
