@@ -52,7 +52,7 @@ public protocol ReplicateService {
         modelName: String,
         input: T,
         secondsToWait: Int
-    )  async throws -> ReplicateSynchronousAPIOutput<U>
+    )  async throws -> ReplicateSynchronousResponseBody<U>
 
     /// This is the general purpose method for running community replicate models.
     /// It is generic in the input and output, so it's up to you to pass appropriate types.
@@ -81,7 +81,7 @@ public protocol ReplicateService {
         modelVersion: String,
         input: T,
         secondsToWait: Int
-    ) async throws -> ReplicateSynchronousAPIOutput<U>
+    ) async throws -> ReplicateSynchronousResponseBody<U>
 
     /// Prefer `createSynchronousPredictionUsingOfficialModel` to this method.
     ///

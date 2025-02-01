@@ -114,7 +114,7 @@ extension ReplicateService {
         input: ReplicateFluxProInputSchema,
         secondsToWait: Int /* = 60 */
     ) async throws -> URL {
-        let responseBody: ReplicateSynchronousAPIOutput<URL> = try await self.createSynchronousPredictionUsingOfficialModel(
+        let responseBody: ReplicateSynchronousResponseBody<URL> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-pro",
             input: input,
@@ -170,7 +170,7 @@ extension ReplicateService {
         input: ReplicateFluxProInputSchema_v1_1,
         secondsToWait: Int /* = 60 */
     ) async throws -> URL {
-        let responseBody: ReplicateSynchronousAPIOutput<URL> = try await self.createSynchronousPredictionUsingOfficialModel(
+        let responseBody: ReplicateSynchronousResponseBody<URL> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-1.1-pro",
             input: input,
@@ -193,7 +193,7 @@ extension ReplicateService {
         input: ReplicateFluxProUltraInputSchema_v1_1,
         secondsToWait: Int /* = 60 */
     ) async throws -> URL {
-        let responseBody: ReplicateSynchronousAPIOutput<URL> = try await self.createSynchronousPredictionUsingOfficialModel(
+        let responseBody: ReplicateSynchronousResponseBody<URL> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-1.1-pro-ultra",
             input: input,
@@ -250,7 +250,7 @@ extension ReplicateService {
         input: ReplicateFluxDevInputSchema,
         secondsToWait: Int /* = 10 */
     ) async throws -> [URL] {
-        let responseBody: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingOfficialModel(
+        let responseBody: ReplicateSynchronousResponseBody<[URL]> = try await self.createSynchronousPredictionUsingOfficialModel(
             modelOwner: "black-forest-labs",
             modelName: "flux-dev",
             input: input,
@@ -332,7 +332,7 @@ extension ReplicateService {
         version: String = "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
         secondsToWait: Int /* = 60 */
     ) async throws -> [URL] {
-        let responseBody: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingVersion(
+        let responseBody: ReplicateSynchronousResponseBody<[URL]> = try await self.createSynchronousPredictionUsingVersion(
             modelVersion: version,
             input: input,
             secondsToWait: secondsToWait
@@ -362,7 +362,7 @@ extension ReplicateService {
         version: String = "8515c238222fa529763ec99b4ba1fa9d32ab5d6ebc82b4281de99e4dbdcec943",
         secondsToWait: Int /* = 60 */
     ) async throws -> [URL] {
-        let responseBody: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingVersion(
+        let responseBody: ReplicateSynchronousResponseBody<[URL]> = try await self.createSynchronousPredictionUsingVersion(
             modelVersion: version,
             input: input,
             secondsToWait: secondsToWait

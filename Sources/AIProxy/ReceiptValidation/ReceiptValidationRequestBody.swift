@@ -42,6 +42,9 @@ public struct ReceiptValidationRequestBody: Encodable {
     /// The date this transaction was generated and signed.
     public let signedDate: Double
 
+    /// The message from StoreKit 2 detailing why verification failed.
+    public let verificationError: String?
+
     public init(
         jsonRepresentationBase64: String,
         appID: UInt64? = nil,
@@ -53,7 +56,8 @@ public struct ReceiptValidationRequestBody: Encodable {
         originalPurchaseDate: Double,
         deviceVerificationBase64: String,
         deviceVerificationNonce: String,
-        signedDate: Double
+        signedDate: Double,
+        verificationError: String?
     ) {
         self.jsonRepresentationBase64 = jsonRepresentationBase64
         self.appID = appID
@@ -66,5 +70,6 @@ public struct ReceiptValidationRequestBody: Encodable {
         self.deviceVerificationBase64 = deviceVerificationBase64
         self.deviceVerificationNonce = deviceVerificationNonce
         self.signedDate = signedDate
+        self.verificationError = verificationError
     }
 }
