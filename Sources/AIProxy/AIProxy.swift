@@ -13,7 +13,7 @@ let aiproxyLogger = Logger(
 public struct AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.63.0"
+    public static let sdkVersion = "0.64.0"
 
     /// - Parameters:
     ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your provider's key.
@@ -829,6 +829,14 @@ public struct AIProxy {
         return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
     }
 #endif
+
+    public static func configure_BETA() async {
+        do {
+            try await AnonymousAccountStorage.sync()
+        } catch {
+            aiproxyLogger.critical("Could not configure an AIProxy anonymous account: \(error.localizedDescription)")
+        }
+    }
 
     private init() {
         fatalError("This type is not designed to be instantiated")
