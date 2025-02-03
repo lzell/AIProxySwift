@@ -13,7 +13,7 @@ let aiproxyLogger = Logger(
 public struct AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.64.0"
+    public static let sdkVersion = "0.65.0"
 
     /// - Parameters:
     ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your provider's key.
