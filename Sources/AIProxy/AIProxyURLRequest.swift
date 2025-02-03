@@ -54,6 +54,10 @@ struct AIProxyURLRequest {
             request.addValue("v2|\(bundleID)|\(appVersion)|\(AIProxy.sdkVersion)", forHTTPHeaderField: "aiproxy-metadata")
         }
 
+        if let resolvedAccount = AnonymousAccountStorage.resolvedAccount {
+            request.addValue(resolvedAccount.uuid, forHTTPHeaderField: "aiproxy-anonymous-id")
+        }
+
     #if targetEnvironment(simulator)
         if let deviceCheckBypass = ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] {
             request.addValue(deviceCheckBypass, forHTTPHeaderField: "aiproxy-devicecheck-bypass")

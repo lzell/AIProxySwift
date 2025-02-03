@@ -830,6 +830,7 @@ public struct AIProxy {
     }
 #endif
 
+    @NetworkActor
     public static func configure_BETA() async {
         do {
             try await AnonymousAccountStorage.sync()
