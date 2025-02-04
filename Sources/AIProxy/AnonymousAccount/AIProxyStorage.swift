@@ -12,7 +12,7 @@ private let kAIProxyRemoteAccount = "aiproxy-remote"
 internal let kAIProxyUKVSAccount = "aiproxy-ukvs"
 
 
-public final class AIProxyStorage {
+final class AIProxyStorage {
 
     static private let keychain = AIProxyKeychain()
     static private let ukvs = NSUbiquitousKeyValueStore.default

@@ -830,13 +830,23 @@ public struct AIProxy {
     }
 #endif
 
+    /// This is a beta feature.
+    /// It returns a stable, anonymous identifier that you can annotate requests to AIProxy with.
+    /// You must add the 'iCloud key-value storage' capability to use this:
+    ///    1. Tap on your project in Xcode's project tree
+    ///    2. Tap on your target in the sidebar
+    ///    3. Tap on Signing & Capabilities in the top nav
+    ///    4. Tap the plus sign next to 'Capability'
+    ///    5. Add iCloud
+    ///    6. Select the 'Key-value storage' service
     @NetworkActor
-    public static func configure_BETA() async {
+    public static func getStableIdentifier() async -> String? {
         do {
-            try await AnonymousAccountStorage.sync()
+            return try await AnonymousAccountStorage.sync()
         } catch {
             aiproxyLogger.critical("Could not configure an AIProxy anonymous account: \(error.localizedDescription)")
         }
+        return nil
     }
 
     private init() {

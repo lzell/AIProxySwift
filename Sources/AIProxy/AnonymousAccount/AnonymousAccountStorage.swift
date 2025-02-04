@@ -38,7 +38,7 @@ final class AnonymousAccountStorage {
     private static var localAccountChain: [AnonymousAccount] = []
 
     /// This is expected to be called as part of the application launch.
-    static func sync() async throws {
+    static func sync() async throws -> String {
         #if false
         try await AIProxyStorage.clear()
         #endif
@@ -133,6 +133,8 @@ final class AnonymousAccountStorage {
         aiproxyLogger.info("Local account chain is \(localAccountChain)")
         aiproxyLogger.info("Anonymous account identifier is \(self.resolvedAccount!.uuid)")
         #endif
+
+        return localAccount.uuid
     }
 
     /// Called when NSUbiquitousKeyValueStore was remotely updated.
