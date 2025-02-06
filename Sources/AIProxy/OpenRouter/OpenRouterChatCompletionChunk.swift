@@ -39,6 +39,11 @@ extension OpenRouterChatCompletionChunk {
 extension OpenRouterChatCompletionChunk.Choice {
     public struct Delta: Codable {
         public let role: String
-        public let content: String
+
+        /// Output content. For reasoning models, these chunks arrive after `reasoning` has finished.
+        public let content: String?
+
+        /// Reasoning content. For reasoning models, these chunks arrive before `content`.
+        public let reasoning: String?
     }
 }

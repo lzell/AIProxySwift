@@ -23,15 +23,17 @@ open class DeepSeekDirectService: DeepSeekService, DirectService {
     /// - Parameters:
     ///   - body: The request body to send to DeepSeek. See this reference:
     ///           https://api-docs.deepseek.com/api/create-chat-completion
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: The chat response. See this reference:
     ///            https://api-docs.deepseek.com/api/create-chat-completion#responses
     public func chatCompletionRequest(
-        body: DeepSeekChatCompletionRequestBody
+        body: DeepSeekChatCompletionRequestBody,
+        secondsToWait: Int
     ) async throws -> DeepSeekChatCompletionResponseBody {
         var body = body
         body.stream = false
         body.streamOptions = nil
-        let request = try AIProxyURLRequest.createDirect(
+        var request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.deepseek.com",
             path: "/chat/completions",
             body: try body.serialize(),
@@ -42,6 +44,7 @@ open class DeepSeekDirectService: DeepSeekService, DirectService {
                 "Accept": "application/json"
             ]
         )
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -50,15 +53,17 @@ open class DeepSeekDirectService: DeepSeekService, DirectService {
     /// - Parameters:
     ///   - body: The request body to send to DeepSeek.  See this reference:
     ///           https://api-docs.deepseek.com/api/create-chat-completion
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: An async sequence of completion chunks. See the 'Streaming' tab here:
     ///           https://api-docs.deepseek.com/api/create-chat-completion#responses
     public func streamingChatCompletionRequest(
-        body: DeepSeekChatCompletionRequestBody
+        body: DeepSeekChatCompletionRequestBody,
+        secondsToWait: Int
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
-        let request = try AIProxyURLRequest.createDirect(
+        var request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.deepseek.com",
             path: "/chat/completions",
             body: try body.serialize(),
@@ -69,6 +74,7 @@ open class DeepSeekDirectService: DeepSeekService, DirectService {
                 "Accept": "application/json"
             ]
         )
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 }

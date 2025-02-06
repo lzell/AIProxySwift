@@ -78,6 +78,9 @@ extension OpenRouterChatCompletionResponseBody.Choice {
         /// The contents of the message.
         public let content: String?
 
+        /// Reasoning models such as R1 will populate this field with the reasoning used to arrive at `content`
+        public let reasoning: String?
+
         /// The role of the author of this message.
         public let role: String
 
@@ -86,6 +89,7 @@ extension OpenRouterChatCompletionResponseBody.Choice {
 
         private enum CodingKeys: String, CodingKey {
             case content
+            case reasoning
             case role
             case toolCalls = "tool_calls"
         }

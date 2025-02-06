@@ -3081,6 +3081,168 @@ Use `flows.eachlabs.ai` as the proxy domain when creating your AIProxy service i
 
 ## OpenRouter
 
+
+### How to make a streaming DeepSeek R1 completion with OpenRouter
+
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openRouterService = AIProxy.openRouterDirectService(
+    //     unprotectedAPIKey: "your-openRouter-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openRouterService = AIProxy.openRouterService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenRouterChatCompletionRequestBody(
+        messages: [
+            .system(content: .text("You are a math assistant.")),
+            .user(content: .text("Here's why burgers' equation leads to a breaking nonlinearity in shallow water"))
+        ],
+        includeReasoning: true,
+        models: [
+            "deepseek/deepseek-r1",
+        ],
+        temperature: 0.0 /* Set this based on your use case: https://api-docs.deepseek.com/quick_start/parameter_settings*/
+    )
+
+    do {
+        let stream = try await openRouterService.streamingChatCompletionRequest(
+            body: requestBody
+        )
+        for try await chunk in stream {
+            if let reasoningContent = chunk.choices.first?.delta.reasoning {
+                print("Reasoning chunk: \(reasoningContent)")
+            }
+            if let messageContent = chunk.choices.first?.delta.content {
+                print("Message chunk: \(messageContent)")
+            }
+            if let usage = chunk.usage {
+                print(
+                    """
+                    Served by \(chunk.provider ?? "unspecified")
+                    using model \(chunk.model ?? "unspecified")
+                    Used:
+                     \(usage.promptTokens ?? 0) prompt tokens
+                     \(usage.completionTokens ?? 0) completion tokens
+                     \(usage.totalTokens ?? 0) total tokens
+                    """
+                )
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch let err as URLError where err.code == URLError.timedOut {
+        print("Request for OpenRouter buffered chat completion timed out")
+    } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
+        print("Could not make OpenRouter streaming R1 chat request. Please check your internet connection")
+    } catch {
+        print("Could not get OpenRouter streaming R1 chat completion: \(error.localizedDescription)")
+    }
+```
+
+You may optionally add your provider preferences as part of the request body:
+
+```
+OpenRouterChatCompletionRequestBody(
+  // ...
+  provider: .init(order[
+      "first-choice",
+      "second-choice"
+  ]),
+  // ...
+```
+
+See the provider list here for the viable options: https://openrouter.ai/deepseek/deepseek-r1/providers
+And then use the corresponding enum from this list: https://openrouter.ai/docs/features/provider-routing#json-schema-for-provider-preferences
+
+
+### How to make a buffered DeepSeek R1 completion with OpenRouter
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openRouterService = AIProxy.openRouterDirectService(
+    //     unprotectedAPIKey: "your-openRouter-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openRouterService = AIProxy.openRouterService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenRouterChatCompletionRequestBody(
+        messages: [
+            .system(content: .text("You are a math assistant.")),
+            .user(content: .text("Here's why burgers' equation leads to a breaking nonlinearity in shallow water"))
+        ],
+        includeReasoning: true,
+        models: [
+            "deepseek/deepseek-r1",
+        ],
+        temperature: 0.0 /* Set this based on your use case: https://api-docs.deepseek.com/quick_start/parameter_settings*/
+    )
+
+    do {
+
+        let response = try await openRouterService.chatCompletionRequest(
+            body: requestBody,
+            secondsToWait: 300
+        )
+
+        print("""
+            Served by \(response.provider ?? "unspecified")
+            using model \(response.model ?? "unspecified")
+
+            DeepSeek used the following reasoning:
+
+            \(response.choices.first?.message.reasoning ?? "")
+
+            And responded with:
+
+            \(response.choices.first?.message.content ?? "")
+
+            Used:
+             \(response.usage?.completionTokens ?? 0) completion tokens
+             \(response.usage?.promptTokens ?? 0) prompt tokens
+             \(response.usage?.totalTokens ?? 0) total tokens
+            """
+        )
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch let err as URLError where err.code == URLError.timedOut {
+        print("Request for OpenRouter buffered chat completion timed out")
+    } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
+        print("Could not make OpenRouter buffered R1 chat request. Please check your internet connection")
+    } catch {
+        print("Could not get OpenRouter buffered R1 chat completion: \(error.localizedDescription)")
+    }
+```
+
+
+You may optionally add your provider preferences as part of the request body:
+
+```
+OpenRouterChatCompletionRequestBody(
+  // ...
+  provider: .init(order[
+      "first-choice",
+      "second-choice"
+  ]),
+  // ...
+```
+
+See the provider list here for the viable options: https://openrouter.ai/deepseek/deepseek-r1/providers
+And then use the corresponding enum from this list: https://openrouter.ai/docs/features/provider-routing#json-schema-for-provider-preferences
+
+
 ### How to make a non-streaming chat completion with OpenRouter
 
     import AIProxy
@@ -3336,7 +3498,6 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
 ### How to make a chat completion request with DeepSeek
 
-Available models are `deepseek-chat` and `deepseek-reasoner`:
 
 ```swift
     import AIProxySwift
@@ -3357,7 +3518,7 @@ Available models are `deepseek-chat` and `deepseek-reasoner`:
             .system(content: "You are a helpful assistant."),
             .user(content: "Hello!")
         ],
-        model: "deepseek-chat" /* Use "deepseek-reasoner" for reasoning */
+        model: "deepseek-chat"
     )
 
     do {
@@ -3378,6 +3539,66 @@ Available models are `deepseek-chat` and `deepseek-reasoner`:
         }
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get DeepSeek buffered chat completion: \(error.localizedDescription)")
+    }
+```
+
+### How to make a reasoning chat completion with DeepSeek R1
+
+```swift
+    import AIProxySwift
+
+    /* Uncomment for BYOK use cases */
+    // let deepSeekService = AIProxy.deepSeekDirectService(
+    //     unprotectedAPIKey: "your-deepseek-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let deepSeekService = AIProxy.deepSeekService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let requestBody = DeepSeekChatCompletionRequestBody(
+            messages: [
+                .system(content: "You are a math assistant. Don't use LaTeX, use utf-8 symbols only."),
+                .user(content: "Here's why Burgers' equation leads to a breaking nonlinearity in shallow water")
+            ],
+            model: "deepseek-reasoner",
+            temperature: 0.0 /* Set this based on your use case: https://api-docs.deepseek.com/quick_start/parameter_settings*/
+        )
+        let response = try await deepSeekService.chatCompletionRequest(
+            body: requestBody,
+            secondsToWait: 300
+        )
+
+        print(
+            """
+            DeepSeek used the following reasoning:
+
+            \(response.choices.first?.message.reasoningContent ?? "")
+
+            And responded with:
+
+            \(response.choices.first?.message.content ?? "")
+
+            Used:
+             \(response.usage?.completionTokens ?? 0) completion tokens
+             \(response.usage?.completionTokensDetails?.reasoningTokens ?? 0) reasoning tokens
+             \(response.usage?.promptCacheHitTokens ?? 0) prompt cache hit tokens
+             \(response.usage?.promptCacheMissTokens ?? 0) prompt cache miss tokens
+             \(response.usage?.promptTokens ?? 0) prompt tokens
+             \(response.usage?.totalTokens ?? 0) total tokens
+            """
+        )
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch let err as URLError where err.code == URLError.timedOut {
+        print("Request for DeepSeek buffered chat completion timed out")
+    } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
+        print("Could not make buffered chat request. Please check your internet connection")
     } catch {
         print("Could not get DeepSeek buffered chat completion: \(error.localizedDescription)")
     }
@@ -3434,12 +3655,76 @@ Available models are `deepseek-chat` and `deepseek-reasoner`:
     }
 ```
 
+### How to make a streaming reasoning chat completion with DeepSeek R1
+
+```swift
+    import AIProxySwift
+
+    /* Uncomment for BYOK use cases */
+    // let deepSeekService = AIProxy.deepSeekDirectService(
+    //     unprotectedAPIKey: "your-deepseek-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let deepSeekService = AIProxy.deepSeekService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = DeepSeekChatCompletionRequestBody(
+        messages: [
+            .system(content: "You are a math assistant. Don't use LaTeX, use utf-8 symbols only."),
+            .user(content: "Here's why Burgers' equation leads to a breaking nonlinearity in shallow water")
+        ],
+        model: "deepseek-reasoner",
+        temperature: 0.0 /* Set this based on your use case: https://api-docs.deepseek.com/quick_start/parameter_settings*/
+    )
+
+    do {
+        let stream = try await deepSeekService.streamingChatCompletionRequest(body: requestBody)
+
+        for try await chunk in stream {
+            if let reasoningContent = chunk.choices.first?.delta.reasoningContent {
+                print("Reasoning chunk: \(reasoningContent)")
+            }
+            if let messageContent = chunk.choices.first?.delta.content {
+                print("Message chunk: \(messageContent)")
+            }
+            if let usage = chunk.usage {
+                print(
+                    """
+                    Used:
+                    \(usage.completionTokens ?? 0) completion tokens
+                    \(usage.completionTokensDetails?.reasoningTokens ?? 0) reasoning tokens
+                    \(usage.promptCacheHitTokens ?? 0) prompt cache hit tokens
+                    \(usage.promptCacheMissTokens ?? 0) prompt cache miss tokens
+                    \(usage.promptTokens ?? 0) prompt tokens
+                    \(usage.totalTokens ?? 0) total tokens
+                    """
+                )
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch let err as URLError where err.code == URLError.timedOut {
+        print("Request for DeepSeek R1 streaming chat completion timed out")
+    } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
+        print("Could not make DeepSeek R1 streaming chat request. Please check your internet connection")
+    } catch {
+        print("Could not get DeepSeek R1 streaming chat completion: \(error.localizedDescription)")
+    }
+```
+
 ***
 
 
 ## Fireworks AI
 
 ### How to make a streaming DeepSeek R1 request to Fireworks AI
+
+FireworksAI works differently than going to DeepSeek directly in that the reasoning content is
+not on the messages's `reasoningContent` property. Instead, the reasoning content is included in
+`message.content` enclosed in `<think></think>` tags:
 
 ```swift
     import AIProxySwift
@@ -3457,8 +3742,8 @@ Available models are `deepseek-chat` and `deepseek-reasoner`:
 
     let requestBody = DeepSeekChatCompletionRequestBody(
         messages: [
-            .system(content: "You are a math assistant"),
-            .user(content: "Here's why Burger's equation leads to a breaking nonlinearity in shallow water")
+            .system(content: "You are a math assistant."),
+            .user(content: "Here's why burgers' equation leads to a breaking nonlinearity in shallow water")
         ],
         model: "accounts/fireworks/models/deepseek-r1",
         temperature: 0.0 /* Set this based on your use case: https://api-docs.deepseek.com/quick_start/parameter_settings*/
@@ -3494,6 +3779,9 @@ Available models are `deepseek-chat` and `deepseek-reasoner`:
 ```
 
 ### How to make a buffered DeepSeek R1 request to Fireworks AI
+FireworksAI works differently than going to DeepSeek directly in that the reasoning content is
+not on the messages's `reasoningContent` property. Instead, the reasoning content is included in
+`message.content` enclosed in `<think></think>` tags:
 
 ```swift
     /* Uncomment for BYOK use cases */
@@ -3510,7 +3798,7 @@ Available models are `deepseek-chat` and `deepseek-reasoner`:
     let requestBody = DeepSeekChatCompletionRequestBody(
         messages: [
             .system(content: "You are a math assistant"),
-            .user(content: "Here's why Burger's equation leads to a breaking nonlinearity in shallow water")
+            .user(content: "Here's why Burgers' equation leads to a breaking nonlinearity in shallow water")
         ],
         model: "accounts/fireworks/models/deepseek-r1",
         temperature: 0.0 /* Set this based on your use case: https://api-docs.deepseek.com/quick_start/parameter_settings*/
@@ -3520,17 +3808,18 @@ Available models are `deepseek-chat` and `deepseek-reasoner`:
             body: requestBody,
             secondsToWait: 300
         )
-        print(response.choices.first?.message.content ?? "")
-        if let usage = response.usage {
-            print(
-                """
-                Used:
-                 \(usage.completionTokens ?? 0) completion tokens
-                 \(usage.promptTokens ?? 0) prompt tokens
-                 \(usage.totalTokens ?? 0) total tokens
-                """
-            )
-        }
+        print(
+            """
+            FireworksAI puts the DeepSeek reasoning steps inside a <think></think> tags. Here's the full response:
+
+            \(response.choices.first?.message.content ?? "")
+
+            Used:
+             \(response.usage?.completionTokens ?? 0) completion tokens
+             \(response.usage?.promptTokens ?? 0) prompt tokens
+             \(response.usage?.totalTokens ?? 0) total tokens
+            """
+        )
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch let err as URLError where err.code == URLError.timedOut {

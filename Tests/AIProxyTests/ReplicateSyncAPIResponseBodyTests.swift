@@ -47,7 +47,7 @@ final class ReplicateSyncAPIResponseBodyTests: XCTestCase {
           }
         }
         """#
-        let response = try ReplicateSynchronousAPIOutput<[String]>.deserialize(from: responseBody)
+        let response = try ReplicateSynchronousResponseBody<[String]>.deserialize(from: responseBody)
         XCTAssertNil(response.output)
         XCTAssertEqual(
             "https://api.replicate.com/v1/predictions/kwvnpcac8drj00cmpp48fvvgbr",
