@@ -3606,8 +3606,6 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
 ### How to make a streaming chat completion with DeepSeek
 
-Available models are `deepseek-chat` and `deepseek-reasoner`:
-
 ```swift
     import AIProxySwift
 
@@ -3627,7 +3625,7 @@ Available models are `deepseek-chat` and `deepseek-reasoner`:
             .system(content: "You are a helpful assistant."),
             .user(content: "Hello!")
         ],
-        model: "deepseek-chat" /* Use "deepseek-reasoner" for reasoning */
+        model: "deepseek-chat"
     )
 
     do {
