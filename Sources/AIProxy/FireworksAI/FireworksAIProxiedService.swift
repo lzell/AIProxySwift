@@ -31,7 +31,7 @@ open class FireworksAIProxiedService: FireworksAIService, ProxiedService {
     ///   - body: The request body to send to FireworksAI. See these references:
     ///           https://fireworks.ai/models/fireworks/deepseek-r1
     ///           https://api-docs.deepseek.com/api/create-chat-completion
-    ///   - secondsToWait: The number of seconds to wait before timing out
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: The chat response. See this reference:
     ///            https://api-docs.deepseek.com/api/create-chat-completion#responses
     public func deepSeekR1Request(
@@ -63,7 +63,7 @@ open class FireworksAIProxiedService: FireworksAIService, ProxiedService {
     ///   - body: The request body to send to FireworksAI.  See these references:
     ///           https://fireworks.ai/models/fireworks/deepseek-r1
     ///           https://api-docs.deepseek.com/api/create-chat-completion
-    ///   - secondsToWait: The number of seconds to wait before timing out
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: An async sequence of completion chunks. See the 'Streaming' tab here:
     ///           https://api-docs.deepseek.com/api/create-chat-completion#responses
     public func streamingDeepSeekR1Request(

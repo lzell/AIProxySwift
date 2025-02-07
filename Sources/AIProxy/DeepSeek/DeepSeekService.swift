@@ -14,10 +14,12 @@ public protocol DeepSeekService {
     /// - Parameters:
     ///   - body: The request body to send to DeepSeek. See this reference:
     ///           https://api-docs.deepseek.com/api/create-chat-completion
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: The chat response. See this reference:
     ///            https://api-docs.deepseek.com/api/create-chat-completion#responses
     func chatCompletionRequest(
-        body: DeepSeekChatCompletionRequestBody
+        body: DeepSeekChatCompletionRequestBody,
+        secondsToWait: Int
     ) async throws -> DeepSeekChatCompletionResponseBody
 
     /// Initiates a streaming chat completion request to /chat/completions.
@@ -25,9 +27,25 @@ public protocol DeepSeekService {
     /// - Parameters:
     ///   - body: The request body to send to DeepSeek.  See this reference:
     ///           https://api-docs.deepseek.com/api/create-chat-completion
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: An async sequence of completion chunks. See the 'Streaming' tab here:
     ///           https://api-docs.deepseek.com/api/create-chat-completion#responses
     func streamingChatCompletionRequest(
-        body: DeepSeekChatCompletionRequestBody
+        body: DeepSeekChatCompletionRequestBody,
+        secondsToWait: Int
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk>
+}
+
+extension DeepSeekService {
+    public func chatCompletionRequest(
+        body: DeepSeekChatCompletionRequestBody
+    ) async throws -> DeepSeekChatCompletionResponseBody {
+        return try await self.chatCompletionRequest(body: body, secondsToWait: 60)
+    }
+
+    public func streamingChatCompletionRequest(
+        body: DeepSeekChatCompletionRequestBody
+    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk> {
+        return try await self.streamingChatCompletionRequest(body: body, secondsToWait: 60)
+    }
 }

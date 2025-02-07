@@ -29,16 +29,18 @@ open class OpenRouterProxiedService: OpenRouterService, ProxiedService {
     /// - Parameters:
     ///   - body: The request body to send to OpenRouter through AIProxy. See this reference:
     ///   https://openrouter.ai/docs/requests
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     ///
     /// - Returns: The response body from OpenRouter. See this reference:
     ///            https://openrouter.ai/docs/responses
     public func chatCompletionRequest(
-        body: OpenRouterChatCompletionRequestBody
+        body: OpenRouterChatCompletionRequestBody,
+        secondsToWait: Int
     ) async throws -> OpenRouterChatCompletionResponseBody {
         var body = body
         body.stream = false
         body.streamOptions = nil
-        let request = try await AIProxyURLRequest.create(
+        var request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -47,6 +49,7 @@ open class OpenRouterProxiedService: OpenRouterService, ProxiedService {
             verb: .post,
             contentType: "application/json"
         )
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -55,16 +58,18 @@ open class OpenRouterProxiedService: OpenRouterService, ProxiedService {
     /// - Parameters:
     ///   - body: The request body to send to OpenRouter through AIProxy. See this reference:
     ///   https://openrouter.ai/docs/requests
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     ///
     /// - Returns: The response body from OpenRouter. See this reference:
     ///            https://openrouter.ai/docs/responses
     public func streamingChatCompletionRequest(
-        body: OpenRouterChatCompletionRequestBody
+        body: OpenRouterChatCompletionRequestBody,
+        secondsToWait: Int
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenRouterChatCompletionChunk> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
-        let request = try await AIProxyURLRequest.create(
+        var request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -73,6 +78,7 @@ open class OpenRouterProxiedService: OpenRouterService, ProxiedService {
             verb: .post,
             contentType: "application/json"
         )
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 }
