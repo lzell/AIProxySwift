@@ -11,7 +11,7 @@ open class OpenRouterDirectService: OpenRouterService, DirectService {
     private let unprotectedAPIKey: String
 
     /// This initializer is not public on purpose.
-    /// Customers are expected to use the factory `AIProxy.directOpenRouterService` defined in AIProxy.swift
+    /// Customers are expected to use the factory `AIProxy.openRouterDirectService` defined in AIProxy.swift
     internal init(unprotectedAPIKey: String) {
         self.unprotectedAPIKey = unprotectedAPIKey
     }

@@ -43,7 +43,7 @@ open class RemoteLoggerService: ProxiedService {
             verb: .post,
             contentType: "application/json"
         ) {
-            try? await BackgroundNetworker.makeRequestAndWaitForData(
+            _ = try? await BackgroundNetworker.makeRequestAndWaitForData(
                 self.urlSession,
                 request
             )

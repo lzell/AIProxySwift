@@ -19,6 +19,7 @@ included:
 - OpenRouter
 - DeepSeek
 - Fireworks AI
+- Brave
 
 Your initialization code determines whether requests go straight to the provider or are
 protected through the [AIProxy](https://www.aiproxy.pro) backend.
@@ -100,6 +101,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
 * [OpenRouter](#openrouter)
 * [DeepSeek](#deepseek)
 * [Fireworks AI](#fireworks-ai)
+* [Brave](#brave)
 * [Advanced Settings](#advanced-settings)
 
 
@@ -3825,6 +3827,8 @@ not on the messages's `reasoningContent` property. Instead, the reasoning conten
 `message.content` enclosed in `<think></think>` tags:
 
 ```swift
+    import AIProxy
+
     /* Uncomment for BYOK use cases */
     // let fireworksAIService = AIProxy.fireworksAIDirectService(
     //     unprotectedAPIKey: "your-fireworks-key"
@@ -3873,6 +3877,48 @@ not on the messages's `reasoningContent` property. Instead, the reasoning conten
 ```
 
 ***
+
+## Brave
+
+When you create a service in the AIProxy dashboard, use `https://api.search.brave.com` as the
+proxy base URL.
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let braveService = AIProxy.braveDirectService(
+    //     unprotectedAPIKey: "your-brave-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let braveService = AIProxy.braveService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let searchResult = try await braveService.webSearchRequest(query: "How does concurrency work in Swift 6")
+        let resultCount = searchResult.web?.results?.count ?? 0
+        let urls = searchResult.web?.results?.compactMap { $0.url }
+        print(
+            """
+            Brave responded with \(resultCount) search results.
+            The search returned these urls: \(urls ?? [])
+            """
+        )
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Receivedt non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
+        print("Could not make brave search: \(error.localizedDescription)")
+    }
+```
+
+***
+
 
 ## OpenMeteo
 
