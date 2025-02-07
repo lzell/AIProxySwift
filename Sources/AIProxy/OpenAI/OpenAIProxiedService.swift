@@ -33,15 +33,17 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/chat/create
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func chatCompletionRequest(
-        body: OpenAIChatCompletionRequestBody
+        body: OpenAIChatCompletionRequestBody,
+        secondsToWait: Int
     ) async throws -> OpenAIChatCompletionResponseBody {
         var body = body
         body.stream = false
         body.streamOptions = nil
-        let request = try await AIProxyURLRequest.create(
+        var request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
@@ -50,6 +52,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             verb: .post,
             contentType: "application/json"
         )
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -58,15 +61,17 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/chat/create
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: An async sequence of completion chunks. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
     public func streamingChatCompletionRequest(
-        body: OpenAIChatCompletionRequestBody
+        body: OpenAIChatCompletionRequestBody,
+        secondsToWait: Int
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
-        let request = try await AIProxyURLRequest.create(
+        var request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
@@ -75,6 +80,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             verb: .post,
             contentType: "application/json"
         )
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 

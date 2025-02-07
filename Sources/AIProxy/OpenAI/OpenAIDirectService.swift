@@ -26,15 +26,17 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/chat/create
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func chatCompletionRequest(
-        body: OpenAIChatCompletionRequestBody
+        body: OpenAIChatCompletionRequestBody,
+        secondsToWait: Int
     ) async throws -> OpenAIChatCompletionResponseBody {
         var body = body
         body.stream = false
         body.streamOptions = nil
-        let request = try AIProxyURLRequest.createDirect(
+        var request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.openai.com",
             path: self.resolvedPath("chat/completions"),
             body: try body.serialize(),
@@ -44,6 +46,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -52,15 +55,17 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/chat/create
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: An async sequence of completion chunks. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
     public func streamingChatCompletionRequest(
-        body: OpenAIChatCompletionRequestBody
+        body: OpenAIChatCompletionRequestBody,
+        secondsToWait: Int
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
-        let request = try AIProxyURLRequest.createDirect(
+        var request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.openai.com",
             path: self.resolvedPath("chat/completions"),
             body: try body.serialize(),
@@ -70,6 +75,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 

@@ -134,6 +134,49 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
     }
 ```
 
+### How to make a buffered chat completion to OpenAI with extended timeout
+
+This is useful for `o1` and `o3` models.
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenAIChatCompletionRequestBody(
+        model: "o3-mini",
+        messages: [
+          .developer(content: .text("You are a coding assistant")),
+          .user(content: .text("Build a ruby service that writes latency stats to redis on each request"))
+        ]
+    )
+
+    do {
+        let response = try await openAIService.chatCompletionRequest(
+            body: requestBody,
+            secondsToWait: 300
+        )
+        print(response.choices.first?.message.content ?? "")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch let err as URLError where err.code == URLError.timedOut {
+        print("Request to OpenAI for a reasoning request timed out")
+    } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
+        print("Could not complete OpenAI reasoning request. Please check your internet connection")
+    } catch {
+        print("Could not complete OpenAI reasoning request: \(error.localizedDescription)")
+    }
+```
+
 
 ### Get a streaming chat completion from OpenAI:
 
