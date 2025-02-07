@@ -57,7 +57,7 @@ final class AIProxyStorage {
             timestamp: Date().timeIntervalSince1970
         )]
         let data: Data = try accountChain.serialize()
-        let createStatus = try await keychain.create(data: data, scope: .local(keychainAccount: kAIProxyLocalAccount))
+        let createStatus = await keychain.create(data: data, scope: .local(keychainAccount: kAIProxyLocalAccount))
         if createStatus != noErr {
             throw AIProxyError.assertion("Could not write a local account to keychain")
         }
@@ -80,7 +80,7 @@ final class AIProxyStorage {
             throw AIProxyError.assertion("Keychain is not available")
         }
         let data: Data = try account.serialize()
-        return try await keychain.create(data: data, scope: .remote(keychainAccount: kAIProxyRemoteAccount))
+        return await keychain.create(data: data, scope: .remote(keychainAccount: kAIProxyRemoteAccount))
     }
 
     static func clear() async throws {

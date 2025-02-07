@@ -54,7 +54,7 @@ final class AnonymousAccountStorage {
         if _localAccountChain == nil {
             _localAccountChain = try await AIProxyStorage.writeNewLocalAccountChain()
         }
-        guard var _localAccountChain = _localAccountChain,
+        guard let _localAccountChain = _localAccountChain,
               var localAccount = _localAccountChain.last else {
             throw AIProxyError.assertion("Broken invariant. localAccount must be populated with at least one element.")
         }
@@ -147,7 +147,7 @@ final class AnonymousAccountStorage {
             return
         }
 
-        guard var resolvedAccount = self.resolvedAccount else {
+        guard let resolvedAccount = self.resolvedAccount else {
             return
         }
 

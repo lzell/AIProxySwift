@@ -55,7 +55,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testImageChatContentPartIsEncodable() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.4)!
+        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 1.0)!
         let chatContentPart: OpenAIChatCompletionRequestBody.Message.ContentPart = .imageURL(localURL)
         XCTAssertEqual(
             #"""
@@ -94,7 +94,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testChatContentContainingImageIsEncodable() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.4)!
+        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 1.0)!
         let chatContent: [OpenAIChatCompletionRequestBody.Message.ContentPart] = [
             .text("hello"),
             .imageURL(localURL)
@@ -160,7 +160,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testUserMessageWithImageURLIsEncodable() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.4)!
+        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 1.0)!
         let userMessage: OpenAIChatCompletionRequestBody.Message = .user(
             content: .parts(
                 [
@@ -546,7 +546,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testChatCompletionRequestBodyWithImageIsEncodableToJson() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.4)!
+        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 1.0)!
         let requestBody = OpenAIChatCompletionRequestBody(
             model: "gpt-4o",
             messages: [

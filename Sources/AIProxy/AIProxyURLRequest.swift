@@ -22,6 +22,11 @@ struct AIProxyURLRequest {
     ) async throws -> URLRequest {
         let deviceCheckToken = await AIProxyDeviceCheck.getToken()
 
+        var proxyPath = proxyPath
+        if !proxyPath.starts(with: "/") {
+            proxyPath = "/\(proxyPath)"
+        }
+
         guard var urlComponents = URLComponents(string: serviceURL),
               let proxyPathComponents = URLComponents(string: proxyPath) else {
             throw AIProxyError.assertion(
@@ -85,6 +90,11 @@ struct AIProxyURLRequest {
         contentType: String? = nil,
         additionalHeaders: [String: String] = [:]
     ) throws -> URLRequest {
+        var path = path
+        if !path.starts(with: "/") {
+            path = "/\(path)"
+        }
+
         guard var urlComponents = URLComponents(string: baseURL),
               let pathComponents = URLComponents(string: path) else {
             throw AIProxyError.assertion(
