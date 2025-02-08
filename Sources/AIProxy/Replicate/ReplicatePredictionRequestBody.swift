@@ -7,13 +7,21 @@
 
 import Foundation
 
-/// The request body for creating a Replicate prediction:
-/// https://replicate.com/docs/reference/http#create-a-prediction
+/// The request body for creating a Replicate prediction.
+///
+/// This type is used for both community models and official models.
+/// When using with an official model, the `version` property can remain `nil`.
+///
+/// Community model reference: https://replicate.com/docs/reference/http#predictions.create
+/// Official model reference: https://replicate.com/docs/reference/http#models.predictions.create
 public struct ReplicatePredictionRequestBody: Encodable {
+
     /// The replicate input schema, for example ReplicateSDXLInputSchema
+    /// TThe input schema depends on what model you are running. To see the available inputs, click the "API" tab on the model you are running or get the model version and look at its `openapi_schema` property. For example, `stability-ai/sdxl` takes `prompt` as an input.
     public let input: Encodable
 
-    /// The version of the model to run
+    /// You do not need to set this field if you are using an official model.
+    /// For community models, set it to the ID of the model version that you want to run.
     public let version: String?
 
     public init(

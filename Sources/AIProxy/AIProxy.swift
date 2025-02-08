@@ -379,6 +379,7 @@ public struct AIProxy {
     /// - Parameters:
     ///   - unprotectedAPIKey: Your Replicate API key
     /// - Returns: An instance of ReplicateService configured and ready to make requests
+    #if false
     public static func replicateDirectService(
         unprotectedAPIKey: String
     ) -> ReplicateService {
@@ -386,6 +387,7 @@ public struct AIProxy {
             unprotectedAPIKey: unprotectedAPIKey
         )
     }
+    #endif
 
     /// AIProxy's ElevenLabs service
     ///

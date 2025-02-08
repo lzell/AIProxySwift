@@ -1,5 +1,5 @@
 //
-//  ReplicatePredictionResponseBody.swift
+//  ReplicatePrediction.swift
 //
 //
 //  Created by Lou Zell on 8/25/24.
@@ -7,28 +7,56 @@
 
 import Foundation
 
-/// Response body for a Replicate prediction.
-/// This format is used for both the "create a predition" and "get a prediction" endpoints:
+public typealias ReplicatePredictionResponseBody = ReplicatePrediction
+
+/// Represents the current state of a replicate prediction
+///
+/// This type is used for both the "create a predition" and "get a prediction" endpoints:
 ///     https://replicate.com/docs/reference/http#get-a-prediction
 ///     https://replicate.com/docs/reference/http#create-a-prediction
-public struct ReplicatePredictionResponseBody<T: Decodable>: Decodable {
+///
+/// And it is used for both the sync and polling API:
+///     https://replicate.com/docs/topics/predictions/create-a-prediction#sync-mode
+///     https://replicate.com/docs/topics/predictions/create-a-prediction#polling
+public struct ReplicatePrediction<Output: Decodable>: Decodable {
 
     /// ISO8601 date stamp of when the prediction completed
     public let completedAt: String?
 
+    /// ISO8601 date stamp of when the prediction was created
+    public let createdAt: String?
+
+    /// https://replicate.com/docs/topics/predictions/data-retention
+    public let dataRemoved: Bool?
+
     /// In the case of failure, error will contain the error encountered during the prediction
     public let error: String?
+
+    /// ID of the prediction
+    public let id: String?
+
+    /// Prediction logs
+    public let logs: String?
+
+    /// How long the prediction took
+    public let metrics: Metrics?
+
+    /// The model being run
+    public let model: String?
 
     /// The output adheres to Replicate's "output schema" structure.
     /// Schemas can be found at the Replicate model's detail page by tapping on `API > Schema > Output Schema`.
     /// In the case of SDXL, the output is an array of URLs, which you can see here:
     /// https://replicate.com/stability-ai/sdxl/api/schema#output-schema
-    public let output: T?
+    public let output: Output?
 
     /// ISO8601 timestamp of start of prediction
     public let startedAt: String?
 
-    /// One of `starting`, `processing`, `succeeded`, `failed`, `canceled`
+    /// One of `starting`, `processing`, `succeeded`, `failed`, `canceled`.
+    ///
+    /// In the `succeeded` case, the `output` property on this type will be an object containing the output of the model.
+    /// In the `failed` case, `error` property on this type will contain the error encountered during the prediction.
     public let status: Status?
 
     /// URLs to cancel the prediction or get the result from the prediction
@@ -37,9 +65,20 @@ public struct ReplicatePredictionResponseBody<T: Decodable>: Decodable {
     /// The version of the model that ran
     public let version: String?
 
+    /// For compatibility with an older release of the libary
+    public var predictionResultURL: URL? {
+        return urls?.get
+    }
+
     private enum CodingKeys: String, CodingKey {
         case completedAt = "completed_at"
+        case createdAt = "created_at"
+        case dataRemoved = "data_removed"
         case error
+        case id
+        case logs
+        case metrics
+        case model
         case output
         case startedAt = "started_at"
         case status
@@ -48,19 +87,42 @@ public struct ReplicatePredictionResponseBody<T: Decodable>: Decodable {
     }
 }
 
-extension ReplicatePredictionResponseBody {
+extension ReplicatePrediction {
     public struct ActionURLs: Decodable {
         public let cancel: URL?
         public let get: URL?
     }
 }
 
-extension ReplicatePredictionResponseBody {
+extension ReplicatePrediction {
+    public struct Metrics: Decodable {
+        public let predictTime: Double
+
+        enum CodingKeys: String, CodingKey {
+            case predictTime = "predict_time"
+        }
+    }
+}
+
+extension ReplicatePrediction {
     public enum Status: String, Decodable {
+        /// The prediction is starting up. If this status lasts longer than a few seconds, then it's typically because a new worker is being started to run the prediction.
         case starting
+
+        /// The `predict()` method of the model is currently running.
         case processing
+
+        /// The prediction completed successfully.
         case succeeded
+
+        /// The prediction encountered an error during processing.
         case failed
+
+        /// The prediction was canceled by its creator
         case canceled
+
+        var isTerminal: Bool {
+            return [.succeeded, .failed, .canceled].contains(self)
+        }
     }
 }
