@@ -7,9 +7,10 @@
 
 import Foundation
 
-@available(*, deprecated, message: "Use ReplicateSynchronousResponseBody as a replacement")
+@available(*, deprecated, message: "Use ReplicatePrediction as a replacement")
 public typealias ReplicateSynchronousAPIOutput = ReplicateSynchronousResponseBody
 
+@available(*, deprecated, message: "Use ReplicatePrediction as a replacement")
 public struct ReplicateSynchronousResponseBody<T: Decodable>: Decodable {
     public let error: String?
 
@@ -17,7 +18,7 @@ public struct ReplicateSynchronousResponseBody<T: Decodable>: Decodable {
 
     public let status: String?
 
-    /// The location of a ReplicatePredictionResponseBody
+    /// The location of a ReplicatePrediction
     public let predictionResultURL: URL?
 
     private enum CodingKeys: String, CodingKey {

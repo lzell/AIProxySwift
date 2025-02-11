@@ -21,7 +21,7 @@ public enum ReplicateError: LocalizedError {
         case .missingModelURL:
             return "The replicate model does not contain a URL"
         case .reachedRetryLimit:
-            return "Reached replicate polling retry limit"
+            return "Reached secondsToWait without the prediction completing"
         }
     }
 }

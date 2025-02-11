@@ -13,7 +13,7 @@ let aiproxyLogger = Logger(
 public struct AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.69.0"
+    public static let sdkVersion = "0.70.0"
 
     /// - Parameters:
     ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your provider's key.
@@ -379,6 +379,7 @@ public struct AIProxy {
     /// - Parameters:
     ///   - unprotectedAPIKey: Your Replicate API key
     /// - Returns: An instance of ReplicateService configured and ready to make requests
+    #if false
     public static func replicateDirectService(
         unprotectedAPIKey: String
     ) -> ReplicateService {
@@ -386,6 +387,7 @@ public struct AIProxy {
             unprotectedAPIKey: unprotectedAPIKey
         )
     }
+    #endif
 
     /// AIProxy's ElevenLabs service
     ///

@@ -768,7 +768,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
         audioPlayer = try AVAudioPlayer(data: mpegData)
         audioPlayer?.prepareToPlay()
         audioPlayer?.play()
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create OpenAI TTS audio: \(error.localizedDescription)")
@@ -810,7 +810,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
         //
         //     response.results.first?.categoryScores
         //
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not perform moderation request to OpenAI")
@@ -1227,7 +1227,7 @@ If you use a file like `my-movie.mp4`, change the mime type from `video/quicktim
               It will be available for 48 hours.
               Find it at \(geminiFile.uri.absoluteString)
               """)
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not upload file to Gemini: \(error.localizedDescription)")
@@ -1369,7 +1369,7 @@ Use the file URL returned from the snippet above.
                 print("Claude used a tool \(toolName) with input: \(toolInput)")
             }
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create an Anthropic message: \(error.localizedDescription)")
@@ -1412,7 +1412,7 @@ Use the file URL returned from the snippet above.
                 print("Claude wants to call tool \(toolName) with input \(toolInput)")
             }
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not use Anthropic's message stream: \(error.localizedDescription)")
@@ -1472,7 +1472,7 @@ Use the file URL returned from the snippet above.
             }
         }
         print("Done with stream")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print(error.localizedDescription)
@@ -1525,7 +1525,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
                 print("Claude used a tool \(toolName) with input: \(toolInput)")
             }
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not send a multi-modal message to Anthropic: \(error.localizedDescription)")
@@ -1583,7 +1583,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
                 print("Claude used a tool \(toolName) with input: \(toolInput)")
             }
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create Anthropic message with tool call: \(error.localizedDescription)")
@@ -1725,7 +1725,7 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
         let response = try await service.ultraRequest(body: body)
         let image = NSImage(data: response.imageData)
         // Do something with `image`
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not generate an image with StabilityAI: \(error.localizedDescription)")
@@ -1754,7 +1754,7 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
         let body = DeepLTranslateRequestBody(targetLang: "ES", text: ["hello world"])
         let response = try await service.translateRequest(body: body)
         // Do something with `response.translations`
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create DeepL translation: \(error.localizedDescription)")
@@ -1789,7 +1789,7 @@ options to pass as the `model` argument:
         )
         let response = try await togetherAIService.chatCompletionRequest(body: requestBody)
         print(response.choices.first?.message.content ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create TogetherAI chat completion: \(error.localizedDescription)")
@@ -1823,7 +1823,7 @@ options to pass as the `model` argument:
         for try await chunk in stream {
             print(chunk.choices.first?.delta.content ?? "")
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create TogetherAI streaming chat completion: \(error.localizedDescription)")
@@ -1891,7 +1891,7 @@ support JSON mode. See [this guide](https://docs.together.ai/docs/json-mode) for
         )
         let response = try await togetherAIService.chatCompletionRequest(body: requestBody)
         print(response.choices.first?.message.content ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create TogetherAI JSON chat completion: \(error.localizedDescription)")
@@ -1976,7 +1976,7 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
         )
         let response = try await togetherAIService.chatCompletionRequest(body: requestBody)
         print(response.choices.first?.message.content ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create TogetherAI llama 3.1 tool completion: \(error.localizedDescription)")
@@ -1990,6 +1990,7 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
 
 ### How to generate a Flux-Schnell image by Black Forest Labs, using Replicate
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2007,15 +2008,20 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
         let input = ReplicateFluxSchnellInputSchema(
             prompt: "Monument valley, Utah"
         )
-        let output = try await replicateService.createFluxSchnellImageURLs(
-            input: input
+        let urls = try await replicateService.createFluxSchnellImages(
+            input: input,
+            secondsToWait: 30
         )
-        print("Done creating Flux-Schnell image: ", output.first ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Done creating Flux-Schnell images: ", urls)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
         print("Could not create Flux-Schnell image: \(error.localizedDescription)")
     }
+```
 
 
 See the full range of controls for generating an image by viewing `ReplicateFluxSchnellInputSchema.swift`
@@ -2023,6 +2029,7 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 
 ### How to generate a Flux-Dev image by Black Forest Labs, using Replicate
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2038,17 +2045,23 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 
     do {
         let input = ReplicateFluxDevInputSchema(
-            prompt: "Monument valley, Utah. High res"
+            prompt: "Monument valley, Utah. High res",
+            goFast: false
         )
-        let output = try await replicateService.createFluxDevImageURLs(
-            input: input
+        let urls = try await replicateService.createFluxDevImages(
+            input: input,
+            secondsToWait: 30
         )
-        print("Done creating Flux-Dev image: ", output.first ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received \(statusCode) status code with response body: \(responseBody)")
+        print("Done creating Flux-Dev images: ", urls)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
         print("Could not create Flux-Dev image: \(error.localizedDescription)")
     }
+```
 
 
 See the full range of controls for generating an image by viewing `ReplicateFluxDevInputSchema.swift`
@@ -2062,7 +2075,7 @@ following substitutions:
 - `ReplicateFluxProInputSchema_v1_1` -> `ReplicateFluxProInputSchema`
 - `createFluxProImage_v1_1` -> `createFluxProImage`
 
-    ```
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2079,17 +2092,22 @@ following substitutions:
     do {
         let input = ReplicateFluxProInputSchema_v1_1(
             prompt: "Monument valley, Utah. High res"
+            promptUpsampling: true
         )
-        let output = try await replicateService.createFluxProImageURL_v1_1(
-            input: input
+        let url = try await replicateService.createFluxProImage_v1_1(
+            input: input,
+            secondsToWait: 60
         )
-        print("Done creating Flux-Pro image: ", output)
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Done creating Flux-Pro 1.1 image: ", url)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Flux-Pro image: \(error.localizedDescription)")
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
+        print("Could not create Flux-Pro 1.1 image: \(error.localizedDescription)")
     }
-    ```
+```
 
 See the full range of controls for generating an image by viewing `ReplicateFluxProInputSchema_v1_1.swift`
 
@@ -2098,6 +2116,7 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 
 On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2111,12 +2130,15 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
-    guard let image = UIImage(named: "face") else {
+    guard let image = NSImage(named: "face") else {
         print("Could not find an image named 'face' in your app assets")
         return
     }
 
-    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.6) else {
+    guard let imageURL = AIProxy.encodeImageAsURL(
+        image: image,
+        compressionQuality: 0.8
+    ) else {
         print("Could not convert image to a local data URI")
         return
     }
@@ -2128,15 +2150,20 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
             numOutputs: 1,
             startStep: 4
         )
-        let output = try await replicateService.createFluxPulidImage(
-            input: input
+        let urls = try await replicateService.createFluxPuLIDImages(
+            input: input,
+            secondsToWait: 60
         )
-        print("Done creating Flux-PuLID image: ", output)
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Done creating Flux-PuLID image: ", urls)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
         print("Could not create Flux-Pulid images: \(error.localizedDescription)")
     }
+```
 
 
 See the full range of controls for generating an image by viewing `ReplicateFluxPulidInputSchema.swift`
@@ -2147,6 +2174,7 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
 There are many controls to play with for this use case. Please see
 `ReplicateFluxDevControlNetInputSchema.swift` for the full range of controls.
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2166,19 +2194,25 @@ There are many controls to play with for this use case. Please see
             prompt: "a cyberpunk with natural greys and whites and browns",
             controlStrength: 0.4
         )
-        let output = try await replicateService.createFluxDevControlNetImage(
-            input: input
+        let output = try await replicateService.createFluxDevControlNetImages(
+            input: input,
+            secondsToWait: 60
         )
         print("Done creating Flux-ControlNet image: ", output)
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
         print("Could not create Flux-ControlNet image: \(error.localizedDescription)")
     }
+```
 
 
 ### How to generate an SDXL image by StabilityAI, using Replicate
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2196,21 +2230,27 @@ There are many controls to play with for this use case. Please see
         let input = ReplicateSDXLInputSchema(
             prompt: "Monument valley, Utah"
         )
-        let urls = try await replicateService.createSDXLImageURLs(
-            input: input
+        let urls = try await replicateService.createSDXLImages(
+            input: input,
+            secondsToWait: 2
         )
-        print("Done creating SDXL image: ", urls.first ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received \(statusCode) status code with response body: \(responseBody)")
+        print("Done creating SDXL images: ", urls)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
         print("Could not create SDXL image: \(error.localizedDescription)")
     }
+```
 
 See the full range of controls for generating an image by viewing `ReplicateSDXLInputSchema.swift`
 
 
 ### How to generate an SDXL Fresh Ink image by fofr, using Replicate
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2229,15 +2269,20 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
             prompt: "A fresh ink TOK tattoo of monument valley, Utah",
             negativePrompt: "ugly, broken, distorted"
         )
-        let urls = try await replicateService.createSDXLFreshInkImageURLs(
-            input: input
+        let urls = try await replicateService.createSDXLFreshInkImages(
+            input: input,
+            secondsToWait: 60
         )
-        print("Done creating SDXL fresh ink image: ", urls.first ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received \(statusCode) status code with response body: \(responseBody)")
+        print("Done creating SDXL Fresh Ink images: ", urls)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create SDXL fresh ink image: \(error.localizedDescription)")
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
+        print("Could not create SDXL Fresh Ink images: \(error.localizedDescription)")
     }
+```
 
 See the full range of controls for generating an image by viewing `ReplicateSDXLFreshInkInputSchema.swift`
 
@@ -2258,15 +2303,16 @@ Look in the `ReplicateService+Convenience.swift` file for inspiration on how to 
    string or an array of strings). Look at `ReplicateFluxOutputSchema.swift` for inspiration.
    If you need help doing this, please reach out.
 
-3. Call the `createSynchronousPredictionUsingVersion` or
-   `createSynchronousPredictionUsingOfficialModel` method and grab the `output` off the
-   response. See `createFaceSwapImage` in `ReplicateService+Convenience.swift` as an example.
+3. Call `replicateService.runOfficialModel` or `replicateService.runCommunityModel`. Community
+   models have a `version` while official models do not.
+
+4. Call `replicateService.getPredictionOutput` on the result from step 3.
 
 You'll need to change `YourInputSchema`, `YourOutputSchema` and `your-model-version` in this
 snippet:
 
 
-    ```
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2284,24 +2330,71 @@ snippet:
         let input = YourInputSchema(
             prompt: "Monument valley, Utah"
         )
-
-        let apiResult: ReplicateSynchronousAPIOutput<YourOutputSchema> = try await replicateService.createSynchronousPredictionUsingVersion(
+        let prediction: ReplicatePrediction<YourOutputSchema> = try await replicateService.runCommunityModel( /* or runOfficialModel */
             modelVersion: "your-model-version",
             input: input,
             secondsToWait: secondsToWait
         )
-
-        guard let output = apiResult.output else {
-            throw ReplicateError.predictionDidNotIncludeOutput
-        }
+        let output: YourOutputSchema = try await replicateService.getPredictionOutput(prediction)
 
         // Do something with output
+
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create replicate synchronous prediction: \(error.localizedDescription)")
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
+        print("Could not run replicate model: \(error.localizedDescription)")
     }
-    ```
+```
+
+### How to upload a file to Replicate's CDN
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "face") else {
+        print("Drop face.jpeg into Assets first")
+        return
+    }
+
+    guard let imageData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.5) else {
+        print("Could not encode the image as jpeg")
+        return
+    }
+
+    do {
+        let fileUploadResponse = try await replicateService.uploadFile(
+            contents: imageData,
+            contentType: "image/jpeg",
+            name: "face.jpg"
+        )
+        print("""
+              Image uploaded. Find it at \(fileUploadResponse.urls.get)
+              You can use this file until \(fileUploadResponse.expiresAt ?? "")
+              """)
+
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
+        print("Could not upload file to replicate: \(error.localizedDescription)")
+    }
+```
 
 ### How to create a replicate model for your own Flux fine tune
 
@@ -2329,7 +2422,7 @@ Replace `<your-account>`:
             visibility: .private
         )
         print("Your model is at \(modelURL)")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create replicate model: \(error.localizedDescription)")
@@ -2374,7 +2467,7 @@ for tips on what to include in the zip file. Then run:
               You you can train with this file until \(fileUploadResponse.expiresAt ?? "")
               """)
 
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not upload file to replicate: \(error.localizedDescription)")
@@ -2423,7 +2516,7 @@ Use the `<model-name>` that you used from the snippet above that.
             body: reqBody
         )
         print("Get training status at: \(training.urls?.get?.absoluteString ?? "unknown")")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create replicate training: \(error.localizedDescription)")
@@ -2450,7 +2543,7 @@ Use the `<url>` that is returned from the snippet above.
     let url = URL(string: "<url>")!
 
     do {
-        let training = try await replicateService.pollForTrainingComplete(
+        let training = try await replicateService.pollForTrainingCompletion(
             url: url,
             pollAttempts: 100,
             secondsBetweenPollAttempts: 10
@@ -2459,7 +2552,7 @@ Use the `<url>` that is returned from the snippet above.
               Flux training status: \(training.status?.rawValue ?? "unknown")
               Your model version is: \(training.output?.version ?? "unknown")
               """)
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not poll for the replicate training: \(error.localizedDescription)")
@@ -2494,7 +2587,7 @@ model owner and model name in the string.
         let predictionResponse = try await replicateService.createPrediction(
             version: "<version>",
             input: input,
-            output: ReplicatePredictionResponseBody<[URL]>.self
+            output: ReplicatePrediction<[URL]>.self
         )
 
         let predictionOutput: [URL] = try await replicateService.pollForPredictionOutput(
@@ -2503,7 +2596,7 @@ model owner and model name in the string.
             secondsBetweenPollAttempts: 5
         )
         print("Done creating predictionOutput: \(predictionOutput)")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create replicate prediction: \(error.localizedDescription)")
@@ -2645,7 +2738,7 @@ model owner and model name in the string.
               The first output image is at \(output.images?.first?.url?.absoluteString ?? "")
               It took \(output.timings?.inference ?? Double.nan) seconds to generate.
               """)
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not create Fal SDXL image: \(error.localizedDescription)")
@@ -2737,7 +2830,7 @@ I do here), or construct the zip in memory:
             name: "training.zip"
         )
         print("Training file uploaded. Find it at \(url.absoluteString)")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not upload file to Fal: \(error.localizedDescription)")
@@ -2757,7 +2850,7 @@ Using the URL returned in the step above:
               Fal's Flux LoRA fast trainer is complete.
               Your weights are at: \(output.diffusersLoraFile?.url?.absoluteString ?? "")
               """)
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not create Fal Flux training: \(error.localizedDescription)")
@@ -2786,7 +2879,7 @@ Using the LoRA URL returned in the step above:
               Fal's Flux LoRA inference is complete.
               Your images are at: \(output.images?.compactMap {$0.url?.absoluteString} ?? [])
               """)
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not create Fal LoRA image: \(error.localizedDescription)")
@@ -2821,7 +2914,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
             model: "mixtral-8x7b-32768"
         ))
         print(response.choices.first?.message.content ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print(error.localizedDescription)
@@ -2852,7 +2945,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
         for try await chunk in stream {
             print(chunk.choices.first?.delta.content ?? "")
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print(error.localizedDescription)
@@ -2889,7 +2982,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
         let response = try await groqService.createTranscriptionRequest(body: requestBody)
         let transcript = response.text ?? "None"
         print("Groq transcribed: \(transcript)")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not get audio transcription from Groq: \(error.localizedDescription)")
@@ -3029,7 +3122,7 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
                 """
             )
         }
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not create mistral chat completion: \(error.localizedDescription)")
@@ -3992,6 +4085,7 @@ Some errors may be more interesting to you, and worth their own error handler to
 your user. For example, to catch `NSURLErrorTimedOut`, `NSURLErrorNetworkConnectionLost` and
 `NSURLErrorNotConnectedToInternet`, you could use the following try/catch structure:
 
+```swift
     import AIProxy
 
     let openAIService = AIProxy.openAIService(
@@ -4005,7 +4099,7 @@ your user. For example, to catch `NSURLErrorTimedOut`, `NSURLErrorNetworkConnect
             messages: [.assistant(content: .text("hello world"))]
         ))
         print(response.choices.first?.message.content ?? "")
-    }  catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch let err as URLError where err.code == URLError.timedOut {
         print("Request for OpenAI buffered chat completion timed out")
@@ -4014,6 +4108,7 @@ your user. For example, to catch `NSURLErrorTimedOut`, `NSURLErrorNetworkConnect
     } catch {
         print("Could not get buffered chat completion: \(error.localizedDescription)")
     }
+```
 
 
 # Troubleshooting
