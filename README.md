@@ -2331,7 +2331,7 @@ snippet:
             prompt: "Monument valley, Utah"
         )
         let prediction: ReplicatePrediction<YourOutputSchema> = try await replicateService.runCommunityModel( /* or runOfficialModel */
-            modelVersion: "your-model-version",
+            version: "your-model-version",
             input: input,
             secondsToWait: secondsToWait
         )
