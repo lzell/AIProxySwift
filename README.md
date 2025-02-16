@@ -4328,15 +4328,15 @@ be overcome before you embark on the custom integration. Once you are seeing 200
 built-in service, take the following steps to add a custom service to your app: 
 
 1. Create an encodable representation of the request body. Let's say you are looking at a
-   service's API docs and they specify that they have an endpoint that looks like this:
+   service's API docs and they specify an endpoint like this:
 
-       <pre>
+   <pre>
        POST api.example.com/chat
 
        Request body:
 
            - `great_prompt`: String
-       </pre> 
+   </pre> 
 
     You would define a request body that looks like this:
 
@@ -4353,7 +4353,7 @@ built-in service, take the following steps to add a custom service to your app:
 2. Create a decodable represenation of the response body. Imagining an expanded API
    definition from above:
 
-       <pre>
+   <pre>
        POST api.example.com/chat
 
        Request body:
@@ -4363,7 +4363,7 @@ built-in service, take the following steps to add a custom service to your app:
        Response body:
 
            - `generated_message`: String
-       </pre>
+   </pre>
 
     You would define a response body that looks like this:
 
