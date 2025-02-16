@@ -4229,7 +4229,7 @@ Contributions are welcome! This library uses the MIT license.
          logic in their app to select which service to use:
 
             ```
-            let service = byok ? AIProxy.openaiDirectService() : AIProxy.openaiProxiedService()
+            let service = byok ? AIProxy.openaiDirectService() : AIProxy.openaiService()
             ```
       2. We prevent the direct and proxied concrete types from diverging in the public
          interface. As we add more functionality to the service's protocol, the compiler helps
@@ -4316,3 +4316,174 @@ Contributions are welcome! This library uses the MIT license.
 Give each release a semantic version *without* a `v` prefix on the version name. That is the
 most reliable way to make Xcode's `File > Add Package Dependency` flow default to sane version
 values.
+
+### How to use AIProxySwift with custom services
+
+If you'd like to proxy calls to a service that we don't have built-in support for, you can do
+that with the following steps.
+
+We recommend that you first go through the [standard integration video](https://www.aiproxy.com/docs/integration-guide.html)
+for a built-in service. This way, any complications that you encounter with DeviceCheck will
+be overcome before you embark on the custom integration. Once you are seeing 200s from a
+built-in service, take the following steps to add a custom service to your app: 
+
+1. Create an encodable representation of the request body. Let's say you are looking at a
+   service's API docs and they specify that they have an endpoint that looks like this:
+
+       <pre>
+       POST api.example.com/chat
+
+       Request body:
+
+           - `great_prompt`: String
+       </pre> 
+
+    You would define a request body that looks like this:
+
+        ```
+        struct ChatRequestBody: Encodable {
+            let greatPrompt: String
+
+            enum CodingKey: String, CodingKeys {
+                case greatPrompt = "great_prompt"
+            }
+        }
+        ```
+
+2. Create a decodable represenation of the response body. Imagining an expanded API
+   definition from above:
+
+       <pre>
+       POST api.example.com/chat
+
+       Request body:
+
+           - `great_prompt`: String
+
+       Response body:
+
+           - `generated_message`: String
+       </pre>
+
+    You would define a response body that looks like this:
+
+        ```
+        struct ChatResponseBody: Decodable {
+            let generatedMessage: String?
+
+            enum CodingKey: String, CodingKeys {
+                case generatedMessage = "generated_message"
+            }
+        }
+        ```
+
+  This example is straightforward. If the response body has a nested structure, which many
+  do, you will need to add Decodables for the nested types. See the [Contribution style guidelines](#contribution-style-guidelines)
+  above for an example of creating nested decodables.
+
+  Pasting the API documentation into an LLM may get you a close representation of the nested
+  structure that you can then polish.
+
+
+3. Pay attention to the authorization header in your service's API docs. If it is of the form
+   `Authorization: Bearer your-key` then it will work out of the box. If it is another form,
+   please message me as I'll need to do a backend deploy (it's quick).
+
+4. Create your service in the AIProxy dashboard entering in the base proxy URL for your
+   service, e.g. in the example above it would be `api.example.com`
+
+5. Submit your API key through the AIProxy dashboard for your service. You will get back a
+   partial key and a service URL.
+
+6. Use the information from preceeding steps to craft a request to AIProxy using the top level
+   helper `AIProxy.request`. Continuing the example from above:
+
+   ```swift
+   import AIProxy
+
+   func makeTestRequest() async throws {
+       let requestBody = ChatRequestBody(
+         greatPrompt: "hello world"
+       )
+
+       let request = try await AIProxy.request(
+               partialKey: partial-key-from-step-5,
+               serviceURL: service-url-from-step-5,
+               proxyPath: "/chat",
+               body: try JSONEncoder().encode(requestBody),
+               verb: .post,
+               headers: [
+                 "content-type": "application/json"
+               ]
+       )
+
+       let session = AIProxy.session()
+       let (data, res) = try await session.data(for: request)
+       guard let httpResponse = res as? HTTPURLResponse else {
+           print("Network response is not an http response")
+           return
+       }
+       guard httpResponse.statusCode >= 200 && httpResponse.statusCode <= 299 else {
+           print("Non-200 response")
+           return
+       }
+       let chatResponseBody = try JSONDecoder().decode(
+               ChatResponseBody.self,
+              from: data
+       )
+       print(chatResponseBody.generatedMessage)
+   }
+
+   ```
+
+    
+6. Watch the Live Console in the AIProxy dashboard as you make test requests. It will tell you
+   if a status code other than 200 is being returned.
+
+At this point you should see successful responses in your Xcode project. If you are not, double
+check your decodable definitions. If you are still not getting successful responses, message me
+your encodables and decodables and I'll take a look as as soon as possible.
+
+
+##### Traffic sniffing with docker and mitmproxy (advanced)
+
+The method above uses the documentation of a service to build the appropriate request and
+response structures. There is another way, which takes longer to set up but has the advantage
+of not relying on potentially stale documentation.
+
+Most providers have an official node client. You can run the node client in a sample project
+inside a docker container and point traffic at mitmproxy to inspect the contents of the
+request/response structures. You can then take the request/response bodies and paste them into
+an LLM to generate the encodable/decodable swift representations. Here's how:
+
+1. Install mitmproxy and run it with `mitmproxy --listen-port 9090`
+
+2. Create a Docker container using the client you are interested in. For example, to sniff traffic
+from Gemini's official lib, I do this:
+
+    mkdir ~/dev/node_docker_sandbox
+    cd ~/dev/node_docker_sandbox
+    cp ~/.mitmproxy/mitmproxy-ca-cert.pem .
+    docker pull node:22
+    vim Dockerfile
+
+        FROM node:22
+        WORKDIR /entrypoint
+        COPY mitmproxy-ca-cert.pem /usr/local/share/ca-certificates/mitmproxy-ca-cert.pem
+        ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/mitmproxy-ca-cert.pem
+        CMD ["node", "/entrypoint/generative-ai-js/samples/text_generation.js"]
+
+    git clone https://github.com/google/generative-ai-js
+    npm install --prefix generative-ai-js/samples
+    docker --debug build -t node_docker_sandbox .
+
+3. In Docker Desktop, go to Settings > Resources > Proxies and flip on 'Manual proxy
+configuration'. Set both 'Web Server' and 'Secure Web Server' to http://localhost:9090
+
+4. Run the docker container:
+
+    docker run --volume "$(pwd)/:/entrypoint/" node_docker_sandbox
+
+If all is set up correctly, you will see requests and responses flow through mitmproxy in plain
+text. You can use those bodies to build your swift structs, implementing an encodable
+representation for the request body and decodable representation for response body.
