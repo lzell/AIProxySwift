@@ -4330,17 +4330,15 @@ built-in service, take the following steps to add a custom service to your app:
 1. Create an encodable representation of the request body. Let's say you are looking at a
    service's API docs and they specify an endpoint like this:
 
-   <pre>
        POST api.example.com/chat
 
        Request body:
 
            - `great_prompt`: String
-   </pre> 
 
     You would define a request body that looks like this:
 
-        ```
+    ```swift
         struct ChatRequestBody: Encodable {
             let greatPrompt: String
 
@@ -4348,12 +4346,11 @@ built-in service, take the following steps to add a custom service to your app:
                 case greatPrompt = "great_prompt"
             }
         }
-        ```
+    ```
 
 2. Create a decodable represenation of the response body. Imagining an expanded API
    definition from above:
 
-   <pre>
        POST api.example.com/chat
 
        Request body:
@@ -4363,11 +4360,10 @@ built-in service, take the following steps to add a custom service to your app:
        Response body:
 
            - `generated_message`: String
-   </pre>
-
+   
     You would define a response body that looks like this:
 
-        ```
+    ```swift
         struct ChatResponseBody: Decodable {
             let generatedMessage: String?
 
@@ -4375,14 +4371,14 @@ built-in service, take the following steps to add a custom service to your app:
                 case generatedMessage = "generated_message"
             }
         }
-        ```
+    ```
 
-  This example is straightforward. If the response body has a nested structure, which many
-  do, you will need to add Decodables for the nested types. See the [Contribution style guidelines](#contribution-style-guidelines)
-  above for an example of creating nested decodables.
+    This example is straightforward. If the response body has a nested structure, which many
+    do, you will need to add Decodables for the nested types. See the [Contribution style guidelines](#contribution-style-guidelines)
+    above for an example of creating nested decodables.
 
-  Pasting the API documentation into an LLM may get you a close representation of the nested
-  structure that you can then polish.
+    Pasting the API documentation into an LLM may get you a close representation of the nested
+    structure that you can then polish.
 
 
 3. Pay attention to the authorization header in your service's API docs. If it is of the form
@@ -4407,14 +4403,14 @@ built-in service, take the following steps to add a custom service to your app:
        )
 
        let request = try await AIProxy.request(
-               partialKey: partial-key-from-step-5,
-               serviceURL: service-url-from-step-5,
-               proxyPath: "/chat",
-               body: try JSONEncoder().encode(requestBody),
-               verb: .post,
-               headers: [
-                 "content-type": "application/json"
-               ]
+           partialKey: "partial-key-from-step-5",
+           serviceURL: "service-url-from-step-5",
+           proxyPath: "/chat",
+           body: try JSONEncoder().encode(requestBody),
+           verb: .post,
+           headers: [
+               "content-type": "application/json"
+           ]
        )
 
        let session = AIProxy.session()
@@ -4433,9 +4429,7 @@ built-in service, take the following steps to add a custom service to your app:
        )
        print(chatResponseBody.generatedMessage)
    }
-
    ```
-
     
 6. Watch the Live Console in the AIProxy dashboard as you make test requests. It will tell you
    if a status code other than 200 is being returned.
@@ -4445,7 +4439,7 @@ check your decodable definitions. If you are still not getting successful respon
 your encodables and decodables and I'll take a look as as soon as possible.
 
 
-##### Traffic sniffing with docker and mitmproxy (advanced)
+### Traffic sniffing with docker and mitmproxy (advanced)
 
 The method above uses the documentation of a service to build the appropriate request and
 response structures. There is another way, which takes longer to set up but has the advantage
@@ -4461,28 +4455,28 @@ an LLM to generate the encodable/decodable swift representations. Here's how:
 2. Create a Docker container using the client you are interested in. For example, to sniff traffic
 from Gemini's official lib, I do this:
 
-    mkdir ~/dev/node_docker_sandbox
-    cd ~/dev/node_docker_sandbox
-    cp ~/.mitmproxy/mitmproxy-ca-cert.pem .
-    docker pull node:22
-    vim Dockerfile
+       mkdir ~/dev/node_docker_sandbox
+       cd ~/dev/node_docker_sandbox
+       cp ~/.mitmproxy/mitmproxy-ca-cert.pem .
+       docker pull node:22
+       vim Dockerfile
 
-        FROM node:22
-        WORKDIR /entrypoint
-        COPY mitmproxy-ca-cert.pem /usr/local/share/ca-certificates/mitmproxy-ca-cert.pem
-        ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/mitmproxy-ca-cert.pem
-        CMD ["node", "/entrypoint/generative-ai-js/samples/text_generation.js"]
+           FROM node:22
+           WORKDIR /entrypoint
+           COPY mitmproxy-ca-cert.pem /usr/local/share/ca-certificates/mitmproxy-ca-cert.pem
+           ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/mitmproxy-ca-cert.pem
+           CMD ["node", "/entrypoint/generative-ai-js/samples/text_generation.js"]
 
-    git clone https://github.com/google/generative-ai-js
-    npm install --prefix generative-ai-js/samples
-    docker --debug build -t node_docker_sandbox .
+       git clone https://github.com/google/generative-ai-js
+       npm install --prefix generative-ai-js/samples
+       docker --debug build -t node_docker_sandbox .
 
 3. In Docker Desktop, go to Settings > Resources > Proxies and flip on 'Manual proxy
-configuration'. Set both 'Web Server' and 'Secure Web Server' to http://localhost:9090
+configuration'. Set both 'Web Server' and 'Secure Web Server' to `http://localhost:9090`
 
 4. Run the docker container:
 
-    docker run --volume "$(pwd)/:/entrypoint/" node_docker_sandbox
+       docker run --volume "$(pwd)/:/entrypoint/" node_docker_sandbox
 
 If all is set up correctly, you will see requests and responses flow through mitmproxy in plain
 text. You can use those bodies to build your swift structs, implementing an encodable
