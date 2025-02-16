@@ -216,7 +216,7 @@ This is useful for `o1` and `o3` models.
 ### How to include history in chat completion requests to OpenAI
 
 Use this approach to have a conversation with ChatGPT. All previous chat messages, whether
-issued by the user or the assistant (chatGPT), are fed back into the model on each request.
+issued by the user or the assistant (ChatGPT), are fed back into the model on each request.
 
 ```swift
     import AIProxy
@@ -428,7 +428,7 @@ return JSON only:
 
 ### How to use OpenAI structured outputs (JSON schemas) in a chat response
 
-This example prompts chatGPT to construct a color palette and conform to a strict JSON schema
+This example prompts ChatGPT to construct a color palette and conform to a strict JSON schema
 in its response:
 
 ```swift
@@ -819,7 +819,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
 
 ### How to use OpenAI through an Azure deployment
 
-You can use all of the OpenAI snippets aboves with one change. Initialize the OpenAI service with:
+You can use all of the OpenAI snippets above with one change. Initialize the OpenAI service with:
 
     import AIProxy
 
@@ -3859,7 +3859,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 ### How to make a streaming DeepSeek R1 request to Fireworks AI
 
 FireworksAI works differently than going to DeepSeek directly in that the reasoning content is
-not on the messages's `reasoningContent` property. Instead, the reasoning content is included in
+not on the message's `reasoningContent` property. Instead, the reasoning content is included in
 `message.content` enclosed in `<think></think>` tags:
 
 ```swift
@@ -3916,7 +3916,7 @@ not on the messages's `reasoningContent` property. Instead, the reasoning conten
 
 ### How to make a buffered DeepSeek R1 request to Fireworks AI
 FireworksAI works differently than going to DeepSeek directly in that the reasoning content is
-not on the messages's `reasoningContent` property. Instead, the reasoning content is included in
+not on the message's `reasoningContent` property. Instead, the reasoning content is included in
 `message.content` enclosed in `<think></think>` tags:
 
 ```swift
@@ -4115,7 +4115,7 @@ your user. For example, to catch `NSURLErrorTimedOut`, `NSURLErrorNetworkConnect
 
 
 ## No such module 'AIProxy' error
-Occassionally, Xcode fails to automatically add the AIProxy library to your target's dependency
+Occasionally, Xcode fails to automatically add the AIProxy library to your target's dependency
 list.  If you receive the `No such module 'AIProxy'` error, first ensure that you have added
 the package to Xcode using the [Installation steps](https://github.com/lzell/AIProxySwift?tab=readme-ov-file#installation).
 Next, select your project in the Project Navigator (`cmd-1`), select your target, and scroll to
@@ -4352,7 +4352,7 @@ built-in service, take the following steps to add a custom service to your app:
         }
     ```
 
-2. Create a decodable represenation of the response body. Imagining an expanded API
+2. Create a decodable representation of the response body. Imagining an expanded API
    definition from above:
 
        POST api.example.com/chat
@@ -4395,7 +4395,7 @@ built-in service, take the following steps to add a custom service to your app:
 5. Submit your API key through the AIProxy dashboard for your service. You will get back a
    partial key and a service URL.
 
-6. Use the information from preceeding steps to craft a request to AIProxy using the top level
+6. Use the information from preceding steps to craft a request to AIProxy using the top level
    helper `AIProxy.request`. Continuing the example from above:
 
    ```swift
@@ -4440,7 +4440,7 @@ built-in service, take the following steps to add a custom service to your app:
 
 At this point you should see successful responses in your Xcode project. If you are not, double
 check your decodable definitions. If you are still not getting successful responses, message me
-your encodables and decodables and I'll take a look as as soon as possible.
+your encodables and decodables and I'll take a look as soon as possible.
 
 ***
 
