@@ -4311,11 +4311,15 @@ Contributions are welcome! This library uses the MIT license.
     }
     ```
 
+***
+
 ### Release naming guidelines
 
 Give each release a semantic version *without* a `v` prefix on the version name. That is the
 most reliable way to make Xcode's `File > Add Package Dependency` flow default to sane version
 values.
+
+***
 
 ### How to use AIProxySwift with custom services
 
@@ -4438,6 +4442,7 @@ At this point you should see successful responses in your Xcode project. If you 
 check your decodable definitions. If you are still not getting successful responses, message me
 your encodables and decodables and I'll take a look as as soon as possible.
 
+***
 
 ### Traffic sniffing with docker and mitmproxy (advanced)
 
