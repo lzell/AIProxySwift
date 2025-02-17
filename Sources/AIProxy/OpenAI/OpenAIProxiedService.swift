@@ -188,6 +188,29 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
+    /// Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms. Related guide:
+    /// https://platform.openai.com/docs/guides/embeddings
+    /// - Parameters:
+    ///   - body: The request body to send to aiproxy and openai. See this reference:
+    ///           https://platform.openai.com/docs/api-reference/embeddings/create
+    /// - Returns: An embedding response. See this reference:
+    ///            https://platform.openai.com/docs/api-reference/embeddings/object
+    public func embeddingRequest(
+        body: OpenAIEmbeddingRequestBody
+    ) async throws -> OpenAIEmbeddingResponseBody {
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL ?? legacyURL,
+            clientID: self.clientID,
+            proxyPath: self.resolvedPath("embeddings"),
+            body: try body.serialize(),
+            verb: .post,
+            contentType: "application/json"
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
+
+
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
         switch self.requestFormat {

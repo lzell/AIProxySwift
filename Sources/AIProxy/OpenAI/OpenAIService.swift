@@ -78,6 +78,17 @@ public protocol OpenAIService {
     func moderationRequest(
         body: OpenAIModerationRequestBody
     ) async throws -> OpenAIModerationResponseBody
+
+    /// Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms. Related guide:
+    /// https://platform.openai.com/docs/guides/embeddings
+    /// - Parameters:
+    ///   - body: The request body to send to aiproxy and openai. See this reference:
+    ///           https://platform.openai.com/docs/api-reference/embeddings/create
+    /// - Returns: An embedding response. See this reference:
+    ///            https://platform.openai.com/docs/api-reference/embeddings/object
+    func embeddingRequest(
+        body: OpenAIEmbeddingRequestBody
+    ) async throws -> OpenAIEmbeddingResponseBody
 }
 
 extension OpenAIService {

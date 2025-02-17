@@ -817,10 +817,70 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     }
 ```
 
+### How to get embeddings using OpenAI
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenAIEmbeddingRequestBody(
+        input: .text("hello world"),
+        model: "text-embedding-3-small"
+    )
+
+    // Or, for multiple embeddings from strings:
+
+    /*
+    let requestBody = OpenAIEmbeddingRequestBody(
+        input: .textArray([
+            "hello world",
+            "hola mundo"
+        ]),
+        model: "text-embedding-3-small"
+    )
+    */
+
+    // Or, for multiple embeddings from tokens:
+
+    /*
+    let requestBody = OpenAIEmbeddingRequestBody(
+        input: .intArray([0,1,2]),
+        model: "text-embedding-3-small"
+    )
+    */
+
+    do {
+        let response = try await openAIService.embeddingRequest(body: requestBody)
+        print(
+            """
+            The response contains \(response.embeddings.count) embeddings.
+
+            The first vector starts with \(response.embeddings.first?.vector.prefix(10) ?? [])
+            """
+        )
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not perform embedding request to OpenAI: \(error.localizedDescription)")
+    }
+```
+
+
 ### How to use OpenAI through an Azure deployment
 
 You can use all of the OpenAI snippets aboves with one change. Initialize the OpenAI service with:
 
+```swift
     import AIProxy
 
     let openAIService = AIProxy.openAIService(
@@ -828,7 +888,7 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
         serviceURL: "service-url-from-your-developer-dashboard",
         requestFormat: .azureDeployment(apiVersion: "2024-06-01")
     )
-
+```
 
 ***
 
