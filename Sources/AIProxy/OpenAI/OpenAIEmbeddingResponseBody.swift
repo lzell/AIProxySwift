@@ -5,6 +5,7 @@
 //  Created by Lou Zell on 2/16/25.
 //
 
+/// https://platform.openai.com/docs/api-reference/embeddings/object
 public struct OpenAIEmbeddingResponseBody: Decodable {
     public let embeddings: [Embedding]
     public let model: String?
