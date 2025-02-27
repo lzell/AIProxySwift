@@ -392,6 +392,8 @@ extension GeminiGenerateContentRequestBody {
         public let presencePenalty: Double?
         public let frequencyPenalty: Double?
         public let responseModalities: [String]?
+        public let responseMimeType: String?
+        public let responseSchema: [String: AIProxyJSONValue]?
 
         public init(
             maxOutputTokens: Int? = nil,
@@ -400,7 +402,9 @@ extension GeminiGenerateContentRequestBody {
             topK: Int? = nil,
             presencePenalty: Double? = nil,
             frequencyPenalty: Double? = nil,
-            responseModalities: [String]? = nil
+            responseModalities: [String]? = nil,
+            responseMimeType: String? = nil,
+            responseSchema: [String: AIProxyJSONValue]? = nil
         ) {
             self.maxOutputTokens = maxOutputTokens
             self.temperature = temperature
@@ -409,6 +413,8 @@ extension GeminiGenerateContentRequestBody {
             self.presencePenalty = presencePenalty
             self.frequencyPenalty = frequencyPenalty
             self.responseModalities = responseModalities
+            self.responseMimeType = responseMimeType
+            self.responseSchema = responseSchema
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -419,6 +425,8 @@ extension GeminiGenerateContentRequestBody {
             case presencePenalty = "presence_penalty"
             case frequencyPenalty = "frequency_penalty"
             case responseModalities = "response_modalities"
+            case responseMimeType = "response_mime_type"
+            case responseSchema = "response_schema"
         }
     }
 }
