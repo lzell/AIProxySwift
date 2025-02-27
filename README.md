@@ -876,6 +876,149 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
 ```
 
 
+### How use realtime audio with OpenAI 
+
+Use this example to have a conversation with OpenAI's realtime models.
+
+We recommend getting a basic chat completion with OpenAI working before attempting realtime.
+Realtime is a more involved integration (as you can see from the code snippet below), and
+getting a basic integration working first narrows down the source of any problem.
+
+Take these steps to build and run an OpenAI realtime example: 
+
+1. Generate a new SwiftUI Xcode project called `MyApp`
+2. Add the `NSMicrophoneUsageDescription` key to your info.plist file
+3. If macOS, tap your project > your target > Signing & Capabilities and add the following:
+    - App Sandbox > Outgoing Connections (client)
+    - App Sandbox > Audio Input
+    - Hardened Runtime > AudioInput
+4. Replace the contents of `MyApp.swift` with the snippet below
+5. Replace the placeholders in the snippet
+    - If connecting directly to OpenAI, replace `your-openai-key`
+    - If protecting your connection through AIProxy, replace `aiproxy-partial-key` and `aiproxy-service-url`
+6. Set the `logLevel` argument of the `openAIService.realtimeSession` call to your desired level. If you leave
+   it set at `.debug`, then you'll see logs for all audio samples that we send and receive from OpenAI. 
+
+**Important** If you would like to protect your connection through AIProxy's backend, your
+AIProxy project must be enabled for websocket use. Please reach out if you would like to be
+added to the private beta.
+
+```swift
+import SwiftUI
+import AIProxy
+
+@main
+struct MyApp: App {
+
+    let realtimeManager = RealtimeManager()
+
+    var body: some Scene {
+        WindowGroup {
+            Button("Start conversation") {
+                Task {
+                    try await realtimeManager.startConversation()
+                }
+            }
+        }
+    }
+}
+
+@RealtimeActor
+final class RealtimeManager {
+    private var realtimeSession: OpenAIRealtimeSession?
+    private var microphonePCMSampleVendor: MicrophonePCMSampleVendor?
+    private var audioPCMPlayer: AudioPCMPlayer?
+
+    nonisolated init() {}
+
+    func startConversation() async throws {
+        /* Uncomment for BYOK use cases */
+        // let openAIService = AIProxy.openAIDirectService(
+        //     unprotectedAPIKey: "your-openai-key"
+        // )
+
+        /* Uncomment to protect your connection through AIProxy */
+        // let openAIService = AIProxy.openAIService(
+        //     partialKey: "partial-key-from-your-developer-dashboard",
+        //     serviceURL: "service-url-from-your-developer-dashboard"
+        // )
+
+        // Set to false if you want your user to speak first
+        let aiSpeaksFirst = true
+
+        // Initialize an audio player to play PCM16 data that we receive from OpenAI:
+        let audioPCMPlayer = try AudioPCMPlayer()
+
+        // Initialize a microphone vendor to vend PCM16 audio samples that we'll send to OpenAI:
+        let microphonePCMSampleVendor = MicrophonePCMSampleVendor()
+        let audioStream = try microphonePCMSampleVendor.start()
+
+        // Start the realtime session:
+        let configuration = OpenAIRealtimeSessionConfiguration(
+            inputAudioFormat: .pcm16,
+            inputAudioTranscription: .init(model: "whisper-1"),
+            instructions: "You are a tour guide of Yosemite national park",
+            maxResponseOutputTokens: .int(4096),
+            modalities: [.audio, .text],
+            outputAudioFormat: .pcm16,
+            temperature: 0.7,
+            turnDetection: .init(
+                prefixPaddingMs: 200,
+                silenceDurationMs: 500,
+                threshold: 0.5
+            ),
+            voice: "shimmer"
+        )
+
+        let realtimeSession = try await openAIService.realtimeSession(
+            model: "gpt-4o-mini-realtime-preview-2024-12-17",
+            configuration: configuration,
+            logLevel: .debug
+        )
+
+        // Send audio from the microphone to OpenAI once OpenAI is ready for it:
+        var isOpenAIReadyForAudio = false
+        Task {
+            for await buffer in audioStream {
+                if isOpenAIReadyForAudio, let base64Audio = AIProxy.base64EncodeAudioPCMBuffer(from: buffer) {
+                    await realtimeSession.sendMessage(
+                        OpenAIRealtimeInputAudioBufferAppend(audio: base64Audio)
+                    )
+                }
+            }
+        }
+
+        // Listen for messages from OpenAI:
+        Task {
+            for await message in realtimeSession.receiver {
+                switch message {
+                case .error(_):
+                    realtimeSession.disconnect()
+                case .sessionUpdated:
+                    if aiSpeaksFirst {
+                        await realtimeSession.sendMessage(OpenAIRealtimeResponseCreate())
+                    } else {
+                        isOpenAIReadyForAudio = true
+                    }
+                case .responseAudioDelta(let base64Audio):
+                    audioPCMPlayer.playPCM16Audio(from: base64Audio)
+                case .inputAudioBufferSpeechStarted:
+                    audioPCMPlayer.interruptPlayback()
+                case .responseCreated:
+                    isOpenAIReadyForAudio = true
+                default:
+                    break
+                }
+            }
+        }
+
+        self.microphonePCMSampleVendor = microphonePCMSampleVendor
+        self.audioPCMPlayer = audioPCMPlayer
+        self.realtimeSession = realtimeSession
+    }
+}
+```
+
 ### How to use OpenAI through an Azure deployment
 
 You can use all of the OpenAI snippets aboves with one change. Initialize the OpenAI service with:

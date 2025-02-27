@@ -1,19 +1,14 @@
-import OSLog
+import AVFoundation
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 #elseif canImport(UIKit)
 import UIKit
 #endif
 
-let aiproxyLogger = Logger(
-    subsystem: Bundle.main.bundleIdentifier ?? "UnknownApp",
-    category: "AIProxy"
-)
-
 public struct AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.71.0"
+    public static let sdkVersion = "0.72.0"
 
     /// - Parameters:
     ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your provider's key.
@@ -890,9 +885,26 @@ public struct AIProxy {
         do {
             return try await AnonymousAccountStorage.sync()
         } catch {
-            aiproxyLogger.critical("Could not configure an AIProxy anonymous account: \(error.localizedDescription)")
+            if ll(.critical) { aiproxyLogger.critical("Could not configure an AIProxy anonymous account: \(error.localizedDescription)") }
         }
         return nil
+    }
+
+    public static func base64EncodeAudioPCMBuffer(from buffer: AVAudioPCMBuffer) -> String? {
+        guard buffer.format.channelCount == 1 else {
+            if ll(.error) { aiproxyLogger.error("This encoding routine assumes a single channel") }
+            return nil
+        }
+
+        guard let audioBufferPtr = buffer.audioBufferList.pointee.mBuffers.mData else {
+            if ll(.error) { aiproxyLogger.error("No audio buffer list available to encode") }
+            return nil
+        }
+
+        let audioBufferLenth = Int(buffer.audioBufferList.pointee.mBuffers.mDataByteSize)
+        let data = Data(bytes: audioBufferPtr, count: audioBufferLenth).base64EncodedString()
+        // print(data)
+        return data
     }
 
     private init() {

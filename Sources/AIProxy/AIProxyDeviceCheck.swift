@@ -34,7 +34,7 @@ struct AIProxyDeviceCheck {
     internal static func getToken() async -> String? {
         guard DCDevice.current.isSupported else {
             if ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] == nil {
-                aiproxyLogger.warning("\(deviceCheckWarning, privacy: .public)")
+                if ll(.warning) { aiproxyLogger.warning("\(deviceCheckWarning, privacy: .public)") }
             }
             return nil
         }
@@ -43,7 +43,7 @@ struct AIProxyDeviceCheck {
             let data = try await DCDevice.current.generateToken()
             return data.base64EncodedString()
         } catch {
-            aiproxyLogger.error("Could not create DeviceCheck token. Are you using an explicit bundle identifier?")
+            if ll(.error) { aiproxyLogger.error("Could not create DeviceCheck token. Are you using an explicit bundle identifier?") }
             return nil
         }
     }
