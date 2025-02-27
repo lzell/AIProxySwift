@@ -101,6 +101,60 @@ extension GeminiGenerateContentResponseBody.Candidate {
     }
 }
 
+// Extension to handle grounding metadata in the response
+extension GeminiGenerateContentResponseBody.Candidate {
+    /// Grounding metadata containing information about search results used for the response
+    public struct GroundingMetadata: Decodable {
+        public let searchEntryPoint: SearchEntryPoint?
+        public let groundingChunks: [GroundingChunk]?
+        public let groundingSupports: [GroundingSupport]?
+        public let webSearchQueries: [String]?
+        
+        private enum CodingKeys: String, CodingKey {
+            case searchEntryPoint
+            case groundingChunks
+            case groundingSupports
+            case webSearchQueries
+        }
+    }
+    
+    public struct SearchEntryPoint: Decodable {
+        public let renderedContent: String?
+    }
+    
+    public struct GroundingChunk: Decodable {
+        public let web: WebInfo?
+    }
+    
+    public struct WebInfo: Decodable {
+        public let uri: String?
+        public let title: String?
+    }
+    
+    public struct GroundingSupport: Decodable {
+        public let segment: Segment?
+        public let groundingChunkIndices: [Int]?
+        public let confidenceScores: [Double]?
+    }
+    
+    public struct Segment: Decodable {
+        public let startIndex: Int?
+        public let endIndex: Int?
+        public let text: String?
+    }
+    
+    /// The grounding metadata for this candidate, if the response is grounded.
+    public var groundingMetadata: GroundingMetadata? {
+        guard let candidateData = try? JSONSerialization.data(withJSONObject: self, options: []),
+              let dict = try? JSONSerialization.jsonObject(with: candidateData, options: []) as? [String: Any],
+              let groundingMetadataDict = dict["groundingMetadata"] as? [String: Any] else {
+            return nil
+        }
+        
+        return try? JSONDecoder().decode(GroundingMetadata.self, from: JSONSerialization.data(withJSONObject: groundingMetadataDict, options: []))
+    }
+}
+
 // MARK: - ResponseBody.UsageMetadata
 extension GeminiGenerateContentResponseBody {
     /// Metadata on the generation request's token usage.

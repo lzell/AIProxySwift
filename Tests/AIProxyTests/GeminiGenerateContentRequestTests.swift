@@ -52,6 +52,43 @@ final class GeminiGenerateContentRequestTests: XCTestCase {
             try requestBody.serialize(pretty: true)
         )
     }
+    
+    func testGroundingRequestWithGoogleSearchIsEncodableToJson() throws {
+        let requestBody = GeminiGenerateContentRequestBody(
+            contents: [
+                .init(
+                    parts: [.text("What is the price of Google stock today")],
+                    role: "user"
+                )
+            ],
+            tools: [
+                .googleSearch(GeminiGenerateContentRequestBody.GoogleSearch())
+            ]
+        )
+        XCTAssertEqual(#"""
+            {
+              "contents" : [
+                {
+                  "parts" : [
+                    {
+                      "text" : "What is the price of Google stock today"
+                    }
+                  ],
+                  "role" : "user"
+                }
+              ],
+              "tools" : [
+                {
+                  "googleSearch" : {
+
+                  }
+                }
+              ]
+            }
+            """#,
+            try requestBody.serialize(pretty: true)
+        )
+    }
 
     func testRequestWithSystemInstructionIsEncodable() throws {
         let requestBody = GeminiGenerateContentRequestBody(
