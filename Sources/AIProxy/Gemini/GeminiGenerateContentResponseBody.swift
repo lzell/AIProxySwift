@@ -29,6 +29,9 @@ extension GeminiGenerateContentResponseBody {
         /// If empty, the model has not stopped generating tokens.
         public let finishReason: String?
 
+        ///  Grounding metadata for the candidate.
+        public let groundingMetadata: GroundingMetadata?
+
         /// Index of the candidate in the list of response candidates.
         public let index: Int?
 
@@ -141,17 +144,6 @@ extension GeminiGenerateContentResponseBody.Candidate {
         public let startIndex: Int?
         public let endIndex: Int?
         public let text: String?
-    }
-    
-    /// The grounding metadata for this candidate, if the response is grounded.
-    public var groundingMetadata: GroundingMetadata? {
-        guard let candidateData = try? JSONSerialization.data(withJSONObject: self, options: []),
-              let dict = try? JSONSerialization.jsonObject(with: candidateData, options: []) as? [String: Any],
-              let groundingMetadataDict = dict["groundingMetadata"] as? [String: Any] else {
-            return nil
-        }
-        
-        return try? JSONDecoder().decode(GroundingMetadata.self, from: JSONSerialization.data(withJSONObject: groundingMetadataDict, options: []))
     }
 }
 
