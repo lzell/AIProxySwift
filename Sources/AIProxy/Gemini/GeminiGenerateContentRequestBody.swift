@@ -151,11 +151,15 @@ extension GeminiGenerateContentRequestBody {
         /// The model or system does not execute the function. Instead the defined function may be returned as a FunctionCall with arguments to the client side for execution. The model may decide to call a subset of these functions by populating FunctionCall in the response. The next conversation turn may contain a FunctionResponse with the Content.role "function" generation context for the next model turn.
         case functionDeclarations([FunctionDeclaration])
 
-        /// Retrieval tool that is powered by Google search.
+        /// Retrieval tool that is powered by Google search (dynamic retrieval for Gemini 1.5)
         case googleSearchRetrieval(DynamicRetrievalConfig)
+        
+        /// Google Search tool for Gemini 2.0
+        case googleSearch(GoogleSearch)
 
         private enum RootKey: CodingKey {
             case functionDeclarations
+            case googleSearch
             case googleSearchRetrieval
         }
 
@@ -164,9 +168,22 @@ extension GeminiGenerateContentRequestBody {
             switch self {
             case .functionDeclarations(let functionDeclarations):
                 try container.encode(functionDeclarations, forKey: .functionDeclarations)
-            case .googleSearchRetrieval(let dynamicRetrievalConfig):
-                try container.encode(dynamicRetrievalConfig, forKey: .googleSearchRetrieval)
+            case .googleSearchRetrieval(let config):
+                try container.encode(config, forKey: .googleSearchRetrieval)
+            case .googleSearch(let config):
+                try container.encode(config, forKey: .googleSearch)
             }
+        }
+    }
+}
+
+extension GeminiGenerateContentRequestBody {
+    /// A simple struct that represents the Google Search tool for Gemini 2.0
+    /// No configuration options are needed for the basic implementation
+    public struct GoogleSearch: Encodable {
+        // Add a public initializer
+        public init() {
+            // No initialization needed
         }
     }
 }
@@ -374,6 +391,9 @@ extension GeminiGenerateContentRequestBody {
         public let topK: Int?
         public let presencePenalty: Double?
         public let frequencyPenalty: Double?
+        public let responseModalities: [String]?
+        public let responseMimeType: String?
+        public let responseSchema: [String: AIProxyJSONValue]?
 
         public init(
             maxOutputTokens: Int? = nil,
@@ -381,7 +401,10 @@ extension GeminiGenerateContentRequestBody {
             topP: Double? = nil,
             topK: Int? = nil,
             presencePenalty: Double? = nil,
-            frequencyPenalty: Double? = nil
+            frequencyPenalty: Double? = nil,
+            responseModalities: [String]? = nil,
+            responseMimeType: String? = nil,
+            responseSchema: [String: AIProxyJSONValue]? = nil
         ) {
             self.maxOutputTokens = maxOutputTokens
             self.temperature = temperature
@@ -389,6 +412,9 @@ extension GeminiGenerateContentRequestBody {
             self.topK = topK
             self.presencePenalty = presencePenalty
             self.frequencyPenalty = frequencyPenalty
+            self.responseModalities = responseModalities
+            self.responseMimeType = responseMimeType
+            self.responseSchema = responseSchema
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -398,6 +424,9 @@ extension GeminiGenerateContentRequestBody {
             case topK = "top_k"
             case presencePenalty = "presence_penalty"
             case frequencyPenalty = "frequency_penalty"
+            case responseModalities = "response_modalities"
+            case responseMimeType = "response_mime_type"
+            case responseSchema = "response_schema"
         }
     }
 }
