@@ -108,10 +108,12 @@ public struct AIProxy {
     ///   - unprotectedAPIKey: Your OpenAI API key
     /// - Returns: An instance of OpenAIService configured and ready to make requests
     public static func openAIDirectService(
-        unprotectedAPIKey: String
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
     ) -> OpenAIService {
         return OpenAIDirectService(
-            unprotectedAPIKey: unprotectedAPIKey
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
         )
     }
 
