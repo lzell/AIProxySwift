@@ -8,6 +8,25 @@
 import Foundation
 
 extension FalService {
+    /// Convenience method for creating a `fal-ai/flux/schnell` image.
+    ///
+    /// - Parameter input: The input schema. See `FalFluxSchnellInputSchema.swift` for the range of controls that you
+    ///                    can use to adjust the image generation.
+    ///
+    /// - Returns: The inference result. The `images` property of the returned value contains a list of
+    ///            generated images. Each image has a `url` that you can use to fetch the image contents
+    ///            (or use with AsyncImage)
+    public func createFluxSchnellImage(
+        input: FalFluxSchnellInputSchema
+    ) async throws -> FalFluxSchnellOutputSchema {
+        return try await self.createInferenceAndPollForResult(
+            model: "fal-ai/flux/schnell",
+            input: input,
+            pollAttempts: 60,
+            secondsBetweenPollAttempts: 2
+        )
+    }
+    
     /// Convenience method for creating a `fal-ai/fast-sdxl` image.
     ///
     /// - Parameter input: The input schema. See `FalFastSDXLInputSchema.swift` for the range of controls that you
