@@ -108,10 +108,12 @@ public struct AIProxy {
     ///   - unprotectedAPIKey: Your OpenAI API key
     /// - Returns: An instance of OpenAIService configured and ready to make requests
     public static func openAIDirectService(
-        unprotectedAPIKey: String
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
     ) -> OpenAIService {
         return OpenAIDirectService(
-            unprotectedAPIKey: unprotectedAPIKey
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
         )
     }
 
@@ -196,10 +198,12 @@ public struct AIProxy {
     ///   - unprotectedAPIKey: Your Anthropic API key
     /// - Returns: An instance of AnthropicService configured and ready to make requests
     public static func anthropicDirectService(
-        unprotectedAPIKey: String
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
     ) -> AnthropicService {
         return AnthropicDirectService(
-            unprotectedAPIKey: unprotectedAPIKey
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
         )
     }
 
@@ -509,10 +513,12 @@ public struct AIProxy {
     ///   - unprotectedAPIKey: Your Groq API key
     /// - Returns: An instance of  GroqService configured and ready to make requests
     public static func groqDirectService(
-        unprotectedAPIKey: String
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
     ) -> GroqService {
         return GroqDirectService(
-            unprotectedAPIKey: unprotectedAPIKey
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
         )
     }
 
@@ -685,10 +691,12 @@ public struct AIProxy {
     ///   - unprotectedAPIKey: Your OpenRouter API key
     /// - Returns: An instance of  OpenRouter configured and ready to make requests
     public static func openRouterDirectService(
-        unprotectedAPIKey: String
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
     ) -> OpenRouterService {
         return OpenRouterDirectService(
-            unprotectedAPIKey: unprotectedAPIKey
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
         )
     }
 
@@ -729,10 +737,12 @@ public struct AIProxy {
     ///   - unprotectedAPIKey: Your DeepSeek API key
     /// - Returns: An instance of  DeepSeek configured and ready to make requests
     public static func deepSeekDirectService(
-        unprotectedAPIKey: String
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
     ) -> DeepSeekService {
         return DeepSeekDirectService(
-            unprotectedAPIKey: unprotectedAPIKey
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
         )
     }
 
