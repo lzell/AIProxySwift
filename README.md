@@ -80,6 +80,21 @@ AIProxy as an alternative to building, monitoring, and maintaining your own back
   tree and select 'Update Package'.
 
 
+## How to contribute to the package
+
+Your additions to AIProxySwift are welcome! I like to develop the library while working in an
+app that depends on it:
+
+1. Fork the repo
+2. Clone your fork
+3. Open your app in Xcode
+4. Remove AIProxySwift from your app (since this is likely referencing a remote lib)
+5. Go to `File > Add Package Dependencies`, and in the bottom left of that popup there is a button "Add local"
+6. Tap "Add local" and then select the folder where you cloned AIProxySwift on your disk.
+
+If you do that, then you can modify the source to AIProxySwift right from within your Xcode project for your app.
+Once you're happy with your changes, open a PR here.
+
 # Example usage
 
 Along with the snippets below, which you can copy and paste into your Xcode project, we also
