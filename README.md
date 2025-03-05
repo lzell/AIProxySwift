@@ -2564,6 +2564,51 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
 
 See the full range of controls for generating an image by viewing `ReplicateSDXLFreshInkInputSchema.swift`
 
+### How to call DeepSeek's 7B vision model on replicate
+
+Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "my-image") else {
+        print("Could not find an image named 'my-image' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.4) else {
+        print("Could not encode image as a data URI")
+        return
+    }
+
+    do {
+        let input = ReplicateDeepSeekVL7BInputSchema(
+            image: imageURL,
+            prompt: "What are the colors in this pic"
+        )
+        let description = try await replicateService.runDeepSeekVL7B(input: input, secondsToWait: 300)
+        print("Done getting descriptions from DeepSeekVL7B: ", description)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
+        print("Could not use deepseek vision on replicate: \(error.localizedDescription)")
+    }
+```
+
 
 ### How to call your own models on Replicate.
 
