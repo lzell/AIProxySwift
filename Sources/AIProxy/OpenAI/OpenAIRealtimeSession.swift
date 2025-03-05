@@ -23,7 +23,7 @@ open class OpenAIRealtimeSession {
         self.sessionConfiguration = sessionConfiguration
 
         Task {
-            try await self.sendMessage(OpenAIRealtimeSessionUpdate(session: self.sessionConfiguration))
+            await self.sendMessage(OpenAIRealtimeSessionUpdate(session: self.sessionConfiguration))
         }
         self.webSocketTask.resume()
         self.receiveMessage()
