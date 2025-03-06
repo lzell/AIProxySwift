@@ -70,12 +70,12 @@ open class AIProxyCertificatePinningDelegate: NSObject, URLSessionDelegate, URLS
       _ challenge: URLAuthenticationChallenge
    ) -> (URLSession.AuthChallengeDisposition, URLCredential?) {
       guard let secTrust = challenge.protectionSpace.serverTrust else {
-         if ll(.error) { aiproxyLogger.error("Could not access the server's security space") }
+         logIf(.error)?.error("Could not access the server's security space")
          return (.cancelAuthenticationChallenge, nil)
       }
 
       guard let certificate = getServerCert(secTrust: secTrust) else {
-         if ll(.error) { aiproxyLogger.error("Could not access the server's TLS cert") }
+         logIf(.error)?.error("Could not access the server's TLS cert")
          return (.cancelAuthenticationChallenge, nil)
       }
 

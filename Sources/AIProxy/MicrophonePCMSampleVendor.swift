@@ -58,7 +58,7 @@ open class MicrophonePCMSampleVendor {
     public init() {}
 
     deinit {
-        if ll(.debug) { aiproxyLogger.debug("MicrophonePCMSampleVendor is being freed") }
+        logIf(.debug)?.debug("MicrophonePCMSampleVendor is being freed")
     }
 
     public func start() throws -> AsyncStream<AVAudioPCMBuffer> {
@@ -121,7 +121,7 @@ open class MicrophonePCMSampleVendor {
                                           1,
                                           &hardwareASBD,
                                           &size)
-        if ll(.debug) { aiproxyLogger.debug("Hardware mic is natively at \(hardwareASBD.mSampleRate) sample rate") }
+        logIf(.debug)?.debug("Hardware mic is natively at \(hardwareASBD.mSampleRate) sample rate")
 
         // Does not work on macOS. Remove comment in future commit.
         //        var ioFormat = AudioStreamBasicDescription(
@@ -257,7 +257,7 @@ open class MicrophonePCMSampleVendor {
         _ inNumberFrames: UInt32
     ) {
         guard let audioUnit = audioUnit else {
-            if ll(.error) { aiproxyLogger.error("There is no audioUnit attached to the sample vendor. Render callback should not be called") }
+            logIf(.error)?.error("There is no audioUnit attached to the sample vendor. Render callback should not be called")
             return
         }
         var bufferList = AudioBufferList(
@@ -280,7 +280,7 @@ open class MicrophonePCMSampleVendor {
                                      &bufferList)
 
         guard status == noErr else {
-            if ll(.error) { aiproxyLogger.error("Could not render voice processed audio data to bufferList") }
+            logIf(.error)?.error("Could not render voice processed audio data to bufferList")
             return
         }
 
@@ -290,7 +290,7 @@ open class MicrophonePCMSampleVendor {
             channels: 1,
             interleaved: true
         ) else {
-            if ll(.error) { aiproxyLogger.error("Could not create audio format inside render callback.") }
+            logIf(.error)?.error("Could not create audio format inside render callback.")
             return
         }
 
@@ -308,7 +308,7 @@ open class MicrophonePCMSampleVendor {
             channels: 1,
             interleaved: false
         ) else {
-            if ll(.error) { aiproxyLogger.error("Could not create target audio format") }
+            logIf(.error)?.error("Could not create target audio format")
             return nil
         }
 
@@ -317,7 +317,7 @@ open class MicrophonePCMSampleVendor {
         }
 
         guard let converter = self.audioConverter else {
-            if ll(.error) { aiproxyLogger.error("There is no audio converter to use for PCM16 resampling") }
+            logIf(.error)?.error("There is no audio converter to use for PCM16 resampling")
             return nil
         }
 
@@ -325,7 +325,7 @@ open class MicrophonePCMSampleVendor {
             pcmFormat: audioFormat,
             frameCapacity: AVAudioFrameCount(audioFormat.sampleRate * 2.0)
         ) else {
-            if ll(.error) { aiproxyLogger.error("Could not create output buffer for PCM16 resampling") }
+            logIf(.error)?.error("Could not create output buffer for PCM16 resampling")
             return nil
         }
 
@@ -355,7 +355,7 @@ open class MicrophonePCMSampleVendor {
         }
 
         if let error = error {
-            if ll(.error) { aiproxyLogger.error("Error converting to expected sample rate: \(error.localizedDescription)") }
+            logIf(.error)?.error("Error converting to expected sample rate: \(error.localizedDescription)")
             return nil
         }
 
@@ -372,11 +372,11 @@ private func advancedPCMBuffer_noCopy(_ originalBuffer: AVAudioPCMBuffer, offset
     guard audioBufferList.pointee.mNumberBuffers == 1,
           audioBufferList.pointee.mBuffers.mNumberChannels == 1
     else {
-        if ll(.error) { aiproxyLogger.error("Broken programmer assumption. Audio conversion depends on single channel PCM16 as input") }
+        logIf(.error)?.error("Broken programmer assumption. Audio conversion depends on single channel PCM16 as input")
         return nil
     }
     guard let audioBufferData = audioBufferList.pointee.mBuffers.mData else {
-        if ll(.error) { aiproxyLogger.error("Could not get audio buffer data from the original PCM16 buffer") }
+        logIf(.error)?.error("Could not get audio buffer data from the original PCM16 buffer")
         return nil
     }
     // advanced(by:) is O(1)

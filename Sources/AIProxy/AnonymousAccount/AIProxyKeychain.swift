@@ -132,7 +132,7 @@ struct AIProxyKeychain {
         if status == noErr {
             return queryResult as? Data
         }
-        if ll(.error) { aiproxyLogger.error("Unexpected keychain error in searchKeychainCopyMatching: \(status)") }
+        logIf(.error)?.error("Unexpected keychain error in searchKeychainCopyMatching: \(status)")
         return nil
     }
 

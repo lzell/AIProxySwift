@@ -24,20 +24,20 @@ extension Decodable {
         guard line.hasPrefix("data: ") else {
             // Special case to ignore OpenRouter and DeepSeek SSE comments
             if line != ": OPENROUTER PROCESSING" && line != ": keep-alive" {
-                if ll(.warning) { aiproxyLogger.warning("Received unexpected line from aiproxy: \(line)") }
+                logIf(.warning)?.warning("Received unexpected line from aiproxy: \(line)")
             }
             return nil
         }
 
         guard line != "data: [DONE]" else {
-            if ll(.debug) { aiproxyLogger.debug("Streaming response has finished") }
+            logIf(.debug)?.debug("Streaming response has finished")
             return nil
         }
 
         guard let chunkJSON = line.dropFirst(6).data(using: .utf8),
               let chunk = try? JSONDecoder().decode(Self.self, from: chunkJSON) else
         {
-            if ll(.warning) { aiproxyLogger.warning("Received unexpected JSON from aiproxy: \(line)") }
+            logIf(.warning)?.warning("Received unexpected JSON from aiproxy: \(line)")
             return nil
         }
 
