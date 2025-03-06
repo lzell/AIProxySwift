@@ -39,14 +39,14 @@ open class OpenAIRealtimeSession {
     /// Sends a message through the websocket connection
     public func sendMessage(_ encodable: Encodable) async {
         guard !self.isTearingDown else {
-            if ll(.warning) { aiproxyLogger.warning("Can't send a websocket message, the RT session is tearing down.") }
+            logIf(.warning)?.warning("Can't send a websocket message, the RT session is tearing down.")
             return
         }
         do {
             let wsMessage = URLSessionWebSocketTask.Message.string(try encodable.serialize())
             try await self.webSocketTask.send(wsMessage)
         } catch {
-            if ll(.error) { aiproxyLogger.error("Could not send message to OpenAI: \(error.localizedDescription)") }
+            logIf(.error)?.error("Could not send message to OpenAI: \(error.localizedDescription)")
         }
     }
 
@@ -77,9 +77,9 @@ open class OpenAIRealtimeSession {
     /// Handles socket errors. We disconnect on all errors.
     private func didReceiveWebSocketError(_ error: NSError) {
         if (error.code == 57) {
-            if ll(.warning) { aiproxyLogger.warning("WS disconnected. Check that your AIProxy project is websocket enabled and you've followed the DeviceCheck integration guide") }
+            logIf(.warning)?.warning("WS disconnected. Check that your AIProxy project is websocket enabled and you've followed the DeviceCheck integration guide")
         } else {
-            if ll(.error) { aiproxyLogger.error("Received ws error: \(error.localizedDescription)") }
+            logIf(.error)?.error("Received ws error: \(error.localizedDescription)")
         }
         self.disconnect()
     }
@@ -94,7 +94,7 @@ open class OpenAIRealtimeSession {
         case .data(let data):
             self.didReceiveWebSocketData(data)
         @unknown default:
-            if ll(.error) { aiproxyLogger.error("Received an unknown websocket message format") }
+            logIf(.error)?.error("Received an unknown websocket message format")
             self.disconnect()
         }
     }
@@ -110,16 +110,16 @@ open class OpenAIRealtimeSession {
 
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let messageType = json["type"] as? String else {
-            if ll(.error) { aiproxyLogger.error("Received websocket data that we don't understand") }
+            logIf(.error)?.error("Received websocket data that we don't understand")
             self.disconnect()
             return
         }
-        if ll(.debug) { aiproxyLogger.debug("Received \(messageType) from OpenAI") }
+        logIf(.debug)?.debug("Received \(messageType) from OpenAI")
 
         switch messageType {
         case "error":
             let errorBody = String(describing: json["error"] as? [String: Any])
-            if ll(.error) { aiproxyLogger.error("Received error from OpenAI websocket: \(errorBody)") }
+            logIf(.error)?.error("Received error from OpenAI websocket: \(errorBody)")
             self.continuation?.yield(.error(errorBody))
         case "session.created":
             self.continuation?.yield(.sessionCreated)

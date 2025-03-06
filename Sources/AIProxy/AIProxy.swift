@@ -885,19 +885,19 @@ public struct AIProxy {
         do {
             return try await AnonymousAccountStorage.sync()
         } catch {
-            if ll(.critical) { aiproxyLogger.critical("Could not configure an AIProxy anonymous account: \(error.localizedDescription)") }
+            logIf(.critical)?.critical("Could not configure an AIProxy anonymous account: \(error.localizedDescription)")
         }
         return nil
     }
 
     public static func base64EncodeAudioPCMBuffer(from buffer: AVAudioPCMBuffer) -> String? {
         guard buffer.format.channelCount == 1 else {
-            if ll(.error) { aiproxyLogger.error("This encoding routine assumes a single channel") }
+            logIf(.error)?.error("This encoding routine assumes a single channel")
             return nil
         }
 
         guard let audioBufferPtr = buffer.audioBufferList.pointee.mBuffers.mData else {
-            if ll(.error) { aiproxyLogger.error("No audio buffer list available to encode") }
+            logIf(.error)?.error("No audio buffer list available to encode")
             return nil
         }
 

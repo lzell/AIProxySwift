@@ -18,10 +18,13 @@ internal let aiproxyLogger = Logger(
     category: "AIProxy"
 )
 
-// Why not create a wrapper around OSLog instead of forcing log callsites to include an `if ll(<level>)` check?
+// Why not create a wrapper around OSLog instead of forcing log callsites to include an `logIf(<level>)` check?
 // Because I like the Xcode log feature that links to the source location of the log.
 // If you create a wrapper, even one that is inlined, the Xcode source feature always links to the wrapper location.
+//
+// H/T Quinn the Eskimo!
+// https://developer.apple.com/forums/thread/774931
 @inline(__always)
-internal func ll(_ logLevel: AIProxyLogLevel) -> Bool {
-    return logLevel.isAtOrAboveThresholdLevel(aiproxyCallerDesiredLogLevel)
+internal func logIf(_ logLevel: AIProxyLogLevel) -> Logger? {
+    logLevel.isAtOrAboveThresholdLevel(aiproxyCallerDesiredLogLevel) ? aiproxyLogger : nil
 }
