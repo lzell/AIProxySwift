@@ -26,5 +26,5 @@ internal let aiproxyLogger = Logger(
 // https://developer.apple.com/forums/thread/774931
 @inline(__always)
 internal func logIf(_ logLevel: AIProxyLogLevel) -> Logger? {
-    logLevel.isAtOrAboveThresholdLevel(aiproxyCallerDesiredLogLevel) ? aiproxyLogger : nil
+    return logLevel.isAtOrAboveThresholdLevel(aiproxyCallerDesiredLogLevel) ? aiproxyLogger : nil
 }

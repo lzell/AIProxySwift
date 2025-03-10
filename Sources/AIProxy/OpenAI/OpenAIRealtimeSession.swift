@@ -29,6 +29,10 @@ open class OpenAIRealtimeSession {
         self.receiveMessage()
     }
 
+    deinit {
+        logIf(.debug)?.debug("OpenAIRealtimeSession is being freed")
+    }
+
     /// Messages sent from OpenAI are published on this receiver as they arrive
     public var receiver: AsyncStream<OpenAIRealtimeMessage> {
         return AsyncStream { continuation in
@@ -39,7 +43,7 @@ open class OpenAIRealtimeSession {
     /// Sends a message through the websocket connection
     public func sendMessage(_ encodable: Encodable) async {
         guard !self.isTearingDown else {
-            logIf(.warning)?.warning("Can't send a websocket message, the RT session is tearing down.")
+            logIf(.debug)?.debug("Ignoring ws sendMessage. The RT session is tearing down.")
             return
         }
         do {
@@ -52,6 +56,7 @@ open class OpenAIRealtimeSession {
 
     /// Close the websocket connection
     public func disconnect() {
+        logIf(.debug)?.debug("Disconnecting from realtime session")
         self.isTearingDown = true
         self.continuation?.finish()
         self.continuation = nil
@@ -76,7 +81,10 @@ open class OpenAIRealtimeSession {
 
     /// Handles socket errors. We disconnect on all errors.
     private func didReceiveWebSocketError(_ error: NSError) {
-        if (error.code == 57) {
+        guard !isTearingDown else {
+            return
+        }
+        if error.code == 57 {
             logIf(.warning)?.warning("WS disconnected. Check that your AIProxy project is websocket enabled and you've followed the DeviceCheck integration guide")
         } else {
             logIf(.error)?.error("Received ws error: \(error.localizedDescription)")

@@ -245,6 +245,7 @@ open class MicrophonePCMSampleVendor {
         if let au = self.audioUnit {
             AudioOutputUnitStop(au)
             AudioUnitUninitialize(au)
+            AudioComponentInstanceDispose(au)
             self.audioUnit = nil
         }
         self.audioConverter = nil
