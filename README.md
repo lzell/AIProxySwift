@@ -1031,6 +1031,15 @@ final class RealtimeManager {
         self.audioPCMPlayer = audioPCMPlayer
         self.realtimeSession = realtimeSession
     }
+
+    func stopConversation() {
+        self.microphonePCMSampleVendor?.stop()
+        self.audioPCMPlayer?.interruptPlayback()
+        self.realtimeSession?.disconnect()
+        self.microphonePCMSampleVendor = nil
+        self.audioPCMPlayer = nil
+        self.realtimeSession = nil
+    }
 }
 ```
 
