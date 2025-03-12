@@ -12,7 +12,7 @@ public struct OpenAIRealtimeConversationItemCreate: Encodable {
     public let item: Item
 }
 
-// MARK: - ConversationItemCreate.Item
+// MARK: -
 public extension OpenAIRealtimeConversationItemCreate {
     struct Item: Encodable {
         let type = "message"
@@ -21,7 +21,7 @@ public extension OpenAIRealtimeConversationItemCreate {
     }
 }
 
-// MARK: - ConversationItemCreate.Item.Content
+// MARK: -
 public extension OpenAIRealtimeConversationItemCreate.Item {
     struct Content: Encodable {
         let type = "input_text"

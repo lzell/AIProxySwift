@@ -10,20 +10,16 @@ import Foundation
 /// Chat completion request body. Docstrings are taken from this reference:
 /// https://platform.openai.com/docs/api-reference/chat/create
 public struct OpenAIChatCompletionRequestBody: Encodable {
-    // Required
 
-    // The required section should be in alphabetical order. This section is an exception,
-    // because we have existing callers that I don't want to break.
+    /// A list of messages comprising the conversation so far
+    public let messages: [Message]
 
     /// ID of the model to use. See the model endpoint compatibility table for details on which models work
     /// with the Chat API:
     /// https://platform.openai.com/docs/models/model-endpoint-compatibility
     public let model: String
 
-    /// A list of messages comprising the conversation so far
-    public let messages: [Message]
-
-    // Optional
+    // MARK: Optional properties
 
     /// Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
     /// See more information here: https://platform.openai.com/docs/guides/text-generation
@@ -115,11 +111,10 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
     public let user: String?
 
     private enum CodingKeys: String, CodingKey {
-        // required
         case messages
         case model
 
-        // optional
+        // Optional properties
         case frequencyPenalty = "frequency_penalty"
         case logitBias = "logit_bias"
         case logprobs
@@ -146,8 +141,8 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
     // To regenerate, use `cmd-shift-a` > Generate Memberwise Initializer
     // To format, place the cursor in the initializer's parameter list and use `ctrl-m`
     public init(
-        model: String,
         messages: [OpenAIChatCompletionRequestBody.Message],
+        model: String,
         frequencyPenalty: Double? = nil,
         logitBias: [String : Double]? = nil,
         logprobs: Bool? = nil,
@@ -169,8 +164,8 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
         topP: Double? = nil,
         user: String? = nil
     ) {
-        self.model = model
         self.messages = messages
+        self.model = model
         self.frequencyPenalty = frequencyPenalty
         self.logitBias = logitBias
         self.logprobs = logprobs
@@ -194,7 +189,7 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
     }
 }
 
-// MARK: - RequestBody.Message
+// MARK: -
 extension OpenAIChatCompletionRequestBody {
     /// https://platform.openai.com/docs/api-reference/chat/create#chat-create-messages
     public enum Message: Encodable {
@@ -300,7 +295,7 @@ extension OpenAIChatCompletionRequestBody {
     }
 }
 
-// MARK: - RequestBody.Message.MessageContent
+// MARK: -
 extension OpenAIChatCompletionRequestBody.Message {
     public enum MessageContent<
         SingleType: Encodable,
@@ -318,7 +313,7 @@ extension OpenAIChatCompletionRequestBody.Message {
     }
 }
 
-// MARK: - RequestBody.Message.ContentPart
+// MARK: -
 extension OpenAIChatCompletionRequestBody.Message {
     public enum ContentPart: Encodable {
         /// The text content.
@@ -368,7 +363,7 @@ extension OpenAIChatCompletionRequestBody.Message {
     }
 }
 
-// MARK: - RequestBody.Message.UserContent.Part.ImageDetail
+// MARK: -
 extension OpenAIChatCompletionRequestBody.Message.ContentPart {
     public enum ImageDetail: String, Encodable {
         case auto
@@ -377,7 +372,7 @@ extension OpenAIChatCompletionRequestBody.Message.ContentPart {
     }
 }
 
-// MARK: - RequestBody.Message.ToolCall
+// MARK: -
 extension OpenAIChatCompletionRequestBody.Message {
     public struct ToolCall: Encodable {
         /// The ID of the tool call.
@@ -399,7 +394,7 @@ extension OpenAIChatCompletionRequestBody.Message {
     }
 }
 
-// MARK: - RequestBody.Message.ToolCall.Function
+// MARK: -
 extension OpenAIChatCompletionRequestBody.Message.ToolCall {
     /// Represents the 'Function' object at `messages > assistant message > tool_calls > function`
     /// https://platform.openai.com/docs/api-reference/chat/create#chat-create-messages
@@ -421,8 +416,7 @@ extension OpenAIChatCompletionRequestBody.Message.ToolCall {
     }
 }
 
-
-// MARK: - RequestBody.ResponseFormat
+// MARK: -
 extension OpenAIChatCompletionRequestBody {
     /// An object specifying the format that the model must output. Compatible with GPT-4o, GPT-4o mini, GPT-4
     /// Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.
@@ -502,7 +496,7 @@ extension OpenAIChatCompletionRequestBody {
     }
 }
 
-// MARK: - RequestBody.StreamOptions
+// MARK: -
 extension OpenAIChatCompletionRequestBody {
     public struct StreamOptions: Encodable {
        /// If set, an additional chunk will be streamed before the data: [DONE] message.
@@ -517,7 +511,7 @@ extension OpenAIChatCompletionRequestBody {
     }
 }
 
-// MARK: - RequestBody.Tool
+// MARK: -
 extension OpenAIChatCompletionRequestBody {
     public enum Tool: Encodable {
 
@@ -582,7 +576,7 @@ extension OpenAIChatCompletionRequestBody {
     }
 }
 
-// MARK: - RequestBody.ToolChoice
+// MARK: -
 extension OpenAIChatCompletionRequestBody {
     /// Controls which (if any) tool is called by the model.
     public enum ToolChoice: Encodable {

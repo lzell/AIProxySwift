@@ -328,10 +328,10 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testBasicChatCompletionRequestBodyIsEncodableToJson() throws {
         let requestBody = OpenAIChatCompletionRequestBody(
-            model: "gpt-4o",
             messages: [
                 .system(content: .text("hello world"))
-            ]
+            ],
+            model: "gpt-4o"
         )
         XCTAssertEqual(
             """
@@ -351,8 +351,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testChatCompletionRequestBodyWithOptionsIsEncodableToJson() throws {
         let requestBody = OpenAIChatCompletionRequestBody(
-            model: "gpt-4o",
             messages: [.system(content: .text("hello world"))],
+            model: "gpt-4o",
             temperature: 0.5,
             topP: 0.1
         )
@@ -376,8 +376,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testBasicStreamingChatCompletionRequestBodyIsEncodableToJson() throws {
         let requestBody = OpenAIChatCompletionRequestBody(
-            model: "gpt-4o",
             messages: [.system(content: .text("hello world"))],
+            model: "gpt-4o",
             stream: true,
             streamOptions: .init(includeUsage: true)
         )
@@ -404,8 +404,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testChatCompletionRequestWithJSONModeIsEncodableToJson() throws {
         let requestBody = OpenAIChatCompletionRequestBody(
-            model: "gpt-4o",
             messages: [.system(content: .text("return JSON only"))],
+            model: "gpt-4o",
             responseFormat: .jsonObject
         )
         XCTAssertEqual(
@@ -429,8 +429,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testChatCompletionRequestWithStructuredOutputsIsEncodableToJson() throws {
         let requestBody = OpenAIChatCompletionRequestBody(
-            model: "gpt-4o",
             messages: [.system(content: .text("return JSON only"))],
+            model: "gpt-4o",
             responseFormat: .jsonSchema(
                 name: "my-schema",
                 description: "the description",
@@ -493,11 +493,11 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testChatCompletionRequestWithToolsIsEncodableToJson() throws {
         let requestBody = OpenAIChatCompletionRequestBody(
-            model: "gpt-4o",
             messages: [
                 .system(content: .text("You are a helpful assistant that calls functions")),
                 .user(content: .text("look up all my orders in may of last year"))
             ],
+            model: "gpt-4o",
             tools: [
                 .function(
                     name: "query",
@@ -548,7 +548,6 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
         let image = createImage(width: 1, height: 1)
         let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 1.0)!
         let requestBody = OpenAIChatCompletionRequestBody(
-            model: "gpt-4o",
             messages: [
                 .system(
                     content: .text("You are a plant identifier")
@@ -561,7 +560,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
                         ]
                     )
                 )
-            ]
+            ],
+            model: "gpt-4o"
         )
 
         XCTAssertEqual(
