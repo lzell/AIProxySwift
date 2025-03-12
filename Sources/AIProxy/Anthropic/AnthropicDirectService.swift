@@ -9,11 +9,19 @@ import Foundation
 
 open class AnthropicDirectService: AnthropicService, DirectService {
     private let unprotectedAPIKey: String
+    private let baseURL: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.directAnthropicService` defined in AIProxy.swift
-    internal init(unprotectedAPIKey: String) {
+    internal init(unprotectedAPIKey: String, baseURL: String? = nil) {
         self.unprotectedAPIKey = unprotectedAPIKey
+        
+        let DEFAULT_BASE_URL = "https://api.anthropic.com"
+        if let baseURL = baseURL {
+            self.baseURL = baseURL.isEmpty ? DEFAULT_BASE_URL : baseURL
+        } else {
+            self.baseURL = DEFAULT_BASE_URL
+        }
     }
 
     /// Initiates a non-streaming request to /v1/messages.
@@ -36,7 +44,7 @@ open class AnthropicDirectService: AnthropicService, DirectService {
             additionalHeaders["anthropic-beta"] = "pdfs-2024-09-25"
         }
         let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.anthropic.com",
+            baseURL: self.baseURL,
             path: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
@@ -66,7 +74,7 @@ open class AnthropicDirectService: AnthropicService, DirectService {
             additionalHeaders["anthropic-beta"] = "pdfs-2024-09-25"
         }
         let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.anthropic.com",
+            baseURL: self.baseURL,
             path: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
