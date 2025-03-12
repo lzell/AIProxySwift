@@ -96,6 +96,7 @@ public struct OpenAIRealtimeSessionConfiguration: Encodable {
     }
 }
 
+// MARK: -
 extension OpenAIRealtimeSessionConfiguration {
     public struct InputAudioTranscription: Encodable {
         /// The model to use for transcription (e.g., "whisper-1").
@@ -106,6 +107,7 @@ extension OpenAIRealtimeSessionConfiguration {
     }
 }
 
+// MARK: -
 extension OpenAIRealtimeSessionConfiguration {
     public enum MaxResponseOutputTokens: Encodable {
         case int(Int)
@@ -123,6 +125,7 @@ extension OpenAIRealtimeSessionConfiguration {
     }
 }
 
+// MARK: -
 extension OpenAIRealtimeSessionConfiguration {
     public struct Tool: Encodable {
         /// The description of the function
@@ -138,6 +141,7 @@ extension OpenAIRealtimeSessionConfiguration {
     }
 }
 
+// MARK: -
 extension OpenAIRealtimeSessionConfiguration {
     public struct TurnDetection: Encodable {
         /// Amount of audio to include before speech starts (in milliseconds).
@@ -171,6 +175,7 @@ extension OpenAIRealtimeSessionConfiguration {
     }
 }
 
+// MARK: -
 /// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
 extension OpenAIRealtimeSessionConfiguration {
     public enum AudioFormat: String, Encodable {
@@ -180,6 +185,7 @@ extension OpenAIRealtimeSessionConfiguration {
     }
 }
 
+// MARK: -
 /// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
 extension OpenAIRealtimeSessionConfiguration {
     public enum Modality: String, Encodable {

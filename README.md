@@ -4584,7 +4584,11 @@ Contributions are welcome! This library uses the MIT license.
 
 - In codable representations, fields that are required by the API should be above fields that
   are optional. Within the two groups (required and optional) all fields should be
-  alphabetically ordered.
+  alphabetically ordered. Separate the two groups with a mark to aid users of ctrl-6:
+
+  ```swift
+  // MARK: Optional properties
+  ```
 
 - Decodables should all have optional properties. Why? We don't want to fail decoding in live
   apps if the provider changes something out from under us (which can happen purposefully due
@@ -4608,6 +4612,7 @@ Contributions are welcome! This library uses the MIT license.
         // ... other fields ...
     }
 
+    // MARK: -
     extension ProviderResponseBody {
         public enum Status: String, Decodable {
             case succeeded
@@ -4635,6 +4640,9 @@ Contributions are welcome! This library uses the MIT license.
   true for nested types that require their own coding keys and encodable/decodable logic, which
   balloon line count with implementation detail that a user of the top level type has no
   interest in.
+
+  You may also wonder why we include the `// MARK: -` line. This is makes parsing the ctrl-6
+  dropdown easier on the eyes.
 
 - If you are implementing an API contract that could reuse a provider's nested structure, and
   it's reasonable to suppose that the two objects will change together, then pull the nested

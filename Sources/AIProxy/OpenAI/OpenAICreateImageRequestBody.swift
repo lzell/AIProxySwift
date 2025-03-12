@@ -1,5 +1,5 @@
 //
-//  OpenAIImageCodables.swift
+//  OpenAICreateImageRequestBody.swift
 //
 //
 //  Created by Lou Zell on 7/15/24.
@@ -7,17 +7,14 @@
 
 import Foundation
 
-// MARK: - Create Image
-//
-// The models below are derived from the 'Create Image' section of the OpenAI API reference:
-// https://platform.openai.com/docs/api-reference/images/create
-
+/// Request body for the 'Create Image' endpoint:
+/// https://platform.openai.com/docs/api-reference/images/create
 public struct OpenAICreateImageRequestBody: Encodable {
-    // Required
     /// A text description of the desired image(s). The maximum length is 1000 characters for dall-e-2 and 4000 characters for dall-e-3.
     public let prompt: String
 
-    // Optional
+    // MARK: Optional properties
+
     /// The model to use for image generation. Supports `dall-e-2` and `dall-e-3`
     /// Defaults to `dall-e-2`
     public let model: String?
@@ -52,6 +49,8 @@ public struct OpenAICreateImageRequestBody: Encodable {
 
     enum CodingKeys: String, CodingKey {
         case prompt
+
+        // Optional properties
         case model
         case n
         case quality
@@ -82,28 +81,5 @@ public struct OpenAICreateImageRequestBody: Encodable {
         self.size = size
         self.style = style
         self.user = user
-    }
-}
-
-
-public struct OpenAICreateImageResponseBody: Decodable {
-    /// A list of generated images returned from the 'Create Image' endpoint
-    public let data: [OpenAIGeneratedImageData]
-}
-
-public struct OpenAIGeneratedImageData: Decodable {
-    /// The base64-encoded JSON of the generated image, if `response_format` is `b64_json`.
-    public let b64JSON: String?
-
-    /// The URL of the generated image, if response_format is url (default).
-    public let url: URL?
-
-    /// The prompt that was used to generate the image, if there was any revision to the prompt.
-    public let revisedPrompt: String?
-
-    enum CodingKeys: String, CodingKey {
-        case b64JSON = "b64_json"
-        case url
-        case revisedPrompt = "revised_prompt"
     }
 }

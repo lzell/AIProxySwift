@@ -20,7 +20,7 @@ public struct OpenAIModerationResponseBody: Decodable {
     public let results: [ModerationResult]
 }
 
-// MARK: - ResponseBody.ModerationResult
+// MARK: -
 extension OpenAIModerationResponseBody {
     /// A moderation object.
     /// Represents if a given text input is potentially harmful.
@@ -47,7 +47,7 @@ extension OpenAIModerationResponseBody {
 
 }
 
-// MARK: - ResponseBody.ModerationResult.Categories
+// MARK: -
 extension OpenAIModerationResponseBody.ModerationResult {
     /// A list of the categories, and whether they are flagged or not.
     public struct Categories: Decodable {
@@ -121,8 +121,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
     }
 }
 
-
-// MARK: - ResponseBody.ModerationResult.CategoryScores
+// MARK: -
 extension OpenAIModerationResponseBody.ModerationResult {
     /// A list of the categories along with their scores as predicted by model.
     public struct CategoryScores: Decodable {
@@ -184,7 +183,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
     }
 }
 
-// MARK: - ResponseBody.ModerationResult.CategoryAppliedInputTypes
+// MARK: -
 extension OpenAIModerationResponseBody.ModerationResult {
     /// A list of the categories along with the input type(s) that the score applies to.
     public struct CategoryAppliedInputTypes: Decodable {
@@ -246,7 +245,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
     }
 }
 
-// MARK: - ResponseBody.ModerationResult.CategoryAppliedInputTypes.InputType
+// MARK: -
 extension OpenAIModerationResponseBody.ModerationResult.CategoryAppliedInputTypes {
     public enum InputType: String, Decodable {
         case image
