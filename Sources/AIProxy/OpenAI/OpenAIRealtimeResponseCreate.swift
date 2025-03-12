@@ -16,7 +16,7 @@ public struct OpenAIRealtimeResponseCreate: Encodable {
     }
 }
 
-// MARK: - ResponseCreate.Response
+// MARK: -
 extension OpenAIRealtimeResponseCreate {
 
     public struct Response: Encodable {

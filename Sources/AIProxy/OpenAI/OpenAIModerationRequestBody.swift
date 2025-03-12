@@ -9,7 +9,6 @@ import Foundation
 
 /// Docstrings from https://platform.openai.com/docs/api-reference/moderations/create
 public struct OpenAIModerationRequestBody: Encodable {
-    // Required
     /// An array of multi-modal inputs to classify.
     public let input: [ModerationInput]
 
@@ -28,7 +27,7 @@ public struct OpenAIModerationRequestBody: Encodable {
     }
 }
 
-// MARK: - RequestBody.ModerationInput
+// MARK: -
 extension OpenAIModerationRequestBody {
     /// Represents a single multi-modal input, which can be either text or an image.
     public enum ModerationInput: Encodable {
