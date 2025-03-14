@@ -189,7 +189,6 @@ extension OpenAIResponse {
         let format: Format
     }
 
-
     /// Represents the literal options: "none", "auto", or "required".
     public enum ToolChoiceOptions: String, Decodable {
         case none = "none"
@@ -442,10 +441,10 @@ extension OpenAIResponse {
     }
 
     public struct ResponseUsage: Decodable {
-        public let inputTokens: Int
-        public let outputTokens: Int
-        public let outputTokensDetails: OutputTokensDetails
-        public let totalTokens: Int
+        public let inputTokens: Int?
+        public let outputTokens: Int?
+        public let outputTokensDetails: OutputTokensDetails?
+        public let totalTokens: Int?
 
         private enum CodingKeys: String, CodingKey {
             case inputTokens = "input_tokens"

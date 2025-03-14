@@ -109,71 +109,27 @@ final class OpenAIResponseObjectTests: XCTestCase {
 
         XCTAssertEqual("Hello! How can I assist you today?", responseOutputText.text)
         XCTAssertEqual("Hello! How can I assist you today?", res.outputText)
-//            XCTAssertEqual("msg_67d32c0230548192bf2ab9bbe758f93a09c5759fa6795b7d", message.id)
-//            XCTAssertEqual("completed", message.status)
-//            XCTAssertEqual("assistant", message.role)
-//            XCTAssertEqual(1, message.content.count)
-//            if let content = message.content.first {
-//                XCTAssertEqual("output_text", content.type)
-//                XCTAssertEqual("Hello! How can I assist you today?", content.text)
-//                XCTAssertTrue(content.annotations.isEmpty)
-//            } else {
-//                XCTFail("Expected message content")
-//            }
-//        } else {
-//            XCTFail("Expected at least one output message")
-//        }
+        XCTAssertEqual(true, res.parallelToolCalls)
+        XCTAssertNil(res.previousResponseId)
+        XCTAssertNil(res.reasoning?.effort)
+        XCTAssertNil(res.reasoning?.generateSummary)
+        XCTAssertEqual(1.0, res.temperature)
+        XCTAssertEqual(.text, res.text?.format)
 
-//        // Check parallel tool calls.
-//        XCTAssertTrue(res.parallelToolCalls)
-//
-//        // Check previous response.
-//        XCTAssertNil(res.previousResponseId)
-//
-//        // Check reasoning details.
-//        XCTAssertNil(res.reasoning?.effort)
-//        XCTAssertNil(res.reasoning?.generateSummary)
-//
-//        // Check store and temperature.
-//        XCTAssertTrue(res.store)
-//        XCTAssertEqual(1.0, res.temperature)
-//
-//        // Already checked text format above:
-//        XCTAssertEqual(.text, res.text?.format)
-//
-//        // Check tool choice.
-//        if case .option(let toolOption) = res.toolChoice {
-//            XCTAssertEqual(.auto, toolOption)
-//        } else {
-//            XCTFail("Expected toolChoice to be an option with value 'auto'")
-//        }
-//
-//        // Check that tools array is empty.
-//        XCTAssertEqual(0, res.tools.count)
-//
-//        // Check top_p and truncation.
-//        XCTAssertEqual(1.0, res.topP)
-//        XCTAssertEqual("disabled", res.truncation)
-//
-//        // Check usage details.
-//        XCTAssertEqual(26, res.usage.inputTokens)
-//        XCTAssertEqual(10, res.usage.outputTokens)
-//        XCTAssertEqual(0, res.usage.outputTokensDetails.reasoningTokens)
-//        XCTAssertEqual(36, res.usage.totalTokens)
-//
-//        // Check user and metadata.
-//        XCTAssertNil(res.user)
-//        XCTAssertTrue(res.metadata.isEmpty)
+        if case .option(let toolOption) = res.toolChoice {
+            XCTAssertEqual(.auto, toolOption)
+        } else {
+            XCTFail("Expected toolChoice to be an option with value 'auto'")
+        }
 
-
-////        XCTAssertEqual("o1-mini-2024-09-12", res.model)
-////        XCTAssertEqual(
-////            "Hello! How can I assist you today?",
-////            res.choices.first?.message.content
-////        )
-////        XCTAssertEqual(10, res.usage?.promptTokens)
-////        XCTAssertEqual(661, res.usage?.completionTokens)
-////        XCTAssertEqual(671, res.usage?.totalTokens)
-////        XCTAssertEqual(640, res.usage?.completionTokensDetails?.reasoningTokens)
+        XCTAssertEqual(0, res.tools?.count)
+        XCTAssertEqual(1.0, res.topP)
+        XCTAssertEqual("disabled", res.truncation)
+        XCTAssertEqual(26, res.usage?.inputTokens)
+        XCTAssertEqual(10, res.usage?.outputTokens)
+        XCTAssertEqual(0, res.usage?.outputTokensDetails?.reasoningTokens)
+        XCTAssertEqual(36, res.usage?.totalTokens)
+        XCTAssertNil(res.user)
+        XCTAssertEqual(true, res.metadata?.isEmpty)
     }
 }
