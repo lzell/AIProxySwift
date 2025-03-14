@@ -247,6 +247,32 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
         )
     }
 
+    public func createResponse(
+        input: ResponseInputParam,
+        model: String
+    ) async throws {
+        let body = OpenAICreateResponseRequestBody(
+            input: input,
+            model: model
+        )
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL ?? legacyURL,
+            clientID: self.clientID,
+            proxyPath: self.resolvedPath("responses"),
+            body: try body.serialize(),
+            verb: .post,
+            contentType: "application/json"
+        )
+
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            self.urlSession,
+            request
+        )
+        // return try await self.makeRequestAndDeserializeResponse(request)
+    }
+
+
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
         switch self.requestFormat {

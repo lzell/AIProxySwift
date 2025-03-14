@@ -243,6 +243,13 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         )
     }
 
+    public func createResponse(
+        input: ResponseInputParam,
+        model: String
+    ) async throws {
+
+    }
+
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
         switch self.requestFormat {

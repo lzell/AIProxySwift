@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol OpenAIService {
-    
+
     /// Initiates a non-streaming chat completion request to /v1/chat/completions.
     ///
     /// - Parameters:
@@ -111,6 +111,11 @@ public protocol OpenAIService {
         configuration: OpenAIRealtimeSessionConfiguration,
         logLevel: AIProxyLogLevel
     ) async throws -> OpenAIRealtimeSession
+
+//    func createResponse(
+//        input: ResponseInputParam,
+//        model: String
+//    ) async throws -> OpenAIResponse
 }
 
 extension OpenAIService {
