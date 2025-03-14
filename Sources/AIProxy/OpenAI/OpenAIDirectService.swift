@@ -246,8 +246,8 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     public func createResponse(
         input: ResponseInputParam,
         model: String
-    ) async throws {
-
+    ) async throws -> OpenAIResponse {
+        fatalError()
     }
 
     private func resolvedPath(_ common: String) -> String {

@@ -112,10 +112,10 @@ public protocol OpenAIService {
         logLevel: AIProxyLogLevel
     ) async throws -> OpenAIRealtimeSession
 
-//    func createResponse(
-//        input: ResponseInputParam,
-//        model: String
-//    ) async throws -> OpenAIResponse
+    func createResponse(
+        input: ResponseInputParam,
+        model: String
+    ) async throws -> OpenAIResponse
 }
 
 extension OpenAIService {

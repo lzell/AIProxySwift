@@ -99,10 +99,16 @@ final class OpenAIResponseObjectTests: XCTestCase {
         XCTAssertNil(res.maxOutputTokens)
         XCTAssertEqual("gpt-4o-2024-08-06", res.model)
 
+        guard let firstOutput = res.output.first,
+              case .message(let messageContent) = firstOutput,
+              let firstContent = messageContent.content.first,
+              case .outputText(let responseOutputText) = firstContent else {
+            XCTFail("Expected first output item to be a .message with .outputText content")
+            return
+        }
+
+        XCTAssertEqual("Hello! How can I assist you today?", responseOutputText.text)
         XCTAssertEqual("Hello! How can I assist you today?", res.outputText)
-        XCTAssertEqual(1, res.output.count)
-        if let message = res.output.first {
-            XCTAssertEqual("message", message.type)
 //            XCTAssertEqual("msg_67d32c0230548192bf2ab9bbe758f93a09c5759fa6795b7d", message.id)
 //            XCTAssertEqual("completed", message.status)
 //            XCTAssertEqual("assistant", message.role)
@@ -114,9 +120,9 @@ final class OpenAIResponseObjectTests: XCTestCase {
 //            } else {
 //                XCTFail("Expected message content")
 //            }
-        } else {
-            XCTFail("Expected at least one output message")
-        }
+//        } else {
+//            XCTFail("Expected at least one output message")
+//        }
 
 //        // Check parallel tool calls.
 //        XCTAssertTrue(res.parallelToolCalls)

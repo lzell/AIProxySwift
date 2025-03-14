@@ -250,7 +250,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
     public func createResponse(
         input: ResponseInputParam,
         model: String
-    ) async throws {
+    ) async throws -> OpenAIResponse {
         let body = OpenAICreateResponseRequestBody(
             input: input,
             model: model
@@ -265,11 +265,11 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             contentType: "application/json"
         )
 
-        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            self.urlSession,
-            request
-        )
-        // return try await self.makeRequestAndDeserializeResponse(request)
+//        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+//            self.urlSession,
+//            request
+//        )
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 
 
