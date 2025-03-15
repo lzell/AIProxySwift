@@ -79,6 +79,3 @@ final class GeminiStructuredOutputsRequestTests: XCTestCase {
         )
     }
 }
-
-
-
