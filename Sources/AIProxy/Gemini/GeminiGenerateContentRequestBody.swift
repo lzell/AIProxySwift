@@ -418,15 +418,15 @@ extension GeminiGenerateContentRequestBody {
         }
 
         private enum CodingKeys: String, CodingKey {
-            case maxOutputTokens = "max_output_tokens"
+            case maxOutputTokens
             case temperature
-            case topP = "top_p"
-            case topK = "top_k"
-            case presencePenalty = "presence_penalty"
-            case frequencyPenalty = "frequency_penalty"
-            case responseModalities = "response_modalities"
-            case responseMimeType = "response_mime_type"
-            case responseSchema = "response_schema"
+            case topP
+            case topK
+            case presencePenalty
+            case frequencyPenalty
+            case responseModalities
+            case responseMimeType
+            case responseSchema
         }
     }
 }
