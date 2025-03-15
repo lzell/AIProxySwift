@@ -1635,6 +1635,79 @@ Use the file URL returned from the snippet above.
     }
 
 
+### How to use structured ouputs with Gemini
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let schema: [String: AIProxyJSONValue] = [
+        "description": "List of recipes",
+        "type": "array",
+        "items": [
+            "type": "object",
+            "properties": [
+                "recipeName": [
+                    "type": "string",
+                    "description": "Name of the recipe",
+                    "nullable": false
+                ]
+            ],
+            "required": ["recipeName"]
+        ]
+    ]
+    do {
+        let requestBody = GeminiGenerateContentRequestBody(
+            contents: [
+                .init(
+                    parts: [
+                        .text("List a few popular cookie recipes."),
+                    ]
+                )
+            ],
+            generationConfig: .init(
+                responseMimeType: "application/json",
+                responseSchema: schema
+            )
+        )
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-2.0-flash"
+        )
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            if case .text(let text) = part {
+                print("Gemini sent: \(text)")
+            }
+        }
+        if let usage = response.usageMetadata {
+            print(
+                """
+                Used:
+                 \(usage.promptTokenCount ?? 0) prompt tokens
+                 \(usage.cachedContentTokenCount ?? 0) cached tokens
+                 \(usage.candidatesTokenCount ?? 0) candidate tokens
+                 \(usage.totalTokenCount ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Gemini generate content request: \(error.localizedDescription)")
+    }
+```
+
+
 ***
 
 
