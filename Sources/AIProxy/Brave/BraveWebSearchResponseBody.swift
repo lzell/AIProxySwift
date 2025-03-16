@@ -59,7 +59,7 @@ extension BraveWebSearchResponseBody {
 
         public struct MixedItem: Decodable {
             public let all: Bool
-            public let index: Int
+            public let index: Int?
             public let type: String
         }
     }
