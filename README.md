@@ -1707,6 +1707,90 @@ Use the file URL returned from the snippet above.
     }
 ```
 
+### How to use structured ouputs and an image as input with Gemini
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "apple_marketing") else {
+        print("Could not find an image named 'apple_marketing' in your app assets")
+        return
+    }
+
+    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.4) else {
+        print("Could not encode image as Jpeg")
+        return
+    }
+
+    let schema: [String: AIProxyJSONValue] = [
+        "description": "A list of the important points that the document conveys",
+        "type": "array",
+        "items": [
+            "type": "object",
+            "properties": [
+                "point": [
+                    "type": "string",
+                    "description": "One of the important points that the document conveys",
+                    "nullable": false
+                ]
+            ],
+            "required": ["point"]
+        ]
+    ]
+
+    let requestBody = GeminiGenerateContentRequestBody(
+        contents: [
+            .init(
+                parts: [
+                    .text("Please create the important points of this image"),
+                    .inline(
+                        data: jpegData,
+                        mimeType: "image/jpeg"
+                    )
+                ]
+            )
+        ],
+        generationConfig: .init(
+            responseMimeType: "application/json",
+            responseSchema: schema
+        ),
+        safetySettings: [
+            .init(category: .dangerousContent, threshold: .none),
+            .init(category: .civicIntegrity, threshold: .none),
+            .init(category: .harassment, threshold: .none),
+            .init(category: .hateSpeech, threshold: .none),
+            .init(category: .sexuallyExplicit, threshold: .none)
+        ]
+    )
+
+    do {
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-2.0-flash"
+        )
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            if case .text(let text) = part {
+                print("Gemini sent: \(text)")
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Gemini generate content request: \(error.localizedDescription)")
+    }
+```
+
 
 ***
 
