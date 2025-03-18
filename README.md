@@ -1826,7 +1826,14 @@ Use the file URL returned from the snippet above.
                 "Text",
                 "Image"
             ]
-        )
+        ),
+        safetySettings: [
+            .init(category: .dangerousContent, threshold: .none),
+            .init(category: .civicIntegrity, threshold: .none),
+            .init(category: .harassment, threshold: .none),
+            .init(category: .hateSpeech, threshold: .none),
+            .init(category: .sexuallyExplicit, threshold: .none)
+        ]
     )
 
     do {
