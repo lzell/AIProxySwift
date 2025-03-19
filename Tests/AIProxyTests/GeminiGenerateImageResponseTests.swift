@@ -54,8 +54,4 @@ final class GeminiGenerateImageResponseTests: XCTestCase {
             XCTFail()
         }
     }
-
 }
-
-
-
