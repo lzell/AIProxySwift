@@ -44,6 +44,24 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
+    /// Generate images with the Imagen API
+    public func makeImagenRequest(
+        body: GeminiImagenRequestBody,
+        model: String
+    ) async throws -> GeminiImagenResponseBody {
+        let proxyPath = "/v1beta/models/\(model):predict"
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: proxyPath,
+            body:  body.serialize(),
+            verb: .post,
+            contentType: "application/json"
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
+
     /// Uploads a file to Google's short term storage.
     ///
     /// The File API lets you store up to 20 GB of files per project, with a per-file maximum

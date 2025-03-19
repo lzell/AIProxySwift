@@ -21,6 +21,13 @@ public protocol GeminiService {
         model: String
     ) async throws -> GeminiGenerateContentResponseBody
 
+    /// Generate images with the Imagen API
+    func makeImagenRequest(
+        body: GeminiImagenRequestBody,
+        model: String
+    ) async throws -> GeminiImagenResponseBody
+
+
     /// Uploads a file to Google's short term storage.
     ///
     /// The File API lets you store up to 20 GB of files per project, with a per-file maximum

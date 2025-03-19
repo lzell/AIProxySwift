@@ -1853,6 +1853,52 @@ Use the file URL returned from the snippet above.
     }
 ```
 
+### How to generate an image with Imagen
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = GeminiImagenRequestBody(
+        instances: [
+            .init(prompt: prompt)
+        ],
+        parameters: .init(
+            personGeneration: .allowAdult,
+            safetyLevel: .blockNone,
+            sampleCount: 1
+        )
+    )
+
+    do {
+        let response = try await geminiService.makeImagenRequest(
+            body: requestBody,
+            model: "imagen-3.0-generate-002"
+        )
+        if let base64Data = response.predictions.first?.bytesBase64Encoded,
+           let imageData = Data(base64Encoded: base64Data),
+           let image = UIImage(data: imageData) {
+            // Do something with image
+        } else {
+            print("Imagen response did not include base64 image data")
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Imagen image: \(error.localizedDescription)")
+    }
+```
+
 
 ***
 
