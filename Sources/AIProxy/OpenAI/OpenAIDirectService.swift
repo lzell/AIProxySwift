@@ -10,15 +10,18 @@ import Foundation
 open class OpenAIDirectService: OpenAIService, DirectService {
     private let unprotectedAPIKey: String
     private let requestFormat: OpenAIRequestFormat
+    private let baseURL: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.directOpenAIService` defined in AIProxy.swift
     internal init(
         unprotectedAPIKey: String,
-        requestFormat: OpenAIRequestFormat = .standard
+        requestFormat: OpenAIRequestFormat = .standard,
+        baseURL: String? = nil
     ) {
         self.unprotectedAPIKey = unprotectedAPIKey
         self.requestFormat = requestFormat
+        self.baseURL = baseURL ?? "https://api.openai.com"
     }
 
     /// Initiates a non-streaming chat completion request to /v1/chat/completions.
@@ -37,7 +40,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         body.stream = false
         body.streamOptions = nil
         var request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.openai.com",
+            baseURL: self.baseURL,
             path: self.resolvedPath("chat/completions"),
             body: try body.serialize(),
             verb: .post,
@@ -66,7 +69,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
         var request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.openai.com",
+            baseURL: self.baseURL,
             path: self.resolvedPath("chat/completions"),
             body: try body.serialize(),
             verb: .post,
@@ -90,7 +93,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         body: OpenAICreateImageRequestBody
     ) async throws -> OpenAICreateImageResponseBody {
         let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.openai.com",
+            baseURL: self.baseURL,
             path: self.resolvedPath("images/generations"),
             body: try body.serialize(),
             verb: .post,
@@ -114,7 +117,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     ) async throws -> OpenAICreateTranscriptionResponseBody {
         let boundary = UUID().uuidString
         let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.openai.com",
+            baseURL: self.baseURL,
             path: self.resolvedPath("audio/transcriptions"),
             body: formEncode(body, boundary),
             verb: .post,
@@ -148,7 +151,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         body: OpenAITextToSpeechRequestBody
     ) async throws -> Data {
         let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.openai.com",
+            baseURL: self.baseURL,
             path: self.resolvedPath("audio/speech"),
             body: try body.serialize(),
             verb: .post,
@@ -175,7 +178,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         body: OpenAIModerationRequestBody
     ) async throws -> OpenAIModerationResponseBody {
         let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.openai.com",
+            baseURL: self.baseURL,
             path: self.resolvedPath("moderations"),
             body: try body.serialize(),
             verb: .post,
@@ -198,7 +201,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         body: OpenAIEmbeddingRequestBody
     ) async throws -> OpenAIEmbeddingResponseBody {
         let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.openai.com",
+            baseURL: self.baseURL,
             path: self.resolvedPath("embeddings"),
             body: try body.serialize(),
             verb: .post,
@@ -228,7 +231,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     ) async throws -> OpenAIRealtimeSession {
         aiproxyCallerDesiredLogLevel = logLevel
         let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.openai.com",
+            baseURL: self.baseURL,
             path: "/v1/realtime?model=\(model)",
             body: nil,
             verb: .get,

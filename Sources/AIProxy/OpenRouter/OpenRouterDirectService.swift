@@ -9,11 +9,13 @@ import Foundation
 
 open class OpenRouterDirectService: OpenRouterService, DirectService {
     private let unprotectedAPIKey: String
+    private let baseURL: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.openRouterDirectService` defined in AIProxy.swift
-    internal init(unprotectedAPIKey: String) {
+    internal init(unprotectedAPIKey: String, baseURL: String? = nil) {
         self.unprotectedAPIKey = unprotectedAPIKey
+        self.baseURL = baseURL ?? "https://openrouter.ai"
     }
 
     /// Initiates a non-streaming chat completion request to /api/v1/chat/completions.
@@ -33,7 +35,7 @@ open class OpenRouterDirectService: OpenRouterService, DirectService {
         body.stream = false
         body.streamOptions = nil
         var request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://openrouter.ai",
+            baseURL: self.baseURL,
             path: "/api/v1/chat/completions",
             body: body.serialize(),
             verb: .post,
@@ -63,7 +65,7 @@ open class OpenRouterDirectService: OpenRouterService, DirectService {
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
         var request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://openrouter.ai",
+            baseURL: self.baseURL,
             path: "/api/v1/chat/completions",
             body: try body.serialize(),
             verb: .post,

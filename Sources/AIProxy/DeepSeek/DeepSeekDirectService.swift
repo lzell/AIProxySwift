@@ -9,13 +9,16 @@ import Foundation
 
 open class DeepSeekDirectService: DeepSeekService, DirectService {
     private let unprotectedAPIKey: String
+    private let baseURL: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.directDeepSeekService` defined in AIProxy.swift
     internal init(
-        unprotectedAPIKey: String
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
     ) {
         self.unprotectedAPIKey = unprotectedAPIKey
+        self.baseURL = baseURL ?? "https://api.deepseek.com"
     }
 
     /// Initiates a non-streaming chat completion request to /chat/completions.
@@ -34,7 +37,7 @@ open class DeepSeekDirectService: DeepSeekService, DirectService {
         body.stream = false
         body.streamOptions = nil
         var request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.deepseek.com",
+            baseURL: self.baseURL,
             path: "/chat/completions",
             body: try body.serialize(),
             verb: .post,
@@ -64,7 +67,7 @@ open class DeepSeekDirectService: DeepSeekService, DirectService {
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
         var request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.deepseek.com",
+            baseURL: self.baseURL,
             path: "/chat/completions",
             body: try body.serialize(),
             verb: .post,

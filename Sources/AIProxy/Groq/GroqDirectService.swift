@@ -9,13 +9,16 @@ import Foundation
 
 open class GroqDirectService: GroqService, DirectService {
     private let unprotectedAPIKey: String
+    private let baseURL: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.groqDirectService` defined in AIProxy.swift
     internal init(
-        unprotectedAPIKey: String
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
     ) {
         self.unprotectedAPIKey = unprotectedAPIKey
+        self.baseURL = baseURL ?? "https://api.groq.com"
     }
 
     /// Initiates a non-streaming chat completion request to Groq
@@ -31,7 +34,7 @@ open class GroqDirectService: GroqService, DirectService {
         var body = body
         body.stream = false
         let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.groq.com",
+            baseURL: self.baseURL,
             path: "/openai/v1/chat/completions",
             body:  try body.serialize(),
             verb: .post,
@@ -56,7 +59,7 @@ open class GroqDirectService: GroqService, DirectService {
         var body = body
         body.stream = true
         let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.groq.com",
+            baseURL: self.baseURL,
             path: "/openai/v1/chat/completions",
             body:  try body.serialize(),
             verb: .post,
@@ -80,7 +83,7 @@ open class GroqDirectService: GroqService, DirectService {
     ) async throws -> GroqTranscriptionResponseBody {
         let boundary = UUID().uuidString
         let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://api.groq.com",
+            baseURL: self.baseURL,
             path: "/openai/v1/audio/transcriptions",
             body: formEncode(body, boundary),
             verb: .post,
