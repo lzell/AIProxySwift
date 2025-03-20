@@ -81,13 +81,13 @@ open class AudioPCMPlayer {
     }
 
     deinit {
-        if ll(.debug) { aiproxyLogger.debug("AudioPCMPlayer is being freed") }
+        logIf(.debug)?.debug("AudioPCMPlayer is being freed")
         self.audioEngine.stop()
     }
 
     public func playPCM16Audio(from base64String: String) {
         guard let audioData = Data(base64Encoded: base64String) else {
-            if ll(.error) { aiproxyLogger.error("Could not decode base64 string for audio playback") }
+            logIf(.error)?.error("Could not decode base64 string for audio playback")
             return
         }
 
@@ -106,7 +106,7 @@ open class AudioPCMPlayer {
             pcmFormat: self.inputFormat,
             bufferListNoCopy: &bufferList
         ) else {
-            if ll(.error) { aiproxyLogger.error("Could not create input buffer for audio playback") }
+            logIf(.error)?.error("Could not create input buffer for audio playback")
             return
         }
 
@@ -114,19 +114,19 @@ open class AudioPCMPlayer {
             pcmFormat: self.playableFormat,
             frameCapacity: AVAudioFrameCount(self.playableFormat.sampleRate * 2.0)
         ) else {
-            if ll(.error) { aiproxyLogger.error("Could not create output buffer for audio playback") }
+            logIf(.error)?.error("Could not create output buffer for audio playback")
             return
         }
 
         guard let converter = AVAudioConverter(from: self.inputFormat, to: self.playableFormat) else {
-            if ll(.error) { aiproxyLogger.error("Could not create audio converter needed to map from pcm16int to pcm32float") }
+            logIf(.error)?.error("Could not create audio converter needed to map from pcm16int to pcm32float")
             return
         }
 
         do {
             try converter.convert(to: outPCMBuf, from: inPCMBuf)
         } catch {
-            if ll(.error) { aiproxyLogger.error("Could not map from pcm16int to pcm32float: \(error.localizedDescription)") }
+            logIf(.error)?.error("Could not map from pcm16int to pcm32float: \(error.localizedDescription)")
             return
         }
 
@@ -134,7 +134,7 @@ open class AudioPCMPlayer {
             do {
                 try self.audioEngine.start()
             } catch {
-                if ll(.error) { aiproxyLogger.error("Could not start audio engine: \(error.localizedDescription)") }
+                logIf(.error)?.error("Could not start audio engine: \(error.localizedDescription)")
                 return
             }
         }
@@ -150,7 +150,7 @@ open class AudioPCMPlayer {
     }
 
     public func interruptPlayback() {
-        if ll(.debug) { aiproxyLogger.debug("Interrupting playback") }
+        logIf(.debug)?.debug("Interrupting playback")
         self.playerNode.stop()
     }
 }

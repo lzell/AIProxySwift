@@ -211,6 +211,30 @@ extension ReplicateService {
         return try await self.getPredictionOutput(prediction)
     }
 
+    /// Convenience method for running the DeepSeek 7B vision model:
+    /// https://replicate.com/deepseek-ai/deepseek-vl-7b-base
+    ///
+    /// In my testing, vision requests were completing in less than 2 seconds once the model was warm.
+    /// Note that the result can take several minutes if the model is cold.
+    ///
+    /// - Parameters:
+    ///   - input: The input containing the image and prompt that you want to have DeepSeek VL inspect
+    ///   - secondsToWait: Seconds to wait before raising a timeout error
+    ///
+    /// - Returns: The generated content
+    public func runDeepSeekVL7B(
+        input: ReplicateDeepSeekVL7BInputSchema,
+        version: String = "d1823e6f68cd3d57f2d315b9357dfa85f53817120ae0de8d2b95fbc8e93a1385",
+        secondsToWait: UInt
+    ) async throws -> String {
+        let prediction: ReplicatePrediction<[String]> = try await self.runCommunityModel(
+            version: version,
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        return (try await self.getPredictionOutput(prediction)).joined(separator: "")
+    }
+
     // MARK: - Deprecated
     @available(*, deprecated, message: "Please use createFluxSchnellImages")
     public func createFluxSchnellImageURLs(

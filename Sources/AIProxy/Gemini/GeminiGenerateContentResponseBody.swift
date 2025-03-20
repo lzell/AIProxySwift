@@ -65,10 +65,12 @@ extension GeminiGenerateContentResponseBody.Candidate.Content {
     public enum Part: Decodable {
         case text(String)
         case functionCall(name: String, args: [String: Any]?)
+        case inlineData(mimeType: String, base64Data: String)
 
         private enum CodingKeys: String, CodingKey {
             case text
             case functionCall
+            case inlineData
         }
 
         private struct _FunctionCall: Decodable {
@@ -76,10 +78,17 @@ extension GeminiGenerateContentResponseBody.Candidate.Content {
             let args: [String: AIProxyJSONValue]?
         }
 
+        private struct _InlineData: Decodable {
+            let mimeType: String
+            let data: String
+        }
+
         public init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             if let functionCall = try container.decodeIfPresent(_FunctionCall.self, forKey: .functionCall) {
                 self = .functionCall(name: functionCall.name, args: functionCall.args?.untypedDictionary)
+            } else if let inlineData = try container.decodeIfPresent(_InlineData.self, forKey: .inlineData) {
+                self = .inlineData(mimeType: inlineData.mimeType, base64Data: inlineData.data)
             } else {
                 self = .text(try container.decode(String.self, forKey: .text))
             }

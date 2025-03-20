@@ -39,7 +39,7 @@ open class FireworksAIProxiedService: FireworksAIService, ProxiedService {
         secondsToWait: Int
     ) async throws -> DeepSeekChatCompletionResponseBody {
         if body.model != "accounts/fireworks/models/deepseek-r1" {
-            if ll(.warning) { aiproxyLogger.warning("Attempting to use deepSeekR1Request with an unknown model") }
+            logIf(.warning)?.warning("Attempting to use deepSeekR1Request with an unknown model")
         }
         var body = body
         body.stream = false
@@ -71,7 +71,7 @@ open class FireworksAIProxiedService: FireworksAIService, ProxiedService {
         secondsToWait: Int
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk> {
         if body.model != "accounts/fireworks/models/deepseek-r1" {
-            if ll(.warning) { aiproxyLogger.warning("Attempting to use deepSeekR1Request with an unknown model") }
+            logIf(.warning)?.warning("Attempting to use deepSeekR1Request with an unknown model")
         }
         var body = body
         body.stream = true

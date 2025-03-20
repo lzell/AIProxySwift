@@ -25,6 +25,7 @@ public struct OpenAIEmbeddingResponseBody: Decodable {
     }
 }
 
+// MARK: -
 extension OpenAIEmbeddingResponseBody {
     public struct Embedding: Decodable {
         public let vector: [Double]
@@ -43,6 +44,7 @@ extension OpenAIEmbeddingResponseBody {
     }
 }
 
+// MARK: -
 extension OpenAIEmbeddingResponseBody {
     public struct Usage: Decodable {
         public let promptTokens: Int

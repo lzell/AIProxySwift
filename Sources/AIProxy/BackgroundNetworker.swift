@@ -6,10 +6,10 @@
 
 import Foundation
 
-@NetworkActor
 struct BackgroundNetworker {
 
     /// Throws AIProxyError.unsuccessfulRequest if the returned status code is non-200
+    @NetworkActor
     static func makeRequestAndWaitForData(
         _ session: URLSession,
         _ request: URLRequest
@@ -28,6 +28,7 @@ struct BackgroundNetworker {
     }
 
     /// Throws AIProxyError.unsuccessfulRequest if the returned status code is non-200
+    @NetworkActor
     static func makeRequestAndWaitForAsyncBytes(
         _ session: URLSession,
         _ request: URLRequest

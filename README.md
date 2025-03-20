@@ -80,6 +80,21 @@ AIProxy as an alternative to building, monitoring, and maintaining your own back
   tree and select 'Update Package'.
 
 
+## How to contribute to the package
+
+Your additions to AIProxySwift are welcome! I like to develop the library while working in an
+app that depends on it:
+
+1. Fork the repo
+2. Clone your fork
+3. Open your app in Xcode
+4. Remove AIProxySwift from your app (since this is likely referencing a remote lib)
+5. Go to `File > Add Package Dependencies`, and in the bottom left of that popup there is a button "Add local"
+6. Tap "Add local" and then select the folder where you cloned AIProxySwift on your disk.
+
+If you do that, then you can modify the source to AIProxySwift right from within your Xcode project for your app.
+Once you're happy with your changes, open a PR here.
+
 # Example usage
 
 Along with the snippets below, which you can copy and paste into your Xcode project, we also
@@ -1016,6 +1031,15 @@ final class RealtimeManager {
         self.audioPCMPlayer = audioPCMPlayer
         self.realtimeSession = realtimeSession
     }
+
+    func stopConversation() {
+        self.microphonePCMSampleVendor?.stop()
+        self.audioPCMPlayer?.interruptPlayback()
+        self.realtimeSession?.disconnect()
+        self.microphonePCMSampleVendor = nil
+        self.audioPCMPlayer = nil
+        self.realtimeSession = nil
+    }
 }
 ```
 
@@ -1609,6 +1633,271 @@ Use the file URL returned from the snippet above.
     } catch {
         print("Could not delete file from Gemini temporary storage: \(error.localizedDescription)")
     }
+
+
+### How to use structured ouputs with Gemini
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let schema: [String: AIProxyJSONValue] = [
+        "description": "List of recipes",
+        "type": "array",
+        "items": [
+            "type": "object",
+            "properties": [
+                "recipeName": [
+                    "type": "string",
+                    "description": "Name of the recipe",
+                    "nullable": false
+                ]
+            ],
+            "required": ["recipeName"]
+        ]
+    ]
+    do {
+        let requestBody = GeminiGenerateContentRequestBody(
+            contents: [
+                .init(
+                    parts: [
+                        .text("List a few popular cookie recipes."),
+                    ]
+                )
+            ],
+            generationConfig: .init(
+                responseMimeType: "application/json",
+                responseSchema: schema
+            )
+        )
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-2.0-flash"
+        )
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            if case .text(let text) = part {
+                print("Gemini sent: \(text)")
+            }
+        }
+        if let usage = response.usageMetadata {
+            print(
+                """
+                Used:
+                 \(usage.promptTokenCount ?? 0) prompt tokens
+                 \(usage.cachedContentTokenCount ?? 0) cached tokens
+                 \(usage.candidatesTokenCount ?? 0) candidate tokens
+                 \(usage.totalTokenCount ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Gemini generate content request: \(error.localizedDescription)")
+    }
+```
+
+### How to use structured ouputs and an image as input with Gemini
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "apple_marketing") else {
+        print("Could not find an image named 'apple_marketing' in your app assets")
+        return
+    }
+
+    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.4) else {
+        print("Could not encode image as Jpeg")
+        return
+    }
+
+    let schema: [String: AIProxyJSONValue] = [
+        "description": "A list of the important points that the document conveys",
+        "type": "array",
+        "items": [
+            "type": "object",
+            "properties": [
+                "point": [
+                    "type": "string",
+                    "description": "One of the important points that the document conveys",
+                    "nullable": false
+                ]
+            ],
+            "required": ["point"]
+        ]
+    ]
+
+    let requestBody = GeminiGenerateContentRequestBody(
+        contents: [
+            .init(
+                parts: [
+                    .text("Please create the important points of this image"),
+                    .inline(
+                        data: jpegData,
+                        mimeType: "image/jpeg"
+                    )
+                ]
+            )
+        ],
+        generationConfig: .init(
+            responseMimeType: "application/json",
+            responseSchema: schema
+        ),
+        safetySettings: [
+            .init(category: .dangerousContent, threshold: .none),
+            .init(category: .civicIntegrity, threshold: .none),
+            .init(category: .harassment, threshold: .none),
+            .init(category: .hateSpeech, threshold: .none),
+            .init(category: .sexuallyExplicit, threshold: .none)
+        ]
+    )
+
+    do {
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-2.0-flash"
+        )
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            if case .text(let text) = part {
+                print("Gemini sent: \(text)")
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Gemini generate content request: \(error.localizedDescription)")
+    }
+```
+
+### How to generate an image with Gemini
+
+```
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = GeminiGenerateContentRequestBody(
+        contents: [
+            .init(
+                parts: [
+                    .text(
+                        """
+                        Hi, can you create a 3d rendered image of a pig with wings and a top hat
+                        flying over a happy futuristic scifi city with lots of greenery?
+                        """
+                    )
+                ],
+                role: "user"
+            )
+        ],
+        generationConfig: .init(
+            responseModalities: [
+                "Text",
+                "Image"
+            ]
+        ),
+        safetySettings: [
+            .init(category: .dangerousContent, threshold: .none),
+            .init(category: .civicIntegrity, threshold: .none),
+            .init(category: .harassment, threshold: .none),
+            .init(category: .hateSpeech, threshold: .none),
+            .init(category: .sexuallyExplicit, threshold: .none)
+        ]
+    )
+
+    do {
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-2.0-flash-exp-image-generation"
+        )
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            if case .inlineData(mimeType: let mimeType, base64Data: let base64Data) = part {
+                print("Gemini generated inline data with mimetype: \(mimeType) and base64Length: \(base64Data.count)")
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create image using gemini: \(error.localizedDescription)")
+    }
+```
+
+### How to generate an image with Imagen
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = GeminiImagenRequestBody(
+        instances: [
+            .init(prompt: prompt)
+        ],
+        parameters: .init(
+            personGeneration: .allowAdult,
+            safetyLevel: .blockNone,
+            sampleCount: 1
+        )
+    )
+
+    do {
+        let response = try await geminiService.makeImagenRequest(
+            body: requestBody,
+            model: "imagen-3.0-generate-002"
+        )
+        if let base64Data = response.predictions.first?.bytesBase64Encoded,
+           let imageData = Data(base64Encoded: base64Data),
+           let image = UIImage(data: imageData) {
+            // Do something with image
+        } else {
+            print("Imagen response did not include base64 image data")
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Imagen image: \(error.localizedDescription)")
+    }
+```
 
 
 ***
@@ -2563,6 +2852,51 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
 ```
 
 See the full range of controls for generating an image by viewing `ReplicateSDXLFreshInkInputSchema.swift`
+
+### How to call DeepSeek's 7B vision model on replicate
+
+Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "my-image") else {
+        print("Could not find an image named 'my-image' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.4) else {
+        print("Could not encode image as a data URI")
+        return
+    }
+
+    do {
+        let input = ReplicateDeepSeekVL7BInputSchema(
+            image: imageURL,
+            prompt: "What are the colors in this pic"
+        )
+        let description = try await replicateService.runDeepSeekVL7B(input: input, secondsToWait: 300)
+        print("Done getting descriptions from DeepSeekVL7B: ", description)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        // You may want to catch additional Foundation errors and pop the appropriate UI
+        // to the user. See "How to catch Foundation errors for specific conditions" here:
+        // https://www.aiproxy.com/docs/integration-options.html
+        print("Could not use deepseek vision on replicate: \(error.localizedDescription)")
+    }
+```
 
 
 ### How to call your own models on Replicate.
@@ -4515,7 +4849,11 @@ Contributions are welcome! This library uses the MIT license.
 
 - In codable representations, fields that are required by the API should be above fields that
   are optional. Within the two groups (required and optional) all fields should be
-  alphabetically ordered.
+  alphabetically ordered. Separate the two groups with a mark to aid users of ctrl-6:
+
+  ```swift
+  // MARK: Optional properties
+  ```
 
 - Decodables should all have optional properties. Why? We don't want to fail decoding in live
   apps if the provider changes something out from under us (which can happen purposefully due
@@ -4539,6 +4877,7 @@ Contributions are welcome! This library uses the MIT license.
         // ... other fields ...
     }
 
+    // MARK: -
     extension ProviderResponseBody {
         public enum Status: String, Decodable {
             case succeeded
@@ -4566,6 +4905,9 @@ Contributions are welcome! This library uses the MIT license.
   true for nested types that require their own coding keys and encodable/decodable logic, which
   balloon line count with implementation detail that a user of the top level type has no
   interest in.
+
+  You may also wonder why we include the `// MARK: -` line. This is makes parsing the ctrl-6
+  dropdown easier on the eyes.
 
 - If you are implementing an API contract that could reuse a provider's nested structure, and
   it's reasonable to suppose that the two objects will change together, then pull the nested

@@ -12,8 +12,6 @@ import Foundation
 /// https://platform.openai.com/docs/api-reference/audio/createSpeech
 public struct OpenAITextToSpeechRequestBody: Encodable {
 
-    // Required
-    
     /// The text to generate audio for. The maximum length is 4096 characters.
     public let input: String
 
@@ -24,8 +22,8 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
     /// The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`.
     public let voice: Voice
 
-    // Optional
-    
+    // MARK: Optional properties
+
     /// The format to audio in. Supported formats are `mp3`, `opus`, `aac`, `flac`, `wav`, and `pcm`.
     /// Default to `mp3`
     public let responseFormat: ResponseFormat?
@@ -52,12 +50,14 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
         case input
         case model
         case voice
+
+        // Optional properties
         case responseFormat = "response_format"
         case speed
     }
 }
 
-// MARK: - OpenAITextToSpeechRequestBody.Model
+// MARK: -
 extension OpenAITextToSpeechRequestBody {
     public enum Model: String, Encodable {
         case tts1 = "tts-1"
@@ -65,16 +65,26 @@ extension OpenAITextToSpeechRequestBody {
     }
 }
 
-// MARK: - OpenAITextToSpeechRequestBody.ResponseFormat
+// MARK: -
 extension OpenAITextToSpeechRequestBody {
     public enum ResponseFormat: String, Encodable {
-        case mp3, opus, aac, flac, wav, pcm
+        case aac
+        case flac
+        case mp3
+        case pcm
+        case opus
+        case wav
     }
 }
 
-// MARK: - OpenAITextToSpeechRequestBody.Voice
+// MARK: -
 extension OpenAITextToSpeechRequestBody {
     public enum Voice: String, Encodable {
-        case alloy, echo, fable, onyx, nova, shimmer
+        case alloy
+        case echo
+        case fable
+        case onyx
+        case nova
+        case shimmer
     }
 }

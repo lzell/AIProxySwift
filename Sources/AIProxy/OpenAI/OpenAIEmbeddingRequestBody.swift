@@ -17,8 +17,6 @@
 /// - https://platform.openai.com/docs/api-reference/embeddings/create
 public struct OpenAIEmbeddingRequestBody: Encodable {
 
-    // Required
-
     /// Input text to embed, encoded as a string or array of tokens. To embed multiple inputs
     /// in a single request, pass an array of strings or array of token arrays. The input must
     /// not exceed the max input tokens for the model (8192 tokens for text-embedding-ada-002),
@@ -43,7 +41,7 @@ public struct OpenAIEmbeddingRequestBody: Encodable {
     /// Output dimension: 1,536
     public let model: String
 
-    // Optional
+    // MARK: Optional properties
 
     /// The format to return the embeddings in.
     /// Defaults to float
@@ -61,6 +59,7 @@ public struct OpenAIEmbeddingRequestBody: Encodable {
         case input
         case model
 
+        // Optional properties
         case encodingFormat = "encoding_format"
         case dimensions
         case user
@@ -84,6 +83,7 @@ public struct OpenAIEmbeddingRequestBody: Encodable {
     }
 }
 
+// MARK: -
 extension OpenAIEmbeddingRequestBody {
     public enum EmbeddingInput: Encodable {
         case text(String)
@@ -104,6 +104,7 @@ extension OpenAIEmbeddingRequestBody {
     }
 }
 
+// MARK: -
 extension OpenAIEmbeddingRequestBody {
     public enum EncodingFormat: String, Encodable {
         case float
