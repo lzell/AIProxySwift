@@ -18,13 +18,7 @@ open class GroqDirectService: GroqService, DirectService {
         baseURL: String? = nil
     ) {
         self.unprotectedAPIKey = unprotectedAPIKey
-        
-        let DEFAULT_BASE_URL = "https://api.groq.com"
-        if let baseURL = baseURL {
-            self.baseURL = baseURL.isEmpty ? DEFAULT_BASE_URL : baseURL
-        } else {
-            self.baseURL = DEFAULT_BASE_URL
-        }
+        self.baseURL = baseURL ?? "https://api.groq.com"
     }
 
     /// Initiates a non-streaming chat completion request to Groq

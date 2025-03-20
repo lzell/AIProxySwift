@@ -15,13 +15,7 @@ open class OpenRouterDirectService: OpenRouterService, DirectService {
     /// Customers are expected to use the factory `AIProxy.openRouterDirectService` defined in AIProxy.swift
     internal init(unprotectedAPIKey: String, baseURL: String? = nil) {
         self.unprotectedAPIKey = unprotectedAPIKey
-        
-        let DEFAULT_BASE_URL = "https://openrouter.ai"
-        if let baseURL = baseURL {
-            self.baseURL = baseURL.isEmpty ? DEFAULT_BASE_URL : baseURL
-        } else {
-            self.baseURL = DEFAULT_BASE_URL
-        }
+        self.baseURL = baseURL ?? "https://openrouter.ai"
     }
 
     /// Initiates a non-streaming chat completion request to /api/v1/chat/completions.

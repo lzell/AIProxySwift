@@ -15,13 +15,7 @@ open class AnthropicDirectService: AnthropicService, DirectService {
     /// Customers are expected to use the factory `AIProxy.directAnthropicService` defined in AIProxy.swift
     internal init(unprotectedAPIKey: String, baseURL: String? = nil) {
         self.unprotectedAPIKey = unprotectedAPIKey
-        
-        let DEFAULT_BASE_URL = "https://api.anthropic.com"
-        if let baseURL = baseURL {
-            self.baseURL = baseURL.isEmpty ? DEFAULT_BASE_URL : baseURL
-        } else {
-            self.baseURL = DEFAULT_BASE_URL
-        }
+        self.baseURL = baseURL ?? "https://api.anthropic.com"
     }
 
     /// Initiates a non-streaming request to /v1/messages.

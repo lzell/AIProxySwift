@@ -21,13 +21,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     ) {
         self.unprotectedAPIKey = unprotectedAPIKey
         self.requestFormat = requestFormat
-        
-        let DEFAULT_BASE_URL: String =  "https://api.openai.com"
-        if let baseURL = baseURL {
-            self.baseURL = baseURL.isEmpty ? DEFAULT_BASE_URL : baseURL
-        } else {
-            self.baseURL = DEFAULT_BASE_URL
-        }
+        self.baseURL = baseURL ?? "https://api.openai.com"
     }
 
     /// Initiates a non-streaming chat completion request to /v1/chat/completions.
