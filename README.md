@@ -1064,6 +1064,7 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
 
 ### How to generate text content with Gemini
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -1115,10 +1116,11 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     } catch {
         print("Could not create Gemini generate content request: \(error.localizedDescription)")
     }
-
+```
 
 ### How to make a tool call with Gemini
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -1206,7 +1208,7 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     } catch {
         print("Could not create Gemini tool (function) call: \(error.localizedDescription)")
     }
-
+```
 
 ### How to make a search grounding call with Gemini
 
@@ -1217,6 +1219,7 @@ account for the API keys you use [here](https://aistudio.google.com/app/apikey).
 Consider applying to [google for startups](https://cloud.google.com/startup?hl=en) to gain
 credits that you can put towards Gemini.
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -1270,6 +1273,7 @@ credits that you can put towards Gemini.
     } catch {
         print("Could not create Gemini grounding search request: \(error.localizedDescription)")
     }
+```
 
 ### How to make a google search grounding call with Gemini 2.0
 
@@ -1346,11 +1350,11 @@ credits that you can put towards Gemini.
     }
 ```
 
-
 ### How to transcribe audio with Gemini
 
 Add a file called `helloworld.m4a` to your Xcode assets before running this sample snippet:
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -1411,13 +1415,13 @@ Add a file called `helloworld.m4a` to your Xcode assets before running this samp
     } catch {
         print("Could not create transcript with Gemini: \(error.localizedDescription)")
     }
-
+```
 
 ### How to use images in the prompt to Gemini
 
 Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
 
-
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -1490,13 +1494,14 @@ Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
     } catch {
         print("Could not create Gemini generate content request: \(error.localizedDescription)")
     }
-
+```
 
 ### How to upload a video file to Gemini temporary storage
 
 Add a file called `my-movie.mov` to your Xcode assets before running this sample snippet.
 If you use a file like `my-movie.mp4`, change the mime type from `video/quicktime` to `video/mp4` in the snippet below.
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -1534,12 +1539,13 @@ If you use a file like `my-movie.mp4`, change the mime type from `video/quicktim
     } catch {
         print("Could not upload file to Gemini: \(error.localizedDescription)")
     }
-
+```
 
 ### How to convert video contents to text with Gemini
 
 Use the file URL returned from the snippet above.
 
+```swift
     import AIProxy
 
     let fileURL = URL(string: "url-from-snippet-above")!
@@ -1606,10 +1612,11 @@ Use the file URL returned from the snippet above.
     } catch {
         print("Could not create Gemini vision request: \(error.localizedDescription)")
     }
-
+```
 
 ### How to delete a temporary file from Gemini storage
 
+```swift
     import AIProxy
 
     let fileURL = URL(string: "url-from-snippet-above")!
@@ -1633,7 +1640,7 @@ Use the file URL returned from the snippet above.
     } catch {
         print("Could not delete file from Gemini temporary storage: \(error.localizedDescription)")
     }
-
+```
 
 ### How to use structured ouputs with Gemini
 
@@ -1793,7 +1800,7 @@ Use the file URL returned from the snippet above.
 
 ### How to generate an image with Gemini
 
-```
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -1853,7 +1860,7 @@ Use the file URL returned from the snippet above.
     }
 ```
 
-### How to generate an image with Imagen
+### How to generate an image with Gemini and Imagen
 
 ```swift
     import AIProxy
