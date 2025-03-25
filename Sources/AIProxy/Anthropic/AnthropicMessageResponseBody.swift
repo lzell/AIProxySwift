@@ -33,7 +33,7 @@ public struct AnthropicMessageResponseBody: Decodable {
 
 public enum AnthropicMessageResponseContent: Decodable {
     case text(String)
-    case toolUse(id: String, name: String, input: [String: Any])
+    case toolUse(id: String, name: String, input: [String: AIProxyJSONValue])
 
     private enum CodingKeys: String, CodingKey {
         case type
@@ -59,7 +59,7 @@ public enum AnthropicMessageResponseContent: Decodable {
             let id = try container.decode(String.self, forKey: .id)
             let name = try container.decode(String.self, forKey: .name)
             let input = try container.decode([String: AIProxyJSONValue].self, forKey: .input)
-            self = .toolUse(id: id, name: name, input: input.untypedDictionary)
+            self = .toolUse(id: id, name: name, input: input)
         }
     }
 }

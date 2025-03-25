@@ -267,12 +267,19 @@ public enum AnthropicInputContent: Encodable {
     case image(mediaType: AnthropicImageMediaType, data: String)
     case pdf(data: String)
     case text(String)
+    case toolUse(id: String, name: String, input: [String: AIProxyJSONValue])
+    case toolResult(toolUseId: String, content: String)
 
     private enum CodingKeys: String, CodingKey {
         case image
         case source
         case text
         case type
+        case id
+        case name
+        case input
+        case toolUseId = "tool_use_id"
+        case content
     }
 
     private enum SourceCodingKeys: String, CodingKey {
@@ -299,6 +306,15 @@ public enum AnthropicInputContent: Encodable {
         case .text(let txt):
             try container.encode("text", forKey: .type)
             try container.encode(txt, forKey: .text)
+        case .toolUse(id: let id, name: let name, input: let input):
+            try container.encode("tool_use", forKey: .type)
+            try container.encode(id, forKey: .id)
+            try container.encode(name, forKey: .name)
+            try container.encode(input, forKey: .input)
+        case .toolResult(toolUseId: let toolUseId, content: let content):
+            try container.encode("tool_result", forKey: .type)
+            try container.encode(toolUseId, forKey: .toolUseId)
+            try container.encode(content, forKey: .content)
         }
     }
 }
@@ -344,6 +360,25 @@ public enum AnthropicToolChoice: Encodable {
     case any
     case auto
     case tool(name: String)
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        switch self {
+        case .auto:
+            try container.encode("auto", forKey: .type)
+        case .any:
+            try container.encode("any", forKey: .type)
+        case .tool(let name):
+            try container.encode("tool", forKey: .type)
+            try container.encode(name, forKey: .name)
+        }
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case name
+    }
 }
 
 
