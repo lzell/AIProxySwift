@@ -978,9 +978,11 @@ final class RealtimeManager {
             outputAudioFormat: .pcm16,
             temperature: 0.7,
             turnDetection: .init(
-                prefixPaddingMs: 200,
-                silenceDurationMs: 500,
-                threshold: 0.5
+                type: .serverVAD(
+                    prefixPaddingMs: 300,
+                    silenceDurationMs: 500,
+                    threshold: 0.5
+                )
             ),
             voice: "shimmer"
         )
