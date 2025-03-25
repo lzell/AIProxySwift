@@ -144,33 +144,37 @@ extension OpenAIRealtimeSessionConfiguration {
 // MARK: -
 extension OpenAIRealtimeSessionConfiguration {
     public struct TurnDetection: Encodable {
-        /// Amount of audio to include before speech starts (in milliseconds).
-        let prefixPaddingMs: Int?
 
-        /// Duration of silence to detect speech stop (in milliseconds).
-        let silenceDurationMs: Int?
-
-        /// Activation threshold for VAD (0.0 to 1.0).
-        let threshold: Double?
-
-        /// Type of turn detection, only "server_vad" is currently supported.
-        let type = "server_vad"
+        let type: DetectionType
 
         private enum CodingKeys: String, CodingKey {
             case prefixPaddingMs = "prefix_padding_ms"
             case silenceDurationMs = "silence_duration_ms"
             case threshold
             case type
+            case eagerness
         }
 
         public init(
-            prefixPaddingMs: Int? = nil,
-            silenceDurationMs: Int? = nil,
-            threshold: Double? = nil
+            type: DetectionType
         ) {
-            self.prefixPaddingMs = prefixPaddingMs
-            self.silenceDurationMs = silenceDurationMs
-            self.threshold = threshold
+            self.type = type
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch type {
+            case .serverVAD(let prefixPaddingMs, let silenceDurationMs, let threshold):
+                try container.encode("server_vad", forKey: .type)
+                try container.encode(prefixPaddingMs, forKey: .prefixPaddingMs)
+                try container.encode(silenceDurationMs, forKey: .silenceDurationMs)
+                try container.encode(threshold, forKey: .threshold)
+
+            case .semanticVAD(let eagerness):
+                try container.encode("semantic_vad", forKey: .type)
+                try container.encode(String(describing: eagerness), forKey: .eagerness)
+            }
         }
     }
 }
@@ -191,5 +195,32 @@ extension OpenAIRealtimeSessionConfiguration {
     public enum Modality: String, Encodable {
         case audio
         case text
+    }
+}
+
+extension OpenAIRealtimeSessionConfiguration.TurnDetection {
+    public enum DetectionType: Encodable {
+        public enum Eagerness: String, Encodable {
+            case low
+            case medium
+            case high
+        }
+
+        /// - Parameters:
+        ///   - prefixPaddingMs: Amount of audio to include before speech starts (in milliseconds).
+        ///                      OpenAI's default is 300
+        ///   - silenceDurationMs: Duration of silence to detect speech stop (in milliseconds).  With shorter values
+        ///                        the model will respond more quickly, but may jump in on short pauses from the user.
+        ///                        OpenAI's default is 500
+        ///   - threshold: Activation threshold for VAD (0.0 to 1.0). A higher threshold will require louder audio to
+        ///                activate the model, and thus might perform better in noisy environments.
+        ///                OpenAI's default is 0.5
+        case serverVAD(prefixPaddingMs: Int, silenceDurationMs: Int, threshold: Double)
+
+        /// - Parameters:
+        ///   - eagerness: The eagerness of the model to respond. `low` will wait longer for the user to
+        ///                continue speaking, `high` will respond more quickly.
+        ///                OpenAI's default is medium
+        case semanticVAD(eagerness: Eagerness)
     }
 }
