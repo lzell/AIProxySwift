@@ -1862,6 +1862,7 @@ Use the file URL returned from the snippet above.
     }
 ```
 
+
 ### How to generate an image with Gemini and Imagen
 
 ```swift
@@ -1905,6 +1906,78 @@ Use the file URL returned from the snippet above.
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create Imagen image: \(error.localizedDescription)")
+    }
+```
+
+
+### How to edit an image with Gemini
+
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let pngData = yourUIImage.pngData() else {
+        print("Could not get png data from your image")
+        return
+    }
+
+    let requestBody = GeminiGenerateContentRequestBody(
+        contents: [
+            .init(
+                parts: [
+                    .text("Add sparkles to this image"),
+                    .inline(
+                        data: pngData,
+                        mimeType: "image/png"
+                    )
+                ],
+                role: "user"
+            )
+        ],
+        generationConfig: .init(
+            responseModalities: [
+                "Text",
+                "Image"
+            ]
+        ),
+        safetySettings: [
+            .init(category: .dangerousContent, threshold: .none),
+            .init(category: .civicIntegrity, threshold: .none),
+            .init(category: .harassment, threshold: .none),
+            .init(category: .hateSpeech, threshold: .none),
+            .init(category: .sexuallyExplicit, threshold: .none)
+        ]
+    )
+
+    do {
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-2.0-flash-exp-image-generation"
+        )
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            if case .inlineData(mimeType: let mimeType, base64Data: let base64Data) = part {
+                print("Gemini generated inline data with mimetype: \(mimeType) and base64Length: \(base64Data.count)")
+                if let imageData = Data(base64Encoded: base64Data),
+                   let image = UIImage(data: imageData) {
+                     // Do something with image
+                }
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create Gemini image edit request: \(error.localizedDescription)")
     }
 ```
 
