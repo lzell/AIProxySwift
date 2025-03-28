@@ -1045,6 +1045,112 @@ final class RealtimeManager {
 }
 ```
 
+### How to make a basic request using OpenAI's Responses API (new)
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .text("hello world"),
+        model: "gpt-4o"
+    )
+
+    do {
+        let response = try await openAIService.createResponse(requestBody: requestBody)
+        print(response.outputText)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get a text response from OpenAI: \(error.localizedDescription)")
+    }
+```
+
+### How to upload a file to OpenAI's file storage
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let openAIFile = try await openAIService.uploadFile(
+            contents: pdfData,
+            name: "my.pdf",
+            purpose: "user_data"
+        )
+        print("""
+              File uploaded to OpenAI's media storage.
+              It will be available until \(openAIFile.expiresAt.flatMap {String($0)} ?? "forever")
+              Use it in subsequent requests with ID: \(openAIFile.id)
+              """)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not upload file to OpenAI: \(error.localizedDescription)")
+    }
+```
+
+### How to use a stored file in an OpenAI prompt using the Responses API (new)
+
+Replace the `fileID` with the ID returned from the snippet above.
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .items(
+            [
+                .message(role: .user, content: .list(
+                    [
+                        .file(fileID: "your-file-ID"),
+                        .text("What is the purpose of this doc?")
+                    ])
+                )
+            ]
+        ),
+        model: "gpt-4o"
+    )
+
+    do {
+        let response = try await openAIService.createResponse(requestBody: requestBody)
+        print(response.outputText)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not prompt with file contents: \(error.localizedDescription)")
+    }
+```
+
 ### How to use OpenAI through an Azure deployment
 
 You can use all of the OpenAI snippets aboves with one change. Initialize the OpenAI service with:
