@@ -18,7 +18,8 @@ struct AIProxyURLRequest {
         body: Data?,
         verb: AIProxyHTTPVerb,
         contentType: String? = nil,
-        additionalHeaders: [String: String] = [:]
+        additionalHeaders: [String: String] = [:],
+        timeoutInterval: TimeInterval = 400.0
     ) async throws -> URLRequest {
         let deviceCheckToken = await AIProxyDeviceCheck.getToken()
 
@@ -44,6 +45,7 @@ struct AIProxyURLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = verb.toString(hasBody: body != nil)
         request.httpBody = body
+        request.timeoutInterval = timeoutInterval
         request.addValue(partialKey, forHTTPHeaderField: "aiproxy-partial-key")
 
         if let clientID = (clientID ?? AIProxyIdentifier.getClientID()) {
@@ -88,7 +90,8 @@ struct AIProxyURLRequest {
         body: Data?,
         verb: AIProxyHTTPVerb,
         contentType: String? = nil,
-        additionalHeaders: [String: String] = [:]
+        additionalHeaders: [String: String] = [:],
+        timeoutInterval: TimeInterval = 400.0
     ) throws -> URLRequest {
         var path = path
         if !path.starts(with: "/") {
@@ -112,6 +115,7 @@ struct AIProxyURLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = verb.toString(hasBody: body != nil)
         request.httpBody = body
+        request.timeoutInterval = timeoutInterval
 
         if let contentType = contentType {
             request.addValue(contentType, forHTTPHeaderField: "Content-Type")
