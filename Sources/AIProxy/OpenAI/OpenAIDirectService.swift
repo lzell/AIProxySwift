@@ -246,6 +246,62 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         )
     }
 
+    /// Uploads a file to OpenAI for use in a future tool call
+    ///
+    /// - Parameters:
+    ///   - contents: The binary contents of your file. If you've added your file to xcassets, you
+    ///               can access the file's data with `NSDataAsset(name: "myfile").data`.
+    ///                If you've added your file to the app bundle, you can access the file's data with:
+    ///
+    ///                    guard let localURL = Bundle.main.url(forResource: "myfile", withExtension: "pdf"),
+    ///                          let pdfData = try? Data(contentsOf: localURL) else { return }
+    ///
+    ///   - name: The name of the file, e.g. `myfile.pdf`
+    ///
+    /// - Returns: The file upload response body, which contains the file's ID that can be used in subsequent calls
+    public func uploadFile(
+        contents: Data,
+        name: String,
+        purpose: String
+    ) async throws -> OpenAIFileUploadResponseBody {
+        let body = OpenAIFileUploadRequestBody(
+            contents: contents,
+            contentType: "application/octet-stream",
+            fileName: name,
+            purpose: purpose
+        )
+        let boundary = UUID().uuidString
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: self.baseURL,
+            path: "/v1/files",
+            body: formEncode(body, boundary),
+            verb: .post,
+            contentType: "multipart/form-data; boundary=\(boundary)",
+            additionalHeaders: [
+                "Authorization": "Bearer \(self.unprotectedAPIKey)"
+            ]
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
+
+    /// Creates a 'response' using OpenAI's new API product:
+    /// https://platform.openai.com/docs/api-reference/responses
+    public func createResponse(
+        requestBody: OpenAICreateResponseRequestBody
+    ) async throws -> OpenAIResponse {
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: self.baseURL,
+            path: self.resolvedPath("responses"),
+            body: try requestBody.serialize(),
+            verb: .post,
+            contentType: "application/json",
+            additionalHeaders: [
+                "Authorization": "Bearer \(self.unprotectedAPIKey)"
+            ]
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
+
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
         switch self.requestFormat {
