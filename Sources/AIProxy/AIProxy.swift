@@ -8,7 +8,7 @@ import UIKit
 public struct AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.80.0"
+    public static let sdkVersion = "0.81.0"
 
     /// - Parameters:
     ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your provider's key.
