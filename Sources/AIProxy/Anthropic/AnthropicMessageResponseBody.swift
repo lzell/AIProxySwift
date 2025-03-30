@@ -66,8 +66,8 @@ public enum AnthropicMessageResponseContent: Decodable {
 
 
 public struct AnthropicMessageUsage: Decodable {
-    let inputTokens: Int
-    let outputTokens: Int
+    public let inputTokens: Int
+    public let outputTokens: Int
 
     enum CodingKeys: String, CodingKey {
         case inputTokens = "input_tokens"
