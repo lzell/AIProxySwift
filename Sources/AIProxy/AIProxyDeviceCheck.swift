@@ -38,7 +38,7 @@ struct AIProxyDeviceCheck {
                 logIf(.warning)?.warning("\(deviceCheckWarning, privacy: .public)")
             }
             #if !targetEnvironment(simulator) && !DEBUG
-            DeviceCheckErrorLogger.logDeviceCheckNotSupported(clientID: clientID)
+            ClientLibErrorLogger.logDeviceCheckNotSupported(clientID: clientID)
             #endif
             return nil
         }
@@ -49,7 +49,7 @@ struct AIProxyDeviceCheck {
         } catch {
             logIf(.error)?.error("Could not create DeviceCheck token. Are you using an explicit bundle identifier?")
             #if !targetEnvironment(simulator) && !DEBUG
-            DeviceCheckErrorLogger.logDeviceCheckCouldNotGenerateToken(error.localizedDescription, clientID: clientID)
+            ClientLibErrorLogger.logDeviceCheckCouldNotGenerateToken(error.localizedDescription, clientID: clientID)
             #endif
             return nil
         }
