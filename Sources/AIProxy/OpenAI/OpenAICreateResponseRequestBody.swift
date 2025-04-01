@@ -5,6 +5,8 @@
 //  Created by Lou Zell on 3/12/25.
 //
 
+import Foundation
+
 /// OpenAI's most advanced interface for generating model responses.
 /// Supports text and image inputs, and text outputs.
 /// Create stateful interactions with the model, using the output of previous responses as input.
@@ -95,24 +97,29 @@ extension OpenAICreateResponseRequestBody {
     }
 
     public enum ItemContent: Encodable {
-        case text(String)
         case file(fileID: String)
+        case imageURL(URL)
+        case text(String)
 
         private enum CodingKeys: String, CodingKey {
+            case fileID = "file_id"
+            case imageURL = "image_url"
             case type
             case text
-            case fileID = "file_id"
         }
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
             switch self {
-            case .text(let txt):
-                try container.encode(txt, forKey: .text)
-                try container.encode("input_text", forKey: .type)
             case .file(let fileID):
                 try container.encode(fileID, forKey: .fileID)
                 try container.encode("input_file", forKey: .type)
+            case .imageURL(let imageURL):
+                try container.encode(imageURL, forKey: .imageURL)
+                try container.encode("input_image", forKey: .type)
+            case .text(let txt):
+                try container.encode(txt, forKey: .text)
+                try container.encode("input_text", forKey: .type)
             }
         }
     }
