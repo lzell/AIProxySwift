@@ -1,5 +1,5 @@
 //
-//  AIProxyUtils.swift
+//  AIProxyDeviceCheck.swift
 //
 //
 //  Created by Lou Zell on 6/23/24.
@@ -8,6 +8,7 @@
 import Foundation
 import DeviceCheck
 import OSLog
+
 
 private let deviceCheckWarning = """
     AIProxy warning: DeviceCheck is not available on this device.
@@ -31,11 +32,14 @@ struct AIProxyDeviceCheck {
     /// to only be used by developers of your app, and is intended to only be included as a an environment variable.
     ///
     /// - Returns: A base 64 encoded DeviceCheck token, if possible
-    internal static func getToken() async -> String? {
+    internal static func getToken(forClient clientID: String?) async -> String? {
         guard DCDevice.current.isSupported else {
             if ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] == nil {
                 logIf(.warning)?.warning("\(deviceCheckWarning, privacy: .public)")
             }
+            #if !targetEnvironment(simulator) && !DEBUG
+            DeviceCheckErrorLogger.logDeviceCheckNotSupported(clientID: clientID)
+            #endif
             return nil
         }
 
@@ -44,6 +48,9 @@ struct AIProxyDeviceCheck {
             return data.base64EncodedString()
         } catch {
             logIf(.error)?.error("Could not create DeviceCheck token. Are you using an explicit bundle identifier?")
+            #if !targetEnvironment(simulator) && !DEBUG
+            DeviceCheckErrorLogger.logDeviceCheckCouldNotGenerateToken(error.localizedDescription, clientID: clientID)
+            #endif
             return nil
         }
     }
