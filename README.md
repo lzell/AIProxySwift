@@ -1151,6 +1151,59 @@ Replace the `fileID` with the ID returned from the snippet above.
     }
 ```
 
+### How to use image inputs in the OpenAI Responses API
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    // Example of using a local image
+    guard let garmentImage = NSImage(named: "tshirt"),
+          let garmentImageURL = AIProxy.encodeImageAsURL(image: garmentImage,
+                                                         compressionQuality: 0.5) else {
+        print("Could not find an image named 'tshirt' in your app assets")
+        return
+    }
+
+    // Example of using a remote image
+    let remoteImageURL = URL(string: "https://www.aiproxy.com/assets/img/requests.png")!
+
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .items(
+            [
+                .message(
+                    role: .user,
+                    content: .list([
+                        .text("What are in these images?"),
+                        .imageURL(garmentImageURL),
+                        .imageURL(remoteImageURL),
+                    ])
+                ),
+            ]
+        ),
+        model: "gpt-4o-mini"
+    )
+
+    do {
+        let response = try await openAIService.createResponse(requestBody: requestBody)
+        print(response.outputText)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not prompt with image inputs: \(error.localizedDescription)")
+    }
+```
+
 ### How to use OpenAI through an Azure deployment
 
 You can use all of the OpenAI snippets aboves with one change. Initialize the OpenAI service with:

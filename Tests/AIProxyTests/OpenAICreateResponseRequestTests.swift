@@ -50,5 +50,54 @@ final class OpenAICreateResponseRequestTests: XCTestCase {
             try requestBody.serialize(pretty: true)
         )
     }
+
+    func testResponseRequestIsEncodableWithImageInputs() throws {
+
+        let requestBody = OpenAICreateResponseRequestBody(
+            input: .items(
+                [
+                    .message(
+                        role: .user,
+                        content: .list([
+                            .text("What are in these images? Is there any difference between them?"),
+                            .imageURL(URL(string: "https://upload.wikimedia.org/snip_1")!),
+                            .imageURL(URL(string: "https://upload.wikimedia.org/snip_2")!),
+                        ])
+                    ),
+                ]
+            ),
+            model: "gpt-4o-mini"
+        )
+
+        XCTAssertEqual(
+            #"""
+            {
+              "input" : [
+                {
+                  "content" : [
+                    {
+                      "text" : "What are in these images? Is there any difference between them?",
+                      "type" : "input_text"
+                    },
+                    {
+                      "image_url" : "https:\/\/upload.wikimedia.org\/snip_1",
+                      "type" : "input_image"
+                    },
+                    {
+                      "image_url" : "https:\/\/upload.wikimedia.org\/snip_2",
+                      "type" : "input_image"
+                    }
+                  ],
+                  "role" : "user",
+                  "type" : "message"
+                }
+              ],
+              "model" : "gpt-4o-mini"
+            }
+            """#,
+            try requestBody.serialize(pretty: true)
+        )
+    }
+
 }
 
