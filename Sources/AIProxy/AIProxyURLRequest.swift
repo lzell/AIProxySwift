@@ -20,7 +20,7 @@ struct AIProxyURLRequest {
         contentType: String? = nil,
         additionalHeaders: [String: String] = [:]
     ) async throws -> URLRequest {
-        let deviceCheckToken = await AIProxyDeviceCheck.getToken()
+        let deviceCheckToken = await AIProxyDeviceCheck.getToken(forClient: clientID)
 
         var proxyPath = proxyPath
         if !proxyPath.starts(with: "/") {

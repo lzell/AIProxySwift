@@ -19,6 +19,7 @@ struct BackgroundNetworker {
             throw AIProxyError.assertion("Network response is not an http response")
         }
         if httpResponse.statusCode > 299 {
+            logIf(.error)?.error("Receieved a non-200 status code: \(httpResponse.statusCode)")
             throw AIProxyError.unsuccessfulRequest(
                 statusCode: httpResponse.statusCode,
                 responseBody: String(data: data, encoding: .utf8) ?? ""
