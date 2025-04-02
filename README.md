@@ -2148,6 +2148,7 @@ Use the file URL returned from the snippet above.
 
 ### How to send an Anthropic message request
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2182,10 +2183,12 @@ Use the file URL returned from the snippet above.
     } catch {
         print("Could not create an Anthropic message: \(error.localizedDescription)")
     }
+```
 
 
 ### How to use streaming text messages with Anthropic
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2225,10 +2228,12 @@ Use the file URL returned from the snippet above.
     } catch {
         print("Could not use Anthropic's message stream: \(error.localizedDescription)")
     }
+```
 
 
 ### How to use streaming tool calls with Anthropic
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2285,12 +2290,14 @@ Use the file URL returned from the snippet above.
     } catch {
         print(error.localizedDescription)
     }
+```
 
 
 ### How to send an image to Anthropic
 
 On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
+```swift
     import AIProxy
 
     guard let image = UIImage(named: "myImage") else {
@@ -2338,10 +2345,12 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch {
         print("Could not send a multi-modal message to Anthropic: \(error.localizedDescription)")
     }
+```
 
 
 ### How to use the tools API with Anthropic
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2396,6 +2405,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch {
         print("Could not create Anthropic message with tool call: \(error.localizedDescription)")
     }
+```
 
 
 ## How to use Anthropic's pdf support in a buffered chat completion
@@ -2403,7 +2413,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 This snippet includes a pdf `mydocument.pdf` in the Anthropic request. Adjust the filename to
 match the pdf included in your Xcode project. The snippet expects the pdf in the app bundle.
 
-    ```swift
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2448,7 +2458,7 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
     } catch {
         print("Could not use Anthropic's buffered pdf support: \(error.localizedDescription)")
     }
-    ```
+```
 
 
 ## How to use Anthropic's pdf support in a streaming chat completion
@@ -2456,7 +2466,7 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
 This snippet includes a pdf `mydocument.pdf` in the Anthropic request. Adjust the filename to
 match the pdf included in your Xcode project. The snippet expects the pdf in the app bundle.
 
-    ```swift
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2502,7 +2512,7 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
     } catch {
         print("Could not use Anthropic's streaming pdf support: \(error.localizedDescription)")
     }
-    ```
+```
 
 
 ***
@@ -2515,6 +2525,7 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
 In the snippet below, replace NSImage with UIImage if you are building on iOS.
 For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24cc0dd87a31f4dceccd092)
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -2538,6 +2549,7 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
     } catch {
         print("Could not generate an image with StabilityAI: \(error.localizedDescription)")
     }
+```
 
 ***
 
@@ -2545,6 +2557,7 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
 
 ### How to create translations using DeepL
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3253,6 +3266,7 @@ snippet:
 
 Replace `<your-account>`:
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3280,7 +3294,7 @@ Replace `<your-account>`:
     } catch {
         print("Could not create replicate model: \(error.localizedDescription)")
     }
-
+```
 
 ### How to upload training data for your own Flux fine tune
 
@@ -3288,6 +3302,7 @@ Create a zip file called `training.zip` and drop it in your Xcode assets.
 See the "Prepare your training data" section of [this guide](https://replicate.com/blog/fine-tune-flux)
 for tips on what to include in the zip file. Then run:
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3325,13 +3340,14 @@ for tips on what to include in the zip file. Then run:
     } catch {
         print("Could not upload file to replicate: \(error.localizedDescription)")
     }
-
+```
 
 ### How to train a flux fine-tune
 
 Use the `<training-url>` returned from the snippet above.
 Use the `<model-name>` that you used from the snippet above that.
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3374,11 +3390,13 @@ Use the `<model-name>` that you used from the snippet above that.
     } catch {
         print("Could not create replicate training: \(error.localizedDescription)")
     }
+```
 
 ### How to poll the flux fine-tune for training complete
 
 Use the `<url>` that is returned from the snippet above.
 
+```swift    
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3410,13 +3428,14 @@ Use the `<url>` that is returned from the snippet above.
     } catch {
         print("Could not poll for the replicate training: \(error.localizedDescription)")
     }
-
+```
 
 ### How to generate images with your own flux fine-tune
 
 Use the `<version>` string that was returned from the snippet above, but do not include the
 model owner and model name in the string.
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3454,7 +3473,7 @@ model owner and model name in the string.
     } catch {
         print("Could not create replicate prediction: \(error.localizedDescription)")
     }
-
+```
 
 ***
 
@@ -3463,6 +3482,7 @@ model owner and model name in the string.
 
 ### How to use ElevenLabs for text-to-speech
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3501,7 +3521,7 @@ model owner and model name in the string.
     } catch {
         print("Could not create ElevenLabs TTS audio: \(error.localizedDescription)")
     }
-    ```
+```
 
 - See the full range of TTS controls by viewing `ElevenLabsTTSRequestBody.swift`.
 - See https://api.elevenlabs.io/v1/voices for the IDs that you can pass to `voiceID`.
@@ -3513,7 +3533,7 @@ model owner and model name in the string.
 2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
 3. Run this snippet:
 
-    ```swift
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3559,7 +3579,7 @@ model owner and model name in the string.
     } catch {
         print("Could not create ElevenLabs STS audio: \(error.localizedDescription)")
     }
-    ```
+```
 
 ***
 
@@ -3568,6 +3588,7 @@ model owner and model name in the string.
 
 ### How to generate a FastSDXL image using Fal
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3596,6 +3617,7 @@ model owner and model name in the string.
     } catch {
         print("Could not create Fal SDXL image: \(error.localizedDescription)")
     }
+```
 
 See the full range of controls for generating an image by viewing `FalFastSDXLInputSchema.swift`
 
@@ -3658,6 +3680,7 @@ The `garmentImage` and `modelImage` arguments may be:
 Your training data must be a zip file of images. You can either pull the zip from assets (what
 I do here), or construct the zip in memory:
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3688,11 +3711,13 @@ I do here), or construct the zip in memory:
     } catch {
         print("Could not upload file to Fal: \(error.localizedDescription)")
     }
+```
 
 #### Train `fal-ai/flux-lora-fast-training` using your uploaded data
 
 Using the URL returned in the step above:
 
+```swift
     let input = FalFluxLoRAFastTrainingInputSchema(
         imagesDataURL: <url-from-step-above>
         triggerWord: "face"
@@ -3708,6 +3733,7 @@ Using the URL returned in the step above:
     } catch {
         print("Could not create Fal Flux training: \(error.localizedDescription)")
     }
+```
 
 See `FalFluxLoRAFastTrainingInputSchema.swift` for the full range of training controls.
 
@@ -3715,6 +3741,7 @@ See `FalFluxLoRAFastTrainingInputSchema.swift` for the full range of training co
 
 Using the LoRA URL returned in the step above:
 
+```swift
     let inputSchema = FalFluxLoRAInputSchema(
         prompt: "face on a blimp over Monument Valley, Utah",
         loras: [
@@ -3737,6 +3764,7 @@ Using the LoRA URL returned in the step above:
     } catch {
         print("Could not create Fal LoRA image: \(error.localizedDescription)")
     }
+```
 
 See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
@@ -3748,6 +3776,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
 ### How to generate a non-streaming chat completion using Groq
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3772,10 +3801,12 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     } catch {
         print(error.localizedDescription)
     }
+```
 
 
 ### How to generate a streaming chat completion using Groq
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3803,6 +3834,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     } catch {
         print(error.localizedDescription)
     }
+```
 
 
 ### How to transcribe audio with Groq
@@ -3811,7 +3843,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
 3. Run this snippet:
 
-    ```
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3840,7 +3872,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     } catch {
         print("Could not get audio transcription from Groq: \(error.localizedDescription)")
     }
-    ```
+```
 
 
 ***
@@ -3946,6 +3978,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
 Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in the developer dashboard.
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -3980,12 +4013,14 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     } catch {
         print("Could not create mistral chat completion: \(error.localizedDescription)")
     }
+```
 
 
 ### How to create a streaming chat completion with Mistral
 
 Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in the developer dashboard.
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -4022,6 +4057,7 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     } catch {
         print("Could not create mistral streaming chat completion: \(error.localizedDescription)")
     }
+```
 
 ***
 
@@ -4031,6 +4067,7 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
 
 Use `flows.eachlabs.ai` as the proxy domain when creating your AIProxy service in the developer dashboard.
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -4067,6 +4104,7 @@ Use `flows.eachlabs.ai` as the proxy domain when creating your AIProxy service i
     } catch {
         print("Could not execute EachAI workflow: \(error.localizedDescription)")
     }
+```
 
 ***
 
@@ -4139,7 +4177,7 @@ Use `flows.eachlabs.ai` as the proxy domain when creating your AIProxy service i
 
 You may optionally add your provider preferences as part of the request body:
 
-```
+```swift
 OpenRouterChatCompletionRequestBody(
   // ...
   provider: .init(order[
@@ -4220,7 +4258,7 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
 
 You may optionally add your provider preferences as part of the request body:
 
-```
+```swift
 OpenRouterChatCompletionRequestBody(
   // ...
   provider: .init(order[
@@ -4236,6 +4274,7 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
 
 ### How to make a non-streaming chat completion with OpenRouter
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -4281,10 +4320,12 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
     } catch {
         print("Could not get OpenRouter buffered chat completion: \(error.localizedDescription)")
     }
+```
 
 
 ### How to make a streaming chat completion with OpenRouter
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -4330,10 +4371,12 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
     } catch {
         print("Could not get OpenRouter streaming chat completion: \(error.localizedDescription)")
     }
+```
 
 
 ### How to make a structured outputs chat completion with OpenRouter
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -4413,11 +4456,13 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
     } catch {
         print("Could not get structured outputs response from OpenRouter: \(error.localizedDescription)")
     }
+```
 
 
 ### How to use vision requests on OpenRouter (multi-modal chat)
 On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
+```swift
     import AIProxy
 
     /* Uncomment for BYOK use cases */
@@ -4482,6 +4527,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch {
         print("Could not make a vision request to OpenRouter: \(error.localizedDescription)")
     }
+```
 
 ***
 
@@ -4514,7 +4560,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
     do {
         let response = try await deepSeekService.chatCompletionRequest(body: requestBody)
-        print("response.choices.first?.message.content ?? "")
+        print("\(response.choices.first?.message.content ?? "")")
         if let usage = response.usage {
             print(
                 """
@@ -4881,7 +4927,7 @@ OpenMeteoSDK to your Xcode project. Add OpenMeteoSDK:
 Next, use AIProxySwift's core functionality to get a URLRequest and URLSession, and pass those
 into the OpenMeteoSDK:
 
-
+```swift
     import AIProxy
     import OpenMeteoSdk
 
@@ -4902,7 +4948,7 @@ into the OpenMeteoSDK:
     } catch {
         print("Could not fetch the weather: \(error.localizedDescription)")
     }
-
+```
 
 ***
 
@@ -4914,11 +4960,13 @@ into the OpenMeteoSDK:
 If your app already has client or user IDs that you want to annotate AIProxy requests with,
 pass a second argument to the provider's service initializer. For example:
 
+```swift
     let openAIService = AIProxy.openAIService(
         partialKey: "partial-key-from-your-developer-dashboard",
         serviceURL: "service-url-from-your-developer-dashboard",
         clientID: "<your-id>"
     )
+```
 
 Requests that are made using `openAIService` will be annotated on the AIProxy backend, so that
 when you view top users, or the timeline of requests, your client IDs will be familiar.
@@ -5154,7 +5202,7 @@ Contributions are welcome! This library uses the MIT license.
   it's reasonable to suppose that the two objects will change together, then pull the nested
   struct into its own file and give it a longer prefix. The example above would become:
 
-    ```
+    ```swift
     // ProviderResponseBody.swift
     public struct ProviderResponseBody: Decodable {
 
