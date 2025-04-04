@@ -11,7 +11,7 @@ import Foundation
 /// Search this file for 'OpenRouter-specific' for parameters that you may have not encountered with other chat completions.
 ///
 /// Chat completion request body. See the OpenRouter reference for available fields.
-/// https://openrouter.ai/docs/requests
+/// https://openrouter.ai/docs/api-reference/chat-completion
 public struct OpenRouterChatCompletionRequestBody: Encodable {
     // Required
 
@@ -25,6 +25,7 @@ public struct OpenRouterChatCompletionRequestBody: Encodable {
     /// Defaults to 0
     public let frequencyPenalty: Double?
 
+    /// Deprecated! See the `reasoning` property instead.
     /// Include reasoning content in the response. Useful to understand how a reasoning model arrives at its response.
     public let includeReasoning: Bool?
 
@@ -76,6 +77,9 @@ public struct OpenRouterChatCompletionRequestBody: Encodable {
     /// OpenRouter-specific parameter
     /// See "Provider Routing" section: openrouter.ai/docs/provider-routing
     public let provider: ProviderPreferences?
+
+    /// Configuration for model reasoning/thinking tokens
+    public let reasoning: Reasoning?
 
     /// Acceptable range is (0, 2]
     public let repetitionPenalty: Double?
@@ -172,6 +176,7 @@ public struct OpenRouterChatCompletionRequestBody: Encodable {
         case prediction
         case provider
         case presencePenalty = "presence_penalty"
+        case reasoning
         case repetitionPenalty = "repetition_penalty"
         case responseFormat = "response_format"
         case route
@@ -208,6 +213,7 @@ public struct OpenRouterChatCompletionRequestBody: Encodable {
         prediction: OpenRouterChatCompletionRequestBody.Prediction? = nil,
         presencePenalty: Double? = nil,
         provider: OpenRouterChatCompletionRequestBody.ProviderPreferences? = nil,
+        reasoning: Reasoning? = nil,
         repetitionPenalty: Double? = nil,
         responseFormat: OpenRouterChatCompletionRequestBody.ResponseFormat? = nil,
         route: OpenRouterChatCompletionRequestBody.Route? = nil,
@@ -239,6 +245,7 @@ public struct OpenRouterChatCompletionRequestBody: Encodable {
         self.prediction = prediction
         self.presencePenalty = presencePenalty
         self.provider = provider
+        self.reasoning = reasoning
         self.repetitionPenalty = repetitionPenalty
         self.responseFormat = responseFormat
         self.route = route
@@ -437,6 +444,38 @@ extension OpenRouterChatCompletionRequestBody.Message.UserContent.Part {
         case high
     }
 }
+
+// MARK: - RequestBody.Reasoning
+extension OpenRouterChatCompletionRequestBody {
+    public struct Reasoning: Encodable {
+        public enum Effort: String, Encodable {
+            case low
+            case medium
+            case high
+        }
+
+        /// OpenAI-style reasoning effort setting
+        public let effort: Effort?
+
+        /// Non-OpenAI-style reasoning effort setting. Cannot be used simultaneously with effort.
+        public let maxTokens: Int?
+
+        /// Whether to exclude reasoning from the response
+        /// Defaults to false
+        public let exclude: Bool?
+
+        public init(
+            effort: OpenRouterChatCompletionRequestBody.Reasoning.Effort? = nil,
+            maxTokens: Int? = nil,
+            exclude: Bool? = nil
+        ) {
+            self.effort = effort
+            self.maxTokens = maxTokens
+            self.exclude = exclude
+        }
+    }
+}
+
 
 // MARK: - RequestBody.ResponseFormat
 extension OpenRouterChatCompletionRequestBody {

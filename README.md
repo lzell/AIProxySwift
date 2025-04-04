@@ -4133,10 +4133,10 @@ Use `flows.eachlabs.ai` as the proxy domain when creating your AIProxy service i
             .system(content: .text("You are a math assistant.")),
             .user(content: .text("Here's why burgers' equation leads to a breaking nonlinearity in shallow water"))
         ],
-        includeReasoning: true,
         models: [
             "deepseek/deepseek-r1",
         ],
+        reasoning: .init(effort: .low),
         temperature: 0.0 /* Set this based on your use case: https://api-docs.deepseek.com/quick_start/parameter_settings*/
     )
 
@@ -4212,10 +4212,10 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
             .system(content: .text("You are a math assistant.")),
             .user(content: .text("Here's why burgers' equation leads to a breaking nonlinearity in shallow water"))
         ],
-        includeReasoning: true,
         models: [
             "deepseek/deepseek-r1",
         ],
+        reasoning: .init(effort: .low),
         temperature: 0.0 /* Set this based on your use case: https://api-docs.deepseek.com/quick_start/parameter_settings*/
     )
 
