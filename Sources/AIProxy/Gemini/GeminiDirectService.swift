@@ -24,13 +24,17 @@ open class GeminiDirectService: GeminiService, DirectService {
     /// - Parameters:
     ///   - body: Request body
     ///   - model: The model to use for generating the completion, e.g. "gemini-1.5-flash"
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`.
+    ///                    Use `60` if you'd like to be consistent with the default URLSession timeout.
+    ///                    Use a longer timeout if you expect your generations to take longer than sixty seconds.
     /// - Returns: Content generated with Gemini
     public func generateContentRequest(
         body: GeminiGenerateContentRequestBody,
-        model: String
+        model: String,
+        secondsToWait: Int
     ) async throws -> GeminiGenerateContentResponseBody {
         let proxyPath = "/v1beta/models/\(model):generateContent"
-        let request = try AIProxyURLRequest.createDirect(
+        var request = try AIProxyURLRequest.createDirect(
             baseURL: "https://generativelanguage.googleapis.com",
             path: proxyPath,
             body:  body.serialize(),
@@ -40,6 +44,7 @@ open class GeminiDirectService: GeminiService, DirectService {
                 "X-Goog-Api-Key": self.unprotectedAPIKey
             ]
         )
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
