@@ -15,16 +15,25 @@ import Foundation
 /// https://platform.openai.com/docs/api-reference/responses/create
 /// Implementor's note: See ResponseCreateParamsBase in `src/openai/types/responses/response_create_params.py`
 public struct OpenAICreateResponseRequestBody: Encodable {
+    private enum CodingKeys: String, CodingKey {
+        case input
+        case model
+        case previousResponseId = "previous_response_id"
+    }
+    
     /// Text, image, or file inputs to the model, used to generate a response.
     public let input: Input
     public let model: String
+    public let previousResponseId: String?
 
     public init(
         input: OpenAICreateResponseRequestBody.Input,
-        model: String
+        model: String,
+        previousResponseId: String? = nil,
     ) {
         self.input = input
         self.model = model
+        self.previousResponseId = previousResponseId
     }
 }
 
