@@ -74,8 +74,8 @@ public struct OpenAIResponse: Decodable {
     public let temperature: Double?
 
     /// How the model should select which tool (or tools) to use when generating a response.
-    /// See the `toolChoice` parameter to see how to specify which tools the model can call.
-    // public let toolChoice: ToolChoice?
+    /// See the `tools` parameter to see how to specify which tools the model can call.
+    public let toolChoice: OpenAICreateResponseRequestBody.ToolChoice?
 
     /// An array of tools the model may call while generating a response.
     /// You can specify which tool to use by setting the `toolChoice` parameter.
@@ -84,7 +84,7 @@ public struct OpenAIResponse: Decodable {
     ///   Learn more about [built-in tools](https://platform.openai.com/docs/guides/tools).
     /// - **Function calls (custom tools)**: Functions that are defined by you, enabling the model to call your own code.
     ///   Learn more about [function calling](https://platform.openai.com/docs/guides/function-calling).
-    // public let tools: [Tool]?
+    public let tools: [OpenAICreateResponseRequestBody.Tool]?
 
     /// An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass.
     /// So 0.1 means only the tokens comprising the top 10% probability mass are considered.
@@ -114,10 +114,12 @@ public struct OpenAIResponse: Decodable {
                     switch content {
                     case .outputText(let txt):
                         texts.append(txt.text)
-                    default:
+                    case .refusal:
                         break
                     }
                 }
+            case .webSearchCall, .fileSearchCall, .functionCall, .computerCall, .reasoning:
+                break
             }
         }
         return texts.joined()
@@ -139,8 +141,8 @@ public struct OpenAIResponse: Decodable {
         case status
         case text
         case temperature
-        // case toolChoice = "tool_choice"
-        // case tools
+        case toolChoice = "tool_choice"
+        case tools
         case topP = "top_p"
         case truncation
         case usage
@@ -252,11 +254,15 @@ extension OpenAIResponse.ResponseTextConfig {
     }
 }
 
-
 extension OpenAIResponse {
     /// https://platform.openai.com/docs/api-reference/responses/object#responses/object-output
     public enum ResponseOutputItem: Decodable {
         case message(ResponseOutputMessage)
+        case webSearchCall(WebSearchCall)
+        case fileSearchCall(FileSearchCall)
+        case functionCall(FunctionCall)
+        case computerCall(ComputerCall)
+        case reasoning(Reasoning)
 
         private enum CodingKeys: String, CodingKey {
             case type
@@ -264,131 +270,219 @@ extension OpenAIResponse {
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            let typeValue = try container.decode(String.self, forKey: .type)
-            switch typeValue {
+            let type = try container.decode(String.self, forKey: .type)
+            
+            switch type {
             case "message":
-                let value = try ResponseOutputMessage(from: decoder)
-                self = .message(value)
+                self = .message(try ResponseOutputMessage(from: decoder))
+            case "web_search_call":
+                self = .webSearchCall(try WebSearchCall(from: decoder))
+            case "file_search_call":
+                self = .fileSearchCall(try FileSearchCall(from: decoder))
+            case "function_call":
+                self = .functionCall(try FunctionCall(from: decoder))
+            case "computer_call":
+                self = .computerCall(try ComputerCall(from: decoder))
+            case "reasoning":
+                self = .reasoning(try Reasoning(from: decoder))
             default:
-                throw DecodingError.dataCorruptedError(forKey: .type,
-                                                       in: container,
-                                                       debugDescription: "Unknown response output item type: \(typeValue)")
+                throw DecodingError.dataCorruptedError(
+                    forKey: .type,
+                    in: container,
+                    debugDescription: "Unknown output item type: \(type)"
+                )
             }
         }
     }
+    
+    // MARK: - Web Search Call
+    public struct WebSearchCall: Decodable {
+        public var type = "web_search_call"
+        public let id: String
+        public let status: String
+    }
 
+    // MARK: - File Search Call
+    public struct FileSearchCall: Decodable {
+        public var type = "file_search_call"
+        public let id: String
+        public let status: String
+        public let queries: [String]
+        public let results: [FileSearchResult]?
+
+        public struct FileSearchResult: Decodable {
+            public let content: String
+            public let metadata: [String: String]?
+            public let score: Double?
+        }
+    }
+
+    // MARK: - Function Call
+    public struct FunctionCall: Decodable {
+        public let type = "function_call"
+        public let id: String
+        public let callId: String
+        public let name: String
+        public let arguments: String
+        public let status: String
+
+        private enum CodingKeys: String, CodingKey {
+            case id
+            case callId = "call_id"
+            case name
+            case arguments
+            case status
+        }
+    }
+
+    // MARK: - Computer Call
+    public struct ComputerCall: Decodable {
+        public let type = "computer_call"
+        public let id: String
+        public let callId: String
+        public let action: ComputerAction
+        public let pendingSafetyChecks: [SafetyCheck]?
+        public let status: String
+
+        private enum CodingKeys: String, CodingKey {
+            case id
+            case callId = "call_id"
+            case action
+            case pendingSafetyChecks = "pending_safety_checks"
+            case status
+        }
+    }
+
+    public struct ComputerAction: Decodable {
+        public let type: String
+        public let button: String?
+        public let x: Int?
+        public let y: Int?
+        public let scrollX: Int?
+        public let scrollY: Int?
+        public let keys: [String]?
+        public let text: String?
+    }
+
+    public struct SafetyCheck: Decodable {
+        public let id: String
+        public let code: String
+        public let message: String
+    }
+}
+
+extension OpenAIResponse {
     public struct ResponseOutputMessage: Decodable {
         public let id: String
-        public let content: [Content]
-        public let role: String
+        public let type = "message"
         public let status: String
-        public let type: String
+        public let role: String
+        public let content: [Content]
+
+        private enum CodingKeys: String, CodingKey {
+            case id
+            case status
+            case role
+            case content
+        }
     }
 
     public enum Content: Decodable {
-        case outputText(ResponseOutputText)
-        case refusal(ResponseOutputRefusal)
+        case outputText(OutputText)
+        case refusal(String)
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case type
         }
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            let typeValue = try container.decode(String.self, forKey: .type)
-            switch typeValue {
+            let type = try container.decode(String.self, forKey: .type)
+
+            switch type {
             case "output_text":
-                let value = try ResponseOutputText(from: decoder)
-                self = .outputText(value)
+                self = .outputText(try OutputText(from: decoder))
             case "refusal":
-                let value = try ResponseOutputRefusal(from: decoder)
-                self = .refusal(value)
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                self = .refusal(try container.decode(String.self, forKey: .type))
             default:
-                throw DecodingError.dataCorruptedError(forKey: .type,
-                                                       in: container,
-                                                       debugDescription: "Unknown content type: \(typeValue)")
+                throw DecodingError.dataCorruptedError(
+                    forKey: .type,
+                    in: container,
+                    debugDescription: "Unknown content type: \(type)"
+                )
             }
         }
     }
 
-    public struct ResponseOutputText: Decodable {
-        public let annotations: [Annotation]?
+    public struct OutputText: Decodable {
         public let text: String
-        public let type: String
+        public let annotations: [Annotation]?
     }
 
-    public struct ResponseOutputRefusal: Decodable {
-        public let refusal: String
-        public let type: String
-    }
-
-
-    /// Union type for Annotations.
     public enum Annotation: Decodable {
-        case fileCitation(AnnotationFileCitation)
-        case urlCitation(AnnotationURLCitation)
-        case filePath(AnnotationFilePath)
+        case urlCitation(URLCitation)
+        case fileCitation(FileCitation)
+        case filePath(FilePath)
 
-        enum CodingKeys: String, CodingKey {
+        private enum CodingKeys: String, CodingKey {
             case type
         }
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            let typeValue = try container.decode(String.self, forKey: .type)
-            switch typeValue {
-            case "file_citation":
-                let value = try AnnotationFileCitation(from: decoder)
-                self = .fileCitation(value)
+            let type = try container.decode(String.self, forKey: .type)
+
+            switch type {
             case "url_citation":
-                let value = try AnnotationURLCitation(from: decoder)
-                self = .urlCitation(value)
+                self = .urlCitation(try URLCitation(from: decoder))
+            case "file_citation":
+                self = .fileCitation(try FileCitation(from: decoder))
             case "file_path":
-                let value = try AnnotationFilePath(from: decoder)
-                self = .filePath(value)
+                self = .filePath(try FilePath(from: decoder))
             default:
-                throw DecodingError.dataCorruptedError(forKey: .type, in: container, debugDescription: "Unknown annotation type: \(typeValue)")
+                throw DecodingError.dataCorruptedError(
+                    forKey: .type,
+                    in: container,
+                    debugDescription: "Unknown annotation type: \(type)"
+                )
             }
         }
     }
 
-    public struct AnnotationFileCitation: Decodable {
-        public let fileId: String
-        public let index: Int
-        public let type: String
-
-        enum CodingKeys: String, CodingKey {
-            case fileId = "file_id"
-            case index
-            case type
-        }
-    }
-
-    public struct AnnotationURLCitation: Decodable {
-        public let endIndex: Int
+    public struct URLCitation: Decodable {
         public let startIndex: Int
-        public let title: String
-        public let type: String
+        public let endIndex: Int
         public let url: String
+        public let title: String
 
-        enum CodingKeys: String, CodingKey {
-            case endIndex = "end_index"
+        private enum CodingKeys: String, CodingKey {
             case startIndex = "start_index"
-            case title
-            case type
+            case endIndex = "end_index"
             case url
+            case title
         }
     }
 
-    public struct AnnotationFilePath: Decodable {
-        public let fileId: String
+    public struct FileCitation: Decodable {
         public let index: Int
-        public let type: String
+        public let fileId: String
+        public let filename: String
 
-        enum CodingKeys: String, CodingKey {
-            case fileId = "file_id"
+        private enum CodingKeys: String, CodingKey {
             case index
-            case type
+            case fileId = "file_id"
+            case filename
+        }
+    }
+
+    public struct FilePath: Decodable {
+        public let index: Int
+        public let fileId: String
+
+        private enum CodingKeys: String, CodingKey {
+            case index
+            case fileId = "file_id"
         }
     }
 }
