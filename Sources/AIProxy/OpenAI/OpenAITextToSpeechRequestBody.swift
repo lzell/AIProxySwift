@@ -62,6 +62,7 @@ extension OpenAITextToSpeechRequestBody {
     public enum Model: String, Encodable {
         case tts1 = "tts-1"
         case tts1HD = "tts-1-hd"
+        case gpt_4o_mini_tts = "gpt-4o-mini-tts"
     }
 }
 
@@ -81,10 +82,14 @@ extension OpenAITextToSpeechRequestBody {
 extension OpenAITextToSpeechRequestBody {
     public enum Voice: String, Encodable {
         case alloy
+        case ash
+        case ballad
+        case coral
         case echo
         case fable
         case onyx
         case nova
+        case sage
         case shimmer
     }
 }
