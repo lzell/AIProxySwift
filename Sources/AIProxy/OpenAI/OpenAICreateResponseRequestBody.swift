@@ -18,13 +18,22 @@ public struct OpenAICreateResponseRequestBody: Encodable {
     /// Text, image, or file inputs to the model, used to generate a response.
     public let input: Input
     public let model: String
+    public let previousResponseId: String?
 
     public init(
         input: OpenAICreateResponseRequestBody.Input,
-        model: String
+        model: String,
+        previousResponseId: String? = nil
     ) {
         self.input = input
         self.model = model
+        self.previousResponseId = previousResponseId
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case input
+        case model
+        case previousResponseId = "previous_response_id"
     }
 }
 
