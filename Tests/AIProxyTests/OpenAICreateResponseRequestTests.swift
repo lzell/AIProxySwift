@@ -52,7 +52,6 @@ final class OpenAICreateResponseRequestTests: XCTestCase {
     }
 
     func testResponseRequestIsEncodableWithImageInputs() throws {
-
         let requestBody = OpenAICreateResponseRequestBody(
             input: .items(
                 [
@@ -97,6 +96,35 @@ final class OpenAICreateResponseRequestTests: XCTestCase {
             """#,
             try requestBody.serialize(pretty: true)
         )
+    }
+    
+    func testResponseRequestIsEncodableWithPreviousResponseId() throws {
+        let requestBody = OpenAICreateResponseRequestBody(
+            input: .items(
+                [
+                    .message(
+                        role: .user,
+                        content: .text("Tell me another joke")
+                    ),
+                ]
+            ),
+            model: "gpt-4o",
+            previousResponseId: "1234"
+        )
+        XCTAssertEqual(
+                """
+                {
+                  "input" : [
+                    {
+                      "content" : "Tell me another joke",
+                      "role" : "user",
+                      "type" : "message"
+                    }
+                  ],
+                  "model" : "gpt-4o",
+                  "previous_response_id" : "1234"
+                }
+                """, try requestBody.serialize(pretty: true))
     }
 
 }

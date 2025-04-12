@@ -233,6 +233,8 @@ This is useful for `o1` and `o3` models.
 Use this approach to have a conversation with ChatGPT. All previous chat messages, whether
 issued by the user or the assistant (chatGPT), are fed back into the model on each request.
 
+As an alternative, you can use the new ChatGPT Responses API to hold the entire history by passing in the previousResponseId
+
 ```swift
     import AIProxy
 
@@ -1063,6 +1065,7 @@ final class RealtimeManager {
 
     let requestBody = OpenAICreateResponseRequestBody(
         input: .text("hello world"),
+        previousResponseId: nil,  // Pass this in on future requests to save chat history
         model: "gpt-4o"
     )
 
