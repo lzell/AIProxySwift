@@ -182,22 +182,95 @@ extension OpenAICreateResponseRequestBody {
     /// A tool specification that models can use in responses.
     /// See https://platform.openai.com/docs/guides/tools
     public enum Tool: Codable {
-        /// File search tool to search the contents of uploaded files
         case fileSearch(FileSearchTool)
-        /// Web search tool to include data from the Internet
         case webSearch(WebSearchTool)
-        /// Computer use tool to enable model to control a computer interface
         case computerUse(ComputerUseTool)
-        /// Function calling tool to enable custom code execution
         case function(FunctionTool)
 
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case vectorStoreIds = "vector_store_ids"
+            case filters
+            case maxNumResults = "max_num_results"
+            case rankingOptions = "ranking_options"
+            case name
+            case parameters
+            case strict
+            case description
+            case displayWidth = "display_width"
+            case displayHeight = "display_height"
+            case environment
+            case searchContextSize = "search_context_size"
+            case userLocation = "user_location"
+        }
+
         public func encode(to encoder: Encoder) throws {
-            var container = encoder.singleValueContainer()
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            
             switch self {
-            case .fileSearch(let tool): try container.encode(tool)
-            case .webSearch(let tool): try container.encode(tool)
-            case .computerUse(let tool): try container.encode(tool)
-            case .function(let tool): try container.encode(tool)
+            case .fileSearch(let tool):
+                try container.encode("file_search", forKey: .type)
+                try container.encode(tool.vectorStoreIds, forKey: .vectorStoreIds)
+                try container.encodeIfPresent(tool.filters, forKey: .filters)
+                try container.encodeIfPresent(tool.maxNumResults, forKey: .maxNumResults)
+                try container.encodeIfPresent(tool.rankingOptions, forKey: .rankingOptions)
+                
+            case .webSearch(let tool):
+                try container.encode("web_search_preview", forKey: .type)
+                try container.encodeIfPresent(tool.searchContextSize, forKey: .searchContextSize)
+                try container.encodeIfPresent(tool.userLocation, forKey: .userLocation)
+                
+            case .computerUse(let tool):
+                try container.encode("computer_use_preview", forKey: .type)
+                try container.encode(tool.displayWidth, forKey: .displayWidth)
+                try container.encode(tool.displayHeight, forKey: .displayHeight)
+                try container.encode(tool.environment, forKey: .environment)
+                
+            case .function(let tool):
+                try container.encode("function", forKey: .type)
+                try container.encode(tool.name, forKey: .name)
+                try container.encode(tool.parameters, forKey: .parameters)
+                try container.encode(tool.strict, forKey: .strict)
+                try container.encodeIfPresent(tool.description, forKey: .description)
+            }
+        }
+        
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(String.self, forKey: .type)
+            
+            switch type {
+            case "file_search":
+                let vectorStoreIds = try container.decode([String].self, forKey: .vectorStoreIds)
+                let filters = try container.decodeIfPresent(FileSearchFilter.self, forKey: .filters)
+                let maxNumResults = try container.decodeIfPresent(Int.self, forKey: .maxNumResults)
+                let rankingOptions = try container.decodeIfPresent(FileSearchTool.RankingOptions.self, forKey: .rankingOptions)
+                self = .fileSearch(FileSearchTool(vectorStoreIds: vectorStoreIds, filters: filters, maxNumResults: maxNumResults, rankingOptions: rankingOptions))
+                
+            case "web_search_preview":
+                let searchContextSize = try container.decodeIfPresent(WebSearchTool.SearchContextSize.self, forKey: .searchContextSize)
+                let userLocation = try container.decodeIfPresent(WebSearchTool.UserLocation.self, forKey: .userLocation)
+                self = .webSearch(WebSearchTool(searchContextSize: searchContextSize, userLocation: userLocation))
+                
+            case "computer_use_preview":
+                let displayWidth = try container.decode(Int.self, forKey: .displayWidth)
+                let displayHeight = try container.decode(Int.self, forKey: .displayHeight)
+                let environment = try container.decode(ComputerUseTool.Environment.self, forKey: .environment)
+                self = .computerUse(ComputerUseTool(displayWidth: displayWidth, displayHeight: displayHeight, environment: environment))
+                
+            case "function":
+                let name = try container.decode(String.self, forKey: .name)
+                let parameters = try container.decode([String: AIProxyJSONValue].self, forKey: .parameters)
+                let strict = try container.decode(Bool.self, forKey: .strict)
+                let description = try container.decodeIfPresent(String.self, forKey: .description)
+                self = .function(FunctionTool(name: name, parameters: parameters, strict: strict, description: description))
+                
+            default:
+                throw DecodingError.dataCorruptedError(
+                    forKey: .type,
+                    in: container,
+                    debugDescription: "Unknown tool type: \(type)"
+                )
             }
         }
     }
