@@ -8,7 +8,24 @@ import UIKit
 public struct AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.84.0"
+    public static let sdkVersion = "0.86.0"
+
+    /// Flag to use DNS over TLS.
+    /// See this Apple Developer forum post for motivation: https://developer.apple.com/forums/thread/780602
+    /// Note that this does add some latency to your first request.
+    /// In my testing, at least for my location in SF, it added about 50ms.
+    /// You can test for yourself with these commands (the first is similar to flipping this flag to true):
+    ///
+    ///    kdig @1.1.1.1 api.aiproxy.com +tls +noall +stats
+    ///
+    /// Compare to udp perf using your default resolver:
+    ///
+    ///    kdig api.aiproxy.com +noall +stats
+    ///
+    /// Or using cloudflare's resolver
+    ///
+    ///    kdig @1.1.1.1 api.aiproxy.com +noall +stats
+    public static var resolveDNSOverTLS = false
 
     /// - Parameters:
     ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your provider's key.
