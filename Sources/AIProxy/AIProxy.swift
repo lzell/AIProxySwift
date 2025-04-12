@@ -8,7 +8,7 @@ import UIKit
 public struct AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.84.0"
+    public static let sdkVersion = "0.86.0"
 
     /// Flag to use DNS over TLS.
     /// See this Apple Developer forum post for motivation: https://developer.apple.com/forums/thread/780602
