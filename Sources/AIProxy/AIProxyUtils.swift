@@ -12,6 +12,8 @@ import AppKit
 import UIKit
 #endif
 
+import Network
+
 struct AIProxyUtils {
 
     static func directURLSession() -> URLSession {
@@ -19,6 +21,19 @@ struct AIProxyUtils {
     }
 
     static func proxiedURLSession() -> URLSession {
+        if AIProxy.resolveDNSOverTLS {
+            let host = NWEndpoint.hostPort(host: "one.one.one.one", port: 853)
+            let endpoints: [NWEndpoint] = [
+                .hostPort(host: "1.1.1.1", port: 853),
+                .hostPort(host: "1.0.0.1", port: 853),
+                .hostPort(host: "2606:4700:4700::1111", port: 853),
+                .hostPort(host: "2606:4700:4700::1001", port: 853)
+            ]
+            NWParameters.PrivacyContext.default.requireEncryptedNameResolution(
+                true,
+                fallbackResolver: .tls(host, serverAddresses: endpoints)
+            )
+        }
         return AIProxyURLSession.create()
     }
 
