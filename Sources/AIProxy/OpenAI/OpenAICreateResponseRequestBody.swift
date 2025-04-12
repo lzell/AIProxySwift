@@ -18,18 +18,17 @@ public struct OpenAICreateResponseRequestBody: Encodable {
     private enum CodingKeys: String, CodingKey {
         case input
         case model
-        case previousResponseId = "previous_response_id"
         case tools
         case toolChoice = "tool_choice"
         case reasoning
         case parallelToolCalls = "parallel_tool_calls"
+        case previousResponseId = "previous_response_id"
     }
     
     /// Text, image, or file inputs to the model, used to generate a response.
     public let input: Input
     public let model: String
-    public let previousResponseId: String?
-    
+  
     /// An array of tools the model may call while generating a response.
     /// You can specify which tool to use by setting the tool_choice parameter.
     /// The two categories of tools you can provide the model are:
@@ -49,23 +48,35 @@ public struct OpenAICreateResponseRequestBody: Encodable {
     /// Whether to allow the model to run tool calls in parallel.
     /// Defaults to true if not specified.
     public let parallelToolCalls: Bool?
+  
+    public let previousResponseId: String?
 
     public init(
         input: OpenAICreateResponseRequestBody.Input,
         model: String,
-        previousResponseId: String? = nil,
         tools: [Tool]? = nil,
         toolChoice: ToolChoice? = nil,
         reasoning: Reasoning? = nil,
-        parallelToolCalls: Bool? = nil
+        parallelToolCalls: Bool? = nil,
+        previousResponseId: String? = nil
     ) {
         self.input = input
         self.model = model
-        self.previousResponseId = previousResponseId
         self.tools = tools
         self.toolChoice = toolChoice
         self.reasoning = reasoning
         self.parallelToolCalls = parallelToolCalls
+        self.previousResponseId = previousResponseId
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case input
+        case model
+        case tools
+        case toolChoice = "tool_choice"
+        case reasoning
+        case parallelToolCalls = "parallel_tool_calls"
+        case previousResponseId = "previous_response_id"
     }
 }
 
