@@ -4543,6 +4543,80 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     }
 ```
 
+
+### How to make a tool call with OpenRouter
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openRouterService = AIProxy.openRouterDirectService(
+    //     unprotectedAPIKey: "your-openRouter-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openRouterService = AIProxy.openRouterService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let completion = try await openRouterService.chatCompletionRequest(body: .init(
+            messages: [
+                .user(
+                   content: .text("What is the weather in SF?")
+               )
+            ],
+            models: [
+                "cohere/command-r7b-12-2024",
+                "meta-llama/llama-3.3-70b-instruct",
+                // ...
+            ],
+            route: .fallback,
+            tools: [
+                .function(
+                    name: "get_weather",
+                    description: "Get current temperature for a given location.",
+                    parameters: [
+                        "type": "object",
+                        "properties": [
+                            "location": [
+                                "type": "string",
+                                "description": "City and country e.g. Bogotá, Colombia"
+                            ]
+                        ],
+                        "required": ["location"],
+                        "additionalProperties": false
+                    ],
+                    strict: true
+                )
+            ]
+        ))
+        if let toolCall = completion.choices.first?.message.toolCalls?.first {
+            print("""
+                The model wants us to call function: \(toolCall.function?.name ?? "")
+                With arguments: \(toolCall.function?.arguments ?? [:])
+                Served by \(completion.provider ?? "unspecified")
+                using model \(completion.model ?? "unspecified")
+                """
+            )
+        }
+        if let usage = completion.usage {
+            print(
+                """
+                Used:
+                 \(usage.promptTokens ?? 0) prompt tokens
+                 \(usage.completionTokens ?? 0) completion tokens
+                 \(usage.totalTokens ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get first chat completion: \(error.localizedDescription)")
+    }
+```
+
 ***
 
 ## DeepSeek
