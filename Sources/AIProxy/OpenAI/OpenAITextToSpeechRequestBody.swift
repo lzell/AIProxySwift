@@ -8,7 +8,7 @@
 
 import Foundation
 
-/// Docstrings from 
+/// Docstrings from
 /// https://platform.openai.com/docs/api-reference/audio/createSpeech
 public struct OpenAITextToSpeechRequestBody: Encodable {
 
@@ -31,19 +31,25 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
     /// The speed of the generated audio. Select a value from 0.25 to 4.0.
     /// Default to `1.0`
     public let speed: Float?
+    
+    /// Control the voice of your generated audio with additional instructions. Does not work with `tts-1` or `tts-1-hd`.
+    public let instructions: String?
 
     public init(
         input: String,
         model: Model = .tts1,
         voice: OpenAITextToSpeechRequestBody.Voice,
         responseFormat: OpenAITextToSpeechRequestBody.ResponseFormat? = .mp3,
-        speed: Float? = 1.0
+        speed: Float? = 1.0,
+        instructions: String? = nil
     ) {
         self.input = input
         self.model = model
         self.voice = voice
         self.responseFormat = responseFormat
         self.speed = speed
+        self.instructions = instructions
+        
     }
     
     private enum CodingKeys: String, CodingKey {
@@ -54,6 +60,8 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
         // Optional properties
         case responseFormat = "response_format"
         case speed
+        case instructions
+
     }
 }
 
