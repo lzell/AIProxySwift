@@ -394,6 +394,7 @@ extension GeminiGenerateContentRequestBody {
         public let responseModalities: [String]?
         public let responseMimeType: String?
         public let responseSchema: [String: AIProxyJSONValue]?
+        public let thinkingConfig: ThinkingConfig?
 
         public init(
             maxOutputTokens: Int? = nil,
@@ -404,7 +405,8 @@ extension GeminiGenerateContentRequestBody {
             frequencyPenalty: Double? = nil,
             responseModalities: [String]? = nil,
             responseMimeType: String? = nil,
-            responseSchema: [String: AIProxyJSONValue]? = nil
+            responseSchema: [String: AIProxyJSONValue]? = nil,
+            thinkingConfig: ThinkingConfig? = nil
         ) {
             self.maxOutputTokens = maxOutputTokens
             self.temperature = temperature
@@ -415,6 +417,7 @@ extension GeminiGenerateContentRequestBody {
             self.responseModalities = responseModalities
             self.responseMimeType = responseMimeType
             self.responseSchema = responseSchema
+            self.thinkingConfig = thinkingConfig
         }
 
         private enum CodingKeys: String, CodingKey {
@@ -427,6 +430,15 @@ extension GeminiGenerateContentRequestBody {
             case responseModalities
             case responseMimeType
             case responseSchema
+            case thinkingConfig
+        }
+        
+        public struct ThinkingConfig: Encodable {
+            public let thinkingBudget: Int
+            
+            public init(thinkingBudget: Int) {
+                self.thinkingBudget = thinkingBudget
+            }
         }
     }
 }

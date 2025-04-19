@@ -205,6 +205,46 @@ final class GeminiGenerateContentRequestTests: XCTestCase {
             try requestBody.serialize(pretty: true)
         )
     }
+
+    func testRequestWithThinkingConfigIsEncodable() throws {
+        let requestBody = GeminiGenerateContentRequestBody(
+            contents: [
+                .init(
+                    parts: [.text("Explain the Occam's Razor concept and provide everyday examples of it")],
+                    role: "user"
+                )
+            ],
+            generationConfig: .init(
+                maxOutputTokens: 200,
+                temperature: 0.7,
+                thinkingConfig: .init(thinkingBudget: 1024)
+            )
+        )
+
+        XCTAssertEqual(#"""
+            {
+              "contents" : [
+                {
+                  "parts" : [
+                    {
+                      "text" : "Explain the Occam's Razor concept and provide everyday examples of it"
+                    }
+                  ],
+                  "role" : "user"
+                }
+              ],
+              "generationConfig" : {
+                "maxOutputTokens" : 200,
+                "temperature" : 0.7,
+                "thinkingConfig" : {
+                  "thinkingBudget" : 1024
+                }
+              }
+            }
+            """#,
+            try requestBody.serialize(pretty: true)
+        )
+    }
 }
 
 
