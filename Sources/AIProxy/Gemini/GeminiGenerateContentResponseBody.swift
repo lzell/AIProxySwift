@@ -173,5 +173,8 @@ extension GeminiGenerateContentResponseBody {
 
         /// Total token count for the generation request (prompt + response candidates).
         public let totalTokenCount: Int?
+
+        /// The number of tokens allocated for thinking.
+        public let thoughtsTokenCount: Int?
     }
 }
