@@ -81,4 +81,18 @@ open class ElevenLabsDirectService: ElevenLabsService, DirectService {
         )
         return data
     }
+
+    /// Converts text to speech with a request to `/v1/speech-to-text`
+    ///
+    /// - Parameters:
+    ///
+    ///   - body: The request body to send to ElevenLabs. See this reference:
+    ///           https://elevenlabs.io/docs/api-reference/speech-to-text/convert#request
+    ///
+    /// - Returns: The speech to text response body
+    public func speechToTextRequest(
+        body: ElevenLabsSpeechToTextRequestBody
+    ) async throws -> ElevenLabsSpeechToTextResponseBody {
+        fatalError()
+    }
 }

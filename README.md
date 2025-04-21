@@ -3595,6 +3595,48 @@ model owner and model name in the string.
     }
 ```
 
+### How to use ElevenLabs for speech-to-text
+
+1. Record an audio file in quicktime and save it as "helloworld.m4a"
+2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
+3. Run this snippet:
+
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let elevenLabsService = AIProxy.elevenLabsDirectService(
+    //     unprotectedAPIKey: "your-elevenLabs-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let elevenLabsService = AIProxy.elevenLabsService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let localAudioURL = Bundle.main.url(forResource: "helloworld", withExtension: "m4a") else {
+        print("Could not find an audio file named helloworld.m4a in your app bundle")
+        return
+    }
+
+    do {
+        let body = ElevenLabsSpeechToTextRequestBody(
+            modelID: .scribeV1,
+            file: try Data(contentsOf: localAudioURL),
+        )
+        let res = try await elevenLabsService.speechToTextRequest(
+            body: body
+        )
+        print("ElevenLabs transcribed: \(res.text ?? "")")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create ElevenLabs STT audio: \(error.localizedDescription)")
+    }
+```
+
 ***
 
 
