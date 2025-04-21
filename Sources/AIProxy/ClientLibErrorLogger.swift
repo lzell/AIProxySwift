@@ -64,9 +64,12 @@ private func buildPayload(errorType: String, errorMessage: String?) -> Payload {
     var deviceModel = "Unknown"
     var systemName = "Unknown"
 
-    #if os(iOS) || os(tvOS) || os(watchOS)
+    #if os(iOS) || os(tvOS)
     deviceModel = UIDevice.current.model
     systemName = UIDevice.current.systemName
+    #elseif os(watchOS)
+    deviceModel = "Apple Watch"
+    systemName = "watchOS"
     #elseif os(macOS)
     deviceModel = Host.current().localizedName ?? "Mac"
     systemName = "macOS"

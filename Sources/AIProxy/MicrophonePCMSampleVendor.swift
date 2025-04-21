@@ -6,8 +6,10 @@
 //
 
 import AVFoundation
-import AudioToolbox
 import Foundation
+#if !os(watchOS)
+import AudioToolbox
+#endif
 
 /// This is an AudioToolbox-based implementation that vends PCM16 microphone samples at a
 /// sample rate that OpenAI's realtime models expect.
@@ -47,6 +49,8 @@ import Foundation
 ///
 /// Apple sample code (Do not use this): https://developer.apple.com/documentation/avfaudio/using-voice-processing
 /// My apple forum question (Do not use this): https://developer.apple.com/forums/thread/771530
+
+#if !os(watchOS)
 @RealtimeActor
 open class MicrophonePCMSampleVendor {
 
@@ -436,3 +440,97 @@ private let audioRenderCallback: AURenderCallback = {
     )
     return noErr
 }
+
+#else
+
+// watchOS implementation using AVAudioEngine directly
+@RealtimeActor
+open class MicrophonePCMSampleVendor {
+    private let engine = AVAudioEngine()
+    private var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
+    private var audioConverter: AVAudioConverter?
+    
+    public init() {}
+    
+    deinit {
+        logIf(.debug)?.debug("MicrophonePCMSampleVendor is being freed")
+    }
+    
+    public func start() throws -> AsyncStream<AVAudioPCMBuffer> {
+        // Configure audio session
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(.record, mode: .default)
+            try session.setActive(true)
+        } catch {
+            throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit("Failed to configure audio session: \(error.localizedDescription)")
+        }
+        
+        // Get input format from engine
+        let inputFormat = engine.inputNode.inputFormat(forBus: 0)
+        
+        // Create a format that matches OpenAI's requirements (24000Hz, PCM16, mono)
+        guard let targetFormat = AVAudioFormat(
+            commonFormat: .pcmFormatInt16,
+            sampleRate: 24000.0,
+            channels: 1,
+            interleaved: false
+        ) else {
+            throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit("Could not create target audio format")
+        }
+        
+        // Create converter
+        self.audioConverter = AVAudioConverter(from: inputFormat, to: targetFormat)
+        
+        guard let converter = self.audioConverter else {
+            throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit("Could not create audio converter")
+        }
+        
+        return AsyncStream<AVAudioPCMBuffer> { [weak self] continuation in
+            self?.continuation = continuation
+            
+            // Install tap on the input node
+            self?.engine.inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { buffer, time in
+                guard let self = self, let converter = self.audioConverter else { return }
+                
+                // Create output buffer with target format
+                guard let outputBuffer = AVAudioPCMBuffer(
+                    pcmFormat: targetFormat,
+                    frameCapacity: AVAudioFrameCount(targetFormat.sampleRate / inputFormat.sampleRate * Double(buffer.frameLength))
+                ) else { return }
+                
+                // Convert the buffer to target sample rate
+                var error: NSError?
+                let status = converter.convert(to: outputBuffer, error: &error) { inNumPackets, outStatus in
+                    outStatus.pointee = .haveData
+                    return buffer
+                }
+                
+                if let error = error {
+                    logIf(.error)?.error("Error converting sample rate: \(error.localizedDescription)")
+                    return
+                }
+                
+                // Send the converted buffer to the stream
+                continuation.yield(outputBuffer)
+            }
+            
+            // Start the engine
+            do {
+                try self?.engine.start()
+            } catch {
+                logIf(.error)?.error("Could not start audio engine: \(error.localizedDescription)")
+                continuation.finish()
+            }
+        }
+    }
+    
+    public func stop() {
+        engine.inputNode.removeTap(onBus: 0)
+        engine.stop()
+        continuation?.finish()
+        continuation = nil
+        audioConverter = nil
+    }
+}
+#endif
