@@ -93,6 +93,17 @@ open class ElevenLabsDirectService: ElevenLabsService, DirectService {
     public func speechToTextRequest(
         body: ElevenLabsSpeechToTextRequestBody
     ) async throws -> ElevenLabsSpeechToTextResponseBody {
-        fatalError()
+        let boundary = UUID().uuidString
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: "https://api.elevenlabs.io",
+            path: "/v1/speech-to-text",
+            body: formEncode(body, boundary),
+            verb: .post,
+            contentType: "multipart/form-data; boundary=\(boundary)",
+            additionalHeaders: [
+                "xi-api-key": self.unprotectedAPIKey
+            ]
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 }
