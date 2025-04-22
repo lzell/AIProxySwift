@@ -7,7 +7,7 @@
 
 import AVFoundation
 import Foundation
-#if !os(watchOS)
+#if canImport(AudioToolbox)
 import AudioToolbox
 #endif
 
