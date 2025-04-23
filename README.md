@@ -386,16 +386,58 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     // )
 
     do {
-        let requestBody = OpenAICreateImageRequestBody(
-            prompt: "a skier",
-            model: "dall-e-3"
+        let response = try await openAIService.createImageRequest(
+            body: .init(
+                prompt: "a skier",
+                model: .dallE3
+            ),
+            secondsToWait: 300
         )
-        let response = try await openAIService.createImageRequest(body: requestBody)
         print(response.data.first?.url ?? "")
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received \(statusCode) status code with response body: \(responseBody)")
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not generate an image with OpenAI's DALLE: \(error.localizedDescription)")
+        print("Could not create an image with DALLE 3: \(error.localizedDescription)")
+    }
+```
+
+### How to generate an image with gpt-image-1
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let response = try await openAIService.createImageRequest(
+            body: .init(
+                prompt: "a skier",
+                model: .gptImage1
+            ),
+            secondsToWait: 300
+        )
+
+        guard let base64Data = response.data.first?.b64JSON,
+              let imageData = Data(base64Encoded: base64Data),
+              let image = UIImage(data: imageData) else {
+            print("Could not create a UIImage out of the base64 returned by OpenAI")
+            return
+        }
+
+        // Do something with 'image'
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create OpenAI image generation: \(error.localizedDescription)")
     }
 ```
 
