@@ -87,12 +87,14 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/images/create
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func createImageRequest(
-        body: OpenAICreateImageRequestBody
+        body: OpenAICreateImageRequestBody,
+        secondsToWait: Int
     ) async throws -> OpenAICreateImageResponseBody {
-        let request = try AIProxyURLRequest.createDirect(
+        var request = try AIProxyURLRequest.createDirect(
             baseURL: self.baseURL,
             path: self.resolvedPath("images/generations"),
             body: try body.serialize(),
@@ -102,6 +104,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 

@@ -40,10 +40,12 @@ public protocol OpenAIService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/images/create
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
     func createImageRequest(
-        body: OpenAICreateImageRequestBody
+        body: OpenAICreateImageRequestBody,
+        secondsToWait: Int
     ) async throws -> OpenAICreateImageResponseBody
     
     /// Initiates a create transcription request to v1/audio/transcriptions

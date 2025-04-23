@@ -89,12 +89,14 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/images/create
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func createImageRequest(
-        body: OpenAICreateImageRequestBody
+        body: OpenAICreateImageRequestBody,
+        secondsToWait: Int
     ) async throws -> OpenAICreateImageResponseBody {
-        let request = try await AIProxyURLRequest.create(
+        var request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
@@ -103,6 +105,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             verb: .post,
             contentType: "application/json"
         )
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
