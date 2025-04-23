@@ -8,7 +8,91 @@ import UIKit
 public struct AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.94.0"
+    public static let sdkVersion = "0.95.0"
+
+    /// Configures the AIProxy SDK. Call this during app launch by adding an `init` to your SwiftUI MyApp.swift file, e.g.
+    ///
+    ///     import AIProxy
+    ///
+    ///     @main
+    ///     struct ClientTesteriOSApp: App {
+    ///         init() {
+    ///             AIProxy.configure(
+    ///                 logLevel: .debug,
+    ///                 printRequestBodies: true,
+    ///                 printResponseBodies: true,
+    ///                 resolveDNSOverTLS: true,
+    ///                 useStableID: true
+    ///             )
+    ///         }
+    ///         // ...
+    ///     }
+    ///
+    /// Or in your UIKit app's applicationDidFinishLaunching:
+    ///
+    ///     import AIProxy
+    ///
+    ///     @UIApplicationMain
+    ///     class AppDelegate: UIResponder, UIApplicationDelegate {
+    ///
+    ///          var window: UIWindow?
+    ///
+    ///          func application(_ application: UIApplication,
+    ///                           didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    ///              AIProxy.configure(
+    ///                  logLevel: .debug,
+    ///                  printRequestBodies: true,
+    ///                  printResponseBodies: true,
+    ///                  resolveDNSOverTLS: true,
+    ///                  useStableID: true
+    ///              )
+    ///              // ...
+    ///              return true
+    ///          }
+    ///          // ...
+    ///      }
+    ///
+    /// - Parameters:
+    ///   - logLevel:            Sets the threshold severity of SDK logs that will be shown in the Xcode console.
+    ///                          For the most verbose logging, set this to `.debug`
+    ///
+    ///   - printRequestBodies:  Print API request bodies to the Xcode console.
+    ///                          Request bodies are logged at the `.debug` level, so if you would like to use this feature please also set `logLevel` to `.debug`
+    ///
+    ///   - printResponseBodies: Print API response bodies to the Xcode console.
+    ///                          Response bodies are logged at the `.debug` level, so if you would like to use this feature please also set `logLevel` to `.debug`
+    ///
+    ///   - resolveDNSOverTLS:   Set this to true to perform DNS resolution over TLS using Cloudflare's resolver.
+    ///                          The SDK defaults to true for this unless you explicitly set it to false here.
+    ///                          It prevents your customer's ISP from snooping on or blocking requests to AIProxy.
+    ///
+    ///   - useStableID:         Set this to true to perform a best effort attempt to use the same anonymous ID in requests to AIProxy for an app store user across multiple devices.
+    ///                          You must add the 'iCloud key-value storage' capability to use this:
+    ///                              1. Tap on your project in Xcode's project tree
+    ///                              2. Tap on your target in the sidebar
+    ///                              3. Tap on Signing & Capabilities in the top nav
+    ///                              4. Tap the plus sign next to 'Capability'
+    ///                              5. Add iCloud
+    ///                              6. Select the 'Key-value storage' service
+    public static func configure(
+        logLevel: AIProxyLogLevel,
+        printRequestBodies: Bool,
+        printResponseBodies: Bool,
+        resolveDNSOverTLS: Bool,
+        useStableID: Bool,
+    ) {
+        aiproxyCallerDesiredLogLevel = logLevel
+        self.printRequestBodies = printRequestBodies
+        self.printResponseBodies = printResponseBodies
+        self.resolveDNSOverTLS = resolveDNSOverTLS
+        if useStableID {
+            Task.detached {
+                if let stableID = await self._getStableIdentifier() {
+                    self.stableID = stableID
+                }
+            }
+        }
+    }
 
     /// Flag to use DNS over TLS.
     /// See this Apple Developer forum post for motivation: https://developer.apple.com/forums/thread/780602
@@ -25,7 +109,21 @@ public struct AIProxy {
     /// Or using cloudflare's resolver
     ///
     ///    kdig @1.1.1.1 api.aiproxy.com +noall +stats
-    public static var resolveDNSOverTLS = false
+    public static var resolveDNSOverTLS = true
+
+    public static var stableID: String? {
+        get {
+            protectedPropertyQueue.sync { _stableID }
+        }
+        set {
+            protectedPropertyQueue.async(flags: .barrier) { _stableID = newValue }
+        }
+    }
+    private static var _stableID: String?
+
+    public static var printRequestBodies: Bool = false
+    public static var printResponseBodies: Bool = false
+
 
     /// - Parameters:
     ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your provider's key.
@@ -898,17 +996,13 @@ public struct AIProxy {
     }
 #endif
 
-    /// This is a beta feature.
-    /// It returns a stable, anonymous identifier that you can annotate requests to AIProxy with.
-    /// You must add the 'iCloud key-value storage' capability to use this:
-    ///    1. Tap on your project in Xcode's project tree
-    ///    2. Tap on your target in the sidebar
-    ///    3. Tap on Signing & Capabilities in the top nav
-    ///    4. Tap the plus sign next to 'Capability'
-    ///    5. Add iCloud
-    ///    6. Select the 'Key-value storage' service
-    @NetworkActor
+    @available(*, deprecated, message: "Use AIProxy.configure and pass true for useStableID")
     public static func getStableIdentifier() async -> String? {
+        return await self._getStableIdentifier()
+    }
+
+    @NetworkActor
+    private static func _getStableIdentifier() async -> String? {
         do {
             return try await AnonymousAccountStorage.sync()
         } catch {

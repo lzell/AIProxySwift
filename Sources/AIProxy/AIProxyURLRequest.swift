@@ -20,7 +20,8 @@ struct AIProxyURLRequest {
         contentType: String? = nil,
         additionalHeaders: [String: String] = [:]
     ) async throws -> URLRequest {
-        let deviceCheckToken = await AIProxyDeviceCheck.getToken(forClient: clientID)
+        let resolvedClientID = clientID ?? AIProxyIdentifier.getClientID()
+        let deviceCheckToken = await AIProxyDeviceCheck.getToken(forClient: resolvedClientID)
 
         var proxyPath = proxyPath
         if !proxyPath.starts(with: "/") {
@@ -46,8 +47,8 @@ struct AIProxyURLRequest {
         request.httpBody = body
         request.addValue(partialKey, forHTTPHeaderField: "aiproxy-partial-key")
 
-        if let clientID = (clientID ?? AIProxyIdentifier.getClientID()) {
-            request.addValue(clientID, forHTTPHeaderField: "aiproxy-client-id")
+        if let resolvedClientID = resolvedClientID {
+            request.addValue(resolvedClientID, forHTTPHeaderField: "aiproxy-client-id")
         }
 
         if let deviceCheckToken = deviceCheckToken {
