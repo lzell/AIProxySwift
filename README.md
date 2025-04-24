@@ -51,6 +51,51 @@ key secure and your AI bill predictable:
 
    <img src="https://github.com/lzell/AIProxySwift/assets/35940/fd76b588-5e19-4d4d-9748-8db3fd64df8e" alt="Set package rule" width="720">
 
+3. Call `AIProxy.configure` during app launch. In a SwiftUI app, you can add an `init` to your `MyApp.swift` file: 
+
+    ```swift
+    import AIProxy
+
+    @main
+    struct ClientTesteriOSApp: App {
+        init() {
+            AIProxy.configure(
+                logLevel: .debug,
+                printRequestBodies: false,  // Flip to true for library development
+                printResponseBodies: false, // Flip to true for library development
+                resolveDNSOverTLS: true,
+                useStableID: true
+            )
+        }
+        // ...
+    }
+    ```
+
+In a UIKit app, add `configure` to applicationDidFinishLaunching:
+
+    ```swift
+    import AIProxy
+
+    @UIApplicationMain
+    class AppDelegate: UIResponder, UIApplicationDelegate {
+
+        var window: UIWindow?
+
+        func application(_ application: UIApplication,
+                         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+            AIProxy.configure(
+                logLevel: .debug,
+                printRequestBodies: false,  // Flip to true for library development
+                printResponseBodies: false, // Flip to true for library development
+                resolveDNSOverTLS: true,
+                useStableID: true
+            )
+            // ...
+            return true
+        }
+        // ...
+    }
+    ```
 
 ### How to configure the package for use with AIProxy
 
