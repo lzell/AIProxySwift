@@ -47,7 +47,6 @@ struct BackgroundNetworker {
                 responseBody: responseBody
             )
         }
-
         return (asyncBytes, httpResponse)
     }
 }
