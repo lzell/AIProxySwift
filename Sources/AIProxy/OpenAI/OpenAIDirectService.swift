@@ -120,7 +120,18 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         body: OpenAICreateImageEditRequestBody,
         secondsToWait: Int
     ) async throws -> OpenAICreateImageResponseBody {
-        fatalError()
+        let boundary = UUID().uuidString
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: self.baseURL,
+            path: self.resolvedPath("images/edits"),
+            body: formEncode(body, boundary),
+            verb: .post,
+            contentType: "multipart/form-data; boundary=\(boundary)",
+            additionalHeaders: [
+                "Authorization": "Bearer \(self.unprotectedAPIKey)"
+            ]
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 
 
