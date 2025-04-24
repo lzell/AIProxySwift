@@ -15,7 +15,7 @@ public struct AIProxy {
     ///     import AIProxy
     ///
     ///     @main
-    ///     struct ClientTesteriOSApp: App {
+    ///     struct MyApp: App {
     ///         init() {
     ///             AIProxy.configure(
     ///                 logLevel: .debug,
