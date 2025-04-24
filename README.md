@@ -71,7 +71,7 @@ key secure and your AI bill predictable:
     }
     ```
 
-In a UIKit app, add `configure` to applicationDidFinishLaunching:
+   In a UIKit app, add `configure` to applicationDidFinishLaunching:
 
     ```swift
     import AIProxy
