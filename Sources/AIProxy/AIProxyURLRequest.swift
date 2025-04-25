@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AIProxyURLRequest {
+enum AIProxyURLRequest {
 
     /// Creates a URLRequest that is configured for use with an AIProxy URLSession.
     static func create(
@@ -128,7 +128,4 @@ struct AIProxyURLRequest {
         return request
     }
 
-    init() {
-        fatalError("This is a namespace. Please use the factory method AIProxyURLRequest.create()")
-    }
 }

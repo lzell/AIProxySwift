@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct AIProxyURLSession {
+public enum AIProxyURLSession {
     public static var delegate = AIProxyCertificatePinningDelegate()
 
     /// Creates a URLSession that is configured for communication with aiproxy.pro
@@ -19,7 +19,4 @@ public struct AIProxyURLSession {
         )
     }
 
-    init() {
-        fatalError("This is a namespace. Please use the factory method AIProxyURLSession.create()")
-    }
 }
