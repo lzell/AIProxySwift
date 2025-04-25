@@ -7,7 +7,7 @@
 
 import Foundation
 
-private let kTimeoutBufferForSyncAPIInSeconds: TimeInterval = 5
+private let kTimeoutBufferForSyncAPIInSeconds: UInt = 5
 
 open class ReplicateDirectService: ReplicateService, DirectService {
 
@@ -57,18 +57,18 @@ open class ReplicateDirectService: ReplicateService, DirectService {
     )  async throws -> ReplicatePrediction<Output> {
         let secondsToWait = self.safeSecondsToWait(secondsToWait, warn: true)
         let requestBody = ReplicatePredictionRequestBody(input: input)
-        var request = try AIProxyURLRequest.createDirect(
+        let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.replicate.com",
             path: "/v1/models/\(modelOwner)/\(modelName)/predictions",
             body: requestBody.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait + kTimeoutBufferForSyncAPIInSeconds,
             contentType: "application/json",
             additionalHeaders: [
                 "Prefer": "wait=\(secondsToWait)",
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -108,18 +108,18 @@ open class ReplicateDirectService: ReplicateService, DirectService {
             input: input,
             version: modelVersion
         )
-        var request = try AIProxyURLRequest.createDirect(
+        let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.replicate.com",
             path: "/v1/predictions",
             body: requestBody.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait + kTimeoutBufferForSyncAPIInSeconds,
             contentType: "application/json",
             additionalHeaders: [
                 "Prefer": "wait=\(secondsToWait)",
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -156,6 +156,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
             path: "/v1/models/\(modelOwner)/\(modelName)/predictions",
             body: requestBody.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -197,6 +198,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
             path: "/v1/predictions",
             body: requestBody.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -228,6 +230,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
             path: url.path,
             body: nil,
             verb: .get,
+            secondsToWait: 60,
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
@@ -286,6 +289,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
             path: "/v1/models",
             body: requestBody.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -322,6 +326,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
             path: "/v1/models/\(modelOwner)/\(modelName)/versions/\(versionID)/trainings",
             body: body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -350,6 +355,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
             path: url.path,
             body: nil,
             verb: .get,
+            secondsToWait: 60,
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
@@ -383,6 +389,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
             path: "/v1/files",
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"

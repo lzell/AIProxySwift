@@ -17,6 +17,7 @@ struct AIProxyURLRequest {
         proxyPath: String,
         body: Data?,
         verb: AIProxyHTTPVerb,
+        secondsToWait: UInt,
         contentType: String? = nil,
         additionalHeaders: [String: String] = [:]
     ) async throws -> URLRequest {
@@ -77,6 +78,7 @@ struct AIProxyURLRequest {
             request.addValue(value, forHTTPHeaderField: headerField)
         }
 
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return request
     }
 
@@ -87,6 +89,7 @@ struct AIProxyURLRequest {
         path: String,
         body: Data?,
         verb: AIProxyHTTPVerb,
+        secondsToWait: UInt,
         contentType: String? = nil,
         additionalHeaders: [String: String] = [:]
     ) throws -> URLRequest {
@@ -121,6 +124,7 @@ struct AIProxyURLRequest {
             request.addValue(value, forHTTPHeaderField: headerField)
         }
 
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return request
     }
 

@@ -43,6 +43,7 @@ open class PerplexityProxiedService: PerplexityService, ProxiedService {
             proxyPath: "/chat/completions",
             body:  try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -68,6 +69,7 @@ open class PerplexityProxiedService: PerplexityService, ProxiedService {
             proxyPath: "/chat/completions",
             body:  try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeStreamingChunks(request)

@@ -37,6 +37,7 @@ open class ElevenLabsDirectService: ElevenLabsService, DirectService {
             path: "/v1/text-to-speech/\(voiceID)",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "xi-api-key": self.unprotectedAPIKey
@@ -70,6 +71,7 @@ open class ElevenLabsDirectService: ElevenLabsService, DirectService {
             path: "/v1/speech-to-speech/\(voiceID)",
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)",
             additionalHeaders: [
                 "xi-api-key": self.unprotectedAPIKey
@@ -99,6 +101,7 @@ open class ElevenLabsDirectService: ElevenLabsService, DirectService {
             path: "/v1/speech-to-text",
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)",
             additionalHeaders: [
                 "xi-api-key": self.unprotectedAPIKey

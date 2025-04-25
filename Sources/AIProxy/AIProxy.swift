@@ -8,7 +8,7 @@ import UIKit
 public struct AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.95.0"
+    public static let sdkVersion = "0.96.1"
 
     /// Configures the AIProxy SDK. Call this during app launch by adding an `init` to your SwiftUI MyApp.swift file, e.g.
     ///
@@ -170,6 +170,7 @@ public struct AIProxy {
             proxyPath: proxyPath,
             body: body,
             verb: verb,
+            secondsToWait: 60,
             additionalHeaders: headers
         )
     }

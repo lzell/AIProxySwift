@@ -19,7 +19,7 @@ public protocol OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/chat/object
     func chatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> OpenAIChatCompletionResponseBody
     
     /// Initiates a streaming chat completion request to /v1/chat/completions.
@@ -32,7 +32,7 @@ public protocol OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
     func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk>
     
     /// Initiates a create image request to /v1/images/generations
@@ -45,7 +45,7 @@ public protocol OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/images/object
     func createImageRequest(
         body: OpenAICreateImageRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> OpenAICreateImageResponseBody
 
     /// Initiates a create image edit request to `v1/images/edits`
@@ -58,7 +58,7 @@ public protocol OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/images/object
     func createImageEditRequest(
         body: OpenAICreateImageEditRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> OpenAICreateImageResponseBody
 
     /// Initiates a create transcription request to v1/audio/transcriptions

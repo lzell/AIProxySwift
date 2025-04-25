@@ -6,7 +6,7 @@
 
 import Foundation
 
-private let kTimeoutBufferForSyncAPIInSeconds: TimeInterval = 5
+private let kTimeoutBufferForSyncAPIInSeconds: UInt = 5
 
 open class ReplicateProxiedService: ReplicateService, ProxiedService {
     private let partialKey: String
@@ -59,17 +59,17 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
     )  async throws -> ReplicatePrediction<Output> {
         let secondsToWait = self.safeSecondsToWait(secondsToWait, warn: true)
         let requestBody = ReplicatePredictionRequestBody(input: input)
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/v1/models/\(modelOwner)/\(modelName)/predictions",
             body: requestBody.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait + kTimeoutBufferForSyncAPIInSeconds,
             contentType: "application/json",
             additionalHeaders: ["Prefer": "wait=\(min(secondsToWait, 60))"]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -109,17 +109,17 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
             input: input,
             version: modelVersion
         )
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/v1/predictions",
             body: requestBody.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait + kTimeoutBufferForSyncAPIInSeconds,
             contentType: "application/json",
             additionalHeaders: ["Prefer": "wait=\(secondsToWait)"]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -158,6 +158,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
             proxyPath: "/v1/models/\(modelOwner)/\(modelName)/predictions",
             body: requestBody.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -198,6 +199,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
             proxyPath: "/v1/predictions",
             body: requestBody.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -226,7 +228,8 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
             clientID: self.clientID,
             proxyPath: url.path,
             body: nil,
-            verb: .get
+            verb: .get,
+            secondsToWait: 60
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }
@@ -284,6 +287,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
             proxyPath: "/v1/models",
             body: requestBody.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
@@ -323,6 +327,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
             proxyPath: "/v1/models/\(modelOwner)/\(modelName)/versions/\(versionID)/trainings",
             body: body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
@@ -352,7 +357,8 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
             clientID: self.clientID,
             proxyPath: url.path,
             body: nil,
-            verb: .get
+            verb: .get,
+            secondsToWait: 60
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }
@@ -385,6 +391,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
             proxyPath: "/v1/files",
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)"
         )
         return try await self.makeRequestAndDeserializeResponse(request)

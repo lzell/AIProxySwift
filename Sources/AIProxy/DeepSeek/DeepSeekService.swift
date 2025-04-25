@@ -19,7 +19,7 @@ public protocol DeepSeekService {
     ///            https://api-docs.deepseek.com/api/create-chat-completion#responses
     func chatCompletionRequest(
         body: DeepSeekChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> DeepSeekChatCompletionResponseBody
 
     /// Initiates a streaming chat completion request to /chat/completions.
@@ -32,7 +32,7 @@ public protocol DeepSeekService {
     ///           https://api-docs.deepseek.com/api/create-chat-completion#responses
     func streamingChatCompletionRequest(
         body: DeepSeekChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk>
 }
 

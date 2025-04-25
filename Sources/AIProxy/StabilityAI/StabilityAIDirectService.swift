@@ -60,6 +60,7 @@ open class StabilityAIDirectService: StabilityAIService, DirectService {
             path: path,
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)",
             additionalHeaders: [
                 "Accept": "image/*",

@@ -35,6 +35,7 @@ open class FalDirectService: FalService, DirectService {
             path: model,
             body: input.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Key \(self.unprotectedAPIKey)"
@@ -68,6 +69,7 @@ open class FalDirectService: FalService, DirectService {
             path: url.path,
             body: nil,
             verb: .get,
+            secondsToWait: 60,
             additionalHeaders: [
                 "Authorization": "Key \(self.unprotectedAPIKey)"
             ]
@@ -98,6 +100,7 @@ open class FalDirectService: FalService, DirectService {
             path: "/storage/upload/initiate",
             body: initiateUpload.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Key \(self.unprotectedAPIKey)"

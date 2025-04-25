@@ -33,19 +33,19 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
     public func generateContentRequest(
         body: GeminiGenerateContentRequestBody,
         model: String,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> GeminiGenerateContentResponseBody {
         let proxyPath = "/v1beta/models/\(model):generateContent"
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: proxyPath,
             body:  body.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json"
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -62,6 +62,7 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
             proxyPath: proxyPath,
             body:  body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -97,6 +98,7 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
             proxyPath: "/upload/v1beta/files",
             body: body.serialize(withBoundary: boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/related; boundary=\(boundary)",
             additionalHeaders: ["X-Goog-Upload-Protocol": "multipart"]
         )
@@ -127,7 +129,8 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
             clientID: self.clientID,
             proxyPath: fileURL.path,
             body: nil,
-            verb: .delete
+            verb: .delete,
+            secondsToWait: 60
         )
         let (_, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
             self.urlSession,
@@ -148,7 +151,8 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
             clientID: self.clientID,
             proxyPath: fileURL.path,
             body: nil,
-            verb: .get
+            verb: .get,
+            secondsToWait: 60
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
             AIProxyUtils.proxiedURLSession(),

@@ -47,6 +47,7 @@ open class EachAIProxiedService: EachAIService, ProxiedService {
             proxyPath: "/api/v1/\(workflowID)/trigger",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -65,7 +66,8 @@ open class EachAIProxiedService: EachAIService, ProxiedService {
             clientID: self.clientID,
             proxyPath: "/api/v1/\(workflowID)/executions/\(triggerID)",
             body: nil,
-            verb: .get
+            verb: .get,
+            secondsToWait: 60
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }

@@ -39,6 +39,7 @@ open class TogetherAIProxiedService: TogetherAIService, ProxiedService {
             proxyPath: "/v1/chat/completions",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -62,6 +63,7 @@ open class TogetherAIProxiedService: TogetherAIService, ProxiedService {
             proxyPath: "/v1/chat/completions",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeStreamingChunks(request)

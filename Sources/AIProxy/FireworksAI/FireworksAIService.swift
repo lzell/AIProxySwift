@@ -20,7 +20,7 @@ public protocol FireworksAIService {
     ///            https://api-docs.deepseek.com/api/create-chat-completion#responses
     func deepSeekR1Request(
         body: DeepSeekChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> DeepSeekChatCompletionResponseBody
 
     /// Initiates a streaming chat completion request to DeepSeek R1 at api.fireworks.ai/inference/v1/chat/completions
@@ -34,6 +34,6 @@ public protocol FireworksAIService {
     ///           https://api-docs.deepseek.com/api/create-chat-completion#responses
     func streamingDeepSeekR1Request(
         body: DeepSeekChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk>
 }
