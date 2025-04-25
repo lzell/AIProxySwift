@@ -38,6 +38,7 @@ open class GroqDirectService: GroqService, DirectService {
             path: "/openai/v1/chat/completions",
             body:  try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -63,6 +64,7 @@ open class GroqDirectService: GroqService, DirectService {
             path: "/openai/v1/chat/completions",
             body:  try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -87,6 +89,7 @@ open class GroqDirectService: GroqService, DirectService {
             path: "/openai/v1/audio/transcriptions",
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"

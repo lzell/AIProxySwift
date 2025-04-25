@@ -36,6 +36,7 @@ open class DeepLProxiedService: DeepLService, ProxiedService {
             proxyPath: "/v2/translate",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)

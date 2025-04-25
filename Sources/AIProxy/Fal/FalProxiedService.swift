@@ -41,6 +41,7 @@ open class FalProxiedService: FalService, ProxiedService {
             proxyPath: model,
             body: input.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -71,7 +72,8 @@ open class FalProxiedService: FalService, ProxiedService {
             clientID: self.clientID,
             proxyPath: url.path,
             body: nil,
-            verb: .get
+            verb: .get,
+            secondsToWait: 60
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
             self.urlSession,
@@ -101,6 +103,7 @@ open class FalProxiedService: FalService, ProxiedService {
             proxyPath: "/storage/upload/initiate",
             body: initiateUpload.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
 

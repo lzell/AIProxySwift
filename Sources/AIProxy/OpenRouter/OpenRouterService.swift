@@ -20,7 +20,7 @@ public protocol OpenRouterService {
     ///            https://openrouter.ai/docs/responses
     func chatCompletionRequest(
         body: OpenRouterChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> OpenRouterChatCompletionResponseBody
 
     /// Initiates a streaming chat completion request to /api/v1/chat/completions.
@@ -34,7 +34,7 @@ public protocol OpenRouterService {
     ///            https://openrouter.ai/docs/responses
     func streamingChatCompletionRequest(
         body: OpenRouterChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenRouterChatCompletionChunk>
 }
 

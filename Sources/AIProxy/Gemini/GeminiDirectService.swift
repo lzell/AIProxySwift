@@ -31,20 +31,20 @@ open class GeminiDirectService: GeminiService, DirectService {
     public func generateContentRequest(
         body: GeminiGenerateContentRequestBody,
         model: String,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> GeminiGenerateContentResponseBody {
         let proxyPath = "/v1beta/models/\(model):generateContent"
-        var request = try AIProxyURLRequest.createDirect(
+        let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://generativelanguage.googleapis.com",
             path: proxyPath,
             body:  body.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json",
             additionalHeaders: [
                 "X-Goog-Api-Key": self.unprotectedAPIKey
             ]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -59,6 +59,7 @@ open class GeminiDirectService: GeminiService, DirectService {
             path: proxyPath,
             body:  body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "X-Goog-Api-Key": self.unprotectedAPIKey
@@ -95,6 +96,7 @@ open class GeminiDirectService: GeminiService, DirectService {
             path: "/upload/v1beta/files",
             body: body.serialize(withBoundary: boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/related; boundary=\(boundary)",
             additionalHeaders: [
                 "X-Goog-Upload-Protocol": "multipart",
@@ -124,6 +126,7 @@ open class GeminiDirectService: GeminiService, DirectService {
             path: fileURL.path,
             body: nil,
             verb: .delete,
+            secondsToWait: 60,
             additionalHeaders: [
                 "X-Goog-Api-Key": self.unprotectedAPIKey
             ]
@@ -147,6 +150,7 @@ open class GeminiDirectService: GeminiService, DirectService {
             path: fileURL.path,
             body: nil,
             verb: .get,
+            secondsToWait: 60,
             additionalHeaders: [
                 "X-Goog-Api-Key": self.unprotectedAPIKey
             ]

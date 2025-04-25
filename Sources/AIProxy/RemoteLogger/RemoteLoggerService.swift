@@ -41,6 +41,7 @@ open class RemoteLoggerService: ProxiedService {
                 errorMessage: errorMessage
             ).serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         ) {
             _ = try? await BackgroundNetworker.makeRequestAndWaitForData(

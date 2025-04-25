@@ -19,7 +19,7 @@ public protocol BraveService {
     ///            BraveWebSearchResponseBody to understand how to get the information you want out of it.
     func webSearchRequest(
         query: String,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> BraveWebSearchResponseBody
 }
 

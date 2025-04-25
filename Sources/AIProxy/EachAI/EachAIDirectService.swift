@@ -39,6 +39,7 @@ open class EachAIDirectService: EachAIService, DirectService {
             path: "/api/v1/\(workflowID)/trigger",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "X-API-Key": self.unprotectedAPIKey
@@ -59,6 +60,7 @@ open class EachAIDirectService: EachAIService, DirectService {
             path: "/api/v1/\(workflowID)/executions/\(triggerID)",
             body: nil,
             verb: .get,
+            secondsToWait: 60,
             additionalHeaders: [
                 "X-API-Key": self.unprotectedAPIKey
             ]

@@ -29,22 +29,22 @@ open class OpenRouterDirectService: OpenRouterService, DirectService {
     ///            https://openrouter.ai/docs/responses
     public func chatCompletionRequest(
         body: OpenRouterChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> OpenRouterChatCompletionResponseBody {
         var body = body
         body.stream = false
         body.streamOptions = nil
-        var request = try AIProxyURLRequest.createDirect(
+        let request = try AIProxyURLRequest.createDirect(
             baseURL: self.baseURL,
             path: "/api/v1/chat/completions",
             body: body.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -59,22 +59,22 @@ open class OpenRouterDirectService: OpenRouterService, DirectService {
     ///            https://openrouter.ai/docs/responses
     public func streamingChatCompletionRequest(
         body: OpenRouterChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenRouterChatCompletionChunk> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
-        var request = try AIProxyURLRequest.createDirect(
+        let request = try AIProxyURLRequest.createDirect(
             baseURL: self.baseURL,
             path: "/api/v1/chat/completions",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 }

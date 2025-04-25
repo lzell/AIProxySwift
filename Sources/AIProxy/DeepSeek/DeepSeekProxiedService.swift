@@ -34,24 +34,24 @@ open class DeepSeekProxiedService: DeepSeekService, ProxiedService {
     ///            https://api-docs.deepseek.com/api/create-chat-completion#responses
     public func chatCompletionRequest(
         body: DeepSeekChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> DeepSeekChatCompletionResponseBody {
         var body = body
         body.stream = false
         body.streamOptions = nil
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/chat/completions",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json",
             additionalHeaders: [
                 "Accept": "application/json"
             ]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -65,24 +65,24 @@ open class DeepSeekProxiedService: DeepSeekService, ProxiedService {
     ///           https://api-docs.deepseek.com/api/create-chat-completion#responses
     public func streamingChatCompletionRequest(
         body: DeepSeekChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/chat/completions",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json",
             additionalHeaders: [
                 "Accept": "application/json"
             ]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 }

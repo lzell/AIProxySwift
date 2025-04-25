@@ -34,22 +34,22 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func chatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> OpenAIChatCompletionResponseBody {
         var body = body
         body.stream = false
         body.streamOptions = nil
-        var request = try AIProxyURLRequest.createDirect(
+        let request = try AIProxyURLRequest.createDirect(
             baseURL: self.baseURL,
             path: self.resolvedPath("chat/completions"),
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -63,22 +63,22 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
     public func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
-        var request = try AIProxyURLRequest.createDirect(
+        let request = try AIProxyURLRequest.createDirect(
             baseURL: self.baseURL,
             path: self.resolvedPath("chat/completions"),
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 
@@ -92,19 +92,19 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     ///            https://platform.openai.com/docs/api-reference/images/object
     public func createImageRequest(
         body: OpenAICreateImageRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> OpenAICreateImageResponseBody {
-        var request = try AIProxyURLRequest.createDirect(
+        let request = try AIProxyURLRequest.createDirect(
             baseURL: self.baseURL,
             path: self.resolvedPath("images/generations"),
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
             ]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -118,7 +118,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     ///            https://platform.openai.com/docs/api-reference/images/object
     public func createImageEditRequest(
         body: OpenAICreateImageEditRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> OpenAICreateImageResponseBody {
         let boundary = UUID().uuidString
         let request = try AIProxyURLRequest.createDirect(
@@ -126,6 +126,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
             path: self.resolvedPath("images/edits"),
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "multipart/form-data; boundary=\(boundary)",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -151,6 +152,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
             path: self.resolvedPath("audio/transcriptions"),
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -185,6 +187,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
             path: self.resolvedPath("audio/speech"),
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -212,6 +215,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
             path: self.resolvedPath("moderations"),
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -235,6 +239,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
             path: self.resolvedPath("embeddings"),
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -265,6 +270,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
             path: "/v1/realtime?model=\(model)",
             body: nil,
             verb: .get,
+            secondsToWait: 60,
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)",
                 "OpenAI-Beta": "realtime=v1",
@@ -306,6 +312,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
             path: "/v1/files",
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -324,6 +331,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
             path: self.resolvedPath("responses"),
             body: try requestBody.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"

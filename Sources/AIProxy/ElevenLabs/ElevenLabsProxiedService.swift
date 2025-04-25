@@ -42,6 +42,7 @@ open class ElevenLabsProxiedService: ElevenLabsService, ProxiedService {
             proxyPath: "/v1/text-to-speech/\(voiceID)",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
@@ -74,6 +75,7 @@ open class ElevenLabsProxiedService: ElevenLabsService, ProxiedService {
             proxyPath: "/v1/speech-to-speech/\(voiceID)",
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)"
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
@@ -102,6 +104,7 @@ open class ElevenLabsProxiedService: ElevenLabsService, ProxiedService {
             proxyPath: "/v1/speech-to-text",
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)"
         )
         return try await self.makeRequestAndDeserializeResponse(request)

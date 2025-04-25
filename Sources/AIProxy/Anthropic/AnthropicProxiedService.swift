@@ -45,6 +45,7 @@ open class AnthropicProxiedService: AnthropicService, ProxiedService {
             proxyPath: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: additionalHeaders
         )
@@ -76,6 +77,7 @@ open class AnthropicProxiedService: AnthropicService, ProxiedService {
             proxyPath: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: additionalHeaders
         )

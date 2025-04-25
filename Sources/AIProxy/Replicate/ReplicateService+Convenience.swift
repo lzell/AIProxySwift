@@ -311,7 +311,7 @@ extension ReplicateService {
     public func createSDXLFreshInkImageURLs(
         input: ReplicateSDXLFreshInkInputSchema,
         version: String = "8515c238222fa529763ec99b4ba1fa9d32ab5d6ebc82b4281de99e4dbdcec943",
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> [URL] {
         return try await self.createSDXLFreshInkImages(input: input, version: version, secondsToWait: UInt(secondsToWait))
     }

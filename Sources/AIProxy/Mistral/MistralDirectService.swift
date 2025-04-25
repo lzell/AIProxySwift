@@ -34,6 +34,7 @@ open class MistralDirectService: MistralService, DirectService {
             path: "/v1/chat/completions",
             body:  try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -59,6 +60,7 @@ open class MistralDirectService: MistralService, DirectService {
             path: "/v1/chat/completions",
             body:  try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
