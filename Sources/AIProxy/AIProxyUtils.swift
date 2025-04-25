@@ -14,7 +14,7 @@ import UIKit
 
 import Network
 
-struct AIProxyUtils {
+enum AIProxyUtils {
 
     static func directURLSession() -> URLSession {
         return URLSession(configuration: .ephemeral)
@@ -73,9 +73,6 @@ struct AIProxyUtils {
         return URL(string: "data:image/jpeg;base64,\(jpegData.base64EncodedString())")
     }
 #endif
-    private init() {
-        fatalError("This type is not designed to be instantiated")
-    }
 }
 
 

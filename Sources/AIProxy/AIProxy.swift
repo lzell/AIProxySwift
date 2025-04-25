@@ -5,7 +5,7 @@ import AppKit
 import UIKit
 #endif
 
-public struct AIProxy {
+public enum AIProxy {
 
     /// The current sdk version
     public static let sdkVersion = "0.96.1"
@@ -1029,7 +1029,4 @@ public struct AIProxy {
         return data
     }
 
-    private init() {
-        fatalError("This type is not designed to be instantiated")
-    }
 }
