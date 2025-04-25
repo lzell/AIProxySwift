@@ -79,7 +79,7 @@ public struct AIProxy {
         printRequestBodies: Bool,
         printResponseBodies: Bool,
         resolveDNSOverTLS: Bool,
-        useStableID: Bool,
+        useStableID: Bool
     ) {
         aiproxyCallerDesiredLogLevel = logLevel
         self.printRequestBodies = printRequestBodies
