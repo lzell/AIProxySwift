@@ -9,6 +9,54 @@
 /// https://platform.openai.com/docs/api-reference/realtime-client-events/session/update#realtime-client-events/session/update-session
 public struct OpenAIRealtimeSessionConfiguration: Encodable {
 
+    public enum ToolChoice: Encodable {
+
+        /// The model will not call any tool and instead generates a message.
+        /// This is the default when no tools are present in the request body
+        case none
+
+        /// The model can pick between generating a message or calling one or more tools.
+        /// This is the default when tools are present in the request body
+        case auto
+
+        /// The model must call one or more tools
+        case required
+
+        /// Forces the model to call a specific tool
+        case specific(functionName: String)
+
+        private enum RootKey: CodingKey {
+            case type
+            case function
+        }
+
+        private enum FunctionKey: CodingKey {
+            case name
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            switch self {
+            case .none:
+                var container = encoder.singleValueContainer()
+                try container.encode("none")
+            case .auto:
+                var container = encoder.singleValueContainer()
+                try container.encode("auto")
+            case .required:
+                var container = encoder.singleValueContainer()
+                try container.encode("required")
+            case .specific(let functionName):
+                var container = encoder.container(keyedBy: RootKey.self)
+                try container.encode("function", forKey: .type)
+                var functionContainer = container.nestedContainer(
+                    keyedBy: FunctionKey.self,
+                    forKey: .function
+                )
+                try functionContainer.encode(functionName, forKey: .name)
+            }
+        }
+    }
+    
     /// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
     public let inputAudioFormat: AudioFormat?
 
@@ -44,13 +92,11 @@ public struct OpenAIRealtimeSessionConfiguration: Encodable {
     /// Sampling temperature for the model.
     public let temperature: Double?
 
-    /// Tools are not yet implemented.
     /// Tools (functions) available to the model.
-    /// public let tools: [Tool]?
+    public let tools: [Tool]?
 
-    /// Tools are not yet implemented.
     /// How the model chooses tools. Options are "auto", "none", "required", or specify a function.
-    /// public let toolChoice: ToolChoice?
+    public let toolChoice: ToolChoice?
 
     /// Configuration for turn detection. Set to nil to turn off.
     public let turnDetection: TurnDetection?
@@ -67,8 +113,8 @@ public struct OpenAIRealtimeSessionConfiguration: Encodable {
         case modalities
         case outputAudioFormat = "output_audio_format"
         case temperature
-        // case tools
-        // case toolChoice = "tool_choice"
+        case tools
+        case toolChoice = "tool_choice"
         case turnDetection = "turn_detection"
         case voice
     }
@@ -81,6 +127,8 @@ public struct OpenAIRealtimeSessionConfiguration: Encodable {
         modalities: [OpenAIRealtimeSessionConfiguration.Modality]? = nil,
         outputAudioFormat: OpenAIRealtimeSessionConfiguration.AudioFormat? = nil,
         temperature: Double? = nil,
+        tools: [OpenAIRealtimeSessionConfiguration.Tool]? = nil,
+        toolChoice: OpenAIRealtimeSessionConfiguration.ToolChoice? = nil,
         turnDetection: OpenAIRealtimeSessionConfiguration.TurnDetection? = nil,
         voice: String? = nil
     ) {
@@ -91,6 +139,8 @@ public struct OpenAIRealtimeSessionConfiguration: Encodable {
         self.modalities = modalities
         self.outputAudioFormat = outputAudioFormat
         self.temperature = temperature
+        self.tools = tools
+        self.toolChoice = toolChoice
         self.turnDetection = turnDetection
         self.voice = voice
     }
@@ -129,15 +179,22 @@ extension OpenAIRealtimeSessionConfiguration {
 extension OpenAIRealtimeSessionConfiguration {
     public struct Tool: Encodable {
         /// The description of the function
-        let description: String
+        public let description: String
 
         /// The name of the function
-        let name: String
+        public let name: String
 
-        let parameters: [String: AIProxyJSONValue]
+        /// The function parameters
+        public let parameters: [String: AIProxyJSONValue]
 
         /// The type of the tool, e.g., "function".
-        let type: String
+        public let type = "function"
+        
+        public init(name: String, description: String, parameters: [String: AIProxyJSONValue]) {
+            self.name = name
+            self.description = description
+            self.parameters = parameters
+        }
     }
 }
 

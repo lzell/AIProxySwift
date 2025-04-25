@@ -141,6 +141,11 @@ open class OpenAIRealtimeSession {
             self.continuation?.yield(.responseCreated)
         case "input_audio_buffer.speech_started":
             self.continuation?.yield(.inputAudioBufferSpeechStarted)
+        case "response.function_call_arguments.done":
+            if let name = json["name"] as? String,
+               let arguments = json["arguments"] as? String {
+                self.continuation?.yield(.responseFunctionCallArgumentsDone(name, arguments))
+            }
         default:
             break
         }
