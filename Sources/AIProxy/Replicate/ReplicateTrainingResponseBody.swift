@@ -95,5 +95,9 @@ extension ReplicateTrainingResponseBody {
         case succeeded
         case failed
         case canceled
+
+        var isTerminal: Bool {
+            return [.succeeded, .failed, .canceled].contains(self)
+        }
     }
 }

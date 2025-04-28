@@ -41,7 +41,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
     }
 
     func testTextChatContentPartIsEncodable() throws {
-        let chatContentPart: OpenAIChatCompletionRequestBody.Message.UserContent.Part = .text("abc")
+        let chatContentPart: OpenAIChatCompletionRequestBody.Message.ContentPart = .text("abc")
         XCTAssertEqual(
             """
             {
@@ -55,8 +55,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testImageChatContentPartIsEncodable() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.encodeImageAsURL(image: image)!
-        let chatContentPart: OpenAIChatCompletionRequestBody.Message.UserContent.Part = .imageURL(localURL)
+        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 1.0)!
+        let chatContentPart: OpenAIChatCompletionRequestBody.Message.ContentPart = .imageURL(localURL)
         XCTAssertEqual(
             #"""
             {
@@ -71,7 +71,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
     }
 
     func testChatContentOfMultipleTextIsEncodable() throws {
-        let chatContent: [OpenAIChatCompletionRequestBody.Message.UserContent.Part] = [
+        let chatContent: [OpenAIChatCompletionRequestBody.Message.ContentPart] = [
             .text("a"),
             .text("b")
         ]
@@ -94,8 +94,8 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testChatContentContainingImageIsEncodable() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.encodeImageAsURL(image: image)!
-        let chatContent: [OpenAIChatCompletionRequestBody.Message.UserContent.Part] = [
+        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 1.0)!
+        let chatContent: [OpenAIChatCompletionRequestBody.Message.ContentPart] = [
             .text("hello"),
             .imageURL(localURL)
         ]
@@ -160,7 +160,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testUserMessageWithImageURLIsEncodable() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.encodeImageAsURL(image: image)!
+        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 1.0)!
         let userMessage: OpenAIChatCompletionRequestBody.Message = .user(
             content: .parts(
                 [
@@ -188,6 +188,119 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
             }
             """#,
             try userMessage.serialize(pretty: true)
+        )
+    }
+
+    func testAssistantMessageWithTextContentIsEncodable() throws {
+        let assistantMessage: OpenAIChatCompletionRequestBody.Message = .assistant(content: .text("hello"))
+        XCTAssertEqual(
+            """
+            {
+              "content" : "hello",
+              "role" : "assistant"
+            }
+            """,
+            try assistantMessage.serialize(pretty: true)
+        )
+    }
+
+    func testAssistantMessageWithMultiplePartsIsEncodable() throws {
+        let assistantMessage: OpenAIChatCompletionRequestBody.Message = .assistant(content: .parts(["hello", "world"]))
+        XCTAssertEqual(
+            """
+            {
+              "content" : [
+                "hello",
+                "world"
+              ],
+              "role" : "assistant"
+            }
+            """,
+            try assistantMessage.serialize(pretty: true)
+        )
+    }
+
+    func testAssistantMessageWithToolCallIsEncodable() throws {
+        let assistantMessage: OpenAIChatCompletionRequestBody.Message = .assistant(
+            toolCalls: [
+                .init(
+                    id: "abc",
+                    function: .init(name: "get_weather", arguments: #"args"#)
+                )
+            ]
+        )
+
+        XCTAssertEqual(
+            """
+            {
+              "role" : "assistant",
+              "tool_calls" : [
+                {
+                  "function" : {
+                    "arguments" : "args",
+                    "name" : "get_weather"
+                  },
+                  "id" : "abc",
+                  "type" : "function"
+                }
+              ]
+            }
+            """,
+            try assistantMessage.serialize(pretty: true)
+        )
+    }
+
+    func testToolMessageIsEncodable() throws {
+        let toolMessage: OpenAIChatCompletionRequestBody.Message = .tool(
+            content: .text("Hello world"),
+            toolCallID: "abc"
+        )
+        XCTAssertEqual(
+            """
+            {
+              "content" : "Hello world",
+              "role" : "tool",
+              "tool_call_id" : "abc"
+            }
+            """,
+            try toolMessage.serialize(pretty: true)
+        )
+    }
+
+    func testDeveloperMessageWithTextContentIsEncodable() throws {
+        let developerMessage: OpenAIChatCompletionRequestBody.Message = .developer(
+            content: .text("hello"),
+            name: "alice"
+        )
+        XCTAssertEqual(
+            """
+            {
+              "content" : "hello",
+              "name" : "alice",
+              "role" : "developer"
+            }
+            """,
+            try developerMessage.serialize(pretty: true)
+        )
+    }
+
+    func testDeveloperMessageWithMultiplePartsIsEncodable() throws {
+        let developerMessage: OpenAIChatCompletionRequestBody.Message = .developer(
+            content: .parts(["hello", "world"]),
+            name: "alice"
+        )
+        XCTAssertEqual(
+            """
+            {
+              "content" : [
+                "hello",
+                "world"
+              ],
+              "name" : "alice",
+              "role" : "developer"
+            }
+            """,
+            try developerMessage.serialize(pretty: true)
         )
     }
 
@@ -433,7 +546,7 @@ final class OpenAIChatCompletionRequestTests: XCTestCase {
 
     func testChatCompletionRequestBodyWithImageIsEncodableToJson() throws {
         let image = createImage(width: 1, height: 1)
-        let localURL = AIProxy.encodeImageAsURL(image: image)!
+        let localURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 1.0)!
         let requestBody = OpenAIChatCompletionRequestBody(
             model: "gpt-4o",
             messages: [

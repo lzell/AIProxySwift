@@ -192,6 +192,18 @@ public struct AnthropicMessageRequestBody: Encodable {
     /// Recommended for advanced use cases only. You usually only need to use `temperature`.
     public let topP: Double?
 
+    /// Returns true if this message request requires the pdf beta header to be applied
+    public var needsPDFBeta: Bool {
+        for msg in self.messages {
+            for content in msg.content {
+                if case .pdf(_) = content {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
     private enum CodingKeys: String, CodingKey {
         // Required
         case maxTokens = "max_tokens"
@@ -253,13 +265,21 @@ public enum AnthropicImageMediaType: String {
 
 public enum AnthropicInputContent: Encodable {
     case image(mediaType: AnthropicImageMediaType, data: String)
+    case pdf(data: String)
     case text(String)
+    case toolUse(id: String, name: String, input: [String: AIProxyJSONValue])
+    case toolResult(toolUseId: String, content: String)
 
     private enum CodingKeys: String, CodingKey {
         case image
         case source
         case text
         case type
+        case id
+        case name
+        case input
+        case toolUseId = "tool_use_id"
+        case content
     }
 
     private enum SourceCodingKeys: String, CodingKey {
@@ -277,9 +297,24 @@ public enum AnthropicInputContent: Encodable {
             try nested.encode("base64", forKey: .type)
             try nested.encode(mediaType.rawValue, forKey: .mediaType)
             try nested.encode(data, forKey: .data)
+        case .pdf(data: let data):
+            try container.encode("document", forKey: .type)
+            var nested = container.nestedContainer(keyedBy: SourceCodingKeys.self, forKey: .source)
+            try nested.encode("base64", forKey: .type)
+            try nested.encode("application/pdf", forKey: .mediaType)
+            try nested.encode(data, forKey: .data)
         case .text(let txt):
             try container.encode("text", forKey: .type)
             try container.encode(txt, forKey: .text)
+        case .toolUse(id: let id, name: let name, input: let input):
+            try container.encode("tool_use", forKey: .type)
+            try container.encode(id, forKey: .id)
+            try container.encode(name, forKey: .name)
+            try container.encode(input, forKey: .input)
+        case .toolResult(toolUseId: let toolUseId, content: let content):
+            try container.encode("tool_result", forKey: .type)
+            try container.encode(toolUseId, forKey: .toolUseId)
+            try container.encode(content, forKey: .content)
         }
     }
 }
@@ -325,6 +360,25 @@ public enum AnthropicToolChoice: Encodable {
     case any
     case auto
     case tool(name: String)
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        switch self {
+        case .auto:
+            try container.encode("auto", forKey: .type)
+        case .any:
+            try container.encode("any", forKey: .type)
+        case .tool(let name):
+            try container.encode("tool", forKey: .type)
+            try container.encode(name, forKey: .name)
+        }
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case name
+    }
 }
 
 

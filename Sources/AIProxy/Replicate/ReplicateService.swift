@@ -1,45 +1,104 @@
 //
 //  ReplicateService.swift
 //
-//  Created by Lou Zell on 8/23/24.
+//
+//  Created by Lou Zell on 12/16/24.
 //
 
 import Foundation
 
-private let kTimeoutBufferForSyncAPIInSeconds: TimeInterval = 5
+// ---------------------------------------------------------------------------------
+//                                 Attention!
+//
+//                  Please start in ReplicateService+Convenience.swift
+//
+//  If your use-case is not satisfied there, use the implementations in that file as
+//  inspiration to write your own implementation using the generic methods below
+// ---------------------------------------------------------------------------------
 
+public protocol ReplicateService {
 
-open class ReplicateService {
-    private let partialKey: String
-    private let serviceURL: String
-    private let clientID: String?
-
-    /// Creates an instance of ReplicateService. Note that the initializer is not public.
-    /// Customers are expected to use the factory `AIProxy.replicateService` defined in AIProxy.swift
-    internal init(partialKey: String, serviceURL: String, clientID: String?) {
-        self.partialKey = partialKey
-        self.serviceURL = serviceURL
-        self.clientID = clientID
-    }
-
+    /// You likely do not want to start with this method unless you have specific reasons for doing so.
+    /// Please see `runOfficialModel`, which automatically handles waiting for the prediction to complete.
+    ///
+    /// This method will only succeed if the prediction completes within 60 seconds. By contrast, `runOfficialModel`
+    /// can wait longer, automatically switching from the sync API to the polling API if necessary.
+    ///
+    /// # Usage
+    ///
     /// This is the general purpose method for running official replicate models.
-    /// It is generic in the input and output, so it's up to you to pass appropriate types.
+    /// It is generic in the input and output, so it's up to you to pass the appropriate types.
+    ///
     /// To craft the appropriate types, look at the model's schema on replicate.
     /// You can find the schema by browsing to the model and tapping on `API` in the top nav and then `Schema` in the side nav.
-    /// If the output schema is a `URI`, for example, you can call this with:
+    /// If the output schema is a `URL`, for example, you can call this with (note the specialization of `<URL>` in the type annotation):
     ///
-    ///     let myPredictionResult: ReplicateSynchronousAPIOutput<URL> = replicateService.createSynchronousPredictionUsingOfficialModel(...)
-    ///     let myURL = myPredictionResult.output
+    ///     let predictionResponseBody: ReplicatePrediction<URL> = replicateService.createSynchronousPredictionUsingOfficialModel(...)
     ///
-    /// note the specialization of `<URL>` in the type annotation.
+    /// # References:
+    ///   - https://replicate.com/docs/reference/http#models.predictions.create
     ///
-    /// There are convenience methods for running specific replicate models lower in this file, which are easier to call and
-    /// not generic. You can use those for guidance on how to call this general purpose method with your own model.
+    /// - Parameters:
     ///
-    /// Makes a POST request to the 'create a prediction using an official model' endpoint described here:
-    /// https://replicate.com/docs/reference/http#create-a-prediction-using-an-official-model
+    ///   - modelOwner: The model owner. This is not your account name.
+    ///               The owner is displayed in the URL of the model you are trying to call
     ///
-    /// Uses the synchronous API announced here: https://replicate.com/changelog/2024-10-09-synchronous-api
+    ///   - modelName: The name of the model
+    ///
+    ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
+    ///
+    /// - Returns: The prediction response body
+    func createSynchronousPredictionUsingOfficialModel<Input: Encodable, Output: Decodable>(
+        modelOwner: String,
+        modelName: String,
+        input: Input,
+        secondsToWait: UInt
+    )  async throws -> ReplicatePrediction<Output>
+
+    /// You likely do not want to start with this method unless you have specific reasons for doing so.
+    /// Please see `runCommunityModel`, which automatically handles waiting for the prediction to complete.
+    ///
+    /// This method will only succeed if the prediction completes within 60 seconds. By contrast, `runCommunityModel`
+    /// can wait longer, automatically switching from the sync API to the polling API if necessary.
+    ///
+    /// # Usage
+    /// This is the general purpose method for running official replicate models.
+    /// It is generic in the input and output, so it's up to you to pass the appropriate types.
+    ///
+    /// To craft the appropriate types, look at the model's schema on replicate.
+    /// You can find the schema by browsing to the model and tapping on `API` in the top nav and then `Schema` in the side nav.
+    /// If the output schema is a `URL`, for example, you can call this with (note the specialization of `<URL>` in the type annotation):
+    ///
+    ///     let predictionResponseBody: ReplicatePrediction<URL> = replicateService.createSynchronousPredictionUsingVersion(...)
+    ///
+    /// # References:
+    ///   - https://replicate.com/docs/reference/http#predictions.create
+    ///
+    /// - Parameters:
+    ///
+    ///   - modelVersion: The version of the model
+    ///
+    ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
+    ///
+    /// - Returns: The prediction response body
+    func createSynchronousPredictionUsingCommunityModel<Input: Encodable, Output: Decodable>(
+        modelVersion: String,
+        input: Input,
+        secondsToWait: UInt
+    ) async throws -> ReplicatePrediction<Output>
+
+
+    /// You likely do not want to start with this method unless you have specific reasons for doing so.
+    /// Please see `runOfficialModel`, which automatically handles waiting for the prediction result.
+    ///
+    /// This method kicks off the prediction, but does not wait for completion. It is intended to be used in
+    /// combination with `pollForPredictionCompletion`
+    ///
+    /// By contrast, `runOfficialModel` will use the sync API to wait for the prediction result, automatically
+    /// switching from the sync API to the polling API if necessary.
+    ///
+    /// # References:
+    ///   - https://replicate.com/docs/reference/http#models.predictions.create
     ///
     /// - Parameters:
     ///
@@ -49,517 +108,53 @@ open class ReplicateService {
     ///
     ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
     ///
-    /// - Returns: The inference results wrapped in ReplicateSynchronousAPIOutput
-    public func createSynchronousPredictionUsingOfficialModel<T: Encodable, U: Encodable>(
+    /// - Returns: A prediction object specialized by the `Output`, e.g. `ReplicateFluxSchnellOutputSchema`.
+    ///            The prediction object contains a `url` that can be queried using `getPrediction` or `pollForPredictionCompletion`.
+    func createPredictionUsingOfficialModel<Input: Encodable, Output: Decodable>(
         modelOwner: String,
         modelName: String,
-        input: T,
-        secondsToWait: Int
-    )  async throws -> ReplicateSynchronousAPIOutput<U> {
-        let encoder = JSONEncoder()
-        let body = try encoder.encode(
-            ReplicatePredictionRequestBody(
-                input: input
-            )
-        )
-        var request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: "/v1/models/\(modelOwner)/\(modelName)/predictions",
-            body: body,
-            verb: .post,
-            contentType: "application/json",
-            headers: ["Prefer": "wait=\(secondsToWait)"]
-        )
-        request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
+        input: Input
+    ) async throws -> ReplicatePrediction<Output>
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
-    }
-
-    /// This is the general purpose method for running community replicate models.
-    /// It is generic in the input and output, so it's up to you to pass appropriate types.
-    /// To craft the appropriate types, look at the model's schema on replicate.
-    /// You can find the schema by browsing to the model and tapping on `API` in the top nav and then `Schema` in the side nav.
-    /// If the output schema is a `URI`, for example, you can call this with:
+    /// You likely do not want to start with this method unless you have specific reasons for doing so.
+    /// Please see `runCommunityModel`, which automatically handles waiting for the prediction result.
     ///
-    ///     let myPredictionResult: ReplicateSynchronousAPIOutput<URL> = replicateService.createSynchronousPredictionUsingVersion(...)
-    ///     let myURL = myPredictionResult.output
+    /// This method kicks off the prediction, but does not wait for completion. It is intended to be used in
+    /// combination with `pollForPredictionCompletion`
     ///
-    /// note the specialization of `<URL>` in the type annotation.
+    /// By contrast, `runCommunityModel` will use the sync API to wait for the prediction result, automatically
+    /// switching from the sync API to the polling API if necessary.
     ///
-    /// Makes a POST request to the 'create a prediction using community model' endpoint described here:
-    /// https://replicate.com/docs/reference/http#predictions.create
-    ///
-    /// Uses the synchronous API announced here: https://replicate.com/changelog/2024-10-09-synchronous-api
+    /// # References:
+    ///   - https://replicate.com/docs/reference/http#predictions.create
     ///
     /// - Parameters:
     ///
-    ///   - modelVersion: The version of the model
+    ///   - version: The version of the community model that you would like to create a prediction
     ///
-    ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
+    ///   - input: The input schema, for example `ReplicateSDXLInputSchema`
     ///
-    /// - Returns: The inference results wrapped in ReplicateSynchronousAPIOutput
-    public func createSynchronousPredictionUsingVersion<T: Encodable, U: Encodable>(
-        modelVersion: String,
-        input: T,
-        secondsToWait: Int
-    )  async throws -> ReplicateSynchronousAPIOutput<U> {
-        let encoder = JSONEncoder()
-        let body = try encoder.encode(
-            ReplicatePredictionRequestBody(
-                input: input,
-                version: modelVersion
-            )
-        )
-        var request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: "/v1/predictions",
-            body: body,
-            verb: .post,
-            contentType: "application/json",
-            headers: ["Prefer": "wait=\(secondsToWait)"]
-        )
-        request.timeoutInterval = TimeInterval(secondsToWait) + kTimeoutBufferForSyncAPIInSeconds
+    /// - Returns: A prediction object specialized by the `Output`, e.g. `ReplicateSDXLOutputSchema`.
+    ///            The prediction object contains a `url` that can be queried using `getPrediction` or `pollForPredictionCompletion`.
+    func createPredictionUsingCommunityModel<Input: Encodable, Output: Decodable>(
+        version: String,
+        input: Input
+    ) async throws -> ReplicatePrediction<Output>
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try ReplicateSynchronousAPIOutput<U>.deserialize(from: data)
-    }
-
-
-    /// Convenience method for creating an image through Black Forest Lab's Flux-Schnell model:
-    /// https://replicate.com/black-forest-labs/flux-schnell
+    /// Get the current state of a prediction.
+    ///
+    /// If you need to poll for the prediction to complete, see `pollForPredictionCompletion` defined below.
+    ///
+    /// # References
+    /// - https://replicate.com/docs/reference/http#predictions.get
     ///
     /// - Parameters:
+    ///   - url: The prediction URL returned as part of a `createPrediction` request
     ///
-    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxSchnellInputSchema.swift
-    ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
-    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
-    ///
-    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
-    ///   amount of time that this method will wait for a result is `pollAttempts *
-    ///   secondsBetweenPollAttempts`
-    ///
-    /// - Returns: An array of image URLs
-    @available(*, deprecated, message: """
-        Use the following method as a replacement:
-          - ReplicateService.createFluxschnellImageURLs(input:secondsToWait:)
-        """)
-    public func createFluxSchnellImage(
-        input: ReplicateFluxSchnellInputSchema,
-        pollAttempts: Int = 30,
-        secondsBetweenPollAttempts: UInt64 = 1
-    ) async throws -> [URL] {
-        return try await self.predictAndPollUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-schnell",
-            input: input,
-            pollAttempts: pollAttempts,
-            secondsBetweenPollAttempts: secondsBetweenPollAttempts
-        )
-    }
-
-    /// Convenience method for creating image URLs through Black Forest Lab's Flux-Schnell model.
-    /// https://replicate.com/black-forest-labs/flux-schnell
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxSchnellInputSchema.swift
-    ///
-    ///   - secondsToWait: Seconds to wait before failing
-    ///
-    /// - Returns: An array of URLs. The number of urls in the result will be equal to
-    ///            `numOutputs` that you pass in the input schema.
-    public func createFluxSchnellImageURLs(
-        input: ReplicateFluxSchnellInputSchema,
-        secondsToWait: Int = 30
-    ) async throws -> [URL] {
-        let output: ReplicateSynchronousAPIOutput<[String]> = try await self.createSynchronousPredictionUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-schnell",
-            input: input,
-            secondsToWait: secondsToWait
-        )
-        if output.output == nil {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
-    }
-
-    /// Convenience method for creating an image through Black Forest Lab's Flux-Pro model:
-    /// https://replicate.com/black-forest-labs/flux-pro
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxProInputSchema.swift
-    ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
-    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
-    ///
-    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
-    ///   amount of time that this method will wait for a result is `pollAttempts *
-    ///   secondsBetweenPollAttempts`
-    ///
-    /// - Returns: An image URL
-    ///
-    @available(*, deprecated, message: """
-        Use the following method as a replacement:
-          - ReplicateService.createFluxProImageURL(input:secondsToWait:)
-        """)
-    public func createFluxProImage(
-        input: ReplicateFluxProInputSchema,
-        pollAttempts: Int = 60,
-        secondsBetweenPollAttempts: UInt64 = 2
-    ) async throws -> URL {
-        return try await self.predictAndPollUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-pro",
-            input: input,
-            pollAttempts: pollAttempts,
-            secondsBetweenPollAttempts: secondsBetweenPollAttempts
-        )
-    }
-
-    /// Convenience method for creating image URL through Black Forest Lab's Flux-Pro model.
-    /// https://replicate.com/black-forest-labs/flux-pro
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxProInputSchema.swift
-    ///
-    ///   - secondsToWait: Seconds to wait before failing
-    ///
-    /// - Returns: The URL of the generated image
-    public func createFluxProImageURL(
-        input: ReplicateFluxProInputSchema,
-        secondsToWait: Int = 60
-    ) async throws -> URL {
-        let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-pro",
-            input: input,
-            secondsToWait: secondsToWait
-        )
-        if output.output == nil {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
-    }
-
-    /// Convenience method for creating an image through Black Forest Lab's Flux-Pro v1.1 model:
-    /// https://replicate.com/black-forest-labs/flux-1.1-pro
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the image you'd like to generate.
-    ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
-    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
-    ///
-    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
-    ///   amount of time that this method will wait for a result is `pollAttempts *
-    ///   secondsBetweenPollAttempts`
-    ///
-    /// - Returns: An image URL
-    @available(*, deprecated, message: """
-        Use one of the following methods as a replacement:
-          - ReplicateService.createFluxProImageURL_v1_1(input:secondsToWait:)
-        """)
-    public func createFluxProImage_v1_1(
-        input: ReplicateFluxProInputSchema_v1_1,
-        pollAttempts: Int = 30,
-        secondsBetweenPollAttempts: UInt64 = 2
-    ) async throws -> URL {
-        return try await self.predictAndPollUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-1.1-pro",
-            input: input,
-            pollAttempts: pollAttempts,
-            secondsBetweenPollAttempts: secondsBetweenPollAttempts
-        )
-    }
-
-    /// Convenience method for creating image URL through Black Forest Lab's Flux-Pro model.
-    /// https://replicate.com/black-forest-labs/flux-1.1-pro
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the images you'd like to generate. See `ReplicateFluxProInputSchema_v1_1.swift`
-    ///
-    ///   - secondsToWait: Seconds to wait before failing
-    ///
-    /// - Returns: The URL of the generated image
-    public func createFluxProImageURL_v1_1(
-        input: ReplicateFluxProInputSchema_v1_1,
-        secondsToWait: Int = 60
-    ) async throws -> URL {
-        let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-1.1-pro",
-            input: input,
-            secondsToWait: secondsToWait
-        )
-        if output.output == nil {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
-    }
-
-    /// Convenience method for creating image URL through Black Forest Lab's Flux-Pro model.
-    /// https://replicate.com/black-forest-labs/flux-1.1-pro-ultra
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the images you'd like to generate. See `ReplicateFluxProInputSchema_v1_1.swift`
-    ///
-    ///   - secondsToWait: Seconds to wait before failing
-    ///
-    /// - Returns: The URL of the generated image
-    public func createFluxProUltraImageURL_v1_1(
-        input: ReplicateFluxProUltraInputSchema_v1_1,
-        secondsToWait: Int = 60
-    ) async throws -> URL {
-        let output: ReplicateSynchronousAPIOutput<String> = try await self.createSynchronousPredictionUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-1.1-pro-ultra",
-            input: input,
-            secondsToWait: secondsToWait
-        )
-        if output.output == nil {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
-    }
-
-    /// Convenience method for creating an image through Black Forest Lab's Flux-Dev model:
-    /// https://replicate.com/black-forest-labs/flux-dev
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxDevInputSchema.swift
-    ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
-    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
-    ///
-    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
-    ///   amount of time that this method will wait for a result is `pollAttempts *
-    ///   secondsBetweenPollAttempts`
-    ///
-    /// - Returns: An array of image URLs
-    @available(*, deprecated, message: """
-    Use the following method as a replacement:
-      - ReplicateService.createFluxDevImageURLs(input:secondsToWait:)
-    """)
-    public func createFluxDevImage(
-        input: ReplicateFluxDevInputSchema,
-        pollAttempts: Int = 30,
-        secondsBetweenPollAttempts: UInt64 = 1
-    ) async throws -> [URL] {
-        return try await self.predictAndPollUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-dev",
-            input: input,
-            pollAttempts: pollAttempts,
-            secondsBetweenPollAttempts: secondsBetweenPollAttempts
-        )
-    }
-
-    /// Convenience method for creating image URLs through Black Forest Lab's Flux-Dev model.
-    /// https://replicate.com/black-forest-labs/flux-dev
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the images you'd like to generate. See ReplicateFluxDevInputSchema.swift
-    ///
-    ///   - secondsToWait: Seconds to wait before failing
-    ///
-    /// - Returns: An array of URLs. The number of urls in the result will be equal to
-    ///           `numOutputs` that you pass in the input schema.
-    public func createFluxDevImageURLs(
-        input: ReplicateFluxDevInputSchema,
-        secondsToWait: Int = 10
-    ) async throws -> [URL] {
-        let output: ReplicateSynchronousAPIOutput<[String]> = try await self.createSynchronousPredictionUsingOfficialModel(
-            modelOwner: "black-forest-labs",
-            modelName: "flux-dev",
-            input: input,
-            secondsToWait: secondsToWait
-        )
-        if output.output == nil {
-            throw ReplicateError.predictionFailed("Reached wait limit of \(secondsToWait) seconds. You can adjust this.")
-        }
-        return try await self.mapPredictionResultURLToOutput(output.predictionResultURL)
-    }
-
-    /// Convenience method for creating an image using https://replicate.com/zsxkib/flux-pulid
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxPuLIDInputSchema.swift
-    ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
-    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
-    ///
-    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
-    ///   amount of time that this method will wait for a result is `pollAttempts *
-    ///   secondsBetweenPollAttempts`
-    ///
-    /// - Returns: An array of image URLs
-    public func createFluxPulidImage(
-        input: ReplicateFluxPulidInputSchema,
-        version: String = "8baa7ef2255075b46f4d91cd238c21d31181b3e6a864463f967960bb0112525b",
-        pollAttempts: Int = 30,
-        secondsBetweenPollAttempts: UInt64 = 2
-    ) async throws -> [URL] {
-        return try await self.predictAndPollUsingVersion(
-            version: version,
-            input: input,
-            pollAttempts: pollAttempts,
-            secondsBetweenPollAttempts: secondsBetweenPollAttempts
-        )
-    }
-
-    /// Convenience method for creating an image through StabilityAI's SDXL model.
-    /// https://replicate.com/stability-ai/sdxl
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the image you'd like to generate. See ReplicateSDXLInputSchema.swift
-    ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
-    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
-    ///
-    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
-    ///   amount of time that this method will wait for a result is `pollAttempts *
-    ///   secondsBetweenPollAttempts`
-    ///
-    /// - Returns: An array of image URLs
-    @available(*, deprecated, message: """
-    Use the following method as a replacement:
-      - ReplicateService.createSDXLImageURLs(input:secondsToWait:)
-    """)
-    public func createSDXLImage(
-        input: ReplicateSDXLInputSchema,
-        version: String = "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
-        pollAttempts: Int = 60,
-        secondsBetweenPollAttempts: UInt64 = 1
-    ) async throws -> [URL] {
-        return try await self.predictAndPollUsingVersion(
-            version: version,
-            input: input,
-            pollAttempts: pollAttempts,
-            secondsBetweenPollAttempts: secondsBetweenPollAttempts
-        )
-    }
-
-    /// Convenience method for creating an image through StabilityAI's SDXL model.
-    /// https://replicate.com/stability-ai/sdxl
-    ///
-    /// - Parameters:
-    ///   - input: The input specification of the image you'd like to generate. See ReplicateSDXLInputSchema.swift
-    ///   - secondsToWait: The number of seconds to wait before raising `unsuccessfulRequest`
-    /// - Returns: An array of image URLs
-    public func createSDXLImageURLs(
-        input: ReplicateSDXLInputSchema,
-        version: String = "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
-        secondsToWait: Int = 60
-    ) async throws -> [URL] {
-        let apiResult: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingVersion(
-            modelVersion: version,
-            input: input,
-            secondsToWait: secondsToWait
-        )
-        guard let output = apiResult.output else {
-            throw ReplicateError.predictionDidNotIncludeOutput
-        }
-        return output
-    }
-
-    /// Convenience method for creating an image through fofr's fresh ink SDXL model
-    /// https://replicate.com/fofr/sdxl-fresh-ink
-    ///
-    /// It's recommended to use a negative prompt with this model, for example:
-    ///
-    ///     let input = ReplicateSDXLFreshInkInputSchema(
-    ///         prompt: "A fresh ink TOK tattoo of monument valley, Utah",
-    ///         negativePrompt: "ugly, broken, distorted"
-    ///     )
-    ///     let urls = try await replicateService.createSDXLFreshInkImageURLs(
-    ///         input: input
-    ///     )
-    ///
-    /// - Parameters:
-    ///   - input: The input specification of the image you'd like to generate. See ReplicateSDXLFreshInkInputSchema.swift
-    ///   - secondsToWait: The number of seconds to wait before raising `unsuccessfulRequest`
-    /// - Returns: An array of image URLs
-    public func createSDXLFreshInkImageURLs(
-        input: ReplicateSDXLFreshInkInputSchema,
-        version: String = "8515c238222fa529763ec99b4ba1fa9d32ab5d6ebc82b4281de99e4dbdcec943",
-        secondsToWait: Int = 60
-    ) async throws -> [URL] {
-        let apiResult: ReplicateSynchronousAPIOutput<[URL]> = try await self.createSynchronousPredictionUsingVersion(
-            modelVersion: version,
-            input: input,
-            secondsToWait: secondsToWait
-        )
-        guard let output = apiResult.output else {
-            throw ReplicateError.predictionDidNotIncludeOutput
-        }
-        return output
-    }
-
-    /// Convenience method for creating an image using Flux-Dev ControlNet:
-    /// https://replicate.com/xlabs-ai/flux-dev-controlnet
-    ///
-    /// In my testing:
-    /// - if the replicate model is cold, generation takes between 3 and 4 minutes
-    /// - If the model is warm, generation takes 30-50 seconds
-    ///
-    /// - Parameters:
-    ///
-    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxDevControlNetInputSchema.swift
-    ///
-    ///   - pollAttempts: The number of attempts to poll for the resulting image. If the result
-    ///   is not available within `pollAttempts`, `ReplicateError.reachedRetryLimit` is thrown.
-    ///
-    ///   - secondsBetweenPollAttempts: The number of seconds between poll attempts. The total
-    ///   amount of time that this method will wait for a result is `pollAttempts *
-    ///   secondsBetweenPollAttempts`
-    ///
-    /// - Returns: An array of image URLs
-    public func createFluxDevControlNetImage(
-        input: ReplicateFluxDevControlNetInputSchema,
-        version: String = "f2c31c31d81278a91b2447a304dae654c64a5d5a70340fba811bb1cbd41019a2",
-        pollAttempts: Int = 70,
-        secondsBetweenPollAttempts: UInt64 = 5
-    ) async throws -> [URL] {
-        return try await self.predictAndPollUsingVersion(
-            version: version,
-            input: input,
-            pollAttempts: pollAttempts,
-            secondsBetweenPollAttempts: secondsBetweenPollAttempts
-        )
-    }
+    /// - Returns: The prediction response body specialized by `Output`, which must be a decodable that matches the output schema of this model
+    func getPrediction<Output: Decodable>(
+        url: URL
+    ) async throws -> ReplicatePrediction<Output>
 
     /// Adds a new public or private model to your replicate account.
     /// You can use this as a starting point to fine-tune Flux.
@@ -590,46 +185,189 @@ open class ReplicateService {
     ///                  works on Replicate for a full explanation.: https://replicate.com/docs/billing
     ///
     /// - Returns: URL of the model
-    public func createModel(
+    func createModel(
         owner: String,
         name: String,
         description: String,
-        hardware: String? = nil,
-        visibility: ReplicateModelVisibility = .private
-    ) async throws -> URL {
-        // From replicate docs: "Note that it doesn’t matter which hardware you pick for your
-        // model at this time, because we route to H100s for all our FLUX.1 fine-tunes"
-        let requestBody = ReplicateCreateModelRequestBody(
-            description: description,
-            hardware: hardware ?? "gpu-t4",
-            name: name,
-            owner: owner,
-            visibility: visibility
+        hardware: String,
+        visibility: ReplicateModelVisibility
+    ) async throws -> URL
+
+    /// Train a model. See the companion method `pollForTrainingResult` defined in this file.
+    ///
+    /// - Parameters:
+    ///
+    ///   - modelOwner:  This is not your replicate account. Set this to the owner of the fine-tuning trainer, e.g. `ostris`.
+    ///
+    ///   - modelName: The name of the trainer, e.g. `flux-dev-lora-trainer`.
+    ///
+    ///   - versionID: The version of the trainer to run.
+    ///
+    ///   - body: The training request body, parametrized by T where T is a decodable input that you define.
+    ///
+    /// - Returns: The training response, which contains a URL to poll for the training progress
+    func createTraining<T>(
+        modelOwner: String,
+        modelName: String,
+        versionID: String,
+        body: ReplicateTrainingRequestBody<T>
+    ) async throws -> ReplicateTrainingResponseBody
+
+    /// Get the current state of a training.
+    ///
+    /// If you need to poll for the training to complete, see `pollForTrainingResult` defined below.
+    ///
+    /// - Parameters:
+    ///   - url: The URL returned as part of a `createTraining` request
+    ///
+    /// - Returns: The training response body
+    func getTraining(
+        url: URL
+    ) async throws -> ReplicateTrainingResponseBody
+
+    /// Uploads a file to replicate's CDN.
+    ///
+    /// - Parameters:
+    ///   - contents: The binary contents of your file. If you've added your file to xcassets, you
+    ///               can access the file's data with `NSDataAsset(name: "myfile").data`
+    ///   - contentType: The mime type of the file, e.g. "application/zip"
+    ///   - name: The name of the file, e.g. `myfile.zip`
+    ///
+    /// - Returns: The file upload response body, which contains the file's URL on Replicate's network.
+    ///            You can pass this URL to subsequent inference and training jobs.
+    func uploadFile(
+        contents: Data,
+        contentType: String,
+        name: String
+    ) async throws -> ReplicateFileUploadResponseBody
+}
+
+
+extension ReplicateService {
+
+    /// Runs an official replicate model and waits for the prediction to reach a terminal state.
+    /// The returned prediction will have a status in the terminal state (one of  `.succeeded`, `.failed`, or `.canceled`).
+    /// If we can't get a response body in a terminal state before `secondsToWait`, then `ReplicateError.reachedRetryLimit` is raised.
+    ///
+    /// Internally, this method starts with the synchronous API and then falls back to polling if the prediction has not completed
+    /// within sixty seconds.
+    ///
+    /// # Usage
+    ///
+    ///     let input = ReplicateFluxSchnellInputSchema(...)
+    ///     let prediction: ReplicatePrediction<[URL]> = try await replicateService.runOfficialModel(
+    ///         modelOwner: "black-forest-labs",
+    ///         modelName: "flux-schnell",
+    ///         input: input,
+    ///         secondsToWait: secondsToWait
+    ///     )
+    ///     let urls = try await replicateService.getPredictionOutput(prediction)
+    ///
+    /// - Returns the ReplicatePrediction in a terminal state
+    public func runOfficialModel<T: Encodable, Output: Decodable>(
+        modelOwner: String,
+        modelName: String,
+        input: T,
+        secondsToWait: UInt
+    )  async throws -> ReplicatePrediction<Output> {
+        let syncSecondsToWait = self.safeSecondsToWait(secondsToWait)
+        let responseBody: ReplicatePrediction<Output> = try await self.createSynchronousPredictionUsingOfficialModel(
+            modelOwner: modelOwner,
+            modelName: modelName,
+            input: input,
+            secondsToWait: syncSecondsToWait
         )
+        return try await self.transitionFromSyncToPollingAPIIfNecessary(responseBody, secondsToWait, syncSecondsToWait)
+    }
 
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: "/v1/models",
-            body: requestBody.serialize(),
-            verb: .post,
-            contentType: "application/json"
+    /// Runs a community replicate model and waits for the prediction to reach a terminal state.
+    /// The returned prediction will have a status in the terminal state (one of  `.succeeded`, `.failed`, or `.canceled`).
+    /// If we can't get a response body in a terminal state before `secondsToWait`, then `ReplicateError.reachedRetryLimit` is raised.
+    ///
+    /// Internally, this method starts with the synchronous API and then falls back to polling if the prediction has not completed
+    /// within sixty seconds.
+    ///
+    /// # Usage
+    ///
+    ///     let input = ReplicateSDXLInputSchema(...)
+    ///     let prediction: ReplicatePrediction<[URL]> = try await replicateService.runCommunityModel(
+    ///         version: "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",
+    ///         input: input,
+    ///         secondsToWait: secondsToWait
+    ///     )
+    ///     let urls = try await replicateService.getPredictionOutput(prediction)
+    ///
+    /// - Returns the ReplicatePrediction in a terminal status
+    public func runCommunityModel<T: Encodable, Output: Decodable>(
+        version: String,
+        input: T,
+        secondsToWait: UInt
+    )  async throws -> ReplicatePrediction<Output> {
+        let syncSecondsToWait = self.safeSecondsToWait(secondsToWait)
+        let responseBody: ReplicatePrediction<Output> = try await self.createSynchronousPredictionUsingCommunityModel(
+            modelVersion: version,
+            input: input,
+            secondsToWait: syncSecondsToWait
         )
+        return try await self.transitionFromSyncToPollingAPIIfNecessary(responseBody, secondsToWait, syncSecondsToWait)
+    }
 
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
+    /// Polls until the prediction reaches a terminal state (succeeded, failed, or canceled)
+    ///
+    /// Please see `runOfficialModel` and `runCommunityModel` before reaching for this.
+    ///
+    /// - Parameters:
+    ///
+    ///   - url: The polling URL returned as part of a `createPrediction` request
+    ///
+    ///   - pollAttempts: The number of attempts to poll for a completed prediction before `ReplicateError.reachedRetryLimit` is thrown.
+    ///
+    ///   - secondsBetweenPollAttempts: The number of seconds between polls
+    ///
+    /// - Returns: The completed prediction response body
+    public func pollForPredictionCompletion<Output: Decodable>(
+        url: URL,
+        pollAttempts: UInt,
+        secondsBetweenPollAttempts: UInt
+    ) async throws -> ReplicatePrediction<Output> {
+        try await Task.sleep(nanoseconds: UInt64(secondsBetweenPollAttempts) * 1_000_000_000)
+        for _ in 0..<pollAttempts {
+            let response: ReplicatePrediction<Output> = try await self.getPrediction(
+                url: url
             )
+            if response.status?.isTerminal == true {
+                return response
+            }
+            try await Task.sleep(nanoseconds: UInt64(secondsBetweenPollAttempts) * 1_000_000_000)
         }
-        let responseModel = try ReplicateModelResponseBody.deserialize(from: data)
-        guard let url = responseModel.url else {
-            throw ReplicateError.missingModelURL
+        throw ReplicateError.reachedRetryLimit
+    }
+
+    /// Polls until the training reaches a terminal state (succeeded, failed, or canceled)
+    ///
+    /// - Parameters:
+    ///
+    ///   - url: The polling URL returned as part of a `createTraining` request
+    ///
+    ///   - pollAttempts: The number of attempts to poll for a completed training before `ReplicateError.reachedRetryLimit` is thrown.
+    ///
+    ///   - secondsBetweenPollAttempts: The number of seconds between polls
+    ///
+    /// - Returns: The completed training response body
+    public func pollForTrainingCompletion(
+        url: URL,
+        pollAttempts: UInt,
+        secondsBetweenPollAttempts: UInt
+    ) async throws -> ReplicateTrainingResponseBody {
+        try await Task.sleep(nanoseconds: UInt64(secondsBetweenPollAttempts) * 1_000_000_000)
+        for _ in 0..<pollAttempts {
+            let response = try await self.getTraining(url: url)
+            if response.status?.isTerminal == true {
+                return response
+            }
+            try await Task.sleep(nanoseconds: UInt64(secondsBetweenPollAttempts) * 1_000_000_000)
         }
-        return url
+        throw ReplicateError.reachedRetryLimit
     }
 
     /// Uploads a zip file to replicate for use in training Flux fine-tunes.
@@ -649,165 +387,212 @@ open class ReplicateService {
         zipData: Data,
         name: String
     ) async throws -> ReplicateFileUploadResponseBody {
-        let body = ReplicateFileUploadRequestBody(fileData: zipData, fileName: name)
-        let boundary = UUID().uuidString
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: "/v1/files",
-            body: formEncode(body, boundary),
-            verb: .post,
-            contentType: "multipart/form-data; boundary=\(boundary)"
+        return try await self.uploadFile(
+            contents: zipData,
+            contentType: "application/zip",
+            name: name
         )
-
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try ReplicateFileUploadResponseBody.deserialize(from: data)
     }
 
-    /// Train a model
-    ///
-    /// - Parameters:
-    ///
-    ///   - modelOwner:  This is not your replicate account. Set this to the owner of the fine-tuning trainer, e.g. `ostris`.
-    ///
-    ///   - modelName: The name of the trainer, e.g. `flux-dev-lora-trainer`.
-    ///
-    ///   - versionID: The version of the trainer to run.
-    ///
-    ///   - body: The training request body, parametrized by T where T is a decodable input that you define.
-    ///
-    /// - Returns: The training response, which contains a URL to poll for the training progress
-    public func createTraining<T>(
-        modelOwner: String,
-        modelName: String,
-        versionID: String,
-        body: ReplicateTrainingRequestBody<T>
-    ) async throws -> ReplicateTrainingResponseBody {
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: "/v1/models/\(modelOwner)/\(modelName)/versions/\(versionID)/trainings",
-            body: body.serialize(),
-            verb: .post,
-            contentType: "application/json"
-        )
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
+    /// See the usage examples in ReplicateService+Convenience.
+    public func getPredictionOutput<Output: Decodable>(
+        _ responseBody: ReplicatePrediction<Output>
+    ) async throws -> Output {
+        if let error = responseBody.error {
+            throw ReplicateError.predictionFailed(error)
+        }
 
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
+        // If the sync API returned the inference output as part of the initial response, return it
+        if let output = responseBody.output {
+            return output
+        }
+
+        // Otherwise, fall back to making a request to `predictionResultURL`
+        guard let predictionResultURL = responseBody.urls?.get else {
+            throw ReplicateError.predictionFailed("Replicate prediction did not include a result URL.")
+        }
+
+        let prediction: ReplicatePrediction<Output> = try await self.getPrediction(
+            url: predictionResultURL
+        )
+
+        guard let predictionOutput = prediction.output else {
+            throw ReplicateError.predictionFailed("""
+                Your replicate prediction failed. This could be due to a number of reasons:
+                1. Your `secondsToWait` is not long enough for the generation to complete
+                2. You are trying to use the replicate sync API for a model that doesn't support it
+                3. The replicate API is having stability problems
+                4. The replicate model that you are trying to call was removed
+                """
             )
         }
-        return try ReplicateTrainingResponseBody.deserialize(from: data)
+        return predictionOutput
     }
 
-    /// Makes a POST request to the 'create a prediction using an official model' endpoint described here:
-    /// https://replicate.com/docs/reference/http#create-a-prediction-using-an-official-model
-    ///
-    /// - Parameters:
-    ///
-    ///   - modelOwner: The owner of the model
-    ///
-    ///   - modelName: The name of the model
-    ///
-    ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
-    ///
-    ///   - output: The output schema, for example `ReplicateFluxSchnellOutputSchema`
-    ///
-    /// - Returns: A prediction object that contains a `url` that can be queried using the
-    ///            `getPredictionResult` method or `pollForPredictionResult` method.
-    public func createPredictionUsingOfficialModel<T: Encodable, U: Decodable>(
-        modelOwner: String,
-        modelName: String,
+    private func transitionFromSyncToPollingAPIIfNecessary<Output: Decodable>(
+        _ prediction: ReplicatePrediction<Output>,
+        _ secondsToWait: UInt,
+        _ secondsElapsed: UInt
+    ) async throws -> ReplicatePrediction<Output> {
+        // In the happy path, the prediction completed in the time allotted by the sync API.
+        // There is a bug in the sync API here. We can't just check to see if the `responseBody.status?.isTerminal == true`,
+        // because the sync API often returns predictions with the status still in `processing`, even though the prediction
+        // has finished and the `output` field is populated. Instead, we'll check for the presence of `output`.
+        if prediction.output != nil {
+            return prediction
+        }
+
+        guard secondsToWait - secondsElapsed >= 1 else {
+            throw ReplicateError.reachedRetryLimit
+        }
+
+        guard let pollURL = prediction.urls?.get else {
+            throw ReplicateError.predictionDidNotIncludeURL
+        }
+
+        let remainingTime = secondsToWait - secondsElapsed
+        let numberOfPollAttempts = UInt(remainingTime + 9) / 10
+        return try await self.pollForPredictionCompletion(
+            url: pollURL,
+            pollAttempts: numberOfPollAttempts,
+            secondsBetweenPollAttempts: 10
+        )
+    }
+}
+
+
+extension ReplicateService {
+    internal func safeSecondsToWait(_ secondsToWait: UInt, warn: Bool = false) -> UInt {
+        if secondsToWait > 60 && warn {
+            logIf(.warning)?.warning(
+                """
+                The replicate sync API can not wait longer than 60 seconds.
+                Please use the convenience method XYZ, which will fall back to polling after 60 seconds ellapses.
+                """
+            )
+        }
+        return min(60, secondsToWait)
+    }
+}
+
+
+// MARK: - Deprecated
+extension ReplicateService {
+
+    @available(*, deprecated, message: "Use createSynchronousPredictionUsingCommunityModel")
+    func createSynchronousPredictionUsingVersion<T: Encodable, U: Decodable>(
+        modelVersion: String,
         input: T,
-        output: U.Type
-    )  async throws -> U {
-        let encoder = JSONEncoder()
-        let body = try encoder.encode(
-            ReplicatePredictionRequestBody(
-                input: input
-            )
+        secondsToWait: UInt
+    ) async throws -> ReplicatePrediction<U> {
+        return try await self.createSynchronousPredictionUsingCommunityModel(
+            modelVersion: modelVersion,
+            input: input,
+            secondsToWait: secondsToWait
         )
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: "/v1/models/\(modelOwner)/\(modelName)/predictions",
-            body: body,
-            verb: .post,
-            contentType: "application/json"
-        )
-
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try JSONDecoder().decode(output, from: data)
     }
 
-    /// Makes a POST request to the 'create a prediction' endpoint described here:
-    /// https://replicate.com/docs/reference/http#create-a-prediction
-    ///
-    /// - Parameters:
-    ///
-    ///   - version: The version of the model that you would like to create a prediction
-    ///
-    ///   - input: The input schema, for example `ReplicateSDXLInputSchema`
-    ///
-    ///   - output: The output schema, for example `ReplicateSDXLOutputSchema`
-    ///
-    /// - Returns: A prediction object that contains a `url` that can be queried using the
-    ///            `getPredictionResult` method or `pollForPredictionResult` method.
-    public func createPrediction<T: Encodable, U: Decodable>(
+    @available(*, deprecated, message: "Use createPredictionUsingCommunityModel")
+    public func createPrediction<T: Encodable, Output: Decodable>(
+        version: String,
+        input: T
+    ) async throws -> ReplicatePrediction<Output> {
+        return try await self.createPredictionUsingCommunityModel(version: version, input: input)
+    }
+
+    @available(*, deprecated, message: "Use createPredictionUsingCommunityModel")
+    public func createPrediction<T: Encodable, Output: Decodable>(
         version: String,
         input: T,
-        output: U.Type
-    )  async throws -> U {
-        let encoder = JSONEncoder()
-        let body = try encoder.encode(
-            ReplicatePredictionRequestBody(
-                input: input,
-                version: version
-            )
-        )
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: "/v1/predictions",
-            body: body,
-            verb: .post,
-            contentType: "application/json"
-        )
-
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-
-        return try JSONDecoder().decode(output, from: data)
+        output: ReplicatePredictionResponseBody<Output>.Type
+    ) async throws -> ReplicatePrediction<Output> {
+        return try await self.createPredictionUsingCommunityModel(version: version, input: input)
     }
 
-    /// Polls for the output, `T`, of a prediction request.
+    @available(*, deprecated, message: "Use getPrediction")
+    public func getPredictionResult<Output: Decodable>(
+        url: URL
+    ) async throws -> ReplicatePrediction<Output> {
+        return try await self.getPrediction(url: url)
+    }
+
+    @available(*, deprecated, message: "Please use runOfficialModel instead")
+    public func predictAndPollUsingOfficialModel<T: Encodable, U: Decodable>(
+        modelOwner: String,
+        modelName: String,
+        input: T,
+        pollAttempts: UInt,
+        secondsBetweenPollAttempts: UInt
+    ) async throws -> U {
+        let predictionResponse: ReplicatePrediction<U> = try await self.createPredictionUsingOfficialModel(
+            modelOwner: modelOwner,
+            modelName: modelName,
+            input: input
+        )
+        guard let url = predictionResponse.urls?.get else {
+            throw ReplicateError.predictionDidNotIncludeURL
+        }
+        let completedResponse: ReplicatePrediction<U> = try await self.pollForPredictionCompletion(
+            url: url,
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
+        )
+        return try await self.synchronousResponseBodyToOutput(completedResponse)
+    }
+
+    @available(*, deprecated, message: "Please use runCommunityModel instead")
+    public func predictAndPollUsingVersion<T: Encodable, U: Decodable>(
+        version: String,
+        input: T,
+        pollAttempts: UInt,
+        secondsBetweenPollAttempts: UInt
+    ) async throws -> U {
+        let predictionResponse: ReplicatePrediction<U> = try await self.createPrediction(
+            version: version,
+            input: input
+        )
+        return try await self.pollForPredictionOutput(
+            predictionResponse: predictionResponse,
+            pollAttempts: pollAttempts,
+            secondsBetweenPollAttempts: secondsBetweenPollAttempts
+        )
+    }
+
+    @available(*, deprecated, message: "Use getPredictionOutput")
+    public func synchronousResponseBodyToOutput<Output: Decodable>(
+        _ responseBody: ReplicatePrediction<Output>
+    ) async throws -> Output {
+        return try await self.getPredictionOutput(responseBody)
+    }
+
+    @available(*, deprecated, message: "Use pollForPredictionCompletion instead")
+    public func pollForPredictionResult<U: Decodable>(
+        url: URL,
+        numTries: UInt,
+        nsBetweenPollAttempts: UInt
+    ) async throws -> ReplicatePrediction<U> {
+        try await Task.sleep(nanoseconds: UInt64(nsBetweenPollAttempts))
+        for _ in 0..<numTries {
+            let response: ReplicatePrediction<U> = try await self.getPredictionResult(
+                url: url
+            )
+            switch response.status {
+            case .canceled:
+                throw ReplicateError.predictionCanceled
+            case .failed:
+                throw ReplicateError.predictionFailed(response.error)
+            case .succeeded:
+                return response
+            case .none, .processing, .starting:
+                try await Task.sleep(nanoseconds: UInt64(nsBetweenPollAttempts))
+            }
+        }
+        throw ReplicateError.reachedRetryLimit
+    }
+
+    /// Please use `pollForPredictionCompletion` in place of this method.
+    ///
+    /// Polls for the output, `T`, of a prediction request created with `createPrediction`
     /// For an example of how to call this generic method, see the convenience method `createFluxProImage`.
     ///
     /// - Parameters:
@@ -819,15 +604,16 @@ open class ReplicateService {
     ///               which ReplicateError.reachedRetryLimit will be thrown.
     ///
     /// - Returns: The completed prediction response body
+    @available(*, deprecated, message: "Use pollForPredictionCompletion instead")
     public func pollForPredictionOutput<T>(
-        predictionResponse: ReplicatePredictionResponseBody<T>,
-        pollAttempts: Int,
-        secondsBetweenPollAttempts: UInt64 = 1
+        predictionResponse: ReplicatePrediction<T>,
+        pollAttempts: UInt,
+        secondsBetweenPollAttempts: UInt
     ) async throws -> T {
         guard let pollURL = predictionResponse.urls?.get else {
             throw ReplicateError.predictionDidNotIncludeURL
         }
-        let pollResult: ReplicatePredictionResponseBody<T> = try await self.actorPollForPredictionResult(
+        let pollResult: ReplicatePrediction<T> = try await self.pollForPredictionResult(
             url: pollURL,
             numTries: pollAttempts,
             nsBetweenPollAttempts: secondsBetweenPollAttempts * 1_000_000_000
@@ -838,67 +624,15 @@ open class ReplicateService {
         return output
     }
 
-    public func pollForTrainingComplete(
+    @available(*, deprecated, message: "Use pollForTrainingCompletion instead")
+    public func pollForTrainingResult(
         url: URL,
-        pollAttempts: Int,
-        secondsBetweenPollAttempts: UInt64 = 10
+        pollAttempts: UInt,
+        secondsBetweenPollAttempts: UInt = 10
     ) async throws -> ReplicateTrainingResponseBody {
-        return try await self.actorPollForTrainingResult(
-            url: url,
-            numTries: pollAttempts,
-            nsBetweenPollAttempts: secondsBetweenPollAttempts * 1_000_000_000
-        )
-    }
-
-    /// Polls for the result of a prediction request on the AIProxy Network Actor.
-    ///
-    /// - Parameters:
-    ///
-    ///   - url: The polling URL returned as part of a `createPrediction` request
-    ///
-    ///   - numTries: The number of attempts to poll for a completed prediction. Each poll is separated by 1
-    ///               second. The default is to try to fetch the resulting image for up to 60 seconds, after
-    ///               which ReplicateError.reachedRetryLimit will be thrown.
-    ///
-    /// - Returns: The completed prediction response body
-    @NetworkActor
-    private func actorPollForPredictionResult<U: Decodable>(
-        url: URL,
-        numTries: Int,
-        nsBetweenPollAttempts: UInt64 = 1_000_000_000
-    ) async throws -> ReplicatePredictionResponseBody<U> {
-        try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
-        for _ in 0..<numTries {
-            let response = try await self.actorGetPredictionResult(
-                url: url,
-                output: ReplicatePredictionResponseBody<U>.self
-            )
-            switch response.status {
-            case .canceled:
-                throw ReplicateError.predictionCanceled
-            case .failed:
-                throw ReplicateError.predictionFailed(response.error)
-            case .succeeded:
-                return response
-            case .none, .processing, .starting:
-                try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
-            }
-        }
-        throw ReplicateError.reachedRetryLimit
-    }
-
-    @NetworkActor
-    private func actorPollForTrainingResult(
-        url: URL,
-        numTries: Int,
-        nsBetweenPollAttempts: UInt64
-    ) async throws -> ReplicateTrainingResponseBody {
-        try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
-        for _ in 0..<numTries {
-            let response = try await self.actorGetPredictionResult(
-                url: url,
-                output: ReplicateTrainingResponseBody.self
-            )
+        try await Task.sleep(nanoseconds: UInt64(secondsBetweenPollAttempts) * 1_000_000_000)
+        for _ in 0..<pollAttempts {
+            let response = try await self.getTraining(url: url)
             print("AIProxy: polled replicate training. Current status: \(response.status?.rawValue ?? "none")")
             switch response.status {
             case .canceled:
@@ -908,109 +642,9 @@ open class ReplicateService {
             case .succeeded:
                 return response
             case .none, .processing, .starting:
-                try await Task.sleep(nanoseconds: nsBetweenPollAttempts)
+                try await Task.sleep(nanoseconds: UInt64(secondsBetweenPollAttempts) * 1_000_000_000)
             }
         }
         throw ReplicateError.reachedRetryLimit
     }
-
-    /// Queries for a prediction result a single time on the AIProxy Network Actor.
-    ///
-    /// - Parameters:
-    ///
-    ///   - url: The polling URL returned as part of a `createPrediction` request
-    ///
-    ///   - output: The decodable to map the returned response to. This is likely a
-    ///             ReplicatePredictionResponseBody specialized by the output schema of your model,
-    ///             e.g. ReplicatePredictionResponseBody<ReplicateSDXLOutputSchema>
-    /// - Returns: The prediction response body
-    @NetworkActor
-    private func actorGetPredictionResult<U: Decodable>(
-        url: URL,
-        output: U.Type
-    ) async throws -> U {
-        guard url.host == "api.replicate.com" else {
-            throw AIProxyError.assertion("Replicate has changed the poll domain")
-        }
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL,
-            clientID: self.clientID,
-            proxyPath: url.path,
-            body: nil,
-            verb: .get
-        )
-        let (data, httpResponse) = try await BackgroundNetworker.send(request: request)
-        if (httpResponse.statusCode > 299) {
-            throw AIProxyError.unsuccessfulRequest(
-                statusCode: httpResponse.statusCode,
-                responseBody: String(data: data, encoding: .utf8) ?? ""
-            )
-        }
-        return try output.deserialize(from: data)
-    }
-
-    private func predictAndPollUsingVersion<T: Encodable, U: Decodable>(
-        version: String,
-        input: T,
-        pollAttempts: Int,
-        secondsBetweenPollAttempts: UInt64
-    ) async throws -> U {
-        let predictionResponse = try await self.createPrediction(
-            version: version,
-            input: input,
-            output: ReplicatePredictionResponseBody<U>.self
-        )
-        return try await self.pollForPredictionOutput(
-            predictionResponse: predictionResponse,
-            pollAttempts: pollAttempts,
-            secondsBetweenPollAttempts: secondsBetweenPollAttempts
-        )
-    }
-
-    private func predictAndPollUsingOfficialModel<T: Encodable, U: Decodable>(
-        modelOwner: String,
-        modelName: String,
-        input: T,
-        pollAttempts: Int,
-        secondsBetweenPollAttempts: UInt64
-    ) async throws -> U {
-        let predictionResponse = try await self.createPredictionUsingOfficialModel(
-            modelOwner: modelOwner,
-            modelName: modelName,
-            input: input,
-            output: ReplicatePredictionResponseBody<U>.self
-        )
-        return try await self.pollForPredictionOutput(
-            predictionResponse: predictionResponse,
-            pollAttempts: pollAttempts,
-            secondsBetweenPollAttempts: secondsBetweenPollAttempts
-        )
-    }
-
-    public func mapPredictionResultURLToOutput<T: Decodable>(
-        _ predictionResultURL: URL?
-    ) async throws -> T {
-        guard let predictionResultURL = predictionResultURL else {
-            throw AIProxyError.assertion("Replicate prediction URL is nil")
-        }
-        let prediction = try await self.actorGetPredictionResult(
-            url: predictionResultURL,
-            output: ReplicatePredictionResponseBody<T>.self
-        )
-        guard let predictionOutput = prediction.output else {
-            throw AIProxyError.assertion("Replicate prediction does not have any output")
-        }
-        return predictionOutput
-    }
-}
-
-private func mapBase64DataURIsToData(_ dataURIs: [String]) -> [Data] {
-    return dataURIs.map {
-        mapBase64DataURIToData($0)
-    }.compactMap { $0 }
-}
-
-private func mapBase64DataURIToData(_ dataURI: String) -> Data? {
-    return dataURI.split(separator: ",").last.flatMap { Data(base64Encoded: String($0)) }
 }

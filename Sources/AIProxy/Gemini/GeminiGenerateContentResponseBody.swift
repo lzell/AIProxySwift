@@ -29,6 +29,9 @@ extension GeminiGenerateContentResponseBody {
         /// If empty, the model has not stopped generating tokens.
         public let finishReason: String?
 
+        ///  Grounding metadata for the candidate.
+        public let groundingMetadata: GroundingMetadata?
+
         /// Index of the candidate in the list of response candidates.
         public let index: Int?
 
@@ -61,13 +64,34 @@ extension GeminiGenerateContentResponseBody.Candidate.Content {
     /// See: https://ai.google.dev/api/caching#Part
     public enum Part: Decodable {
         case text(String)
+        case functionCall(name: String, args: [String: Any]?)
+        case inlineData(mimeType: String, base64Data: String)
+
         private enum CodingKeys: String, CodingKey {
             case text
+            case functionCall
+            case inlineData
+        }
+
+        private struct _FunctionCall: Decodable {
+            let name: String
+            let args: [String: AIProxyJSONValue]?
+        }
+
+        private struct _InlineData: Decodable {
+            let mimeType: String
+            let data: String
         }
 
         public init(from decoder: any Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            self = .text(try container.decode(String.self, forKey: .text))
+            if let functionCall = try container.decodeIfPresent(_FunctionCall.self, forKey: .functionCall) {
+                self = .functionCall(name: functionCall.name, args: functionCall.args?.untypedDictionary)
+            } else if let inlineData = try container.decodeIfPresent(_InlineData.self, forKey: .inlineData) {
+                self = .inlineData(mimeType: inlineData.mimeType, base64Data: inlineData.data)
+            } else {
+                self = .text(try container.decode(String.self, forKey: .text))
+            }
         }
     }
 }
@@ -89,6 +113,49 @@ extension GeminiGenerateContentResponseBody.Candidate {
     }
 }
 
+// Extension to handle grounding metadata in the response
+extension GeminiGenerateContentResponseBody.Candidate {
+    /// Grounding metadata containing information about search results used for the response
+    public struct GroundingMetadata: Decodable {
+        public let searchEntryPoint: SearchEntryPoint?
+        public let groundingChunks: [GroundingChunk]?
+        public let groundingSupports: [GroundingSupport]?
+        public let webSearchQueries: [String]?
+        
+        private enum CodingKeys: String, CodingKey {
+            case searchEntryPoint
+            case groundingChunks
+            case groundingSupports
+            case webSearchQueries
+        }
+    }
+    
+    public struct SearchEntryPoint: Decodable {
+        public let renderedContent: String?
+    }
+    
+    public struct GroundingChunk: Decodable {
+        public let web: WebInfo?
+    }
+    
+    public struct WebInfo: Decodable {
+        public let uri: String?
+        public let title: String?
+    }
+    
+    public struct GroundingSupport: Decodable {
+        public let segment: Segment?
+        public let groundingChunkIndices: [Int]?
+        public let confidenceScores: [Double]?
+    }
+    
+    public struct Segment: Decodable {
+        public let startIndex: Int?
+        public let endIndex: Int?
+        public let text: String?
+    }
+}
+
 // MARK: - ResponseBody.UsageMetadata
 extension GeminiGenerateContentResponseBody {
     /// Metadata on the generation request's token usage.
@@ -106,5 +173,8 @@ extension GeminiGenerateContentResponseBody {
 
         /// Total token count for the generation request (prompt + response candidates).
         public let totalTokenCount: Int?
+
+        /// The number of tokens allocated for thinking.
+        public let thoughtsTokenCount: Int?
     }
 }

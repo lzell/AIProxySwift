@@ -7,19 +7,16 @@
 
 import Foundation
 
-struct AIProxyURLSession {
-    private static let delegate = AIProxyCertificatePinningDelegate()
+public enum AIProxyURLSession {
+    public static var delegate = AIProxyCertificatePinningDelegate()
 
     /// Creates a URLSession that is configured for communication with aiproxy.pro
     static func create() -> URLSession {
         return URLSession(
-            configuration: .default,
+            configuration: .ephemeral,
             delegate: self.delegate,
             delegateQueue: nil
         )
     }
 
-    init() {
-        fatalError("This is a namespace. Please use the factory method AIProxyURLSession.create()")
-    }
 }

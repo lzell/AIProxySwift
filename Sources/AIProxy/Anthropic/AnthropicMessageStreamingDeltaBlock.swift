@@ -19,7 +19,7 @@ internal struct AnthropicMessageStreamingDeltaBlock: Decodable {
         guard let chunkJSON = line.dropFirst(6).data(using: .utf8),
               let chunk = try? JSONDecoder().decode(Self.self, from: chunkJSON) else
         {
-            aiproxyLogger.warning("Received unexpected JSON from Anthropic: \(line)")
+            logIf(.warning)?.warning("Received unexpected JSON from Anthropic: \(line)")
             return nil
         }
         return chunk

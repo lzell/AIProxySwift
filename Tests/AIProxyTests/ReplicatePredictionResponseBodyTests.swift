@@ -1,5 +1,5 @@
 //
-//  ReplicatePredictionResponseBodyTests.swift
+//  ReplicatePredictionTests.swift
 //
 //
 //  Created by Lou Zell on 8/25/24.
@@ -9,7 +9,7 @@ import XCTest
 import Foundation
 @testable import AIProxy
 
-final class ReplicatePredictionResponseBodyTests: XCTestCase {
+final class ReplicatePredictionTests: XCTestCase {
 
     func testCreatePredictionResponseIsDecodable() throws {
         let responseBody = """
@@ -32,7 +32,7 @@ final class ReplicatePredictionResponseBodyTests: XCTestCase {
           }
         }
         """
-        let res = try ReplicatePredictionResponseBody<ReplicateSDXLOutputSchema>.deserialize(
+        let res = try ReplicatePrediction<ReplicateSDXLOutputSchema>.deserialize(
             from: responseBody
         )
         XCTAssertEqual(
@@ -42,7 +42,7 @@ final class ReplicatePredictionResponseBodyTests: XCTestCase {
     }
 
     func testPollResponseIsDecodable() throws {
-        let responseBody = """
+        let responseBody = #"""
         {
           "id": "y4azg2rc11rgj0chj848dwg3cr",
           "model": "stability-ai/sdxl",
@@ -68,8 +68,8 @@ final class ReplicatePredictionResponseBodyTests: XCTestCase {
             "predict_time": 11.977849107
           }
         }
-        """
-        let res = try ReplicatePredictionResponseBody<ReplicateSDXLOutputSchema>.deserialize(
+        """#
+        let res = try ReplicatePrediction<ReplicateSDXLOutputSchema>.deserialize(
             from: responseBody
         )
         XCTAssertEqual("2024-08-27T04:11:38.588127861Z", res.completedAt)
@@ -80,7 +80,7 @@ final class ReplicatePredictionResponseBodyTests: XCTestCase {
     }
 
     func testReplicateFluxProResponseIsDecodable() throws {
-        let responseBody = """
+        let responseBody = #"""
         {
           "id": "kyzk126n5srgc0chs88tpfy69g",
           "model": "replicate/flux-pro-internal-model",
@@ -106,8 +106,8 @@ final class ReplicatePredictionResponseBodyTests: XCTestCase {
             "predict_time": 21.888670827
           }
         }
-        """
-        let res = try ReplicatePredictionResponseBody<ReplicateFluxProOutputSchema>.deserialize(from: responseBody)
+        """#
+        let res = try ReplicatePrediction<ReplicateFluxProOutputSchema>.deserialize(from: responseBody)
         XCTAssertEqual("2024-09-07T01:21:13.910476435Z", res.completedAt)
         XCTAssertEqual(
             "https://replicate.delivery/czjl/PxBiGkp8kYbNLpY0acmT04rsduBjEOGTdUrmweKtrl7E5KtJA/output.webp",

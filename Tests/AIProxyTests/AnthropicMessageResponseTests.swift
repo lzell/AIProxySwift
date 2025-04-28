@@ -76,7 +76,11 @@ final class AnthropicMessageResponseTests: XCTestCase {
         case .toolUse(id: let id, name: let toolName, input: let input):
             XCTAssertEqual("get_stock_symbol", toolName)
             XCTAssertEqual("toolu_01GZovj2vHs5AKsNAshWFgUT", id)
-            XCTAssertEqual("NVDA", input["ticker"] as? String)
+            if case .string(let ticker) = input["ticker"] {
+                XCTAssertEqual("NVDA", ticker)
+            } else {
+                XCTFail()
+            }
         default:
             XCTFail()
         }

@@ -19,27 +19,6 @@ public struct TogetherAIChatCompletionStreamingChunk: Decodable {
 
     /// Usage information, which is only included on the last chunk of the stream
     public let usage: TogetherAIChatUsage?
-
-    static func deserialize(fromLine line: String) throws -> Self? {
-        guard line.hasPrefix("data: ") else {
-            aiproxyLogger.warning("Received unexpected line from aiproxy: \(line)")
-            return nil
-        }
-
-        guard line != "data: [DONE]" else {
-            aiproxyLogger.debug("Streaming response has finished")
-            return nil
-        }
-
-        guard let chunkJSON = line.dropFirst(6).data(using: .utf8),
-              let chunk = try? self.deserialize(from: chunkJSON) else
-        {
-            aiproxyLogger.warning("Received unexpected JSON from aiproxy: \(line)")
-            return nil
-        }
-
-        return chunk
-    }
 }
 
 public struct TogetherAIStreamingChunkChoice: Decodable {
@@ -56,28 +35,4 @@ public struct TogetherAIStreamingChunkDelta: Decodable {
 
     /// The role of the generation
     public let role: TogetherAIRole
-}
-
-extension TogetherAIChatCompletionStreamingChunk {
-    /// Creates a TogetherAIChatCompletionStreamingChunk from a streamed line of the /v1/chat/completions response
-    internal static func from(line: String) -> Self? {
-        guard line.hasPrefix("data: ") else {
-            aiproxyLogger.warning("Received unexpected line from aiproxy: \(line)")
-            return nil
-        }
-
-        guard line != "data: [DONE]" else {
-            aiproxyLogger.debug("Streaming response has finished")
-            return nil
-        }
-
-        guard let chunkJSON = line.dropFirst(6).data(using: .utf8),
-              let chunk = try? TogetherAIChatCompletionStreamingChunk.deserialize(from: chunkJSON) else
-        {
-            aiproxyLogger.warning("Received unexpected JSON from aiproxy: \(line)")
-            return nil
-        }
-
-        return chunk
-    }
 }

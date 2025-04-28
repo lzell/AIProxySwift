@@ -1,16 +1,130 @@
-import OSLog
-#if canImport(AppKit)
+import AVFoundation
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 #elseif canImport(UIKit)
 import UIKit
 #endif
 
-let aiproxyLogger = Logger(
-    subsystem: Bundle.main.bundleIdentifier ?? "UnknownApp",
-    category: "AIProxy"
-)
+public enum AIProxy {
 
-public struct AIProxy {
+    /// The current sdk version
+    public static let sdkVersion = "0.96.1"
+
+    /// Configures the AIProxy SDK. Call this during app launch by adding an `init` to your SwiftUI MyApp.swift file, e.g.
+    ///
+    ///     import AIProxy
+    ///
+    ///     @main
+    ///     struct MyApp: App {
+    ///         init() {
+    ///             AIProxy.configure(
+    ///                 logLevel: .debug,
+    ///                 printRequestBodies: true,
+    ///                 printResponseBodies: true,
+    ///                 resolveDNSOverTLS: true,
+    ///                 useStableID: true
+    ///             )
+    ///         }
+    ///         // ...
+    ///     }
+    ///
+    /// Or in your UIKit app's applicationDidFinishLaunching:
+    ///
+    ///     import AIProxy
+    ///
+    ///     @UIApplicationMain
+    ///     class AppDelegate: UIResponder, UIApplicationDelegate {
+    ///
+    ///          var window: UIWindow?
+    ///
+    ///          func application(_ application: UIApplication,
+    ///                           didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    ///              AIProxy.configure(
+    ///                  logLevel: .debug,
+    ///                  printRequestBodies: true,
+    ///                  printResponseBodies: true,
+    ///                  resolveDNSOverTLS: true,
+    ///                  useStableID: true
+    ///              )
+    ///              // ...
+    ///              return true
+    ///          }
+    ///          // ...
+    ///      }
+    ///
+    /// - Parameters:
+    ///   - logLevel:            Sets the threshold severity of SDK logs that will be shown in the Xcode console.
+    ///                          For the most verbose logging, set this to `.debug`
+    ///
+    ///   - printRequestBodies:  Print API request bodies to the Xcode console.
+    ///                          Request bodies are logged at the `.debug` level, so if you would like to use this feature please also set `logLevel` to `.debug`
+    ///
+    ///   - printResponseBodies: Print API response bodies to the Xcode console.
+    ///                          Response bodies are logged at the `.debug` level, so if you would like to use this feature please also set `logLevel` to `.debug`
+    ///
+    ///   - resolveDNSOverTLS:   Set this to true to perform DNS resolution over TLS using Cloudflare's resolver.
+    ///                          The SDK defaults to true for this unless you explicitly set it to false here.
+    ///                          It prevents your customer's ISP from snooping on or blocking requests to AIProxy.
+    ///
+    ///   - useStableID:         Set this to true to perform a best effort attempt to use the same anonymous ID in requests to AIProxy for an app store user across multiple devices.
+    ///                          You must add the 'iCloud key-value storage' capability to use this:
+    ///                              1. Tap on your project in Xcode's project tree
+    ///                              2. Tap on your target in the sidebar
+    ///                              3. Tap on Signing & Capabilities in the top nav
+    ///                              4. Tap the plus sign next to 'Capability'
+    ///                              5. Add iCloud
+    ///                              6. Select the 'Key-value storage' service
+    public static func configure(
+        logLevel: AIProxyLogLevel,
+        printRequestBodies: Bool,
+        printResponseBodies: Bool,
+        resolveDNSOverTLS: Bool,
+        useStableID: Bool
+    ) {
+        aiproxyCallerDesiredLogLevel = logLevel
+        self.printRequestBodies = printRequestBodies
+        self.printResponseBodies = printResponseBodies
+        self.resolveDNSOverTLS = resolveDNSOverTLS
+        if useStableID {
+            Task.detached {
+                if let stableID = await self._getStableIdentifier() {
+                    self.stableID = stableID
+                }
+            }
+        }
+    }
+
+    /// Flag to use DNS over TLS.
+    /// See this Apple Developer forum post for motivation: https://developer.apple.com/forums/thread/780602
+    /// Note that this does add some latency to your first request.
+    /// In my testing, at least for my location in SF, it added about 50ms.
+    /// You can test for yourself with these commands (the first is similar to flipping this flag to true):
+    ///
+    ///    kdig @1.1.1.1 api.aiproxy.com +tls +noall +stats
+    ///
+    /// Compare to udp perf using your default resolver:
+    ///
+    ///    kdig api.aiproxy.com +noall +stats
+    ///
+    /// Or using cloudflare's resolver
+    ///
+    ///    kdig @1.1.1.1 api.aiproxy.com +noall +stats
+    public static var resolveDNSOverTLS = true
+
+    public static var stableID: String? {
+        get {
+            protectedPropertyQueue.sync { _stableID }
+        }
+        set {
+            protectedPropertyQueue.async(flags: .barrier) { _stableID = newValue }
+        }
+    }
+    private static var _stableID: String?
+
+    public static var printRequestBodies: Bool = false
+    public static var printResponseBodies: Bool = false
+
+
     /// - Parameters:
     ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your provider's key.
     ///     AIProxy takes your key, encrypts it, and stores part of the result on our servers. The part that you include
@@ -47,7 +161,6 @@ public struct AIProxy {
         proxyPath: String,
         body: Data? = nil,
         verb: AIProxyHTTPVerb = .automatic,
-        contentType: String? = nil,
         headers: [String: String] = [:]
     ) async throws -> URLRequest {
         return try await AIProxyURLRequest.create(
@@ -57,8 +170,8 @@ public struct AIProxy {
             proxyPath: proxyPath,
             body: body,
             verb: verb,
-            contentType: contentType,
-            headers: headers
+            secondsToWait: 60,
+            additionalHeaders: headers
         )
     }
 
@@ -96,11 +209,27 @@ public struct AIProxy {
         clientID: String? = nil,
         requestFormat: OpenAIRequestFormat = .standard
     ) -> OpenAIService {
-        return OpenAIService(
+        return OpenAIProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID,
             requestFormat: requestFormat
+        )
+    }
+
+    /// Service that makes request directly to OpenAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your OpenAI API key
+    /// - Returns: An instance of OpenAIService configured and ready to make requests
+    public static func openAIDirectService(
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
+    ) -> OpenAIService {
+        return OpenAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
         )
     }
 
@@ -127,10 +256,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> GeminiService {
-        return GeminiService(
+        return GeminiProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Gemini. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Gemini API key
+    /// - Returns: An instance of  GeminiService configured and ready to make requests
+    public static func geminiDirectService(
+        unprotectedAPIKey: String
+    ) -> GeminiService {
+        return GeminiDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -157,10 +300,26 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> AnthropicService {
-        return AnthropicService(
+        return AnthropicProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Anthropic. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Anthropic API key
+    /// - Returns: An instance of AnthropicService configured and ready to make requests
+    public static func anthropicDirectService(
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
+    ) -> AnthropicService {
+        return AnthropicDirectService(
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
         )
     }
 
@@ -187,10 +346,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> StabilityAIService {
-        return StabilityAIService(
+        return StabilityAIProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to StabilityAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your StabilityAI API key
+    /// - Returns: An instance of StabilityAIService configured and ready to make requests
+    public static func stabilityAIDirectService(
+        unprotectedAPIKey: String
+    ) -> StabilityAIService {
+        return StabilityAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -217,10 +390,27 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> DeepLService {
-        return DeepLService(
+        return DeepLProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to DeepL. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your DeepL API key
+    ///   - accountType: Free or paid
+    /// - Returns: An instance of DeepLService configured and ready to make requests
+    public static func deepLDirectService(
+        unprotectedAPIKey: String,
+        accountType: DeepLAccountType
+    ) -> DeepLService {
+        return DeepLDirectService(
+            unprotectedAPIKey: unprotectedAPIKey,
+            accountType: accountType
         )
     }
 
@@ -247,10 +437,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> TogetherAIService {
-        return TogetherAIService(
+        return TogetherAIProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to TogetherAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your TogetherAI API key
+    /// - Returns: An instance of TogetherAIService configured and ready to make requests
+    public static func togetherAIDirectService(
+        unprotectedAPIKey: String
+    ) -> TogetherAIService {
+        return TogetherAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -277,12 +481,28 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> ReplicateService {
-        return ReplicateService(
+        return ReplicateProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
         )
     }
+
+    /// Service that makes request directly to Replicate. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Replicate API key
+    /// - Returns: An instance of ReplicateService configured and ready to make requests
+    #if false
+    public static func replicateDirectService(
+        unprotectedAPIKey: String
+    ) -> ReplicateService {
+        return ReplicateDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
+        )
+    }
+    #endif
 
     /// AIProxy's ElevenLabs service
     ///
@@ -307,10 +527,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> ElevenLabsService {
-        return ElevenLabsService(
+        return ElevenLabsProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to ElevenLabs. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your ElevenLabs API key
+    /// - Returns: An instance of  ElevenLabsService configured and ready to make requests
+    public static func elevenLabsDirectService(
+        unprotectedAPIKey: String
+    ) -> ElevenLabsService {
+        return ElevenLabsDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -337,10 +571,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> FalService {
-        return FalService(
+        return FalProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to ElevenLabs. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your ElevenLabs API key
+    /// - Returns: An instance of  ElevenLabsService configured and ready to make requests
+    public static func falDirectService(
+        unprotectedAPIKey: String
+    ) -> FalService {
+        return FalDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -367,10 +615,26 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> GroqService {
-        return GroqService(
+        return GroqProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Groq. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Groq API key
+    /// - Returns: An instance of  GroqService configured and ready to make requests
+    public static func groqDirectService(
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
+    ) -> GroqService {
+        return GroqDirectService(
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
         )
     }
 
@@ -397,10 +661,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> PerplexityService {
-        return PerplexityService(
+        return PerplexityProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Perplexity. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Perplexity API key
+    /// - Returns: An instance of  PerplexityService configured and ready to make requests
+    public static func perplexityDirectService(
+        unprotectedAPIKey: String
+    ) -> PerplexityService {
+        return PerplexityDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -427,10 +705,24 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> MistralService {
-        return MistralService(
+        return MistralProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Mistral. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Mistral API key
+    /// - Returns: An instance of  MistralService configured and ready to make requests
+    public static func mistralDirectService(
+        unprotectedAPIKey: String
+    ) -> MistralService {
+        return MistralDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
         )
     }
 
@@ -457,17 +749,211 @@ public struct AIProxy {
         serviceURL: String,
         clientID: String? = nil
     ) -> EachAIService {
-        return EachAIService(
+        return EachAIProxiedService(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
         )
     }
 
-#if canImport(AppKit)
+    /// Service that makes request directly to EachAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your EachAI API key
+    /// - Returns: An instance of  EachAI configured and ready to make requests
+    public static func eachAIDirectService(
+        unprotectedAPIKey: String
+    ) -> EachAIService {
+        return EachAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
+        )
+    }
+
+    /// AIProxy's OpenRouter service
+    ///
+    /// - Parameters:
+    ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your OpenRouter key.
+    ///     AIProxy takes your OpenRouter key, encrypts it, and stores part of the result on our servers. The part that you include
+    ///     here is the other part. Both pieces are needed to decrypt your key and fulfill the request to OpenRouter.
+    ///
+    ///   - serviceURL: The service URL is displayed in the AIProxy dashboard when you submit your OpenRouter key.
+    ///
+    ///   - clientID: An optional clientID to attribute requests to specific users or devices. It is OK to leave this blank for
+    ///     most applications. You would set this if you already have an analytics system, and you'd like to annotate AIProxy
+    ///     requests with IDs that are known to other parts of your system.
+    ///
+    ///     If you do not supply your own clientID, the internals of this lib will generate UUIDs for you. The default UUIDs are
+    ///     persistent on macOS and can be accurately used to attribute all requests to the same device. The default UUIDs
+    ///     on iOS are pesistent until the end user chooses to rotate their vendor identification number.
+    ///
+    /// - Returns: An instance of OpenRouterService configured and ready to make requests
+    public static func openRouterService(
+        partialKey: String,
+        serviceURL: String,
+        clientID: String? = nil
+    ) -> OpenRouterService {
+        return OpenRouterProxiedService(
+            partialKey: partialKey,
+            serviceURL: serviceURL,
+            clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to OpenRouter. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your OpenRouter API key
+    /// - Returns: An instance of  OpenRouter configured and ready to make requests
+    public static func openRouterDirectService(
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
+    ) -> OpenRouterService {
+        return OpenRouterDirectService(
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
+        )
+    }
+
+    /// AIProxy's DeepSeek service
+    ///
+    /// - Parameters:
+    ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your DeepSeek key.
+    ///     AIProxy takes your DeepSeek key, encrypts it, and stores part of the result on our servers. The part that you include
+    ///     here is the other part. Both pieces are needed to decrypt your key and fulfill the request to DeepSeek.
+    ///
+    ///   - serviceURL: The service URL is displayed in the AIProxy dashboard when you submit your DeepSeek key.
+    ///
+    ///   - clientID: An optional clientID to attribute requests to specific users or devices. It is OK to leave this blank for
+    ///     most applications. You would set this if you already have an analytics system, and you'd like to annotate AIProxy
+    ///     requests with IDs that are known to other parts of your system.
+    ///
+    ///     If you do not supply your own clientID, the internals of this lib will generate UUIDs for you. The default UUIDs are
+    ///     persistent on macOS and can be accurately used to attribute all requests to the same device. The default UUIDs
+    ///     on iOS are pesistent until the end user chooses to rotate their vendor identification number.
+    ///
+    /// - Returns: An instance of DeepSeekService configured and ready to make requests
+    public static func deepSeekService(
+        partialKey: String,
+        serviceURL: String,
+        clientID: String? = nil
+    ) -> DeepSeekService {
+        return DeepSeekProxiedService(
+            partialKey: partialKey,
+            serviceURL: serviceURL,
+            clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to DeepSeek. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your DeepSeek API key
+    /// - Returns: An instance of  DeepSeek configured and ready to make requests
+    public static func deepSeekDirectService(
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
+    ) -> DeepSeekService {
+        return DeepSeekDirectService(
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
+        )
+    }
+
+    /// AIProxy's FireworksAI service
+    ///
+    /// - Parameters:
+    ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your FireworksAI key.
+    ///     AIProxy takes your FireworksAI key, encrypts it, and stores part of the result on our servers. The part that you include
+    ///     here is the other part. Both pieces are needed to decrypt your key and fulfill the request to FireworksAI.
+    ///
+    ///   - serviceURL: The service URL is displayed in the AIProxy dashboard when you submit your FireworksAI key.
+    ///
+    ///   - clientID: An optional clientID to attribute requests to specific users or devices. It is OK to leave this blank for
+    ///     most applications. You would set this if you already have an analytics system, and you'd like to annotate AIProxy
+    ///     requests with IDs that are known to other parts of your system.
+    ///
+    ///     If you do not supply your own clientID, the internals of this lib will generate UUIDs for you. The default UUIDs are
+    ///     persistent on macOS and can be accurately used to attribute all requests to the same device. The default UUIDs
+    ///     on iOS are pesistent until the end user chooses to rotate their vendor identification number.
+    ///
+    /// - Returns: An instance of FireworksAIService configured and ready to make requests
+    public static func fireworksAIService(
+        partialKey: String,
+        serviceURL: String,
+        clientID: String? = nil
+    ) -> FireworksAIService {
+        return FireworksAIProxiedService(
+            partialKey: partialKey,
+            serviceURL: serviceURL,
+            clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to FireworksAI. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your FireworksAI API key
+    /// - Returns: An instance of  FireworksAI configured and ready to make requests
+    public static func fireworksAIDirectService(
+        unprotectedAPIKey: String
+    ) -> FireworksAIService {
+        return FireworksAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
+        )
+    }
+
+    /// AIProxy's Brave service
+    ///
+    /// - Parameters:
+    ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your Brave key.
+    ///     AIProxy takes your Brave key, encrypts it, and stores part of the result on our servers. The part that you include
+    ///     here is the other part. Both pieces are needed to decrypt your key and fulfill the request to Brave.
+    ///
+    ///   - serviceURL: The service URL is displayed in the AIProxy dashboard when you submit your Brave key.
+    ///
+    ///   - clientID: An optional clientID to attribute requests to specific users or devices. It is OK to leave this blank for
+    ///     most applications. You would set this if you already have an analytics system, and you'd like to annotate AIProxy
+    ///     requests with IDs that are known to other parts of your system.
+    ///
+    ///     If you do not supply your own clientID, the internals of this lib will generate UUIDs for you. The default UUIDs are
+    ///     persistent on macOS and can be accurately used to attribute all requests to the same device. The default UUIDs
+    ///     on iOS are pesistent until the end user chooses to rotate their vendor identification number.
+    ///
+    /// - Returns: An instance of BraveService configured and ready to make requests
+    public static func braveService(
+        partialKey: String,
+        serviceURL: String,
+        clientID: String? = nil
+    ) -> BraveService {
+        return BraveProxiedService(
+            partialKey: partialKey,
+            serviceURL: serviceURL,
+            clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to Brave. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your Brave API key
+    /// - Returns: An instance of  Brave configured and ready to make requests
+    public static func braveDirectService(
+        unprotectedAPIKey: String
+    ) -> BraveService {
+        return BraveDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
+        )
+    }
+
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
     public static func encodeImageAsJpeg(
         image: NSImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> Data? {
         return AIProxyUtils.encodeImageAsJpeg(image, compressionQuality)
     }
@@ -475,14 +961,14 @@ public struct AIProxy {
     @available(*, deprecated, message: "This function is deprecated. Use AIProxy.encodeImageAsURL instead.")
     public static func openAIEncodedImage(
         image: NSImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> URL? {
         return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
     }
 
     public static func encodeImageAsURL(
         image: NSImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> URL? {
         return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
     }
@@ -490,7 +976,7 @@ public struct AIProxy {
 #elseif canImport(UIKit)
     public static func encodeImageAsJpeg(
         image: UIImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> Data? {
         return AIProxyUtils.encodeImageAsJpeg(image, compressionQuality)
     }
@@ -498,20 +984,49 @@ public struct AIProxy {
     @available(*, deprecated, message: "This function is deprecated. Use AIProxy.encodeImageAsURL instead.")
     public static func openAIEncodedImage(
         image: UIImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> URL? {
         return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
     }
 
     public static func encodeImageAsURL(
         image: UIImage,
-        compressionQuality: CGFloat = 1.0
+        compressionQuality: CGFloat /* = 1.0 */
     ) -> URL? {
         return AIProxyUtils.encodeImageAsURL(image, compressionQuality)
     }
 #endif
 
-    private init() {
-        fatalError("This type is not designed to be instantiated")
+    @available(*, deprecated, message: "Use AIProxy.configure and pass true for useStableID")
+    public static func getStableIdentifier() async -> String? {
+        return await self._getStableIdentifier()
     }
+
+    @NetworkActor
+    private static func _getStableIdentifier() async -> String? {
+        do {
+            return try await AnonymousAccountStorage.sync()
+        } catch {
+            logIf(.critical)?.critical("Could not configure an AIProxy anonymous account: \(error.localizedDescription)")
+        }
+        return nil
+    }
+
+    public static func base64EncodeAudioPCMBuffer(from buffer: AVAudioPCMBuffer) -> String? {
+        guard buffer.format.channelCount == 1 else {
+            logIf(.error)?.error("This encoding routine assumes a single channel")
+            return nil
+        }
+
+        guard let audioBufferPtr = buffer.audioBufferList.pointee.mBuffers.mData else {
+            logIf(.error)?.error("No audio buffer list available to encode")
+            return nil
+        }
+
+        let audioBufferLenth = Int(buffer.audioBufferList.pointee.mBuffers.mDataByteSize)
+        let data = Data(bytes: audioBufferPtr, count: audioBufferLenth).base64EncodedString()
+        // print(data)
+        return data
+    }
+
 }

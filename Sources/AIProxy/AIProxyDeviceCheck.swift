@@ -1,5 +1,5 @@
 //
-//  AIProxyUtils.swift
+//  AIProxyDeviceCheck.swift
 //
 //
 //  Created by Lou Zell on 6/23/24.
@@ -8,6 +8,7 @@
 import Foundation
 import DeviceCheck
 import OSLog
+
 
 private let deviceCheckWarning = """
     AIProxy warning: DeviceCheck is not available on this device.
@@ -18,7 +19,7 @@ private let deviceCheckWarning = """
     """
 
 
-struct AIProxyDeviceCheck {
+enum AIProxyDeviceCheck {
 
     /// Gets a base64 encoded DeviceCheck token for this device, if possible.
     /// On iOS simulators, the return value will be nil and a log message will be written to console.
@@ -31,11 +32,14 @@ struct AIProxyDeviceCheck {
     /// to only be used by developers of your app, and is intended to only be included as a an environment variable.
     ///
     /// - Returns: A base 64 encoded DeviceCheck token, if possible
-    internal static func getToken() async -> String? {
+    internal static func getToken(forClient clientID: String?) async -> String? {
         guard DCDevice.current.isSupported else {
             if ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] == nil {
-                aiproxyLogger.warning("\(deviceCheckWarning, privacy: .public)")
+                logIf(.warning)?.warning("\(deviceCheckWarning, privacy: .public)")
             }
+            #if !targetEnvironment(simulator) && !DEBUG
+            ClientLibErrorLogger.logDeviceCheckNotSupported(clientID: clientID)
+            #endif
             return nil
         }
 
@@ -43,12 +47,12 @@ struct AIProxyDeviceCheck {
             let data = try await DCDevice.current.generateToken()
             return data.base64EncodedString()
         } catch {
-            aiproxyLogger.error("Could not create DeviceCheck token. Are you using an explicit bundle identifier?")
+            logIf(.error)?.error("Could not create DeviceCheck token. Are you using an explicit bundle identifier?")
+            #if !targetEnvironment(simulator) && !DEBUG
+            ClientLibErrorLogger.logDeviceCheckCouldNotGenerateToken(error.localizedDescription, clientID: clientID)
+            #endif
             return nil
         }
     }
 
-    private init() {
-        fatalError("This type is not designed to be instantiated")
-    }
 }

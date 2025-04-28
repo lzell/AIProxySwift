@@ -6,15 +6,38 @@
 //
 
 import Foundation
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 #elseif canImport(UIKit)
 import UIKit
 #endif
 
-struct AIProxyUtils {
+import Network
 
-#if canImport(AppKit)
+enum AIProxyUtils {
+
+    static func directURLSession() -> URLSession {
+        return URLSession(configuration: .ephemeral)
+    }
+
+    static func proxiedURLSession() -> URLSession {
+        if AIProxy.resolveDNSOverTLS {
+            let host = NWEndpoint.hostPort(host: "one.one.one.one", port: 853)
+            let endpoints: [NWEndpoint] = [
+                .hostPort(host: "1.1.1.1", port: 853),
+                .hostPort(host: "1.0.0.1", port: 853),
+                .hostPort(host: "2606:4700:4700::1111", port: 853),
+                .hostPort(host: "2606:4700:4700::1001", port: 853)
+            ]
+            NWParameters.PrivacyContext.default.requireEncryptedNameResolution(
+                true,
+                fallbackResolver: .tls(host, serverAddresses: endpoints)
+            )
+        }
+        return AIProxyURLSession.create()
+    }
+
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
     static func encodeImageAsJpeg(
         _ image: NSImage,
         _ compressionQuality: CGFloat
@@ -50,13 +73,10 @@ struct AIProxyUtils {
         return URL(string: "data:image/jpeg;base64,\(jpegData.base64EncodedString())")
     }
 #endif
-    private init() {
-        fatalError("This type is not designed to be instantiated")
-    }
 }
 
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 extension NSImage {
     func jpegData(compressionQuality: CGFloat = 1.0) -> Data? {
         guard let tiffData = self.tiffRepresentation else {
