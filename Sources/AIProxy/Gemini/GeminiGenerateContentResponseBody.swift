@@ -15,6 +15,11 @@ public struct GeminiGenerateContentResponseBody: Decodable {
 
     /// Metadata on the generation requests' token usage.
     public let usageMetadata: UsageMetadata?
+    
+    public init(candidates: [Candidate]?, usageMetadata: UsageMetadata?) {
+        self.candidates = candidates
+        self.usageMetadata = usageMetadata
+    }
 }
 
 // MARK: - ResponseBody.Candidate
@@ -38,6 +43,14 @@ extension GeminiGenerateContentResponseBody {
         /// List of ratings for the safety of a response candidate.
         /// There is at most one rating per category.
         public let safetyRatings: [SafetyRating]?
+        
+        public init(content: Content?, finishReason: String?, groundingMetadata: GroundingMetadata?, index: Int?, safetyRatings: [SafetyRating]?) {
+            self.content = content
+            self.finishReason = finishReason
+            self.groundingMetadata = groundingMetadata
+            self.index = index
+            self.safetyRatings = safetyRatings
+        }
     }
 }
 
@@ -54,6 +67,11 @@ extension GeminiGenerateContentResponseBody.Candidate {
 
         /// The producer of the content. Either 'user' or 'model'.
         public let role: String?
+        
+        public init(parts: [Part]?, role: String?) {
+            self.parts = parts
+            self.role = role
+        }
     }
 }
 
@@ -76,11 +94,21 @@ extension GeminiGenerateContentResponseBody.Candidate.Content {
         private struct _FunctionCall: Decodable {
             let name: String
             let args: [String: AIProxyJSONValue]?
+            
+            public init(name: String, args: [String : AIProxyJSONValue]?) {
+                self.name = name
+                self.args = args
+            }
         }
 
         private struct _InlineData: Decodable {
             let mimeType: String
             let data: String
+            
+            public init(mimeType: String, data: String) {
+                self.mimeType = mimeType
+                self.data = data
+            }
         }
 
         public init(from decoder: any Decoder) throws {
@@ -93,6 +121,7 @@ extension GeminiGenerateContentResponseBody.Candidate.Content {
                 self = .text(try container.decode(String.self, forKey: .text))
             }
         }
+        
     }
 }
 
@@ -110,6 +139,12 @@ extension GeminiGenerateContentResponseBody.Candidate {
 
         /// The probability of harm for this content.
         public let probability: String?
+        
+        public init(blocked: Bool?, category: String?, probability: String?) {
+            self.blocked = blocked
+            self.category = category
+            self.probability = probability
+        }
     }
 }
 
@@ -122,6 +157,13 @@ extension GeminiGenerateContentResponseBody.Candidate {
         public let groundingSupports: [GroundingSupport]?
         public let webSearchQueries: [String]?
         
+        public init(searchEntryPoint: SearchEntryPoint?, groundingChunks: [GroundingChunk]?, groundingSupports: [GroundingSupport]?, webSearchQueries: [String]?) {
+            self.searchEntryPoint = searchEntryPoint
+            self.groundingChunks = groundingChunks
+            self.groundingSupports = groundingSupports
+            self.webSearchQueries = webSearchQueries
+        }
+        
         private enum CodingKeys: String, CodingKey {
             case searchEntryPoint
             case groundingChunks
@@ -132,27 +174,52 @@ extension GeminiGenerateContentResponseBody.Candidate {
     
     public struct SearchEntryPoint: Decodable {
         public let renderedContent: String?
+        
+        public init(renderedContent: String?) {
+            self.renderedContent = renderedContent
+        }
     }
     
     public struct GroundingChunk: Decodable {
         public let web: WebInfo?
+        
+        public init(web: WebInfo?) {
+            self.web = web
+        }
     }
     
     public struct WebInfo: Decodable {
         public let uri: String?
         public let title: String?
+        
+        public init(uri: String?, title: String?) {
+            self.uri = uri
+            self.title = title
+        }
     }
     
     public struct GroundingSupport: Decodable {
         public let segment: Segment?
         public let groundingChunkIndices: [Int]?
         public let confidenceScores: [Double]?
+        
+        public init(segment: Segment?, groundingChunkIndices: [Int]?, confidenceScores: [Double]?) {
+            self.segment = segment
+            self.groundingChunkIndices = groundingChunkIndices
+            self.confidenceScores = confidenceScores
+        }
     }
     
     public struct Segment: Decodable {
         public let startIndex: Int?
         public let endIndex: Int?
         public let text: String?
+        
+        public init(startIndex: Int?, endIndex: Int?, text: String?) {
+            self.startIndex = startIndex
+            self.endIndex = endIndex
+            self.text = text
+        }
     }
 }
 
@@ -176,5 +243,13 @@ extension GeminiGenerateContentResponseBody {
 
         /// The number of tokens allocated for thinking.
         public let thoughtsTokenCount: Int?
+        
+        public init(cachedContentTokenCount: Int?, candidatesTokenCount: Int?, promptTokenCount: Int?, totalTokenCount: Int?, thoughtsTokenCount: Int?) {
+            self.cachedContentTokenCount = cachedContentTokenCount
+            self.candidatesTokenCount = candidatesTokenCount
+            self.promptTokenCount = promptTokenCount
+            self.totalTokenCount = totalTokenCount
+            self.thoughtsTokenCount = thoughtsTokenCount
+        }
     }
 }

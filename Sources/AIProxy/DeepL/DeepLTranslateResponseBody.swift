@@ -11,6 +11,10 @@ import Foundation
 /// https://developers.deepl.com/docs/api-reference/translate/openapi-spec-for-text-translation
 public struct DeepLTranslateResponseBody: Decodable {
     public let translations: [DeepLTranslation]
+    
+    public init(translations: [DeepLTranslation]) {
+        self.translations = translations
+    }
 }
 
 public struct DeepLTranslation: Decodable {
@@ -21,6 +25,11 @@ public struct DeepLTranslation: Decodable {
     /// The translated text.
     /// Example: "Hallo, Welt!"
     public let text: String
+    
+    public init(detectedSourceLanguage: String, text: String) {
+        self.detectedSourceLanguage = detectedSourceLanguage
+        self.text = text
+    }
 
     private enum CodingKeys: String, CodingKey {
         case detectedSourceLanguage = "detected_source_language"

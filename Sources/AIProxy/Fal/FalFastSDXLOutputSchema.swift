@@ -13,6 +13,14 @@ public struct FalFastSDXLOutputSchema: Decodable {
     public let prompt: String?
     public let seed: UInt64?
     public let timings: FalTimings?
+    
+    public init(hasNSFWConcepts: [Bool]?, images: [FalOutputImage]?, prompt: String?, seed: UInt64?, timings: FalTimings?) {
+        self.hasNSFWConcepts = hasNSFWConcepts
+        self.images = images
+        self.prompt = prompt
+        self.seed = seed
+        self.timings = timings
+    }
 
     private enum CodingKeys: String, CodingKey {
         case hasNSFWConcepts = "has_nsfw_concepts"

@@ -17,6 +17,17 @@ public struct AnthropicMessageResponseBody: Decodable {
     public let stopSequence: String?
     public let type: String
     public let usage: AnthropicMessageUsage
+    
+    public init(content: [AnthropicMessageResponseContent], id: String, model: String, role: String, stopReason: String?, stopSequence: String?, type: String, usage: AnthropicMessageUsage) {
+        self.content = content
+        self.id = id
+        self.model = model
+        self.role = role
+        self.stopReason = stopReason
+        self.stopSequence = stopSequence
+        self.type = type
+        self.usage = usage
+    }
 
     private enum CodingKeys: String, CodingKey {
         case content
@@ -72,5 +83,10 @@ public struct AnthropicMessageUsage: Decodable {
     enum CodingKeys: String, CodingKey {
         case inputTokens = "input_tokens"
         case outputTokens = "output_tokens"
+    }
+    
+    public init(inputTokens: Int, outputTokens: Int) {
+        self.inputTokens = inputTokens
+        self.outputTokens = outputTokens
     }
 }
