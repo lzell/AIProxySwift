@@ -34,6 +34,15 @@ public struct OpenRouterChatCompletionResponseBody: Decodable {
         case provider
         case usage
     }
+    
+    public init(choices: [Choice], created: Int?, id: String?, model: String?, provider: String?, usage: Usage?) {
+        self.choices = choices
+        self.created = created
+        self.id = id
+        self.model = model
+        self.provider = provider
+        self.usage = usage
+    }
 }
 
 // MARK: - ResponseBody.Usage
@@ -52,6 +61,12 @@ extension OpenRouterChatCompletionResponseBody {
             case completionTokens = "completion_tokens"
             case promptTokens = "prompt_tokens"
             case totalTokens = "total_tokens"
+        }
+        
+        public init(completionTokens: Int?, promptTokens: Int?, totalTokens: Int?) {
+            self.completionTokens = completionTokens
+            self.promptTokens = promptTokens
+            self.totalTokens = totalTokens
         }
     }
 }
@@ -76,6 +91,12 @@ extension OpenRouterChatCompletionResponseBody {
             case message
             case nativeFinishReason = "native_finish_reason"
         }
+        
+        public init(finishReason: String?, message: Message, nativeFinishReason: String?) {
+            self.finishReason = finishReason
+            self.message = message
+            self.nativeFinishReason = nativeFinishReason
+        }
     }
 }
 
@@ -99,6 +120,13 @@ extension OpenRouterChatCompletionResponseBody.Choice {
             case role
             case toolCalls = "tool_calls"
         }
+        
+        public init(content: String?, reasoning: String?, role: String?, toolCalls: [ToolCall]?) {
+            self.content = content
+            self.reasoning = reasoning
+            self.role = role
+            self.toolCalls = toolCalls
+        }
     }
 }
 
@@ -114,6 +142,13 @@ extension OpenRouterChatCompletionResponseBody.Choice.Message {
 
         /// The type of the tool. Currently, only `function` is supported.
         public let type: String?
+        
+        public init(function: Function?, id: String?, index: Int?, type: String?) {
+            self.function = function
+            self.id = id
+            self.index = index
+            self.type = type
+        }
     }
 }
 
@@ -134,6 +169,11 @@ extension OpenRouterChatCompletionResponseBody.Choice.Message.ToolCall {
         private enum CodingKeys: CodingKey {
             case name
             case arguments
+        }
+        public init(name: String, arguments: [String : Any]?, argumentsRaw: String?) {
+            self.name = name
+            self.arguments = arguments
+            self.argumentsRaw = argumentsRaw
         }
 
         public init(from decoder: any Decoder) throws {

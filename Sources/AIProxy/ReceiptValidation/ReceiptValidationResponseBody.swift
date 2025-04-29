@@ -7,4 +7,8 @@
 
 public struct ReceiptValidationResponseBody: Decodable {
     public let isValid: Bool
+    
+    public init(isValid: Bool) {
+        self.isValid = isValid
+    }
 }

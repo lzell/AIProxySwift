@@ -24,6 +24,14 @@ public struct ElevenLabsSpeechToTextResponseBody: Decodable {
 
     /// Requested additional formats of the transcript.
     public let additionalFormats: [AdditionalFormat]?
+    
+    public init(languageCode: String?, languageProbability: Double?, text: String?, words: [Word]?, additionalFormats: [AdditionalFormat]?) {
+        self.languageCode = languageCode
+        self.languageProbability = languageProbability
+        self.text = text
+        self.words = words
+        self.additionalFormats = additionalFormats
+    }
 
     private enum CodingKeys: String, CodingKey {
         case languageCode = "language_code"
@@ -53,6 +61,15 @@ extension ElevenLabsSpeechToTextResponseBody {
 
         /// The characters that make up the word and their timing information.
         public let characters: [Character]?
+        
+        public init(text: String, type: WordType?, start: Double?, end: Double?, speakerID: Double?, characters: [Character]?) {
+            self.text = text
+            self.type = type
+            self.start = start
+            self.end = end
+            self.speakerID = speakerID
+            self.characters = characters
+        }
 
         private enum CodingKeys: String, CodingKey {
             case text
@@ -79,6 +96,14 @@ extension ElevenLabsSpeechToTextResponseBody {
 
         /// The content of the additional format.
         public let content: String?
+        
+        public init(requestedFormat: String, fileExtension: String, contentType: String, isBase64Encoded: Bool, content: String?) {
+            self.requestedFormat = requestedFormat
+            self.fileExtension = fileExtension
+            self.contentType = contentType
+            self.isBase64Encoded = isBase64Encoded
+            self.content = content
+        }
 
         private enum CodingKeys: String, CodingKey {
             case requestedFormat = "requested_format"
@@ -100,6 +125,12 @@ extension ElevenLabsSpeechToTextResponseBody.Word {
 
         /// The end time of the character in seconds.
         public let end: Double?
+        
+        public init(text: String, start: Double?, end: Double?) {
+            self.text = text
+            self.start = start
+            self.end = end
+        }
     }
 
     public enum WordType: String, Decodable {

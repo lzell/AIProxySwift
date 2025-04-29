@@ -18,6 +18,19 @@ public struct GeminiFile: Decodable {
     public let updateTime: String?
     public let uri: URL
     public let videoMetadata: VideoMetadata?
+    
+    public init(createTime: String?, expirationTime: String?, mimeType: String?, name: String?, sha256Hash: String?, sizeBytes: String?, state: State, updateTime: String?, uri: URL, videoMetadata: VideoMetadata?) {
+        self.createTime = createTime
+        self.expirationTime = expirationTime
+        self.mimeType = mimeType
+        self.name = name
+        self.sha256Hash = sha256Hash
+        self.sizeBytes = sizeBytes
+        self.state = state
+        self.updateTime = updateTime
+        self.uri = uri
+        self.videoMetadata = videoMetadata
+    }
 }
 
 // MARK: - GeminiFile.State
@@ -32,5 +45,9 @@ extension GeminiFile {
 extension GeminiFile {
     public struct VideoMetadata: Decodable {
         public let videoDuration: String
+        
+        public init(videoDuration: String) {
+            self.videoDuration = videoDuration
+        }
     }
 }

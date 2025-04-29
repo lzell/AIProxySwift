@@ -29,6 +29,16 @@ public struct PerplexityChatCompletionResponseBody: Decodable {
 
     /// Usage statistics for the completion request.
     public let usage: Usage?
+    
+    public init(choices: [Choice], citations: [String]?, created: Int?, id: String?, model: String?, object: String?, usage: Usage?) {
+        self.choices = choices
+        self.citations = citations
+        self.created = created
+        self.id = id
+        self.model = model
+        self.object = object
+        self.usage = usage
+    }
 }
 
 // MARK: - ResponseBody.Choice
@@ -54,6 +64,13 @@ extension PerplexityChatCompletionResponseBody {
             case index
             case message
         }
+        
+        public init(delta: Delta?, finishReason: FinishReason?, index: Int?, message: Message?) {
+            self.delta = delta
+            self.finishReason = finishReason
+            self.index = index
+            self.message = message
+        }
     }
 }
 
@@ -62,6 +79,11 @@ extension PerplexityChatCompletionResponseBody.Choice {
     public struct Delta: Decodable {
         public let content: String
         public let role: PerplexityRole
+        
+        public init(content: String, role: PerplexityRole) {
+            self.content = content
+            self.role = role
+        }
     }
 }
 
@@ -81,6 +103,11 @@ extension PerplexityChatCompletionResponseBody.Choice {
     public struct Message: Decodable {
         public let content: String
         public let role: PerplexityRole
+        
+        public init(content: String, role: PerplexityRole) {
+            self.content = content
+            self.role = role
+        }
     }
 }
 
@@ -100,6 +127,12 @@ extension PerplexityChatCompletionResponseBody {
             case promptTokens = "prompt_tokens"
             case completionTokens = "completion_tokens"
             case totalTokens = "total_tokens"
+        }
+        
+        public init(promptTokens: Int?, completionTokens: Int?, totalTokens: Int?) {
+            self.promptTokens = promptTokens
+            self.completionTokens = completionTokens
+            self.totalTokens = totalTokens
         }
     }
 }
