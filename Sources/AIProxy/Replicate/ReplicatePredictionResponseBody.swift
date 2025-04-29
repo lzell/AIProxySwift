@@ -85,12 +85,33 @@ public struct ReplicatePrediction<Output: Decodable>: Decodable {
         case urls
         case version
     }
+    
+    public init(completedAt: String?, createdAt: String?, dataRemoved: Bool?, error: String?, id: String?, logs: String?, metrics: Metrics?, model: String?, output: Output?, startedAt: String?, status: Status?, urls: ActionURLs?, version: String?) {
+        self.completedAt = completedAt
+        self.createdAt = createdAt
+        self.dataRemoved = dataRemoved
+        self.error = error
+        self.id = id
+        self.logs = logs
+        self.metrics = metrics
+        self.model = model
+        self.output = output
+        self.startedAt = startedAt
+        self.status = status
+        self.urls = urls
+        self.version = version
+    }
 }
 
 extension ReplicatePrediction {
     public struct ActionURLs: Decodable {
         public let cancel: URL?
         public let get: URL?
+        
+        public init(cancel: URL?, get: URL?) {
+            self.cancel = cancel
+            self.get = get
+        }
     }
 }
 
@@ -100,6 +121,10 @@ extension ReplicatePrediction {
 
         enum CodingKeys: String, CodingKey {
             case predictTime = "predict_time"
+        }
+        
+        public init(predictTime: Double) {
+            self.predictTime = predictTime
         }
     }
 }

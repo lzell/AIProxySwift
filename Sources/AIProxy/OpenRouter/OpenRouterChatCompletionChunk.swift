@@ -20,6 +20,13 @@ public struct OpenRouterChatCompletionChunk: Decodable {
     /// This property is nil for all chunks except for the last chunk, which contains the token
     /// usage statistics for the entire request.
     public let usage: OpenRouterChatCompletionResponseBody.Usage?
+    
+    public init(choices: [Choice], model: String?, provider: String?, usage: OpenRouterChatCompletionResponseBody.Usage?) {
+        self.choices = choices
+        self.model = model
+        self.provider = provider
+        self.usage = usage
+    }
 }
 
 // MARK: Chunk.Choice
@@ -27,6 +34,11 @@ extension OpenRouterChatCompletionChunk {
     public struct Choice: Decodable {
         public let delta: Delta
         public let finishReason: String?
+        
+        public init(delta: Delta, finishReason: String?) {
+            self.delta = delta
+            self.finishReason = finishReason
+        }
 
         private enum CodingKeys: String, CodingKey {
             case delta
@@ -45,5 +57,11 @@ extension OpenRouterChatCompletionChunk.Choice {
 
         /// Reasoning content. For reasoning models, these chunks arrive before `content`.
         public let reasoning: String?
+        
+        public init(role: String, content: String?, reasoning: String?) {
+            self.role = role
+            self.content = content
+            self.reasoning = reasoning
+        }
     }
 }

@@ -24,6 +24,14 @@ public struct TogetherAIChatCompletionResponseBody: Decodable {
     public let model: String
 
     public let usage: TogetherAIChatUsage?
+    
+    public init(choices: [TogetherAIChatCompletionChoice], created: Int, id: String, model: String, usage: TogetherAIChatUsage?) {
+        self.choices = choices
+        self.created = created
+        self.id = id
+        self.model = model
+        self.usage = usage
+    }
 }
 
 public struct TogetherAIChatCompletionChoice: Decodable {
@@ -39,6 +47,12 @@ public struct TogetherAIChatCompletionChoice: Decodable {
         case message
         case finishReason = "finish_reason"
         case logprobs
+    }
+    
+    public init(message: TogetherAIMessage, finishReason: TogetherAIFinishReason?, logprobs: TogetherAILogprobs?) {
+        self.message = message
+        self.finishReason = finishReason
+        self.logprobs = logprobs
     }
 }
 
@@ -60,6 +74,11 @@ public struct TogetherAILogprobs: Decodable {
         case tokens
         case tokenLogprobs = "token_logprobs"
     }
+    
+    public init(tokens: [String], tokenLogprobs: [Double]) {
+        self.tokens = tokens
+        self.tokenLogprobs = tokenLogprobs
+    }
 }
 
 public struct TogetherAIChatUsage: Decodable {
@@ -71,5 +90,11 @@ public struct TogetherAIChatUsage: Decodable {
         case promptTokens = "prompt_tokens"
         case completionTokens = "completion_tokens"
         case totalTokens = "total_tokens"
+    }
+    
+    public init(promptTokens: Int, completionTokens: Int, totalTokens: Int) {
+        self.promptTokens = promptTokens
+        self.completionTokens = completionTokens
+        self.totalTokens = totalTokens
     }
 }

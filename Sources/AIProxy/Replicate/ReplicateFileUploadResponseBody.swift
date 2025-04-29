@@ -29,17 +29,38 @@ public struct ReplicateFileUploadResponseBody: Decodable {
         case size
         case urls
     }
+    
+    public init(contentType: String?, checksums: Checksums?, createdAt: String?, etag: String?, expiresAt: String?, id: String?, name: String?, size: Int?, urls: ActionURLs) {
+        self.contentType = contentType
+        self.checksums = checksums
+        self.createdAt = createdAt
+        self.etag = etag
+        self.expiresAt = expiresAt
+        self.id = id
+        self.name = name
+        self.size = size
+        self.urls = urls
+    }
 }
 
 extension ReplicateFileUploadResponseBody {
     public struct Checksums: Decodable {
         public let md5: String
         public let sha256: String
+        
+        public init(md5: String, sha256: String) {
+            self.md5 = md5
+            self.sha256 = sha256
+        }
     }
 }
 
 extension ReplicateFileUploadResponseBody {
     public struct ActionURLs: Decodable {
         public let get: URL
+        
+        public init(get: URL) {
+            self.get = get
+        }
     }
 }
