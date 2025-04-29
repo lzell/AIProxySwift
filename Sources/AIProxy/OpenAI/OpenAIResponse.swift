@@ -102,6 +102,30 @@ public struct OpenAIResponse: Decodable {
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
     /// [Learn more](https://platform.openai.com/docs/guides/safety-best-practices#end-user-ids).
     public let user: String?
+    
+    public init(createdAt: Double?, error: ResponseError?, id: String?, incompleteDetails: IncompleteDetails?, instructions: String?, maxOutputTokens: Int?, metadata: [String : String]?, model: String?, output: [ResponseOutputItem], parallelToolCalls: Bool?, previousResponseId: String?, reasoning: Reasoning?, status: Status?, text: ResponseTextConfig?, temperature: Double?, toolChoice: OpenAICreateResponseRequestBody.ToolChoice?, tools: [OpenAICreateResponseRequestBody.Tool]?, topP: Double?, truncation: String?, usage: ResponseUsage?, user: String?) {
+        self.createdAt = createdAt
+        self.error = error
+        self.id = id
+        self.incompleteDetails = incompleteDetails
+        self.instructions = instructions
+        self.maxOutputTokens = maxOutputTokens
+        self.metadata = metadata
+        self.model = model
+        self.output = output
+        self.parallelToolCalls = parallelToolCalls
+        self.previousResponseId = previousResponseId
+        self.reasoning = reasoning
+        self.status = status
+        self.text = text
+        self.temperature = temperature
+        self.toolChoice = toolChoice
+        self.tools = tools
+        self.topP = topP
+        self.truncation = truncation
+        self.usage = usage
+        self.user = user
+    }
 
     /// Convenience property that aggregates all `outputText` items from the `output` list.
     /// If no `outputText` content blocks exist, then an empty string is returned.

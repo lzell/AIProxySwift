@@ -18,6 +18,12 @@ public struct OpenAIModerationResponseBody: Decodable {
 
     /// A list of moderation objects.
     public let results: [ModerationResult]
+    
+    public init(id: String?, model: String?, results: [ModerationResult]) {
+        self.id = id
+        self.model = model
+        self.results = results
+    }
 }
 
 // MARK: -
@@ -36,6 +42,13 @@ extension OpenAIModerationResponseBody {
 
         /// Whether any of the below categories are flagged.
         public let flagged: Bool
+        
+        public init(categoryAppliedInputTypes: CategoryAppliedInputTypes?, categoryScores: CategoryScores?, categories: Categories?, flagged: Bool) {
+            self.categoryAppliedInputTypes = categoryAppliedInputTypes
+            self.categoryScores = categoryScores
+            self.categories = categories
+            self.flagged = flagged
+        }
 
         private enum CodingKeys: String, CodingKey {
             case categoryAppliedInputTypes = "category_applied_input_types"
@@ -102,6 +115,22 @@ extension OpenAIModerationResponseBody.ModerationResult {
 
         /// Content that depicts death, violence, or physical injury in graphic detail.
         public let violenceGraphic: Bool?
+        
+        public init(hate: Bool?, hateThreatening: Bool?, harassment: Bool?, harassmentThreatening: Bool?, illicit: Bool?, illicitViolent: Bool?, sexual: Bool?, sexualMinors: Bool?, selfHarm: Bool?, selfHarmIntent: Bool?, selfHarmInstructions: Bool?, violence: Bool?, violenceGraphic: Bool?) {
+            self.hate = hate
+            self.hateThreatening = hateThreatening
+            self.harassment = harassment
+            self.harassmentThreatening = harassmentThreatening
+            self.illicit = illicit
+            self.illicitViolent = illicitViolent
+            self.sexual = sexual
+            self.sexualMinors = sexualMinors
+            self.selfHarm = selfHarm
+            self.selfHarmIntent = selfHarmIntent
+            self.selfHarmInstructions = selfHarmInstructions
+            self.violence = violence
+            self.violenceGraphic = violenceGraphic
+        }
 
         private enum CodingKeys: String, CodingKey {
             case hate
@@ -164,6 +193,22 @@ extension OpenAIModerationResponseBody.ModerationResult {
 
         /// The score for the category 'violence/graphic'.
         public let violenceGraphic: Double?
+        
+        public init(hate: Double?, hateThreatening: Double?, harassment: Double?, harassmentThreatening: Double?, illicit: Double?, illicitViolent: Double?, sexual: Double?, sexualMinors: Double?, selfHarm: Double?, selfHarmIntent: Double?, selfHarmInstructions: Double?, violence: Double?, violenceGraphic: Double?) {
+            self.hate = hate
+            self.hateThreatening = hateThreatening
+            self.harassment = harassment
+            self.harassmentThreatening = harassmentThreatening
+            self.illicit = illicit
+            self.illicitViolent = illicitViolent
+            self.sexual = sexual
+            self.sexualMinors = sexualMinors
+            self.selfHarm = selfHarm
+            self.selfHarmIntent = selfHarmIntent
+            self.selfHarmInstructions = selfHarmInstructions
+            self.violence = violence
+            self.violenceGraphic = violenceGraphic
+        }
 
         private enum CodingKeys: String, CodingKey {
             case hate
@@ -226,6 +271,22 @@ extension OpenAIModerationResponseBody.ModerationResult {
 
         /// The applied input type(s) for the category 'violence/graphic'.
         public let violenceGraphic: [InputType]?
+        
+        public init(hate: [InputType]?, hateThreatening: [InputType]?, harassment: [InputType]?, harassmentThreatening: [InputType]?, illicit: [InputType]?, illicitViolent: [InputType]?, sexual: [InputType]?, sexualMinors: [InputType]?, selfHarm: [InputType]?, selfHarmIntent: [InputType]?, selfHarmInstructions: [InputType]?, violence: [InputType]?, violenceGraphic: [InputType]?) {
+            self.hate = hate
+            self.hateThreatening = hateThreatening
+            self.harassment = harassment
+            self.harassmentThreatening = harassmentThreatening
+            self.illicit = illicit
+            self.illicitViolent = illicitViolent
+            self.sexual = sexual
+            self.sexualMinors = sexualMinors
+            self.selfHarm = selfHarm
+            self.selfHarmIntent = selfHarmIntent
+            self.selfHarmInstructions = selfHarmInstructions
+            self.violence = violence
+            self.violenceGraphic = violenceGraphic
+        }
 
         private enum CodingKeys: String, CodingKey {
             case hate
