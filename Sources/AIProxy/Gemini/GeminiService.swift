@@ -22,7 +22,7 @@ public protocol GeminiService {
     func generateContentRequest(
         body: GeminiGenerateContentRequestBody,
         model: String,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> GeminiGenerateContentResponseBody
 
     /// Generate images with the Imagen API

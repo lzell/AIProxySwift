@@ -18,21 +18,13 @@ final class AnonymousAccountStorage {
     /// A best-effort anonymous ID that is stable across multiple devices of an iCloud account
     static var resolvedAccount: AnonymousAccount? {
         get {
-            return _resolvedAccountAccessQueue.sync {
-                return _resolvedAccount
-            }
+            protectedPropertyQueue.sync { _resolvedAccount }
         }
         set {
-            _resolvedAccountAccessQueue.async(flags: .barrier) {
-                _resolvedAccount = newValue
-            }
+            protectedPropertyQueue.async(flags: .barrier) { _resolvedAccount = newValue }
         }
     }
     private static var _resolvedAccount: AnonymousAccount?
-    private static let _resolvedAccountAccessQueue = DispatchQueue(
-        label: "aiproxy-resolved-account-access-queue",
-        attributes: .concurrent
-    )
 
     /// The account chain that lead to the current resolution.
     private static var localAccountChain: [AnonymousAccount] = []

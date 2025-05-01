@@ -19,7 +19,7 @@ public protocol OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/chat/object
     func chatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> OpenAIChatCompletionResponseBody
     
     /// Initiates a streaming chat completion request to /v1/chat/completions.
@@ -32,20 +32,35 @@ public protocol OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
     func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk>
     
     /// Initiates a create image request to /v1/images/generations
     ///
     /// - Parameters:
-    ///   - body: The request body to send to aiproxy and openai. See this reference:
+    ///   - body: The request body to send to OpenAI. See this reference:
     ///           https://platform.openai.com/docs/api-reference/images/create
-    /// - Returns: A ChatCompletionResponse. See this reference:
-    ///            https://platform.openai.com/docs/api-reference/chat/object
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
+    /// - Returns: A response body containing the generated image as base64, or a reference to the image on a CDN
+    ///            https://platform.openai.com/docs/api-reference/images/object
     func createImageRequest(
-        body: OpenAICreateImageRequestBody
+        body: OpenAICreateImageRequestBody,
+        secondsToWait: UInt
     ) async throws -> OpenAICreateImageResponseBody
-    
+
+    /// Initiates a create image edit request to `v1/images/edits`
+    ///
+    /// - Parameters:
+    ///   - body: The request body to send to OpenAI. See this reference:
+    ///           https://platform.openai.com/docs/api-reference/images/createEdit
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
+    /// - Returns: A response body containing the generated image as base64, or a reference to the image on a CDN
+    ///            https://platform.openai.com/docs/api-reference/images/object
+    func createImageEditRequest(
+        body: OpenAICreateImageEditRequestBody,
+        secondsToWait: UInt
+    ) async throws -> OpenAICreateImageResponseBody
+
     /// Initiates a create transcription request to v1/audio/transcriptions
     ///
     /// - Parameters:

@@ -36,6 +36,16 @@ public struct OpenAIChatCompletionChunk: Decodable {
     /// This property is nil for all chunks except for the last chunk, which contains the token
     /// usage statistics for the entire request.
     public let usage: OpenAIChatUsage?
+    
+    public init(choices: [Choice], created: Int?, id: String?, model: String?, serviceTier: String?, systemFingerprint: String?, usage: OpenAIChatUsage?) {
+        self.choices = choices
+        self.created = created
+        self.id = id
+        self.model = model
+        self.serviceTier = serviceTier
+        self.systemFingerprint = systemFingerprint
+        self.usage = usage
+    }
 
     private enum CodingKeys: String, CodingKey {
         case choices
@@ -60,6 +70,12 @@ extension OpenAIChatCompletionChunk {
 
         /// The index of the choice in the list of choices.
         public let index: Int?
+        
+        public init(delta: Delta, finishReason: String?, index: Int?) {
+            self.delta = delta
+            self.finishReason = finishReason
+            self.index = index
+        }
 
         private enum CodingKeys: String, CodingKey {
             case delta
@@ -84,6 +100,13 @@ extension OpenAIChatCompletionChunk.Choice {
         public let role: String?
 
         public let toolCalls: [ToolCall]?
+        
+        public init(content: String?, refusal: String?, role: String?, toolCalls: [ToolCall]?) {
+            self.content = content
+            self.refusal = refusal
+            self.role = role
+            self.toolCalls = toolCalls
+        }
 
         private enum CodingKeys: String, CodingKey {
             case content
@@ -107,6 +130,13 @@ extension OpenAIChatCompletionChunk.Choice.Delta {
 
         /// The function to call
         public let function: Function?
+        
+        public init(index: Int?, id: String?, type: String?, function: Function?) {
+            self.index = index
+            self.id = id
+            self.type = type
+            self.function = function
+        }
     }
 }
 
@@ -120,5 +150,10 @@ extension OpenAIChatCompletionChunk.Choice.Delta.ToolCall {
         /// Note that the model does not always generate valid JSON, and may hallucinate parameters not
         /// defined by your function schema. Validate the arguments in your code before calling your function.
         public let arguments: String?
+        
+        public init(name: String?, arguments: String?) {
+            self.name = name
+            self.arguments = arguments
+        }
     }
 }

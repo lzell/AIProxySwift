@@ -37,6 +37,7 @@ open class ElevenLabsDirectService: ElevenLabsService, DirectService {
             path: "/v1/text-to-speech/\(voiceID)",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "xi-api-key": self.unprotectedAPIKey
@@ -70,6 +71,7 @@ open class ElevenLabsDirectService: ElevenLabsService, DirectService {
             path: "/v1/speech-to-speech/\(voiceID)",
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)",
             additionalHeaders: [
                 "xi-api-key": self.unprotectedAPIKey
@@ -80,5 +82,31 @@ open class ElevenLabsDirectService: ElevenLabsService, DirectService {
             request
         )
         return data
+    }
+
+    /// Converts text to speech with a request to `/v1/speech-to-text`
+    ///
+    /// - Parameters:
+    ///
+    ///   - body: The request body to send to ElevenLabs. See this reference:
+    ///           https://elevenlabs.io/docs/api-reference/speech-to-text/convert#request
+    ///
+    /// - Returns: The speech to text response body
+    public func speechToTextRequest(
+        body: ElevenLabsSpeechToTextRequestBody
+    ) async throws -> ElevenLabsSpeechToTextResponseBody {
+        let boundary = UUID().uuidString
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: "https://api.elevenlabs.io",
+            path: "/v1/speech-to-text",
+            body: formEncode(body, boundary),
+            verb: .post,
+            secondsToWait: 60,
+            contentType: "multipart/form-data; boundary=\(boundary)",
+            additionalHeaders: [
+                "xi-api-key": self.unprotectedAPIKey
+            ]
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 }

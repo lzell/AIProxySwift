@@ -19,7 +19,7 @@ private let deviceCheckWarning = """
     """
 
 
-struct AIProxyDeviceCheck {
+enum AIProxyDeviceCheck {
 
     /// Gets a base64 encoded DeviceCheck token for this device, if possible.
     /// On iOS simulators, the return value will be nil and a log message will be written to console.
@@ -55,7 +55,4 @@ struct AIProxyDeviceCheck {
         }
     }
 
-    private init() {
-        fatalError("This type is not designed to be instantiated")
-    }
 }

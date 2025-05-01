@@ -26,22 +26,22 @@ open class BraveDirectService: BraveService, DirectService {
     ///            BraveWebSearchResponseBody to understand how to get the information you want out of it.
     public func webSearchRequest(
         query: String,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> BraveWebSearchResponseBody {
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             throw AIProxyError.assertion("Could not create an encoded version of query params for brave search")
         }
-        var request = try AIProxyURLRequest.createDirect(
+        let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.search.brave.com",
             path: "/res/v1/web/search?q=" + encodedQuery,
             body: nil,
             verb: .get,
+            secondsToWait: secondsToWait,
             contentType: "application/json",
             additionalHeaders: [
                 "X-Subscription-Token": self.unprotectedAPIKey
             ]
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 }

@@ -15,6 +15,11 @@ public struct FalFluxLoRAFastTrainingOutputSchema: Decodable {
 
     /// Remote file holding the trained diffusers lora weights.
     public let diffusersLoraFile: File?
+    
+    public init(configFile: File?, diffusersLoraFile: File?) {
+        self.configFile = configFile
+        self.diffusersLoraFile = diffusersLoraFile
+    }
 
     private enum CodingKeys: String, CodingKey {
         case configFile = "config_file"
@@ -36,6 +41,13 @@ extension FalFluxLoRAFastTrainingOutputSchema {
 
         /// The URL where the file can be downloaded from.
         public let url: URL?
+        
+        public init(contentType: String?, fileName: String?, fileSize: Int?, url: URL?) {
+            self.contentType = contentType
+            self.fileName = fileName
+            self.fileSize = fileSize
+            self.url = url
+        }
 
         private enum CodingKeys: String, CodingKey {
             case contentType = "content_type"

@@ -12,6 +12,10 @@ import Foundation
 public struct OpenAICreateImageResponseBody: Decodable {
     /// A list of generated images returned from the 'Create Image' endpoint
     public let data: [ImageData]
+    
+    public init(data: [ImageData]) {
+        self.data = data
+    }
 }
 
 // MARK: -
@@ -26,6 +30,12 @@ extension OpenAICreateImageResponseBody {
 
         /// The URL of the generated image,  if `responseFormat` on OpenAICreateImageRequestBody is `url` (default).
         public let url: URL?
+        
+        public init(b64JSON: String?, revisedPrompt: String?, url: URL?) {
+            self.b64JSON = b64JSON
+            self.revisedPrompt = revisedPrompt
+            self.url = url
+        }
 
         enum CodingKeys: String, CodingKey {
             case b64JSON = "b64_json"

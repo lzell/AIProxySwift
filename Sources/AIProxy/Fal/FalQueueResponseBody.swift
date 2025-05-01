@@ -17,6 +17,17 @@ public struct FalQueueResponseBody: Decodable {
     public let status: Status?
     public let statusURL: URL?
     public let queuePosition: Int?
+    
+    public init(cancelURL: URL?, logs: String?, metrics: Metrics?, responseURL: URL?, requestID: String?, status: Status?, statusURL: URL?, queuePosition: Int?) {
+        self.cancelURL = cancelURL
+        self.logs = logs
+        self.metrics = metrics
+        self.responseURL = responseURL
+        self.requestID = requestID
+        self.status = status
+        self.statusURL = statusURL
+        self.queuePosition = queuePosition
+    }
 
     private enum CodingKeys: String, CodingKey {
         case cancelURL = "cancel_url"
@@ -41,6 +52,10 @@ extension FalQueueResponseBody {
 extension FalQueueResponseBody {
     public struct Metrics: Decodable {
         let inferenceTime: Double?
+        
+        public init(inferenceTime: Double?) {
+            self.inferenceTime = inferenceTime
+        }
 
         private enum CodingKeys: String, CodingKey {
             case inferenceTime = "inference_time"

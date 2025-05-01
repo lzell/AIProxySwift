@@ -10,6 +10,10 @@ import Foundation
 /// Docstrings from https://fal.ai/models/fashn/tryon/api#schema-output
 public struct FalTryonOutputSchema: Decodable {
     public let images: [TryonImage]
+    
+    public init(images: [TryonImage]) {
+        self.images = images
+    }
 }
 
 // MARK: - OutputSchema.TryonImage
@@ -35,6 +39,16 @@ extension FalTryonOutputSchema {
 
         /// The width of the image in pixels.
         public let width: Int?
+        
+        public init(contentType: String?, fileData: String?, fileName: String?, fileSize: Int?, height: Int?, url: URL, width: Int?) {
+            self.contentType = contentType
+            self.fileData = fileData
+            self.fileName = fileName
+            self.fileSize = fileSize
+            self.height = height
+            self.url = url
+            self.width = width
+        }
 
         private enum CodingKeys: String, CodingKey {
             case contentType = "content_type"

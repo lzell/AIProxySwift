@@ -51,6 +51,51 @@ key secure and your AI bill predictable:
 
    <img src="https://github.com/lzell/AIProxySwift/assets/35940/fd76b588-5e19-4d4d-9748-8db3fd64df8e" alt="Set package rule" width="720">
 
+3. Call `AIProxy.configure` during app launch. In a SwiftUI app, you can add an `init` to your `MyApp.swift` file: 
+
+    ```swift
+    import AIProxy
+
+    @main
+    struct MyApp: App {
+        init() {
+            AIProxy.configure(
+                logLevel: .debug,
+                printRequestBodies: false,  // Flip to true for library development
+                printResponseBodies: false, // Flip to true for library development
+                resolveDNSOverTLS: true,
+                useStableID: true
+            )
+        }
+        // ...
+    }
+    ```
+
+   In a UIKit app, add `configure` to applicationDidFinishLaunching:
+
+    ```swift
+    import AIProxy
+
+    @UIApplicationMain
+    class AppDelegate: UIResponder, UIApplicationDelegate {
+
+        var window: UIWindow?
+
+        func application(_ application: UIApplication,
+                         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+            AIProxy.configure(
+                logLevel: .debug,
+                printRequestBodies: false,  // Flip to true for library development
+                printResponseBodies: false, // Flip to true for library development
+                resolveDNSOverTLS: true,
+                useStableID: true
+            )
+            // ...
+            return true
+        }
+        // ...
+    }
+    ```
 
 ### How to configure the package for use with AIProxy
 
@@ -386,16 +431,127 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     // )
 
     do {
-        let requestBody = OpenAICreateImageRequestBody(
-            prompt: "a skier",
-            model: "dall-e-3"
+        let response = try await openAIService.createImageRequest(
+            body: .init(
+                prompt: "a skier",
+                model: .dallE3
+            ),
+            secondsToWait: 300
         )
-        let response = try await openAIService.createImageRequest(body: requestBody)
         print(response.data.first?.url ?? "")
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received \(statusCode) status code with response body: \(responseBody)")
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not generate an image with OpenAI's DALLE: \(error.localizedDescription)")
+        print("Could not create an image with DALLE 3: \(error.localizedDescription)")
+    }
+```
+
+### How to generate an image with OpenAI's gpt-image-1
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let response = try await openAIService.createImageRequest(
+            body: .init(
+                prompt: "a skier",
+                model: .gptImage1
+            ),
+            secondsToWait: 300
+        )
+
+        guard let base64Data = response.data.first?.b64JSON,
+              let imageData = Data(base64Encoded: base64Data),
+              let image = UIImage(data: imageData) else {
+            print("Could not create a UIImage out of the base64 returned by OpenAI")
+            return
+        }
+
+        // Do something with 'image'
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create OpenAI image generation: \(error.localizedDescription)")
+    }
+```
+
+### How to edit an image with OpenAI's gpt-image-1
+
+- This snippet uploads two images to `gpt-image-1`, transfering the material of one to the other.
+- One image is uploaded as a png and the other as a jpeg.
+- The output quality is chosen to be `.low` for speed of generation.
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image1 = UIImage(named: "my-first-image") else {
+        print("Could not find an image named 'my-first-image' in your app assets")
+        return
+    }
+
+    guard let image2 = UIImage(named: "my-second-image") else {
+        print("Could not find an image named 'my-second-image' in your app assets")
+        return
+    }
+
+    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image1, compressionQuality: 0.4) else {
+        print("Could not convert image to jpeg")
+        return
+    }
+
+    guard let pngData = image2.pngData() else {
+        print("Could not convert image to png")
+        return
+    }
+
+    do {
+        let response = try await openAIService.createImageEditRequest(
+            body: .init(
+                images: [
+                    .jpeg(jpegData),
+                    .png(pngData)
+                ],
+                prompt: "Transfer the material of the second image to the first",
+                model: .gptImage1,
+                quality: .low
+            ),
+            secondsToWait: 300
+        )
+
+        guard let base64Data = response.data.first?.b64JSON,
+              let imageData = Data(base64Encoded: base64Data),
+              let image = UIImage(data: imageData) else {
+            print("Could not create a UIImage out of the base64 returned by OpenAI")
+            return
+        }
+
+        // Do something with 'image'
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create OpenAI edit image generation: \(error.localizedDescription)")
     }
 ```
 
@@ -3595,6 +3751,48 @@ model owner and model name in the string.
     }
 ```
 
+### How to use ElevenLabs for speech-to-text
+
+1. Record an audio file in quicktime and save it as "helloworld.m4a"
+2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
+3. Run this snippet:
+
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let elevenLabsService = AIProxy.elevenLabsDirectService(
+    //     unprotectedAPIKey: "your-elevenLabs-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let elevenLabsService = AIProxy.elevenLabsService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let localAudioURL = Bundle.main.url(forResource: "helloworld", withExtension: "m4a") else {
+        print("Could not find an audio file named helloworld.m4a in your app bundle")
+        return
+    }
+
+    do {
+        let body = ElevenLabsSpeechToTextRequestBody(
+            modelID: .scribeV1,
+            file: try Data(contentsOf: localAudioURL),
+        )
+        let res = try await elevenLabsService.speechToTextRequest(
+            body: body
+        )
+        print("ElevenLabs transcribed: \(res.text ?? "")")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create ElevenLabs STT audio: \(error.localizedDescription)")
+    }
+```
+
 ***
 
 
@@ -4540,6 +4738,80 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not make a vision request to OpenRouter: \(error.localizedDescription)")
+    }
+```
+
+
+### How to make a tool call with OpenRouter
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openRouterService = AIProxy.openRouterDirectService(
+    //     unprotectedAPIKey: "your-openRouter-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openRouterService = AIProxy.openRouterService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let completion = try await openRouterService.chatCompletionRequest(body: .init(
+            messages: [
+                .user(
+                   content: .text("What is the weather in SF?")
+               )
+            ],
+            models: [
+                "cohere/command-r7b-12-2024",
+                "meta-llama/llama-3.3-70b-instruct",
+                // ...
+            ],
+            route: .fallback,
+            tools: [
+                .function(
+                    name: "get_weather",
+                    description: "Get current temperature for a given location.",
+                    parameters: [
+                        "type": "object",
+                        "properties": [
+                            "location": [
+                                "type": "string",
+                                "description": "City and country e.g. Bogotá, Colombia"
+                            ]
+                        ],
+                        "required": ["location"],
+                        "additionalProperties": false
+                    ],
+                    strict: true
+                )
+            ]
+        ))
+        if let toolCall = completion.choices.first?.message.toolCalls?.first {
+            print("""
+                The model wants us to call function: \(toolCall.function?.name ?? "")
+                With arguments: \(toolCall.function?.arguments ?? [:])
+                Served by \(completion.provider ?? "unspecified")
+                using model \(completion.model ?? "unspecified")
+                """
+            )
+        }
+        if let usage = completion.usage {
+            print(
+                """
+                Used:
+                 \(usage.promptTokens ?? 0) prompt tokens
+                 \(usage.completionTokens ?? 0) completion tokens
+                 \(usage.totalTokens ?? 0) total tokens
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get first chat completion: \(error.localizedDescription)")
     }
 ```
 

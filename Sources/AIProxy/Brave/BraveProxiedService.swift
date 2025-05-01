@@ -35,21 +35,21 @@ open class BraveProxiedService: BraveService, ProxiedService {
     ///            BraveWebSearchResponseBody to understand how to get the information you want out of it.
     public func webSearchRequest(
         query: String,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> BraveWebSearchResponseBody {
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             throw AIProxyError.assertion("Could not create an encoded version of query params for brave search")
         }
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
             proxyPath: "/res/v1/web/search?q=" + encodedQuery,
             body: nil,
             verb: .get,
+            secondsToWait: secondsToWait,
             contentType: "application/json"
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 }

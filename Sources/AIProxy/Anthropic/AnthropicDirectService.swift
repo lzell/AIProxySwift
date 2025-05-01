@@ -42,6 +42,7 @@ open class AnthropicDirectService: AnthropicService, DirectService {
             path: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: additionalHeaders
         )
@@ -72,6 +73,7 @@ open class AnthropicDirectService: AnthropicService, DirectService {
             path: "/v1/messages",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: additionalHeaders
         )

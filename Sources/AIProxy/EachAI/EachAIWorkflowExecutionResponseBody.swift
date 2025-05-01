@@ -24,6 +24,24 @@ public struct EachAIWorkflowExecutionResponseBody: Decodable {
     public let status: String?
     public let stepResults: [StepResult]?
     public let updatedAt: String?
+    
+    public init(averagePercent: Double?, createdAt: String?, deletedAt: String?, endedAt: String?, executionId: String?, flowId: String?, flowName: String?, organizationId: String?, output: String?, outputJson: String?, sourceIpAddress: String?, startedAt: String?, status: String?, stepResults: [StepResult]?, updatedAt: String?) {
+        self.averagePercent = averagePercent
+        self.createdAt = createdAt
+        self.deletedAt = deletedAt
+        self.endedAt = endedAt
+        self.executionId = executionId
+        self.flowId = flowId
+        self.flowName = flowName
+        self.organizationId = organizationId
+        self.output = output
+        self.outputJson = outputJson
+        self.sourceIpAddress = sourceIpAddress
+        self.startedAt = startedAt
+        self.status = status
+        self.stepResults = stepResults
+        self.updatedAt = updatedAt
+    }
 
     private enum CodingKeys: String, CodingKey {
         case averagePercent = "average_percent"
@@ -57,6 +75,19 @@ extension EachAIWorkflowExecutionResponseBody {
         public let stepId: String?
         public let stepName: String?
         public let version: String?
+        
+        public init(endedAt: String?, input: String?, model: String?, output: String?, outputJson: String?, startedAt: String?, status: String?, stepId: String?, stepName: String?, version: String?) {
+            self.endedAt = endedAt
+            self.input = input
+            self.model = model
+            self.output = output
+            self.outputJson = outputJson
+            self.startedAt = startedAt
+            self.status = status
+            self.stepId = stepId
+            self.stepName = stepName
+            self.version = version
+        }
 
         private enum CodingKeys: String, CodingKey {
             case endedAt = "ended_at"

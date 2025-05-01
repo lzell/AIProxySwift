@@ -35,6 +35,7 @@ open class PerplexityDirectService: PerplexityService, DirectService {
             path: "/chat/completions",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -61,6 +62,7 @@ open class PerplexityDirectService: PerplexityService, DirectService {
             path: "/chat/completions",
             body:  try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"

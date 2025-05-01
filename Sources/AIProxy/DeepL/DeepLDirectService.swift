@@ -32,6 +32,7 @@ open class DeepLDirectService: DeepLService, DirectService {
             path: "/v2/translate",
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json",
             additionalHeaders: [
                 "Authorization": "DeepL-Auth-Key \(self.unprotectedAPIKey)"

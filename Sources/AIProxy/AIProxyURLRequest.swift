@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AIProxyURLRequest {
+enum AIProxyURLRequest {
 
     /// Creates a URLRequest that is configured for use with an AIProxy URLSession.
     static func create(
@@ -17,10 +17,12 @@ struct AIProxyURLRequest {
         proxyPath: String,
         body: Data?,
         verb: AIProxyHTTPVerb,
+        secondsToWait: UInt,
         contentType: String? = nil,
         additionalHeaders: [String: String] = [:]
     ) async throws -> URLRequest {
-        let deviceCheckToken = await AIProxyDeviceCheck.getToken(forClient: clientID)
+        let resolvedClientID = clientID ?? AIProxyIdentifier.getClientID()
+        let deviceCheckToken = await AIProxyDeviceCheck.getToken(forClient: resolvedClientID)
 
         var proxyPath = proxyPath
         if !proxyPath.starts(with: "/") {
@@ -46,8 +48,8 @@ struct AIProxyURLRequest {
         request.httpBody = body
         request.addValue(partialKey, forHTTPHeaderField: "aiproxy-partial-key")
 
-        if let clientID = (clientID ?? AIProxyIdentifier.getClientID()) {
-            request.addValue(clientID, forHTTPHeaderField: "aiproxy-client-id")
+        if let resolvedClientID = resolvedClientID {
+            request.addValue(resolvedClientID, forHTTPHeaderField: "aiproxy-client-id")
         }
 
         if let deviceCheckToken = deviceCheckToken {
@@ -76,6 +78,7 @@ struct AIProxyURLRequest {
             request.addValue(value, forHTTPHeaderField: headerField)
         }
 
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return request
     }
 
@@ -86,6 +89,7 @@ struct AIProxyURLRequest {
         path: String,
         body: Data?,
         verb: AIProxyHTTPVerb,
+        secondsToWait: UInt,
         contentType: String? = nil,
         additionalHeaders: [String: String] = [:]
     ) throws -> URLRequest {
@@ -120,10 +124,8 @@ struct AIProxyURLRequest {
             request.addValue(value, forHTTPHeaderField: headerField)
         }
 
+        request.timeoutInterval = TimeInterval(secondsToWait)
         return request
     }
 
-    init() {
-        fatalError("This is a namespace. Please use the factory method AIProxyURLRequest.create()")
-    }
 }

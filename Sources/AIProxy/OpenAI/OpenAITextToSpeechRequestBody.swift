@@ -8,21 +8,23 @@
 
 import Foundation
 
-/// Docstrings from 
+/// Docstrings from
 /// https://platform.openai.com/docs/api-reference/audio/createSpeech
 public struct OpenAITextToSpeechRequestBody: Encodable {
 
     /// The text to generate audio for. The maximum length is 4096 characters.
     public let input: String
 
-    /// One of the available TTS models: `tts-1` or `tts-1-hd`, default to `tts-1`
-    /// Default to `tts-1`
+    /// One of the available TTS models: `.tts1`, `.tts1HD` or `.gpt4oMiniTTS`
     public let model: Model
 
     /// The voice to use when generating the audio. Supported voices are `alloy`, `echo`, `fable`, `onyx`, `nova`, and `shimmer`.
     public let voice: Voice
 
     // MARK: Optional properties
+
+    /// Control the voice of your generated audio with additional instructions. Does not work with `tts-1` or `tts-1-hd`.
+    public let instructions: String?
 
     /// The format to audio in. Supported formats are `mp3`, `opus`, `aac`, `flac`, `wav`, and `pcm`.
     /// Default to `mp3`
@@ -36,12 +38,14 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
         input: String,
         model: Model = .tts1,
         voice: OpenAITextToSpeechRequestBody.Voice,
+        instructions: String? = nil,
         responseFormat: OpenAITextToSpeechRequestBody.ResponseFormat? = .mp3,
         speed: Float? = 1.0
     ) {
         self.input = input
         self.model = model
         self.voice = voice
+        self.instructions = instructions
         self.responseFormat = responseFormat
         self.speed = speed
     }
@@ -52,6 +56,7 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
         case voice
 
         // Optional properties
+        case instructions
         case responseFormat = "response_format"
         case speed
     }
@@ -60,9 +65,9 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
 // MARK: -
 extension OpenAITextToSpeechRequestBody {
     public enum Model: String, Encodable {
+        case gpt4oMiniTTS = "gpt-4o-mini-tts"
         case tts1 = "tts-1"
         case tts1HD = "tts-1-hd"
-        case gpt_4o_mini_tts = "gpt-4o-mini-tts"
     }
 }
 

@@ -16,7 +16,7 @@ public protocol ElevenLabsService {
     ///              available voices.
     ///
     ///   - body: The request body to send to ElevenLabs. See this reference:
-    ///           https://elevenlabs.io/docs/api-reference/text-to-speech
+    ///           https://elevenlabs.io/docs/api-reference/text-to-speech/convert#request
     ///
     /// - Returns: Returns audio/mpeg data
     func ttsRequest(
@@ -32,12 +32,25 @@ public protocol ElevenLabsService {
     ///              available voices.
     ///
     ///   - body: The request body to send to ElevenLabs. See this reference:
-    ///           https://elevenlabs.io/docs/api-reference/speech-to-speech/convert
+    ///           https://elevenlabs.io/docs/api-reference/speech-to-speech/convert#request
     ///
     /// - Returns: Returns audio/mpeg data
     func speechToSpeechRequest(
         voiceID: String,
         body: ElevenLabsSpeechToSpeechRequestBody
     ) async throws -> Data
+
+    /// Converts text to speech with a request to `/v1/speech-to-text`
+    ///
+    /// - Parameters:
+    ///
+    ///   - body: The request body to send to ElevenLabs. See this reference:
+    ///           https://elevenlabs.io/docs/api-reference/speech-to-text/convert#request
+    ///
+    /// - Returns: The speech to text response body
+    func speechToTextRequest(
+        body: ElevenLabsSpeechToTextRequestBody
+    ) async throws -> ElevenLabsSpeechToTextResponseBody
+
 
 }

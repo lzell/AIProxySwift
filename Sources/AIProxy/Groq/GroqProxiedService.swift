@@ -43,6 +43,7 @@ open class GroqProxiedService: GroqService, ProxiedService {
             proxyPath: "/openai/v1/chat/completions",
             body:  try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -67,6 +68,7 @@ open class GroqProxiedService: GroqService, ProxiedService {
             proxyPath: "/openai/v1/chat/completions",
             body:  try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
@@ -90,6 +92,7 @@ open class GroqProxiedService: GroqService, ProxiedService {
             proxyPath: "/openai/v1/audio/transcriptions",
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)"
         )
 

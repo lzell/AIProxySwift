@@ -38,21 +38,21 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func chatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> OpenAIChatCompletionResponseBody {
         var body = body
         body.stream = false
         body.streamOptions = nil
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
             proxyPath: self.resolvedPath("chat/completions"),
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json"
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeResponse(request)
     }
 
@@ -66,33 +66,35 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
     public func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: Int
+        secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
-        var request = try await AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,
             proxyPath: self.resolvedPath("chat/completions"),
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json"
         )
-        request.timeoutInterval = TimeInterval(secondsToWait)
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 
     /// Initiates a create image request to /v1/images/generations
     ///
     /// - Parameters:
-    ///   - body: The request body to send to aiproxy and openai. See this reference:
+    ///   - body: The request body to send to openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/images/create
-    /// - Returns: A ChatCompletionResponse. See this reference:
-    ///            https://platform.openai.com/docs/api-reference/chat/object
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
+    /// - Returns: A response body containing the generated image as base64, or a reference to the image on a CDN
+    ///            https://platform.openai.com/docs/api-reference/images/object
     public func createImageRequest(
-        body: OpenAICreateImageRequestBody
+        body: OpenAICreateImageRequestBody,
+        secondsToWait: UInt
     ) async throws -> OpenAICreateImageResponseBody {
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
@@ -101,10 +103,38 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             proxyPath: self.resolvedPath("images/generations"),
             body:  try JSONEncoder().encode(body),
             verb: .post,
+            secondsToWait: secondsToWait,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }
+
+    /// Initiates a create image edit request to `v1/images/edits`
+    ///
+    /// - Parameters:
+    ///   - body: The request body to send to OpenAI. See this reference:
+    ///           https://platform.openai.com/docs/api-reference/images/createEdit
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
+    /// - Returns: A response body containing the generated image as base64, or a reference to the image on a CDN
+    ///            https://platform.openai.com/docs/api-reference/images/object
+    public func createImageEditRequest(
+        body: OpenAICreateImageEditRequestBody,
+        secondsToWait: UInt
+    ) async throws -> OpenAICreateImageResponseBody {
+        let boundary = UUID().uuidString
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL ?? legacyURL,
+            clientID: self.clientID,
+            proxyPath: self.resolvedPath("images/edits"),
+            body: formEncode(body, boundary),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "multipart/form-data; boundary=\(boundary)"
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
+
 
     /// Initiates a create transcription request to v1/audio/transcriptions
     ///
@@ -124,6 +154,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             proxyPath: self.resolvedPath("audio/transcriptions"),
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)"
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
@@ -157,6 +188,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             proxyPath: self.resolvedPath("audio/speech"),
             body:  try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
@@ -183,6 +215,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             proxyPath: self.resolvedPath("moderations"),
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -205,6 +238,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             proxyPath: self.resolvedPath("embeddings"),
             body: try body.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -237,6 +271,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             proxyPath: "/v1/realtime?model=\(model)",
             body: nil,
             verb: .get,
+            secondsToWait: 60,
             additionalHeaders: [
                 "openai-beta": "realtime=v1"
             ]
@@ -279,6 +314,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             proxyPath: self.resolvedPath("files"),
             body: formEncode(body, boundary),
             verb: .post,
+            secondsToWait: 60,
             contentType: "multipart/form-data; boundary=\(boundary)"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -296,6 +332,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             proxyPath: self.resolvedPath("responses"),
             body: try requestBody.serialize(),
             verb: .post,
+            secondsToWait: 60,
             contentType: "application/json"
         )
 
