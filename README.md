@@ -64,7 +64,7 @@ key secure and your AI bill predictable:
                 printRequestBodies: false,  // Flip to true for library development
                 printResponseBodies: false, // Flip to true for library development
                 resolveDNSOverTLS: true,
-                useStableID: true
+                useStableID: false,         // Please see the docstring if you'd like to enable this
             )
         }
         // ...
