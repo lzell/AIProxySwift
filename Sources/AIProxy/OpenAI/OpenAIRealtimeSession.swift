@@ -146,7 +146,36 @@ open class OpenAIRealtimeSession {
                let arguments = json["arguments"] as? String {
                 self.continuation?.yield(.responseFunctionCallArgumentsDone(name, arguments))
             }
+        
+        // New cases for handling transcription messages
+        case "response.audio_transcript.delta":
+            if let delta = json["delta"] as? String {
+                self.continuation?.yield(.responseTranscriptDelta(delta))
+            }
+            
+        case "response.audio_transcript.done":
+            if let transcript = json["transcript"] as? String {
+                self.continuation?.yield(.responseTranscriptDone(transcript))
+            }
+            
+        case "input_audio_buffer.transcript":
+            if let transcript = json["transcript"] as? String {
+                self.continuation?.yield(.inputAudioBufferTranscript(transcript))
+            }
+            
+        case "conversation.item.input_audio_transcription.delta":
+            if let delta = json["delta"] as? String {
+                self.continuation?.yield(.inputAudioTranscriptionDelta(delta))
+            }
+            
+        case "conversation.item.input_audio_transcription.completed":
+            if let transcript = json["transcript"] as? String {
+                self.continuation?.yield(.inputAudioTranscriptionCompleted(transcript))
+            }
+            
         default:
+            // Log unhandled message types for debugging
+            logIf(.debug)?.debug("Unhandled message type: \(messageType) - \(json)")
             break
         }
 
