@@ -28,7 +28,8 @@ open class TogetherAIProxiedService: TogetherAIService, ProxiedService {
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func chatCompletionRequest(
-        body: TogetherAIChatCompletionRequestBody
+        body: TogetherAIChatCompletionRequestBody,
+        secondsToWait: UInt
     ) async throws -> TogetherAIChatCompletionResponseBody {
         var body = body
         body.stream = false
@@ -39,7 +40,7 @@ open class TogetherAIProxiedService: TogetherAIService, ProxiedService {
             proxyPath: "/v1/chat/completions",
             body: try body.serialize(),
             verb: .post,
-            secondsToWait: 60,
+            secondsToWait: secondsToWait,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)

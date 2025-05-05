@@ -16,7 +16,8 @@ public protocol TogetherAIService {
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
     func chatCompletionRequest(
-        body: TogetherAIChatCompletionRequestBody
+        body: TogetherAIChatCompletionRequestBody,
+        secondsToWait: UInt
     ) async throws -> TogetherAIChatCompletionResponseBody
 
     /// Initiates a streaming chat completion request to /v1/chat/completions.
