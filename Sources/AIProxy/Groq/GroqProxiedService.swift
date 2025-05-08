@@ -29,10 +29,12 @@ open class GroqProxiedService: GroqService, ProxiedService {
     /// - Parameters:
     ///   - body: The chat completion request body. See this reference:
     ///           https://console.groq.com/docs/api-reference#chat-create
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func chatCompletionRequest(
-        body: GroqChatCompletionRequestBody
+        body: GroqChatCompletionRequestBody,
+        secondsToWait: UInt
     ) async throws -> GroqChatCompletionResponseBody {
         var body = body
         body.stream = false
@@ -43,7 +45,7 @@ open class GroqProxiedService: GroqService, ProxiedService {
             proxyPath: "/openai/v1/chat/completions",
             body:  try body.serialize(),
             verb: .post,
-            secondsToWait: 60,
+            secondsToWait: secondsToWait,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
@@ -54,10 +56,12 @@ open class GroqProxiedService: GroqService, ProxiedService {
     /// - Parameters:
     ///   - body: The chat completion request body. See this reference:
     ///           https://console.groq.com/docs/api-reference#chat-create
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     /// - Returns: An async sequence of completion chunks. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
     public func streamingChatCompletionRequest(
-        body: GroqChatCompletionRequestBody
+        body: GroqChatCompletionRequestBody,
+        secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, GroqChatCompletionStreamingChunk> {
         var body = body
         body.stream = true
@@ -68,7 +72,7 @@ open class GroqProxiedService: GroqService, ProxiedService {
             proxyPath: "/openai/v1/chat/completions",
             body:  try body.serialize(),
             verb: .post,
-            secondsToWait: 60,
+            secondsToWait: secondsToWait,
             contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
@@ -79,10 +83,12 @@ open class GroqProxiedService: GroqService, ProxiedService {
     /// - Parameters:
     ///   - body: The audio transcription request body. See this reference:
     ///           https://console.groq.com/docs/api-reference#audio-transcription
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     /// - Returns: An transcription response. See this reference:
     ///            https://platform.openai.com/docs/api-reference/audio/json-object
     public func createTranscriptionRequest(
-        body: GroqTranscriptionRequestBody
+        body: GroqTranscriptionRequestBody,
+        secondsToWait: UInt
     ) async throws -> GroqTranscriptionResponseBody {
         let boundary = UUID().uuidString
         let request = try await AIProxyURLRequest.create(
@@ -92,7 +98,7 @@ open class GroqProxiedService: GroqService, ProxiedService {
             proxyPath: "/openai/v1/audio/transcriptions",
             body: formEncode(body, boundary),
             verb: .post,
-            secondsToWait: 60,
+            secondsToWait: secondsToWait,
             contentType: "multipart/form-data; boundary=\(boundary)"
         )
 
