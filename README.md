@@ -4279,6 +4279,51 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     }
 ```
 
+### How to perform OCR with Mistral
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let mistralService = AIProxy.mistralDirectService(
+    //     unprotectedAPIKey: "your-mistral-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let mistralService = AIProxy.mistralService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "hello_world") else {
+        print("Could not find an image named 'hello_world' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.4) else {
+        print("Could not convert image to OpenAI's imageURL format")
+        return
+    }
+
+    let requestBody = MistralOCRRequestBody(
+        document: .imageURLChunk(imageURL),
+        model: .mistralOCRLatest,
+        includeImageBase64: true
+    )
+
+    do {
+        let response = try await mistralService.ocrRequest(
+            body: requestBody,
+            secondsToWait: 60
+        )
+        print(response.pages.first?.markdown ?? "")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not perform OCR request with Mistral: \(error.localizedDescription)")
+    }
+```
+
 ***
 
 ## EachAI
