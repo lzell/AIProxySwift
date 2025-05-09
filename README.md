@@ -4204,11 +4204,15 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
+    let requestBody = MistralChatCompletionRequestBody(
+        messages: [.user(content: "Hello world")],
+        model: "mistral-small-latest"
+    )
     do {
-        let response = try await mistralService.chatCompletionRequest(body: .init(
-            messages: [.user(content: "Hello world")],
-            model: "mistral-small-latest"
-        ))
+        let response = try await mistralService.chatCompletionRequest(
+            body: requestBody,
+            secondsToWait: 60
+        )
         print(response.choices.first?.message.content ?? "")
         if let usage = response.usage {
             print(
@@ -4246,11 +4250,15 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
+    let requestBody = MistralChatCompletionRequestBody(
+        messages: [.user(content: "Hello world")],
+        model: "mistral-small-latest"
+    )
     do {
-        let stream = try await mistralService.streamingChatCompletionRequest(body: .init(
-            messages: [.user(content: "Hello world")],
-            model: "mistral-small-latest"
-        ))
+        let stream = try await mistralService.streamingChatCompletionRequest(
+            body: requestBody,
+            secondsToWait: 60
+        )
         for try await chunk in stream {
             print(chunk.choices.first?.delta.content ?? "")
             if let usage = chunk.usage {
@@ -4268,6 +4276,51 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not create mistral streaming chat completion: \(error.localizedDescription)")
+    }
+```
+
+### How to perform OCR with Mistral
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let mistralService = AIProxy.mistralDirectService(
+    //     unprotectedAPIKey: "your-mistral-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let mistralService = AIProxy.mistralService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "hello_world") else {
+        print("Could not find an image named 'hello_world' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.4) else {
+        print("Could not convert image to data URL")
+        return
+    }
+
+    let requestBody = MistralOCRRequestBody(
+        document: .imageURLChunk(imageURL),
+        model: .mistralOCRLatest,
+        includeImageBase64: true
+    )
+
+    do {
+        let response = try await mistralService.ocrRequest(
+            body: requestBody,
+            secondsToWait: 60
+        )
+        print(response.pages.first?.markdown ?? "")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not perform OCR request with Mistral: \(error.localizedDescription)")
     }
 ```
 
@@ -5541,7 +5594,7 @@ built-in service, take the following steps to add a custom service to your app:
         struct ChatRequestBody: Encodable {
             let greatPrompt: String
 
-            enum CodingKey: String, CodingKeys {
+            enum CodingKeys: String, CodingKey {
                 case greatPrompt = "great_prompt"
             }
         }
@@ -5566,7 +5619,7 @@ built-in service, take the following steps to add a custom service to your app:
         struct ChatResponseBody: Decodable {
             let generatedMessage: String?
 
-            enum CodingKey: String, CodingKeys {
+            enum CodingKeys: String, CodingKey {
                 case generatedMessage = "generated_message"
             }
         }
