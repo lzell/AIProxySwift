@@ -4301,7 +4301,7 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     }
 
     guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.4) else {
-        print("Could not convert image to OpenAI's imageURL format")
+        print("Could not convert image to data URL")
         return
     }
 
