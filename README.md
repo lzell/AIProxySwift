@@ -5541,7 +5541,7 @@ built-in service, take the following steps to add a custom service to your app:
         struct ChatRequestBody: Encodable {
             let greatPrompt: String
 
-            enum CodingKey: String, CodingKeys {
+            enum CodingKeys: String, CodingKey {
                 case greatPrompt = "great_prompt"
             }
         }
@@ -5566,7 +5566,7 @@ built-in service, take the following steps to add a custom service to your app:
         struct ChatResponseBody: Decodable {
             let generatedMessage: String?
 
-            enum CodingKey: String, CodingKeys {
+            enum CodingKeys: String, CodingKey {
                 case generatedMessage = "generated_message"
             }
         }
