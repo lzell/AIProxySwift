@@ -4204,11 +4204,15 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
+    let requestBody = MistralChatCompletionRequestBody(
+        messages: [.user(content: "Hello world")],
+        model: "mistral-small-latest"
+    )
     do {
-        let response = try await mistralService.chatCompletionRequest(body: .init(
-            messages: [.user(content: "Hello world")],
-            model: "mistral-small-latest"
-        ))
+        let response = try await mistralService.chatCompletionRequest(
+            body: requestBody,
+            secondsToWait: 60
+        )
         print(response.choices.first?.message.content ?? "")
         if let usage = response.usage {
             print(
@@ -4246,11 +4250,15 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
+    let requestBody = MistralChatCompletionRequestBody(
+        messages: [.user(content: "Hello world")],
+        model: "mistral-small-latest"
+    )
     do {
-        let stream = try await mistralService.streamingChatCompletionRequest(body: .init(
-            messages: [.user(content: "Hello world")],
-            model: "mistral-small-latest"
-        ))
+        let stream = try await mistralService.streamingChatCompletionRequest(
+            body: requestBody,
+            secondsToWait: 60
+        )
         for try await chunk in stream {
             print(chunk.choices.first?.delta.content ?? "")
             if let usage = chunk.usage {
