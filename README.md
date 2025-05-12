@@ -949,7 +949,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
 ```
 
 
-### How to classify text and images as potentially harmful with OpenAI
+### How to classify text as potentially harmful with OpenAI moderations
 
 ```swift
     import AIProxy
@@ -987,6 +987,58 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not perform moderation request to OpenAI")
+    }
+```
+
+### How to classify images as potentially harmful with OpenAI moderations
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "myImage") else {
+        print("Could not find an image named 'myImage' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.4) else {
+        print("Could not encode image as data URL")
+        return
+    }
+
+    let requestBody = OpenAIModerationRequestBody(
+        input: [
+            .image(imageURL)
+        ],
+        model: "omni-moderation-latest"
+    )
+
+    do {
+        let response = try await openAIService.moderationRequest(body: requestBody)
+        print("Is this content flagged: \(response.results.first?.flagged ?? false)")
+        //
+        // For a more detailed assessment of the input content, inspect:
+        //
+        //     response.results.first?.categories
+        //
+        // and
+        //
+        //     response.results.first?.categoryScores
+        //
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not perform image moderation request to OpenAI")
     }
 ```
 
