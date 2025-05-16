@@ -79,22 +79,6 @@ extension ElevenLabsSpeechToTextResponseBody {
             case speakerID = "speaker_id"
             case characters
         }
-
-        public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.text = try container.decode(String.self, forKey: .text)
-            self.type = try container.decodeIfPresent(WordType.self, forKey: .type)
-            self.start = try container.decodeIfPresent(Double.self, forKey: .start)
-            self.end = try container.decodeIfPresent(Double.self, forKey: .end)
-            self.characters = try container.decodeIfPresent([Character].self, forKey: .characters)
-
-            if let stringSpeakerID = try container.decodeIfPresent(String.self, forKey: .speakerID),
-               let doubleValue = Double(stringSpeakerID.filter({ $0.isNumber })) {
-                self.speakerID = doubleValue
-            } else {
-                self.speakerID = nil
-            }
-        }
     }
 
     public struct AdditionalFormat: Decodable {
