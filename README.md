@@ -1491,6 +1491,59 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     }
 ```
 
+### How to generate streaming text content with Gemini
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = GeminiGenerateContentRequestBody(
+        contents: [
+            .init(
+                parts: [.text("How do I use product xyz?")]
+            )
+        ],
+        generationConfig: .init(maxOutputTokens: 1024),
+        safetySettings: [
+            .init(category: .dangerousContent, threshold: .none),
+            .init(category: .civicIntegrity, threshold: .none),
+            .init(category: .harassment, threshold: .none),
+            .init(category: .hateSpeech, threshold: .none),
+            .init(category: .sexuallyExplicit, threshold: .none)
+        ],
+        systemInstruction: .init(parts: [.text("Introduce yourself as a customer support person")])
+    )
+    do {
+        let stream = try await geminiService.generateStreamingContentRequest(
+            body: requestBody,
+            model: "gemini-2.0-flash",
+            secondsToWait: 60
+        )
+        for try await chunk in stream {
+            for part in chunk.candidates?.first?.content?.parts ?? [] {
+                if case .text(let text) = part {
+                    print(text)
+                }
+            }
+        }
+        print("Gemini finished streaming")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not generate Gemini streaming content: \(error.localizedDescription)")
+    }
+```
+
 ### How to make a tool call with Gemini
 
 ```swift
