@@ -25,12 +25,28 @@ public protocol GeminiService {
         secondsToWait: UInt
     ) async throws -> GeminiGenerateContentResponseBody
 
+    /// Generate content using Gemini and stream the response. Google puts chat completions, audio transcriptions, and
+    /// video capabilities all under the term 'generate content':
+    /// https://ai.google.dev/api/generate-content#method:-models.generatecontent
+    /// - Parameters:
+    ///   - body: Request body
+    ///   - model: The model to use for generating the completion, e.g. "gemini-1.5-flash"
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`.
+    ///                    Use `60` if you'd like to be consistent with the default URLSession timeout.
+    ///                    Use a longer timeout if you expect your generations to take longer than sixty seconds.
+    /// - Returns: An async sequence of partial content responses. Gemini reuses the same data type for buffered and streaming responses:
+    ///            https://ai.google.dev/api/generate-content#v1beta.GenerateContentResponse
+    func generateStreamingContentRequest(
+        body: GeminiGenerateContentRequestBody,
+        model: String,
+        secondsToWait: UInt
+    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, GeminiGenerateContentResponseBody>
+
     /// Generate images with the Imagen API
     func makeImagenRequest(
         body: GeminiImagenRequestBody,
         model: String
     ) async throws -> GeminiImagenResponseBody
-
 
     /// Uploads a file to Google's short term storage.
     ///
