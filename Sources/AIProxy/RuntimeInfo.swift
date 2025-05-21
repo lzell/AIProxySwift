@@ -58,6 +58,8 @@ private func getDeviceModel() -> String {
 private func getSystemName() -> String {
     #if os(macOS)
     return "macOS"
+    #elseif os(watchOS)
+    return "watchOS"
     #else
     return UIDevice.current.systemName
     #endif
