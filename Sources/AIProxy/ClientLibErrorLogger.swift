@@ -65,7 +65,7 @@ private func buildPayload(errorType: String, errorMessage: String?) -> Payload {
 
 private func buildRequest(_ payload: Payload, clientID: String?) -> URLRequest? {
     guard let body: Data = try? payload.serialize(),
-          let libErrorURL = URL(string: ["https://api.aiproxy.pro", kGlobal, kLibError].joined(separator: "/")) else {
+          let libErrorURL = URL(string: ["https://api.aiproxy.com", kGlobal, kLibError].joined(separator: "/")) else {
           // let libErrorURL = URL(string: ["http://Lous-MacBook-Air-3.local:4000", kGlobal, kLibError].joined(separator: "/")) else {
         return nil
     }

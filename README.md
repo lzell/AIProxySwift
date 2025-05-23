@@ -22,7 +22,7 @@ included:
 - Brave
 
 Your initialization code determines whether requests go straight to the provider or are
-protected through the [AIProxy](https://www.aiproxy.pro) backend.
+protected through the [AIProxy](https://www.aiproxy.com) backend.
 
 We only recommend making requests straight to the provider during prototyping and for BYOK
 use-cases.
@@ -99,7 +99,7 @@ key secure and your AI bill predictable:
 
 ### How to configure the package for use with AIProxy
 
-See the [AIProxy integration video](https://www.aiproxy.pro/docs/integration-guide.html).
+See the [AIProxy integration video](https://www.aiproxy.com/docs/integration-guide.html).
 Note that this is not required if you are shipping an app where the customers provide their own
 API keys (known as BYOK for "bring your own key").
 
@@ -5547,7 +5547,7 @@ thus remove one level of protection.
 
 The `AIPROXY_DEVICE_CHECK_BYPASS` is intended for the simulator only. Do not let it leak into
 a distribution build of your app (including a TestFlight distribution). If you follow the
-[integration steps](https://www.aiproxy.pro/docs/integration-guide.html) we provide, then the
+[integration steps](https://www.aiproxy.com/docs/integration-guide.html) we provide, then the
 constant won't leak because env variables are not packaged into the app bundle.
 
 ## What is the `aiproxyPartialKey` constant?
