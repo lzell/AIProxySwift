@@ -57,12 +57,12 @@ extension ElevenLabsSpeechToTextResponseBody {
         public let end: Double?
 
         /// Unique identifier for the speaker of this word.
-        public let speakerID: Double?
+        public let speakerID: String?
 
         /// The characters that make up the word and their timing information.
         public let characters: [Character]?
         
-        public init(text: String, type: WordType?, start: Double?, end: Double?, speakerID: Double?, characters: [Character]?) {
+        public init(text: String, type: WordType?, start: Double?, end: Double?, speakerID: String?, characters: [Character]?) {
             self.text = text
             self.type = type
             self.start = start
