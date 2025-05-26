@@ -32,7 +32,6 @@ enum AIProxyDeviceCheck {
     /// to only be used by developers of your app, and is intended to only be included as a an environment variable.
     ///
     /// - Returns: A base 64 encoded DeviceCheck token, if possible
-    @MainActor
     internal static func getToken(forClient clientID: String?) async -> String? {
         // We have seen `EXC_BAD_ACCESS` on accessing `DCDevice.current.isSupported` in the wild.
         // My theory is that the `DCDevice.h` header uses `NS_ASSUME_NONNULL_BEGIN` when it should not.
