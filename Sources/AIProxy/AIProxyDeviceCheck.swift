@@ -33,7 +33,17 @@ enum AIProxyDeviceCheck {
     ///
     /// - Returns: A base 64 encoded DeviceCheck token, if possible
     internal static func getToken(forClient clientID: String?) async -> String? {
-        guard DCDevice.current.isSupported else {
+        // We have seen `EXC_BAD_ACCESS` on accessing `DCDevice.current.isSupported` in the wild.
+        // My theory is that the `DCDevice.h` header uses `NS_ASSUME_NONNULL_BEGIN` when it should not.
+        // This juggling is an attempt at preventing the bad access crashes.
+        let _dcDevice: DCDevice? = DCDevice.current
+        guard let dcDevice = _dcDevice else {
+            logIf(.error)?.error("DCDevice singleton is not available. Please contact Lou if you can reproduce this!")
+            ClientLibErrorLogger.logDeviceCheckSingletonIsNil(clientID: clientID)
+            return nil
+        }
+
+        guard dcDevice.isSupported else {
             if ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] == nil {
                 logIf(.warning)?.warning("\(deviceCheckWarning, privacy: .public)")
             }
@@ -44,7 +54,7 @@ enum AIProxyDeviceCheck {
         }
 
         do {
-            let data = try await DCDevice.current.generateToken()
+            let data = try await dcDevice.generateToken()
             return data.base64EncodedString()
         } catch {
             logIf(.error)?.error("Could not create DeviceCheck token. Are you using an explicit bundle identifier?")

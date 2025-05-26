@@ -11,6 +11,11 @@ private let kLibError = "client-lib-error"
 private let kGlobal = "global"
 
 struct ClientLibErrorLogger {
+    static func logDeviceCheckSingletonIsNil(clientID: String?) {
+        let payload = buildPayload(errorType: "dc-singleton-nil", errorMessage: nil)
+        deliver(payload, clientID: clientID)
+    }
+
     static func logDeviceCheckNotSupported(clientID: String?) {
         let payload = buildPayload(errorType: "dc-not-supported", errorMessage: nil)
         deliver(payload, clientID: clientID)
