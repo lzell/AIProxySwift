@@ -31,7 +31,7 @@ open class AudioPCMPlayer {
     private let playerNode: AVAudioPlayerNode
     private let adjustGainOniOS = true
 
-    public init() throws {
+    public init() async throws {
         guard let _inputFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
             sampleRate: 24000,
@@ -77,12 +77,8 @@ open class AudioPCMPlayer {
                 options: [.defaultToSpeaker, .allowBluetooth]
             )
 #elseif os(watchOS)
-            try? AVAudioSession.sharedInstance().setCategory(
-                .playAndRecord,
-            )
-            Task {
-                try? await AVAudioSession.sharedInstance().activate(options: [])
-            }
+            try? AVAudioSession.sharedInstance().setCategory(.playAndRecord)
+            try? await AVAudioSession.sharedInstance().activate(options: [])
 #endif
         }
     }
