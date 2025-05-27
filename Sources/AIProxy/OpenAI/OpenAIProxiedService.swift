@@ -264,7 +264,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
         logLevel: AIProxyLogLevel
     ) async throws -> OpenAIRealtimeSession {
         aiproxyCallerDesiredLogLevel = logLevel
-        let request = try await AIProxyURLRequest.create(
+        var request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
             clientID: self.clientID,

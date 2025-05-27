@@ -5,6 +5,8 @@
 //  Created by Lou Zell
 //
 
+// This file is not compatible with watchOS
+#if !os(watchOS)
 import AVFoundation
 import AudioToolbox
 import Foundation
@@ -436,3 +438,4 @@ private let audioRenderCallback: AURenderCallback = {
     )
     return noErr
 }
+#endif

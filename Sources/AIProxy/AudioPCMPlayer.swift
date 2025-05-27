@@ -66,8 +66,8 @@ open class AudioPCMPlayer {
         self.inputFormat = _inputFormat
         self.playableFormat = _playableFormat
 
-#if !os(macOS)
         if self.adjustGainOniOS {
+#if os(iOS)
             // If you use this, and initialize the MicrophonePCMSampleVendor *after* AudioPCMPlayer,
             // then audio on iOS will be very loud. You can dial it down a bit by adjusting the gain
             // in `playPCM16Audio` below
@@ -76,8 +76,15 @@ open class AudioPCMPlayer {
                 mode: .voiceChat,
                 options: [.defaultToSpeaker, .allowBluetooth]
             )
-        }
+#elseif os(watchOS)
+            try? AVAudioSession.sharedInstance().setCategory(
+                .playAndRecord,
+            )
+            Task {
+                try? await AVAudioSession.sharedInstance().activate(options: [])
+            }
 #endif
+        }
     }
 
     deinit {
