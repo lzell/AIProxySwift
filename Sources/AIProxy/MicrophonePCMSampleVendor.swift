@@ -63,7 +63,9 @@ open class MicrophonePCMSampleVendor {
         // Wait am I sure I want this at all? This really dips the output volume, which I need if the AI is talking
         //
         // It's also possible that just by using audio engine our problems will be solved.
-        // try inputNode.setVoiceProcessingEnabled(true)
+        if !headphonesConnected() {
+            try inputNode.setVoiceProcessingEnabled(true)
+        }
         // Important! Do not try to use inputNode.inputFormat(forBus: 0) after enabling setVoiceProcessingEnabled.
         // Turning on voice processing changes the mic input format from a single channel to five channels, and
         // those five channels do not play nicely with AVAudioConverter.
@@ -91,13 +93,10 @@ open class MicrophonePCMSampleVendor {
         // var firstSampleThrownOut = false
         print("Target buffer size is \(targetBufferSize)")
         let stream = AsyncStream<AVAudioPCMBuffer> { [weak self] continuation in
-            print("lzell in stream block")
             guard let this = self else { return }
-            print("lzell setting continuation")
             this.continuation = continuation
             inputNode.installTap(onBus: 0, bufferSize: targetBufferSize, format: desiredTapFormat) { [weak this] sampleBuffer, _ in
                 if let resampledBuffer = self?.convertPCM16BufferToExpectedSampleRate(sampleBuffer) {
-                    print("Got sample buf")
                     this?.continuation?.yield(resampledBuffer)
                 }
             }
@@ -113,7 +112,6 @@ open class MicrophonePCMSampleVendor {
     func stop() {
         self.continuation?.finish()
         self.continuation = nil
-        print("Removing the tap")
         inputNode!.removeTap(onBus: 0)
         try? inputNode!.setVoiceProcessingEnabled(false)
         inputNode = nil
@@ -628,4 +626,20 @@ private func writePCM16IntValuesToFile(from buffer: AVAudioPCMBuffer, location: 
             fileHandle.write(data)
         }
     }
+}
+
+private func headphonesConnected() -> Bool {
+    let session = AVAudioSession.sharedInstance()
+    let outputs = session.currentRoute.outputs
+
+    for output in outputs {
+        if output.portType == .headphones ||
+            output.portType == .bluetoothA2DP ||
+            output.portType == .bluetoothLE ||
+            output.portType == .bluetoothHFP {
+            return true
+        }
+    }
+
+    return false
 }
