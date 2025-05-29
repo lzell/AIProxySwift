@@ -57,7 +57,7 @@ open class AudioPCMPlayer {
         let node = AVAudioPlayerNode()
 
         audioEngine.attach(node)
-        audioEngine.connect(node, to: audioEngine.mainMixerNode, format: _playableFormat)
+        audioEngine.connect(node, to: audioEngine.outputNode, format: _playableFormat)
 
         self.playerNode = node
         self.inputFormat = _inputFormat

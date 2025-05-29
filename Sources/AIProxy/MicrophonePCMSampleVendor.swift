@@ -49,10 +49,11 @@ open class MicrophonePCMSampleVendor {
 
 
     
-    public init(avAudioEngine: AVAudioEngine) {
+    public init(avAudioEngine: AVAudioEngine, inputNode: AVAudioInputNode) {
         self.avAudioEngine = avAudioEngine
+        self.inputNode = inputNode
 
-        self.inputNode = avAudioEngine.inputNode
+//        self.inputNode = avAudioEngine.inputNode
         print("lzell \(inputNode.inputFormat(forBus: 0))")
         // Only conditionally enable this if my headphones are not applied. Bizarrely, this causes the mic on my headphones to not work at all.
         // Wait am I sure I want this at all? This really dips the output volume, which I need if the AI is talking
@@ -73,12 +74,11 @@ open class MicrophonePCMSampleVendor {
 
 
     public func start() throws -> AsyncStream<AVAudioPCMBuffer> {
-        if !AIProxyUtils.headphonesConnected {
-            try self.inputNode.setVoiceProcessingEnabled(true)
-        }
+        print("Input node sample rate is at: \(self.inputNode.inputFormat(forBus: 0).sampleRate)")
+        print("Output node sample rate is at: \(self.inputNode.outputFormat(forBus: 0).sampleRate)")
         guard let desiredTapFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
-            sampleRate: self.inputNode.inputFormat(forBus: 0).sampleRate,
+            sampleRate: inputNode.outputFormat(forBus: 0).sampleRate, // 44100 /* self.inputNode.inputFormat(forBus: 0).sampleRate */,
             channels: 1,
             interleaved: false
         ) else {
