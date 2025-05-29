@@ -6,7 +6,7 @@
 //
 
 // This file is not compatible with watchOS
-#if os(watchOS)
+#if os(watchOS) || os(macOS)
 /*
 See LICENSE folder for this sample’s licensing information.
 
@@ -42,30 +42,22 @@ import CoreAudio
 /// My apple forum question: https://developer.apple.com/forums/thread/771530
 @RealtimeActor
 open class MicrophonePCMSampleVendor {
-    private var avAudioEngine: AVAudioEngine?
-    private var inputNode: AVAudioInputNode?
+    let avAudioEngine: AVAudioEngine
+    private let inputNode: AVAudioInputNode
     private var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
     private var audioConverter: AVAudioConverter?
 
 
     
-    public init() {}
-    deinit {
-        logIf(.debug)?.debug("MicrophonePCMSampleVendor is being freed")
-    }
+    public init(avAudioEngine: AVAudioEngine) {
+        self.avAudioEngine = avAudioEngine
 
-
-    public func start() throws -> AsyncStream<AVAudioPCMBuffer> {
-        let avAudioEngine = AVAudioEngine()
-        let inputNode = avAudioEngine.inputNode
-        print(inputNode.inputFormat(forBus: 0))
+        self.inputNode = avAudioEngine.inputNode
+        print("lzell \(inputNode.inputFormat(forBus: 0))")
         // Only conditionally enable this if my headphones are not applied. Bizarrely, this causes the mic on my headphones to not work at all.
         // Wait am I sure I want this at all? This really dips the output volume, which I need if the AI is talking
         //
         // It's also possible that just by using audio engine our problems will be solved.
-        if !headphonesConnected() {
-            try inputNode.setVoiceProcessingEnabled(true)
-        }
         // Important! Do not try to use inputNode.inputFormat(forBus: 0) after enabling setVoiceProcessingEnabled.
         // Turning on voice processing changes the mic input format from a single channel to five channels, and
         // those five channels do not play nicely with AVAudioConverter.
@@ -74,9 +66,19 @@ open class MicrophonePCMSampleVendor {
         // And do I want this?
         // self.inputNode!.isVoiceProcessingBypassed = false
 
+    }
+    deinit {
+        logIf(.debug)?.debug("MicrophonePCMSampleVendor is being freed")
+    }
+
+
+    public func start() throws -> AsyncStream<AVAudioPCMBuffer> {
+        if !AIProxyUtils.headphonesConnected {
+            try self.inputNode.setVoiceProcessingEnabled(true)
+        }
         guard let desiredTapFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
-            sampleRate: inputNode.inputFormat(forBus: 0).sampleRate,
+            sampleRate: self.inputNode.inputFormat(forBus: 0).sampleRate,
             channels: 1,
             interleaved: false
         ) else {
@@ -92,31 +94,26 @@ open class MicrophonePCMSampleVendor {
         let targetBufferSize = UInt32(desiredTapFormat.sampleRate / 10)
         // var firstSampleThrownOut = false
         print("Target buffer size is \(targetBufferSize)")
-        let stream = AsyncStream<AVAudioPCMBuffer> { [weak self] continuation in
+
+        //let avAudioEngine = AVAudioEngine()
+        return AsyncStream<AVAudioPCMBuffer> { [weak self] continuation in
             guard let this = self else { return }
             this.continuation = continuation
-            inputNode.installTap(onBus: 0, bufferSize: targetBufferSize, format: desiredTapFormat) { [weak this] sampleBuffer, _ in
+            this.inputNode.installTap(onBus: 0, bufferSize: targetBufferSize, format: desiredTapFormat) { [weak this] sampleBuffer, _ in
                 if let resampledBuffer = self?.convertPCM16BufferToExpectedSampleRate(sampleBuffer) {
                     this?.continuation?.yield(resampledBuffer)
                 }
             }
         }
-
-        avAudioEngine.prepare()
-        try avAudioEngine.start()
-        self.avAudioEngine = avAudioEngine
-        self.inputNode = inputNode
-        return stream
     }
 
     func stop() {
         self.continuation?.finish()
         self.continuation = nil
-        inputNode!.removeTap(onBus: 0)
-        try? inputNode!.setVoiceProcessingEnabled(false)
-        inputNode = nil
-        avAudioEngine!.stop()
-        avAudioEngine = nil
+        inputNode.removeTap(onBus: 0)
+        try? inputNode.setVoiceProcessingEnabled(false)
+//        avAudioEngine.stop()
+//        avAudioEngine = nil
         audioConverter = nil
     }
 
@@ -192,10 +189,12 @@ open class MicrophonePCMSampleVendor {
 
 #endif
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 import AVFoundation
 import AudioToolbox
 import Foundation
+
+let kVoiceProcessingInputSampleRate: Double = 44100
 
 /// This is an AudioToolbox-based implementation that vends PCM16 microphone samples at a
 /// sample rate that OpenAI's realtime models expect.
@@ -241,7 +240,7 @@ open class MicrophonePCMSampleVendor {
     private var audioUnit: AudioUnit?
     private var audioConverter: AVAudioConverter?
     private var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
-    private let voiceProcessingInputSampleRate: Double = 44100
+    private var inputAudioSampleRate: Double = 0
 
     public init() {}
 
@@ -250,9 +249,15 @@ open class MicrophonePCMSampleVendor {
     }
 
     public func start() throws -> AsyncStream<AVAudioPCMBuffer> {
+        #if os(macOS)
+        let subType = AIProxyUtils.headphonesConnected ? kAudioUnitSubType_HALOutput : kAudioUnitSubType_VoiceProcessingIO
+        #else
+        let subType = AIProxyUtils.headphonesConnected ? kAudioUnitSubType_RemoteIO : kAudioUnitSubType_VoiceProcessingIO
+        #endif
+
         var desc = AudioComponentDescription(
             componentType: kAudioUnitType_Output,
-            componentSubType: kAudioUnitSubType_VoiceProcessingIO,
+            componentSubType: subType,
             componentManufacturer: kAudioUnitManufacturer_Apple,
             componentFlags: 0,
             componentFlagsMask: 0
@@ -299,6 +304,43 @@ open class MicrophonePCMSampleVendor {
             )
         }
 
+        // CRITICAL: Set the current device for input
+            // Without this, the audio unit won't know which device to use
+            var deviceID = AudioDeviceID()
+            var size1 = UInt32(MemoryLayout<AudioDeviceID>.size)
+            var address = AudioObjectPropertyAddress(
+                mSelector: kAudioHardwarePropertyDefaultInputDevice,
+                mScope: kAudioObjectPropertyScopeGlobal,
+                mElement: kAudioObjectPropertyElementMain
+            )
+
+            err = AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject),
+                                             &address,
+                                             0,
+                                             nil,
+                                             &size1,
+                                             &deviceID)
+
+            guard err == noErr else {
+                throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
+                    "Could not get default input device. Error: \(err)"
+                )
+            }
+
+            // Set the device on the audio unit
+            err = AudioUnitSetProperty(audioUnit,
+                                       kAudioOutputUnitProperty_CurrentDevice,
+                                       kAudioUnitScope_Global,
+                                       1, // Input element
+                                       &deviceID,
+                                       UInt32(MemoryLayout<AudioDeviceID>.size))
+
+            guard err == noErr else {
+                throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
+                    "Could not set current device on audio unit. Error: \(err)"
+                )
+            }
+
         // Refer to the diagram in the "Essential Characteristics of I/O Units" section here:
         // https://developer.apple.com/library/archive/documentation/MusicAudio/Conceptual/AudioUnitHostingGuide_iOS/AudioUnitHostingFundamentals/AudioUnitHostingFundamentals.html
         var hardwareASBD = AudioStreamBasicDescription()
@@ -310,35 +352,16 @@ open class MicrophonePCMSampleVendor {
                                           &hardwareASBD,
                                           &size)
         logIf(.debug)?.debug("Hardware mic is natively at \(hardwareASBD.mSampleRate) sample rate")
-
-        // Does not work on macOS. Remove comment in future commit.
-        //        var ioFormat = AudioStreamBasicDescription(
-        //            mSampleRate: 24000,
-        //            mFormatID: kAudioFormatLinearPCM,
-        //            mFormatFlags: kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
-        //            mBytesPerPacket: 2 /* UInt32(MemoryLayout<Int16>.size) */,
-        //            mFramesPerPacket: 1,
-        //            mBytesPerFrame: 2 /* UInt32(MemoryLayout<Int16>.size) */,
-        //            mChannelsPerFrame: 1,
-        //            mBitsPerChannel: 16 /* UInt32(8 * MemoryLayout<Int16>.size) */,
-        //            mReserved: 0
-        //        )
-
-        // Does not work on macOS. Remove comment in future commit.
-        //        var ioFormat = AudioStreamBasicDescription(
-        //            mSampleRate: hardwareASBD.mSampleRate,
-        //            mFormatID: kAudioFormatLinearPCM,
-        //            mFormatFlags: kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
-        //            mBytesPerPacket: 2,
-        //            mFramesPerPacket: 1,
-        //            mBytesPerFrame: 2,
-        //            mChannelsPerFrame: 1,
-        //            mBitsPerChannel: 16,
-        //            mReserved: 0
-        //        )
+        self.inputAudioSampleRate = hardwareASBD.mSampleRate
+        #if os(macOS)
+        if subType == kAudioUnitSubType_VoiceProcessingIO {
+            // Sample rate (Hz) IMPORTANT, on macOS 44100 is the *only* sample rate that will work with the voice processing AU
+            self.inputAudioSampleRate = kVoiceProcessingInputSampleRate
+        }
+        #endif
 
         var ioFormat = AudioStreamBasicDescription(
-            mSampleRate: voiceProcessingInputSampleRate, // Sample rate (Hz) IMPORTANT, on macOS 44100 is the *only* sample rate that will work with the voice processing AU
+            mSampleRate: self.inputAudioSampleRate,
             mFormatID: kAudioFormatLinearPCM,
             mFormatFlags: kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
             mBytesPerPacket: 2,
@@ -362,20 +385,6 @@ open class MicrophonePCMSampleVendor {
             )
         }
 
-        // Suprisingly, we do not need to set the input scope format. Remove in future commit.
-        // err = AudioUnitSetProperty(audioUnit,
-        //                      kAudioUnitProperty_StreamFormat,
-        //                      kAudioUnitScope_Input,
-        //                      0,
-        //                      &ioFormat,
-        //                      UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
-        // )
-        // guard err == noErr else {
-        //     throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
-        //         "Could not set ASBD on the input scope of the mic bus"
-        //     )
-        // }
-
         var inputCallbackStruct = AURenderCallbackStruct(
             inputProc: audioRenderCallback,
             inputProcRefCon: Unmanaged.passUnretained(self).toOpaque()
@@ -390,21 +399,6 @@ open class MicrophonePCMSampleVendor {
         guard err == noErr else {
             throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
                 "Could not set the render callback on the voice processing audio unit"
-            )
-        }
-
-        // Do not use auto gain control. Remove in a future commit.
-        // var enable: UInt32 = 1
-        // err = AudioUnitSetProperty(audioUnit,
-        //                      kAUVoiceIOProperty_VoiceProcessingEnableAGC,
-        //                      kAudioUnitScope_Output,
-        //                      1,
-        //                      &enable,
-        //                      UInt32(MemoryLayout.size(ofValue: enable)))
-        //
-        guard err == noErr else {
-            throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
-                "Could not configure auto gain control"
             )
         }
 
@@ -445,6 +439,7 @@ open class MicrophonePCMSampleVendor {
         _ inBusNumber: UInt32,
         _ inNumberFrames: UInt32
     ) {
+        //print("IN RENDER CALLBACK")
         guard let audioUnit = audioUnit else {
             logIf(.error)?.error("There is no audioUnit attached to the sample vendor. Render callback should not be called")
             return
@@ -475,7 +470,7 @@ open class MicrophonePCMSampleVendor {
 
         guard let audioFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
-            sampleRate: voiceProcessingInputSampleRate,
+            sampleRate: self.inputAudioSampleRate,
             channels: 1,
             interleaved: true
         ) else {
@@ -626,20 +621,4 @@ private func writePCM16IntValuesToFile(from buffer: AVAudioPCMBuffer, location: 
             fileHandle.write(data)
         }
     }
-}
-
-private func headphonesConnected() -> Bool {
-    let session = AVAudioSession.sharedInstance()
-    let outputs = session.currentRoute.outputs
-
-    for output in outputs {
-        if output.portType == .headphones ||
-            output.portType == .bluetoothA2DP ||
-            output.portType == .bluetoothLE ||
-            output.portType == .bluetoothHFP {
-            return true
-        }
-    }
-
-    return false
 }

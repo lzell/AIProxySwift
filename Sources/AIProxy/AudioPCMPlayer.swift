@@ -25,13 +25,13 @@ import AVFoundation
 @RealtimeActor
 open class AudioPCMPlayer {
 
+    let audioEngine: AVAudioEngine
     private let inputFormat: AVAudioFormat
     private let playableFormat: AVAudioFormat
-    private let audioEngine: AVAudioEngine
     private let playerNode: AVAudioPlayerNode
-    private let adjustGainOniOS = true
 
-    public init() async throws {
+    public init(_ audioEngine: AVAudioEngine) async throws {
+        self.audioEngine = audioEngine
         guard let _inputFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
             sampleRate: 24000,
@@ -54,38 +54,33 @@ open class AudioPCMPlayer {
             )
         }
 
-        let engine = AVAudioEngine()
         let node = AVAudioPlayerNode()
 
-        engine.attach(node)
-        engine.connect(node, to: engine.mainMixerNode, format: _playableFormat)
-        engine.prepare()
+        audioEngine.attach(node)
+        audioEngine.connect(node, to: audioEngine.mainMixerNode, format: _playableFormat)
 
-        self.audioEngine = engine
         self.playerNode = node
         self.inputFormat = _inputFormat
         self.playableFormat = _playableFormat
 
-        if self.adjustGainOniOS {
 #if os(iOS)
-            // If you use this, and initialize the MicrophonePCMSampleVendor *after* AudioPCMPlayer,
-            // then audio on iOS will be very loud. You can dial it down a bit by adjusting the gain
-            // in `playPCM16Audio` below
-            try? AVAudioSession.sharedInstance().setCategory(
-                .playAndRecord,
-                mode: .voiceChat,
-                options: [.defaultToSpeaker, .allowBluetooth]
-            )
+        // If you use this, and initialize the MicrophonePCMSampleVendor *after* AudioPCMPlayer,
+        // then audio on iOS will be very loud. You can dial it down a bit by adjusting the gain
+        // in `playPCM16Audio` below
+        try? AVAudioSession.sharedInstance().setCategory(
+            .playAndRecord,
+            mode: .voiceChat,
+            options: [.defaultToSpeaker, .allowBluetooth]
+        )
 #elseif os(watchOS)
-            try? AVAudioSession.sharedInstance().setCategory(.playAndRecord)
-            try? await AVAudioSession.sharedInstance().activate(options: [])
+        try? AVAudioSession.sharedInstance().setCategory(.playAndRecord)
+        try? await AVAudioSession.sharedInstance().activate(options: [])
 #endif
-        }
     }
 
     deinit {
         logIf(.debug)?.debug("AudioPCMPlayer is being freed")
-        self.audioEngine.stop()
+        // self.audioEngine.stop()
     }
 
     public func playPCM16Audio(from base64String: String) {
@@ -133,23 +128,16 @@ open class AudioPCMPlayer {
             return
         }
 
-        if !self.audioEngine.isRunning {
-            do {
-                try self.audioEngine.start()
-            } catch {
-                logIf(.error)?.error("Could not start audio engine: \(error.localizedDescription)")
-                return
+        if self.audioEngine.isRunning {
+            #if os(macOS)
+            if AIProxyUtils.headphonesConnected {
+                addGain(to: outPCMBuf, gain: 2.0)
             }
-        }
+            #endif
 
-        #if !os(macOS)
-        if self.adjustGainOniOS {
-            addGain(to: outPCMBuf, gain: 0.5)  // Adjust the gain to your taste. Note that this affects the headphone case too.
+            self.playerNode.scheduleBuffer(outPCMBuf, at: nil, options: [], completionHandler: {})
+            self.playerNode.play()
         }
-        #endif
-
-        self.playerNode.scheduleBuffer(outPCMBuf, at: nil, options: [], completionHandler: {})
-        self.playerNode.play()
     }
 
     public func interruptPlayback() {
