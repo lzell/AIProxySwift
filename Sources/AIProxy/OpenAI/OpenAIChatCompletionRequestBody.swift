@@ -553,6 +553,28 @@ extension OpenAIChatCompletionRequestBody {
             strict: Bool?
         )
 
+        case webSearch
+
+        /// Represents a Model Context Provider (MCP) tool integration.
+        ///
+        /// - Parameters:
+        ///   - serverLabel: A label identifying this external server.
+        ///   - serverUrl: The URL of the MCP server.
+        ///   - requireApproval: Whether calls to this tool require approval (`auto`, `manual`, or `never`).
+        ///   - allowedTools: (Optional) A list of tool names that are allowed to run on this MCP.
+        case mcp(
+            serverLabel: String,
+            serverUrl: String,
+            requireApproval: RequireApproval,
+            allowedTools: [String]? = nil
+        )
+
+        public enum RequireApproval: String, Codable {
+            case auto
+            case manual
+            case never
+        }
+
         private enum RootKey: CodingKey {
             case type
             case function
@@ -565,15 +587,23 @@ extension OpenAIChatCompletionRequestBody {
             case strict
         }
 
+        private enum MCPKey: String, CodingKey {
+            case type
+            case serverLabel = "server_label"
+            case serverUrl = "server_url"
+            case requireApproval = "require_approval"
+            case allowedTools = "allowed_tools"
+        }
+
         public func encode(to encoder: any Encoder) throws {
-            var container = encoder.container(keyedBy: RootKey.self)
             switch self {
             case .function(
-                name: let name,
-                description: let description,
-                parameters: let parameters,
-                strict: let strict
+                let name,
+                let description,
+                let parameters,
+                let strict
             ):
+                var container = encoder.container(keyedBy: RootKey.self)
                 try container.encode("function", forKey: .type)
                 var functionContainer = container.nestedContainer(
                     keyedBy: FunctionKey.self,
@@ -583,6 +613,23 @@ extension OpenAIChatCompletionRequestBody {
                 try functionContainer.encodeIfPresent(description, forKey: .description)
                 try functionContainer.encodeIfPresent(parameters, forKey: .parameters)
                 try functionContainer.encodeIfPresent(strict, forKey: .strict)
+
+            case .webSearch:
+                var container = encoder.container(keyedBy: RootKey.self)
+                try container.encode("web_search_preview", forKey: .type)
+
+            case .mcp(
+                let serverLabel,
+                let serverUrl,
+                let requireApproval,
+                let allowedTools
+            ):
+                var container = encoder.container(keyedBy: MCPKey.self)
+                try container.encode("mcp", forKey: .type)
+                try container.encode(serverLabel, forKey: .serverLabel)
+                try container.encode(serverUrl, forKey: .serverUrl)
+                try container.encode(requireApproval, forKey: .requireApproval)
+                try container.encodeIfPresent(allowedTools, forKey: .allowedTools)
             }
         }
     }
