@@ -6,11 +6,16 @@
 //
 
 #if os(macOS) || os(iOS)
+//
+//  MicrophonePCMSampleVendor.swift
+//  AIProxy
+//
+//  Created by Lou Zell
+//
+
 import AVFoundation
 import AudioToolbox
 import Foundation
-
-let kVoiceProcessingInputSampleRate: Double = 44100
 
 /// This is an AudioToolbox-based implementation that vends PCM16 microphone samples at a
 /// sample rate that OpenAI's realtime models expect.
@@ -55,29 +60,24 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
 
     private var audioUnit: AudioUnit?
     private var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
-    private var inputAudioSampleRate: Double = 0
+    private let voiceProcessingInputSampleRate: Double = 44100
 
     internal var audioConverter: AVAudioConverter?  // MicrophonePCMSampleVendor conformance
     internal func setAudioConverter(_ audioConverter: AVAudioConverter?) {
         self.audioConverter = audioConverter
     }
 
+
     public init() {}
 
     deinit {
-        logIf(.debug)?.debug("MicrophonePCMSampleVendorAT is being freed")
+        logIf(.debug)?.debug("MicrophonePCMSampleVendor is being freed")
     }
 
     public func start() throws -> AsyncStream<AVAudioPCMBuffer> {
-        #if os(macOS)
-        let subType = AIProxyUtils.headphonesConnected ? kAudioUnitSubType_HALOutput : kAudioUnitSubType_VoiceProcessingIO
-        #else
-        let subType = AIProxyUtils.headphonesConnected ? kAudioUnitSubType_RemoteIO : kAudioUnitSubType_VoiceProcessingIO
-        #endif
-
         var desc = AudioComponentDescription(
             componentType: kAudioUnitType_Output,
-            componentSubType: subType,
+            componentSubType: kAudioUnitSubType_VoiceProcessingIO,
             componentManufacturer: kAudioUnitManufacturer_Apple,
             componentFlags: 0,
             componentFlagsMask: 0
@@ -124,40 +124,6 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
             )
         }
 
-        var deviceID = AudioDeviceID()
-        var size1 = UInt32(MemoryLayout<AudioDeviceID>.size)
-        var address = AudioObjectPropertyAddress(
-            mSelector: kAudioHardwarePropertyDefaultInputDevice,
-            mScope: kAudioObjectPropertyScopeGlobal,
-            mElement: kAudioObjectPropertyElementMain
-        )
-
-        err = AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject),
-                                         &address,
-                                         0,
-                                         nil,
-                                         &size1,
-                                         &deviceID)
-
-        guard err == noErr else {
-            throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
-                "Could not get default input device. Error: \(err)"
-            )
-        }
-
-        err = AudioUnitSetProperty(audioUnit,
-                                   kAudioOutputUnitProperty_CurrentDevice,
-                                   kAudioUnitScope_Global,
-                                   1,
-                                   &deviceID,
-                                   UInt32(MemoryLayout<AudioDeviceID>.size))
-
-        guard err == noErr else {
-            throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
-                "Could not set current device on audio unit. Error: \(err)"
-            )
-        }
-
         // Refer to the diagram in the "Essential Characteristics of I/O Units" section here:
         // https://developer.apple.com/library/archive/documentation/MusicAudio/Conceptual/AudioUnitHostingGuide_iOS/AudioUnitHostingFundamentals/AudioUnitHostingFundamentals.html
         var hardwareASBD = AudioStreamBasicDescription()
@@ -169,16 +135,35 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
                                           &hardwareASBD,
                                           &size)
         logIf(.debug)?.debug("Hardware mic is natively at \(hardwareASBD.mSampleRate) sample rate")
-        self.inputAudioSampleRate = hardwareASBD.mSampleRate
-        #if os(macOS)
-        if subType == kAudioUnitSubType_VoiceProcessingIO {
-            // Sample rate (Hz) IMPORTANT, on macOS 44100 is the *only* sample rate that will work with the voice processing AU
-            self.inputAudioSampleRate = kVoiceProcessingInputSampleRate
-        }
-        #endif
+
+        // Does not work on macOS. Remove comment in future commit.
+        //        var ioFormat = AudioStreamBasicDescription(
+        //            mSampleRate: 24000,
+        //            mFormatID: kAudioFormatLinearPCM,
+        //            mFormatFlags: kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
+        //            mBytesPerPacket: 2 /* UInt32(MemoryLayout<Int16>.size) */,
+        //            mFramesPerPacket: 1,
+        //            mBytesPerFrame: 2 /* UInt32(MemoryLayout<Int16>.size) */,
+        //            mChannelsPerFrame: 1,
+        //            mBitsPerChannel: 16 /* UInt32(8 * MemoryLayout<Int16>.size) */,
+        //            mReserved: 0
+        //        )
+
+        // Does not work on macOS. Remove comment in future commit.
+        //        var ioFormat = AudioStreamBasicDescription(
+        //            mSampleRate: hardwareASBD.mSampleRate,
+        //            mFormatID: kAudioFormatLinearPCM,
+        //            mFormatFlags: kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
+        //            mBytesPerPacket: 2,
+        //            mFramesPerPacket: 1,
+        //            mBytesPerFrame: 2,
+        //            mChannelsPerFrame: 1,
+        //            mBitsPerChannel: 16,
+        //            mReserved: 0
+        //        )
 
         var ioFormat = AudioStreamBasicDescription(
-            mSampleRate: self.inputAudioSampleRate,
+            mSampleRate: voiceProcessingInputSampleRate, // Sample rate (Hz) IMPORTANT, on macOS 44100 is the *only* sample rate that will work with the voice processing AU
             mFormatID: kAudioFormatLinearPCM,
             mFormatFlags: kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
             mBytesPerPacket: 2,
@@ -202,6 +187,45 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
             )
         }
 
+        // Suprisingly, we do not need to set the input scope format. Remove in future commit.
+        // err = AudioUnitSetProperty(audioUnit,
+        //                      kAudioUnitProperty_StreamFormat,
+        //                      kAudioUnitScope_Input,
+        //                      0,
+        //                      &ioFormat,
+        //                      UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
+        // )
+        // guard err == noErr else {
+        //     throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
+        //         "Could not set ASBD on the input scope of the mic bus"
+        //     )
+        // }
+
+        if let deviceID = getDefaultInputDevice() {
+            var bufferSize: UInt32 = 10240
+            var propertyAddress = AudioObjectPropertyAddress(
+                mSelector: kAudioDevicePropertyBufferFrameSize,
+                mScope: kAudioDevicePropertyScopeInput,
+                mElement: kAudioObjectPropertyElementMaster
+            )
+
+            let size = UInt32(MemoryLayout.size(ofValue: bufferSize))
+            let status = AudioObjectSetPropertyData(
+                deviceID,
+                &propertyAddress,
+                0,
+                nil,
+                size,
+                &bufferSize
+            )
+
+            if status == noErr {
+                print("Buffer size set to \(bufferSize) frames")
+            } else {
+                print("Failed to set buffer size: \(status)")
+            }
+        }
+
         var inputCallbackStruct = AURenderCallbackStruct(
             inputProc: audioRenderCallback,
             inputProcRefCon: Unmanaged.passUnretained(self).toOpaque()
@@ -216,6 +240,21 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
         guard err == noErr else {
             throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
                 "Could not set the render callback on the voice processing audio unit"
+            )
+        }
+
+        // Do not use auto gain control. Remove in a future commit.
+        // var enable: UInt32 = 1
+        // err = AudioUnitSetProperty(audioUnit,
+        //                      kAUVoiceIOProperty_VoiceProcessingEnableAGC,
+        //                      kAudioUnitScope_Output,
+        //                      1,
+        //                      &enable,
+        //                      UInt32(MemoryLayout.size(ofValue: enable)))
+        //
+        guard err == noErr else {
+            throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
+                "Could not configure auto gain control"
             )
         }
 
@@ -256,7 +295,6 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
         _ inBusNumber: UInt32,
         _ inNumberFrames: UInt32
     ) {
-        print("IN RENDER CALLBACK")
         guard let audioUnit = audioUnit else {
             logIf(.error)?.error("There is no audioUnit attached to the sample vendor. Render callback should not be called")
             return
@@ -287,7 +325,7 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
 
         guard let audioFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
-            sampleRate: self.inputAudioSampleRate,
+            sampleRate: voiceProcessingInputSampleRate,
             channels: 1,
             interleaved: true
         ) else {
@@ -302,7 +340,6 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
     }
 }
 
-
 @RealtimeActor
 private let audioRenderCallback: AURenderCallback = {
     inRefCon,
@@ -311,6 +348,7 @@ private let audioRenderCallback: AURenderCallback = {
     inBusNumber,
     inNumberFrames,
     ioData in
+    print("IN AUDIO RENDER CALLBACK")
     let microphonePCMSampleVendor = Unmanaged<MicrophonePCMSampleVendorAT>
         .fromOpaque(inRefCon)
         .takeUnretainedValue()
@@ -321,5 +359,32 @@ private let audioRenderCallback: AURenderCallback = {
         inNumberFrames
     )
     return noErr
+}
+
+func getDefaultInputDevice() -> AudioDeviceID? {
+    var deviceID = AudioDeviceID(0)
+    var propertyAddress = AudioObjectPropertyAddress(
+        mSelector: kAudioHardwarePropertyDefaultInputDevice,
+        mScope: kAudioObjectPropertyScopeGlobal,
+        mElement: kAudioObjectPropertyElementMaster
+    )
+
+    var size = UInt32(MemoryLayout<AudioDeviceID>.size)
+
+    let status = AudioObjectGetPropertyData(
+        AudioObjectID(kAudioObjectSystemObject),
+        &propertyAddress,
+        0,
+        nil,
+        &size,
+        &deviceID
+    )
+
+    if status != noErr {
+        print("Error getting default input device: \(status)")
+        return nil
+    }
+
+    return deviceID
 }
 #endif

@@ -29,13 +29,11 @@ open class AudioController {
         }
 
         self.audioPCMPlayer = await try AudioPCMPlayer(audioEngine: self.audioEngine)
+        self.audioEngine.prepare()
+        try self.audioEngine.start()
     }
 
     public func micStream() throws -> AsyncStream<AVAudioPCMBuffer> {
-        if !useAudioToolbox {
-            self.audioEngine.prepare()
-            try self.audioEngine.start()
-        }
         return try self.microphonePCMSampleVendor.start()
     }
 
