@@ -11,6 +11,12 @@ public struct EachAITriggerWorkflowResponseBody: Decodable {
     public let triggerID: String
     public let message: String?
     public let status: String?
+    
+    public init(triggerID: String, message: String?, status: String?) {
+        self.triggerID = triggerID
+        self.message = message
+        self.status = status
+    }
 
     private enum CodingKeys: String, CodingKey {
         case triggerID = "trigger_id"

@@ -14,6 +14,13 @@ public struct BraveWebSearchResponseBody: Decodable {
     public let query: Query?
     public let type: String?
     public let web: Web?
+    
+    public init(mixed: Mixed?, query: Query?, type: String?, web: Web?) {
+        self.mixed = mixed
+        self.query = query
+        self.type = type
+        self.web = web
+    }
 }
 
 extension BraveWebSearchResponseBody {
@@ -31,6 +38,22 @@ extension BraveWebSearchResponseBody {
         public let showStrictWarning: Bool?
         public let spellcheckOff: Bool?
         public let state: String?
+        
+        public init(badResults: Bool?, city: String?, country: String?, headerCountry: String?, isNavigational: Bool?, isNewsBreaking: Bool?, moreResultsAvailable: Bool?, original: String?, postalCode: String?, shouldFallback: Bool?, showStrictWarning: Bool?, spellcheckOff: Bool?, state: String?) {
+            self.badResults = badResults
+            self.city = city
+            self.country = country
+            self.headerCountry = headerCountry
+            self.isNavigational = isNavigational
+            self.isNewsBreaking = isNewsBreaking
+            self.moreResultsAvailable = moreResultsAvailable
+            self.original = original
+            self.postalCode = postalCode
+            self.shouldFallback = shouldFallback
+            self.showStrictWarning = showStrictWarning
+            self.spellcheckOff = spellcheckOff
+            self.state = state
+        }
 
         private enum CodingKeys: String, CodingKey {
             case badResults
@@ -56,6 +79,13 @@ extension BraveWebSearchResponseBody {
         public let side: [MixedItem]?
         public let top: [MixedItem]?
         public let type: String?
+        
+        public init(main: [MixedItem]?, side: [MixedItem]?, top: [MixedItem]?, type: String?) {
+            self.main = main
+            self.side = side
+            self.top = top
+            self.type = type
+        }
 
         public struct MixedItem: Decodable {
             public let all: Bool
@@ -70,6 +100,12 @@ extension BraveWebSearchResponseBody {
         public let familyFriendly: Bool?
         public let results: [SearchResult]?
         public let type: String?
+        
+        public init(familyFriendly: Bool?, results: [SearchResult]?, type: String?) {
+            self.familyFriendly = familyFriendly
+            self.results = results
+            self.type = type
+        }
 
         private enum CodingKeys: String, CodingKey {
             case familyFriendly = "family_friendly"
@@ -96,6 +132,24 @@ extension BraveWebSearchResponseBody.Web {
         public let type: String?
         public let thumbnail: Thumbnail?
         public let url: String?
+        
+        public init(age: String?, description: String?, familyFriendly: Bool?, isLive: Bool?, isSourceBoth: Bool?, isSourceLocal: Bool?, language: String?, metaURL: MetaURL?, pageAge: String?, profile: Profile?, subtype: String?, title: String?, type: String?, thumbnail: Thumbnail?, url: String?) {
+            self.age = age
+            self.description = description
+            self.familyFriendly = familyFriendly
+            self.isLive = isLive
+            self.isSourceBoth = isSourceBoth
+            self.isSourceLocal = isSourceLocal
+            self.language = language
+            self.metaURL = metaURL
+            self.pageAge = pageAge
+            self.profile = profile
+            self.subtype = subtype
+            self.title = title
+            self.type = type
+            self.thumbnail = thumbnail
+            self.url = url
+        }
 
         private enum CodingKeys: String, CodingKey {
             case age
@@ -123,6 +177,13 @@ extension BraveWebSearchResponseBody.Web.SearchResult {
         public let longName: String?
         public let name: String?
         public let url: String?
+        
+        public init(img: String?, longName: String?, name: String?, url: String?) {
+            self.img = img
+            self.longName = longName
+            self.name = name
+            self.url = url
+        }
 
         private enum CodingKeys: String, CodingKey {
             case img
@@ -140,6 +201,14 @@ extension BraveWebSearchResponseBody.Web.SearchResult {
         public let netloc: String?
         public let path: String?
         public let scheme: String?
+        
+        public init(favicon: String?, hostname: String?, netloc: String?, path: String?, scheme: String?) {
+            self.favicon = favicon
+            self.hostname = hostname
+            self.netloc = netloc
+            self.path = path
+            self.scheme = scheme
+        }
 
         private enum CodingKeys: String, CodingKey {
             case favicon
@@ -161,6 +230,12 @@ extension BraveWebSearchResponseBody.Web.SearchResult {
             case logo
             case original
             case src
+        }
+        
+        public init(logo: Bool?, original: String?, src: String?) {
+            self.logo = logo
+            self.original = original
+            self.src = src
         }
     }
 }

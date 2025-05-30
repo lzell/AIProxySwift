@@ -7,14 +7,15 @@
 
 import Foundation
 
-#if canImport(UIKit)
-import UIKit
-#endif
-
 private let kLibError = "client-lib-error"
 private let kGlobal = "global"
 
 struct ClientLibErrorLogger {
+    static func logDeviceCheckSingletonIsNil(clientID: String?) {
+        let payload = buildPayload(errorType: "dc-singleton-nil", errorMessage: nil)
+        deliver(payload, clientID: clientID)
+    }
+
     static func logDeviceCheckNotSupported(clientID: String?) {
         let payload = buildPayload(errorType: "dc-not-supported", errorMessage: nil)
         deliver(payload, clientID: clientID)
@@ -52,33 +53,15 @@ private struct Payload: Encodable {
 
 
 private func buildPayload(errorType: String, errorMessage: String?) -> Payload {
-    let bundle = Bundle.main
-    let infoDict = bundle.infoDictionary ?? [:]
-
-    let appName = infoDict["CFBundleName"] as? String ?? "Unknown"
-    let appVersion = infoDict["CFBundleShortVersionString"] as? String ?? "Unknown"
-    let buildNumber = infoDict["CFBundleVersion"] as? String ?? "Unknown"
-    let osVersion = ProcessInfo.processInfo.operatingSystemVersion
-    let osVersionString = "\(osVersion.majorVersion).\(osVersion.minorVersion).\(osVersion.patchVersion)"
-
-    var deviceModel = "Unknown"
-    var systemName = "Unknown"
-
-    #if os(iOS) || os(tvOS) || os(watchOS)
-    deviceModel = UIDevice.current.model
-    systemName = UIDevice.current.systemName
-    #elseif os(macOS)
-    deviceModel = Host.current().localizedName ?? "Mac"
-    systemName = "macOS"
-    #endif
+    let runtimeInfo = RuntimeInfo.current
 
     return Payload(
-        appName: appName,
-        appVersion: appVersion,
-        buildNumber: buildNumber,
-        deviceModel: deviceModel,
-        systemName: systemName,
-        osVersion: osVersionString,
+        appName: runtimeInfo.appName,
+        appVersion: runtimeInfo.appVersion,
+        buildNumber: runtimeInfo.buildNumber,
+        deviceModel: runtimeInfo.deviceModel,
+        systemName: runtimeInfo.systemName,
+        osVersion: runtimeInfo.osVersion,
         errorType: errorType,
         errorMessage: errorMessage,
         timestamp: Date().timeIntervalSince1970
@@ -87,7 +70,7 @@ private func buildPayload(errorType: String, errorMessage: String?) -> Payload {
 
 private func buildRequest(_ payload: Payload, clientID: String?) -> URLRequest? {
     guard let body: Data = try? payload.serialize(),
-          let libErrorURL = URL(string: ["https://api.aiproxy.pro", kGlobal, kLibError].joined(separator: "/")) else {
+          let libErrorURL = URL(string: ["https://api.aiproxy.com", kGlobal, kLibError].joined(separator: "/")) else {
           // let libErrorURL = URL(string: ["http://Lous-MacBook-Air-3.local:4000", kGlobal, kLibError].joined(separator: "/")) else {
         return nil
     }
@@ -100,10 +83,10 @@ private func buildRequest(_ payload: Payload, clientID: String?) -> URLRequest? 
         request.addValue(clientID, forHTTPHeaderField: "aiproxy-client-id")
     }
 
-    if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as?  String,
-       let bundleID = Bundle.main.bundleIdentifier{
-        request.addValue("v2|\(bundleID)|\(appVersion)|\(AIProxy.sdkVersion)", forHTTPHeaderField: "aiproxy-metadata")
-    }
+    request.addValue(
+        AIProxyUtils.metadataHeader(withBodySize: body.count),
+        forHTTPHeaderField: "aiproxy-metadata"
+    )
 
     if let resolvedAccount = AnonymousAccountStorage.resolvedAccount {
         request.addValue(resolvedAccount.uuid, forHTTPHeaderField: "aiproxy-anonymous-id")

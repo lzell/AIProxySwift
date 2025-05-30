@@ -9,4 +9,8 @@ import Foundation
 
 public struct GeminiFileUploadResponseBody: Decodable {
     public let file: GeminiFile
+    
+    public init(file: GeminiFile) {
+        self.file = file
+    }
 }

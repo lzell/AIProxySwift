@@ -73,6 +73,22 @@ enum AIProxyUtils {
         return URL(string: "data:image/jpeg;base64,\(jpegData.base64EncodedString())")
     }
 #endif
+
+    static func metadataHeader(withBodySize bodySize: Int?) -> String {
+        let ri = RuntimeInfo.current
+        let fields: [String] = [
+            "v4",
+            ri.bundleID,
+            ri.appVersion,
+            AIProxy.sdkVersion,
+            String(Date().timeIntervalSince1970),
+            ri.systemName,
+            ri.osVersion,
+            ri.deviceModel,
+            String(bodySize ?? 0)
+        ]
+        return fields.joined(separator: "|")
+    }
 }
 
 

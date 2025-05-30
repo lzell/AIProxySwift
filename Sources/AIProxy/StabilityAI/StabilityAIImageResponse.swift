@@ -40,4 +40,11 @@ public struct StabilityAIImageResponse {
     /// NOTE: This header is absent on JSON encoded responses because it is present in the body
     ///       as seed.
     public let seed: String?
+    
+    public init(imageData: Data, contentType: String?, finishReason: String?, seed: String?) {
+        self.imageData = imageData
+        self.contentType = contentType
+        self.finishReason = finishReason
+        self.seed = seed
+    }
 }

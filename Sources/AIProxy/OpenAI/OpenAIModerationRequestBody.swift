@@ -35,7 +35,7 @@ extension OpenAIModerationRequestBody {
         case text(String)
 
         /// The input image to classify, where the image is represented as a base64-encoded data URL
-        case image(String) // Create image string with AIProxy.encodeImageAsURL
+        case image(URL) // Create image string with AIProxy.encodeImageAsURL
 
         private enum RootKey: String, CodingKey {
             case imageURL = "image_url"
@@ -54,6 +54,7 @@ extension OpenAIModerationRequestBody {
                 try container.encode("text", forKey: .type)
                 try container.encode(textInput, forKey: .text)
             case .image(let encodedImage):
+                try container.encode("image_url", forKey: .type)
                 var nestedContainer = container.nestedContainer(keyedBy: NestedKey.self, forKey: .imageURL)
                 try nestedContainer.encode(encodedImage, forKey: .url)
             }

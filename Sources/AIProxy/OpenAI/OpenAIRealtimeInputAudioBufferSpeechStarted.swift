@@ -12,6 +12,10 @@ import Foundation
 public struct OpenAIRealtimeInputAudioBufferSpeechStarted: Decodable {
     public let type = "input_audio_buffer.speech_started"
     public let audioStartMs: Int
+    
+    public init(audioStartMs: Int) {
+        self.audioStartMs = audioStartMs
+    }
 
     private enum CodingKeys: String, CodingKey {
         case audioStartMs = "audio_start_ms"

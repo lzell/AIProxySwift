@@ -56,9 +56,10 @@ enum AIProxyURLRequest {
             request.addValue(deviceCheckToken, forHTTPHeaderField: "aiproxy-devicecheck")
         }
 
-        let bundleID = Bundle.main.bundleIdentifier ?? "unknown"
-        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
-        request.addValue("v3|\(bundleID)|\(appVersion)|\(AIProxy.sdkVersion)|\(Date().timeIntervalSince1970)", forHTTPHeaderField: "aiproxy-metadata")
+        request.addValue(
+            AIProxyUtils.metadataHeader(withBodySize: body?.count ?? 0),
+            forHTTPHeaderField: "aiproxy-metadata"
+        )
 
         if let resolvedAccount = AnonymousAccountStorage.resolvedAccount {
             request.addValue(resolvedAccount.uuid, forHTTPHeaderField: "aiproxy-anonymous-id")
