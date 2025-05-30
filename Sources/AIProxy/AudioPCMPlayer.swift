@@ -30,9 +30,10 @@ open class AudioPCMPlayer {
     private let playableFormat: AVAudioFormat
     private let playerNode: AVAudioPlayerNode
 
-    public init(_ audioEngine: AVAudioEngine) async throws {
+    @RealtimeActor
+    init(audioEngine: AVAudioEngine) async throws {
         self.audioEngine = audioEngine
-        guard let _inputFormat = AVAudioFormat(
+        guard let inputFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
             sampleRate: 24000,
             channels: 1,
@@ -43,7 +44,7 @@ open class AudioPCMPlayer {
             )
         }
 
-        guard let _playableFormat = AVAudioFormat(
+        guard let playableFormat = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
             sampleRate: 24000,
             channels: 1,
@@ -57,11 +58,11 @@ open class AudioPCMPlayer {
         let node = AVAudioPlayerNode()
 
         audioEngine.attach(node)
-        audioEngine.connect(node, to: audioEngine.outputNode, format: _playableFormat)
+        audioEngine.connect(node, to: audioEngine.outputNode, format: playableFormat)
 
         self.playerNode = node
-        self.inputFormat = _inputFormat
-        self.playableFormat = _playableFormat
+        self.inputFormat = inputFormat
+        self.playableFormat = playableFormat
 
 #if os(iOS)
         // If you use this, and initialize the MicrophonePCMSampleVendor *after* AudioPCMPlayer,
@@ -80,7 +81,6 @@ open class AudioPCMPlayer {
 
     deinit {
         logIf(.debug)?.debug("AudioPCMPlayer is being freed")
-        // self.audioEngine.stop()
     }
 
     public func playPCM16Audio(from base64String: String) {
