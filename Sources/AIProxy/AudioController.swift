@@ -66,7 +66,13 @@ open class AudioController {
 
         self.audioPCMPlayer = try await AudioPCMPlayer(audioEngine: self.audioEngine)
         self.audioEngine.prepare()
-        try self.audioEngine.start()
+
+        // Nesting `start` in a Task is necessary on watchOS.
+        // There is some sort of race, and letting the runloop tick seems to "fix" it.
+        // If I call `prepare` and `start` in serial succession, then there is no playback on watchOS (sometimes).
+        Task {
+            try self.audioEngine.start()
+        }
     }
 
     public func micStream() throws -> AsyncStream<AVAudioPCMBuffer> {
