@@ -119,18 +119,54 @@ public enum AIProxyUtils {
         }
         return deviceID
     }
+
+    static func getAllAudioInputDevices() -> [AudioDeviceID] {
+        var propSize: UInt32 = 0
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDevices,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var err = AudioObjectGetPropertyDataSize(
+            AudioObjectID(kAudioObjectSystemObject),
+            &address,
+            0,
+            nil,
+            &propSize
+        )
+        guard err == noErr else {
+            logIf(.error)?.error("Could not set propSize, needed for querying all audio devices")
+            return []
+        }
+
+        var devices = [AudioDeviceID](
+            repeating: 0,
+            count: Int(propSize / UInt32(MemoryLayout<AudioDeviceID>.size))
+        )
+        err = AudioObjectGetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject),
+            &address,
+            0,
+            nil,
+            &propSize,
+            &devices
+        )
+        guard err == noErr else {
+            logIf(.error)?.error("Could not query for all audio devices")
+            return []
+        }
+        return devices
+    }
     #endif
 
     public static var headphonesConnected: Bool {
         #if os(macOS)
-        return _audioToolboxHeadphonesConnected()
+        return audioToolboxHeadphonesConnected()
         #else
-        return _audioSessionHeadphonesConnected()
+        return audioSessionHeadphonesConnected()
         #endif
     }
-
 }
-
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 extension NSImage {
@@ -152,7 +188,7 @@ extension NSImage {
 
 
 #if !os(macOS)
-private func _audioSessionHeadphonesConnected() -> Bool {
+private func audioSessionHeadphonesConnected() -> Bool {
     let session = AVAudioSession.sharedInstance()
     let outputs = session.currentRoute.outputs
 
@@ -170,98 +206,62 @@ private func _audioSessionHeadphonesConnected() -> Bool {
 
 
 #if os(macOS)
-private func _audioToolboxHeadphonesConnected() -> Bool {
-    // Why am I getting all audio devices?
-    // Couldn't I just get the default device? See AIProxyUtils.getDefaultAudioInputDevice
-
-    // Get all audio devices
-    var propertySize: UInt32 = 0
-    var address = AudioObjectPropertyAddress(
-        mSelector: kAudioHardwarePropertyDevices,
-        mScope: kAudioObjectPropertyScopeGlobal,
-        mElement: kAudioObjectPropertyElementMain
-    )
-
-    // Get the size of the device list
-    var status = AudioObjectGetPropertyDataSize(
-        AudioObjectID(kAudioObjectSystemObject),
-        &address,
-        0,
-        nil,
-        &propertySize
-    )
-
-    guard status == noErr else {
-        return false
-    }
-
-    let deviceCount = Int(propertySize / UInt32(MemoryLayout<AudioDeviceID>.size))
-    var devices = [AudioDeviceID](repeating: 0, count: deviceCount)
-
-    // Get all devices
-    status = AudioObjectGetPropertyData(
-        AudioObjectID(kAudioObjectSystemObject),
-        &address,
-        0,
-        nil,
-        &propertySize,
-        &devices
-    )
-
-    guard status == noErr else {
-        return false
-    }
-
-    for deviceID in devices {
-        if isHeadphoneDevice(deviceID) && isDeviceAlive(deviceID) {
+private func audioToolboxHeadphonesConnected() -> Bool {
+    for deviceID in AIProxyUtils.getAllAudioInputDevices() {
+        if isHeadphoneDevice(deviceID: deviceID) && isDeviceAlive(deviceID: deviceID) {
             return true
         }
     }
     return false
 }
 
+private func isHeadphoneDevice(deviceID: AudioDeviceID) -> Bool {
+    guard hasOutputStreams(deviceID: deviceID) else {
+        return false
+    }
 
+    let transportType = getTransportType(deviceID: deviceID)
 
-private func isHeadphoneDevice(_ deviceID: AudioDeviceID) -> Bool {
-    // Check if device has output streams (headphones should have output)
-    guard hasOutputStreams(deviceID) else { return false }
-
-    // Get transport type
-    var transportType = UInt32(0)
-    var propertySize = UInt32(MemoryLayout<UInt32>.size)
-    var address = AudioObjectPropertyAddress(
-        mSelector: kAudioDevicePropertyTransportType,
-        mScope: kAudioObjectPropertyScopeGlobal,
-        mElement: kAudioObjectPropertyElementMain
-    )
-
-    let status = AudioObjectGetPropertyData(
-        deviceID,
-        &address,
-        0,
-        nil,
-        &propertySize,
-        &transportType
-    )
-
-    guard status == noErr else { return false }
-
-    // Check for headphone-like transport types
-    if transportType == kAudioDeviceTransportTypeBluetooth ||
-       transportType == kAudioDeviceTransportTypeBluetoothLE ||
-       transportType == kAudioDeviceTransportTypeUSB {
+    if [
+        kAudioDeviceTransportTypeBluetooth,
+        kAudioDeviceTransportTypeBluetoothLE,
+        kAudioDeviceTransportTypeUSB
+    ].contains(transportType) {
         return true
     }
 
     // For built-in devices, we need to check the device name or UID
     if transportType == kAudioDeviceTransportTypeBuiltIn {
-        return isBuiltInHeadphonePort(deviceID)
+        return isBuiltInHeadphonePort(deviceID: deviceID)
     }
 
     return false
 }
 
-private func isBuiltInHeadphonePort(_ deviceID: AudioDeviceID) -> Bool {
+private func getTransportType(deviceID: AudioDeviceID) -> UInt32 {
+    var transportType = UInt32(0)
+    var propSize = UInt32(MemoryLayout<UInt32>.size)
+    var address = AudioObjectPropertyAddress(
+        mSelector: kAudioDevicePropertyTransportType,
+        mScope: kAudioObjectPropertyScopeGlobal,
+        mElement: kAudioObjectPropertyElementMain
+    )
+    let err = AudioObjectGetPropertyData(
+        deviceID,
+        &address,
+        0,
+        nil,
+        &propSize,
+        &transportType
+    )
+    guard err == noErr else {
+        logIf(.error)?.error("Could not get transport type for audio device")
+        return 0
+    }
+    return transportType
+}
+
+private func isBuiltInHeadphonePort(deviceID: AudioDeviceID) -> Bool {
     var deviceUID: CFString? = nil
     var propSize = UInt32(MemoryLayout<CFString>.size)
     var address = AudioObjectPropertyAddress(
@@ -290,43 +290,47 @@ private func isBuiltInHeadphonePort(_ deviceID: AudioDeviceID) -> Bool {
     return retval
 }
 
-private func hasOutputStreams(_ deviceID: AudioDeviceID) -> Bool {
+private func hasOutputStreams(deviceID: AudioDeviceID) -> Bool {
     var address = AudioObjectPropertyAddress(
         mSelector: kAudioDevicePropertyStreams,
         mScope: kAudioObjectPropertyScopeOutput,
         mElement: kAudioObjectPropertyElementMain
     )
-
-    var propertySize: UInt32 = 0
-    let status = AudioObjectGetPropertyDataSize(
+    var propSize: UInt32 = 0
+    let err = AudioObjectGetPropertyDataSize(
         deviceID,
         &address,
         0,
         nil,
-        &propertySize
+        &propSize
     )
-
-    return status == noErr && propertySize > 0
+    guard err == noErr else {
+        logIf(.error)?.error("Could not check for output streams on audio device")
+        return false
+    }
+    return propSize > 0
 }
 
-private func isDeviceAlive(_ deviceID: AudioDeviceID) -> Bool {
+private func isDeviceAlive(deviceID: AudioDeviceID) -> Bool {
     var isAlive: UInt32 = 0
-    var propertySize = UInt32(MemoryLayout<UInt32>.size)
+    var propSize = UInt32(MemoryLayout<UInt32>.size)
     var address = AudioObjectPropertyAddress(
         mSelector: kAudioDevicePropertyDeviceIsAlive,
         mScope: kAudioObjectPropertyScopeGlobal,
         mElement: kAudioObjectPropertyElementMain
     )
-
-    let status = AudioObjectGetPropertyData(
+    let err = AudioObjectGetPropertyData(
         deviceID,
         &address,
         0,
         nil,
-        &propertySize,
+        &propSize,
         &isAlive
     )
-
-    return status == noErr && isAlive != 0
+    guard err == noErr else {
+        logIf(.error)?.error("Could not check if the audio input is alive")
+        return false
+    }
+    return isAlive != 0
 }
 #endif
