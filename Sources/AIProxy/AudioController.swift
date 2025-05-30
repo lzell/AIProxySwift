@@ -42,7 +42,7 @@ open class AudioController {
         self.microphonePCMSampleVendor = try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
         #endif
 
-        self.audioPCMPlayer = await try AudioPCMPlayer(audioEngine: self.audioEngine)
+        self.audioPCMPlayer = try await AudioPCMPlayer(audioEngine: self.audioEngine)
         self.audioEngine.prepare()
         try self.audioEngine.start()
     }

@@ -99,7 +99,7 @@ extension MicrophonePCMSampleVendor {
         let dst = accumulator.int16ChannelData![0].advanced(by: Int(accumulator.frameLength))
         let src = buf.int16ChannelData![0]
 
-        dst.assign(from: src, count: Int(copyFrames))
+        dst.update(from: src, count: Int(copyFrames))
         accumulator.frameLength += copyFrames
 
         if accumulator.frameLength >= targetAccumulatorLength {

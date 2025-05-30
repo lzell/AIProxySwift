@@ -96,6 +96,31 @@ public enum AIProxyUtils {
         return fields.joined(separator: "|")
     }
 
+    #if os(macOS)
+    static func getDefaultAudioInputDevice() -> AudioDeviceID? {
+        var deviceID = AudioDeviceID()
+        var propSize = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultInputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        let err = AudioObjectGetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject),
+            &address,
+            0,
+            nil,
+            &propSize,
+            &deviceID
+        )
+        guard err == noErr else {
+            logIf(.error)?.error("Could not query for default audio input device")
+            return nil
+        }
+        return deviceID
+    }
+    #endif
+
     public static var headphonesConnected: Bool {
         #if os(macOS)
         return _audioToolboxHeadphonesConnected()
@@ -103,6 +128,7 @@ public enum AIProxyUtils {
         return _audioSessionHeadphonesConnected()
         #endif
     }
+
 }
 
 
@@ -142,30 +168,11 @@ private func _audioSessionHeadphonesConnected() -> Bool {
 }
 #endif
 
+
 #if os(macOS)
 private func _audioToolboxHeadphonesConnected() -> Bool {
-    // Why am I getting all audio devices? Couldn't I use this and just get the default device:
-    /*
-     var deviceID = AudioDeviceID()
-     var propSize = UInt32(MemoryLayout<AudioDeviceID>.size)
-     var address = AudioObjectPropertyAddress(
-         mSelector: kAudioHardwarePropertyDefaultInputDevice,
-         mScope: kAudioObjectPropertyScopeGlobal,
-         mElement: kAudioObjectPropertyElementMain
-     )
-     var err = AudioObjectGetPropertyData(
-         AudioObjectID(kAudioObjectSystemObject),
-         &address,
-         0,
-         nil,
-         &propSize,
-         &deviceID
-     )
-     guard err == noErr else {
-         logIf(.error)?.error("Could not query for default audio input devices")
-         return false
-     }
-    */
+    // Why am I getting all audio devices?
+    // Couldn't I just get the default device? See AIProxyUtils.getDefaultAudioInputDevice
 
     // Get all audio devices
     var propertySize: UInt32 = 0
@@ -212,6 +219,8 @@ private func _audioToolboxHeadphonesConnected() -> Bool {
     }
     return false
 }
+
+
 
 private func isHeadphoneDevice(_ deviceID: AudioDeviceID) -> Bool {
     // Check if device has output streams (headphones should have output)
@@ -272,7 +281,7 @@ private func isBuiltInHeadphonePort(_ deviceID: AudioDeviceID) -> Bool {
         )
     }
 
-    guard let uidString = deviceUID as? String else {
+    guard err == noErr, let uidString = deviceUID as? String else {
         logIf(.error)?.error("Could not get mic's uidString from CFString")
         return false
     }

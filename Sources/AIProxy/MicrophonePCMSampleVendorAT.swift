@@ -195,12 +195,14 @@ internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
         // }
 
         #if os(macOS)
-        if let deviceID = getDefaultInputDevice() {
-            var bufferSize: UInt32 = UInt32(kVoiceProcessingInputSampleRate / 20) // Try to get 50ms updates
+        if let deviceID = AIProxyUtils.getDefaultAudioInputDevice() {
+            // Try to get 50ms updates.
+            // 50ms is half the granularity of our target accumulator (we accumulate into 100ms payloads that we send up to OpenAI)
+            var bufferSize: UInt32 = UInt32(kVoiceProcessingInputSampleRate / 20)
             var propertyAddress = AudioObjectPropertyAddress(
                 mSelector: kAudioDevicePropertyBufferFrameSize,
                 mScope: kAudioDevicePropertyScopeInput,
-                mElement: kAudioObjectPropertyElementMaster
+                mElement: kAudioObjectPropertyElementMain
             )
 
             let size = UInt32(MemoryLayout.size(ofValue: bufferSize))
@@ -356,33 +358,4 @@ private let audioRenderCallback: AURenderCallback = {
     )
     return noErr
 }
-
-#if os(macOS)
-func getDefaultInputDevice() -> AudioDeviceID? {
-    var deviceID = AudioDeviceID(0)
-    var propertyAddress = AudioObjectPropertyAddress(
-        mSelector: kAudioHardwarePropertyDefaultInputDevice,
-        mScope: kAudioObjectPropertyScopeGlobal,
-        mElement: kAudioObjectPropertyElementMaster
-    )
-
-    var size = UInt32(MemoryLayout<AudioDeviceID>.size)
-
-    let status = AudioObjectGetPropertyData(
-        AudioObjectID(kAudioObjectSystemObject),
-        &propertyAddress,
-        0,
-        nil,
-        &size,
-        &deviceID
-    )
-
-    if status != noErr {
-        print("Error getting default input device: \(status)")
-        return nil
-    }
-
-    return deviceID
-}
-#endif
 #endif
