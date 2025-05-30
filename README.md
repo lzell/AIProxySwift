@@ -1111,13 +1111,13 @@ getting a basic integration working first narrows down the source of any problem
 
 Take these steps to build and run an OpenAI realtime example: 
 
-1. Generate a new SwiftUI Xcode project called `MyApp`
+1. Generate a new SwiftUI Xcode project
 2. Add the `NSMicrophoneUsageDescription` key to your info.plist file
 3. If macOS, tap your project > your target > Signing & Capabilities and add the following:
     - App Sandbox > Outgoing Connections (client)
     - App Sandbox > Audio Input
     - Hardened Runtime > AudioInput
-4. Replace the contents of `MyApp.swift` with the snippet below
+4. Replace the contents of `ContentView.swift` with the snippet below
 5. Replace the placeholders in the snippet
     - If connecting directly to OpenAI, replace `your-openai-key`
     - If protecting your connection through AIProxy, replace `aiproxy-partial-key` and `aiproxy-service-url`
@@ -1132,27 +1132,48 @@ added to the private beta.
 import SwiftUI
 import AIProxy
 
-@main
-struct MyApp: App {
-
+struct ContentView: View {
     let realtimeManager = RealtimeManager()
+    @State private var isRealtimeActive: Bool = false {
+        willSet {
+            if newValue {
+                startRealtime()
+            } else {
+                stopRealtime()
+            }
+        }
+    }
 
-    var body: some Scene {
-        WindowGroup {
-            Button("Start conversation") {
-                Task {
-                    try await realtimeManager.startConversation()
-                }
+    private func startRealtime() {
+        Task {
+            do {
+                try await realtimeManager.startConversation()
+            } catch {
+                print("Could not start OpenAI realtime: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func stopRealtime() {
+        Task {
+            await realtimeManager.stopConversation()
+        }
+    }
+
+    var body: some View {
+        VStack {
+            Button(isRealtimeActive ? "Stop OpenAI Realtime" : "Start OpenAI Realtime") {
+                self.isRealtimeActive.toggle()
             }
         }
     }
 }
 
+
 @RealtimeActor
 final class RealtimeManager {
     private var realtimeSession: OpenAIRealtimeSession?
-    private var microphonePCMSampleVendor: MicrophonePCMSampleVendor?
-    private var audioPCMPlayer: AudioPCMPlayer?
+    private var audioController: AudioController?
 
     nonisolated init() {}
 
@@ -1171,12 +1192,8 @@ final class RealtimeManager {
         // Set to false if you want your user to speak first
         let aiSpeaksFirst = true
 
-        // Initialize an audio player to play PCM16 data that we receive from OpenAI:
-        let audioPCMPlayer = try AudioPCMPlayer()
-
-        // Initialize a microphone vendor to vend PCM16 audio samples that we'll send to OpenAI:
-        let microphonePCMSampleVendor = MicrophonePCMSampleVendor()
-        let audioStream = try microphonePCMSampleVendor.start()
+        let audioController = try await AudioController()
+        let micStream = try audioController.micStream()
 
         // Start the realtime session:
         let configuration = OpenAIRealtimeSessionConfiguration(
@@ -1188,11 +1205,7 @@ final class RealtimeManager {
             outputAudioFormat: .pcm16,
             temperature: 0.7,
             turnDetection: .init(
-                type: .serverVAD(
-                    prefixPaddingMs: 300,
-                    silenceDurationMs: 500,
-                    threshold: 0.5
-                )
+                type: .semanticVAD(eagerness: .medium)
             ),
             voice: "shimmer"
         )
@@ -1206,7 +1219,7 @@ final class RealtimeManager {
         // Send audio from the microphone to OpenAI once OpenAI is ready for it:
         var isOpenAIReadyForAudio = false
         Task {
-            for await buffer in audioStream {
+            for await buffer in micStream {
                 if isOpenAIReadyForAudio, let base64Audio = AIProxy.base64EncodeAudioPCMBuffer(from: buffer) {
                     await realtimeSession.sendMessage(
                         OpenAIRealtimeInputAudioBufferAppend(audio: base64Audio)
@@ -1228,9 +1241,9 @@ final class RealtimeManager {
                         isOpenAIReadyForAudio = true
                     }
                 case .responseAudioDelta(let base64Audio):
-                    audioPCMPlayer.playPCM16Audio(from: base64Audio)
+                    audioController.playPCM16Audio(from: base64Audio)
                 case .inputAudioBufferSpeechStarted:
-                    audioPCMPlayer.interruptPlayback()
+                    audioController.interruptPlayback()
                 case .responseCreated:
                     isOpenAIReadyForAudio = true
                 default:
@@ -1239,17 +1252,14 @@ final class RealtimeManager {
             }
         }
 
-        self.microphonePCMSampleVendor = microphonePCMSampleVendor
-        self.audioPCMPlayer = audioPCMPlayer
         self.realtimeSession = realtimeSession
+        self.audioController = audioController
     }
 
     func stopConversation() {
-        self.microphonePCMSampleVendor?.stop()
-        self.audioPCMPlayer?.interruptPlayback()
+        self.audioController?.stop()
         self.realtimeSession?.disconnect()
-        self.microphonePCMSampleVendor = nil
-        self.audioPCMPlayer = nil
+        self.audioController = nil
         self.realtimeSession = nil
     }
 }
