@@ -5,7 +5,9 @@
 //  Created by Lou Zell on 7/9/24.
 //
 
+import AVFoundation
 import Foundation
+
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 #elseif canImport(UIKit)

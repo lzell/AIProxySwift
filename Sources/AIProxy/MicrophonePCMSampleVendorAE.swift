@@ -34,12 +34,11 @@ import Foundation
 final class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor {
     private let audioEngine: AVAudioEngine
     private let inputNode: AVAudioInputNode
-    private var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
-
-    internal var audioConverter: AVAudioConverter?  // MicrophonePCMSampleVendor conformance
-    internal func setAudioConverter(_ audioConverter: AVAudioConverter?) {
-        self.audioConverter = audioConverter
-    }
+    
+    // MicrophonePCMSampleVendor conformance
+    internal var bufferAccumulator: AVAudioPCMBuffer?
+    internal var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
+    internal var audioConverter: AVAudioConverter?
 
     init(audioEngine: AVAudioEngine) throws {
         self.audioEngine = audioEngine
@@ -77,14 +76,19 @@ final class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor {
         //
         // There is a note on the installTap documentation that says AudioEngine may
         // adjust the bufferSize internally.
-        let targetBufferSize = UInt32(desiredTapFormat.sampleRate / 10)
+
+        let targetBufferSize = UInt32(desiredTapFormat.sampleRate / 10) // 100ms buffers
+        print("Target buffer size is: \(targetBufferSize)")
 
         return AsyncStream<AVAudioPCMBuffer> { [weak self] continuation in
             guard let this = self else { return }
             this.continuation = continuation
             this.inputNode.installTap(onBus: 0, bufferSize: targetBufferSize, format: desiredTapFormat) { [weak this] sampleBuffer, _ in
+                print("Getting mic data")
+                print(sampleBuffer.frameLength)
                 if let resampledBuffer = self?.convertPCM16BufferToExpectedSampleRate(sampleBuffer) {
-                    this?.continuation?.yield(resampledBuffer)
+                    print("Resampled has \(resampledBuffer.frameLength)")
+                    this?.accummulateAndNotifyCaller(resampledBuffer)
                 }
             }
         }

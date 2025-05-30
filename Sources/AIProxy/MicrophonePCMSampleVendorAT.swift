@@ -6,16 +6,12 @@
 //
 
 #if os(macOS) || os(iOS)
-//
-//  MicrophonePCMSampleVendor.swift
-//  AIProxy
-//
-//  Created by Lou Zell
-//
 
 import AVFoundation
 import AudioToolbox
 import Foundation
+
+private let kVoiceProcessingInputSampleRate: Double = 44100
 
 /// This is an AudioToolbox-based implementation that vends PCM16 microphone samples at a
 /// sample rate that OpenAI's realtime models expect.
@@ -59,14 +55,11 @@ import Foundation
 open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
 
     private var audioUnit: AudioUnit?
-    private var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
-    private let voiceProcessingInputSampleRate: Double = 44100
 
-    internal var audioConverter: AVAudioConverter?  // MicrophonePCMSampleVendor conformance
-    internal func setAudioConverter(_ audioConverter: AVAudioConverter?) {
-        self.audioConverter = audioConverter
-    }
-
+    // MicrophonePCMSampleVendor conformance
+    internal var bufferAccumulator: AVAudioPCMBuffer?
+    internal var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
+    internal var audioConverter: AVAudioConverter?
 
     public init() {}
 
@@ -77,7 +70,7 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
     public func start() throws -> AsyncStream<AVAudioPCMBuffer> {
         var desc = AudioComponentDescription(
             componentType: kAudioUnitType_Output,
-            componentSubType: kAudioUnitSubType_VoiceProcessingIO,
+            componentSubType: kAudioUnitSubType_VoiceProcessingIO /* kAudioUnitSubType_RemoteIO */,
             componentManufacturer: kAudioUnitManufacturer_Apple,
             componentFlags: 0,
             componentFlagsMask: 0
@@ -163,7 +156,7 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
         //        )
 
         var ioFormat = AudioStreamBasicDescription(
-            mSampleRate: voiceProcessingInputSampleRate, // Sample rate (Hz) IMPORTANT, on macOS 44100 is the *only* sample rate that will work with the voice processing AU
+            mSampleRate: kVoiceProcessingInputSampleRate, // Sample rate (Hz) IMPORTANT, on macOS 44100 is the *only* sample rate that will work with the voice processing AU
             mFormatID: kAudioFormatLinearPCM,
             mFormatFlags: kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked,
             mBytesPerPacket: 2,
@@ -201,8 +194,9 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
         //     )
         // }
 
+        #if os(macOS)
         if let deviceID = getDefaultInputDevice() {
-            var bufferSize: UInt32 = 10240
+            var bufferSize: UInt32 = UInt32(kVoiceProcessingInputSampleRate / 20) // Try to get 50ms updates
             var propertyAddress = AudioObjectPropertyAddress(
                 mSelector: kAudioDevicePropertyBufferFrameSize,
                 mScope: kAudioDevicePropertyScopeInput,
@@ -225,6 +219,7 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
                 print("Failed to set buffer size: \(status)")
             }
         }
+        #endif
 
         var inputCallbackStruct = AURenderCallbackStruct(
             inputProc: audioRenderCallback,
@@ -295,6 +290,8 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
         _ inBusNumber: UInt32,
         _ inNumberFrames: UInt32
     ) {
+        // iOS does not respect the buffer size we ask for. macOS is much closer. I'm accumulating them downstream anyway:
+        print("Got \(inNumberFrames) frames — expected \(UInt(kVoiceProcessingInputSampleRate /  20)) (one tenth of sample rate).")
         guard let audioUnit = audioUnit else {
             logIf(.error)?.error("There is no audioUnit attached to the sample vendor. Render callback should not be called")
             return
@@ -325,7 +322,7 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
 
         guard let audioFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
-            sampleRate: voiceProcessingInputSampleRate,
+            sampleRate: kVoiceProcessingInputSampleRate,
             channels: 1,
             interleaved: true
         ) else {
@@ -334,8 +331,8 @@ open class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
         }
 
         if let inPCMBuf = AVAudioPCMBuffer(pcmFormat: audioFormat, bufferListNoCopy: &bufferList),
-           let outPCMBuf = self.convertPCM16BufferToExpectedSampleRate(inPCMBuf)  {
-            self.continuation?.yield(outPCMBuf)
+           let resampledBuffer = self.convertPCM16BufferToExpectedSampleRate(inPCMBuf)  {
+            self.accummulateAndNotifyCaller(resampledBuffer)
         }
     }
 }
@@ -348,7 +345,6 @@ private let audioRenderCallback: AURenderCallback = {
     inBusNumber,
     inNumberFrames,
     ioData in
-    print("IN AUDIO RENDER CALLBACK")
     let microphonePCMSampleVendor = Unmanaged<MicrophonePCMSampleVendorAT>
         .fromOpaque(inRefCon)
         .takeUnretainedValue()
@@ -361,6 +357,7 @@ private let audioRenderCallback: AURenderCallback = {
     return noErr
 }
 
+#if os(macOS)
 func getDefaultInputDevice() -> AudioDeviceID? {
     var deviceID = AudioDeviceID(0)
     var propertyAddress = AudioObjectPropertyAddress(
@@ -387,4 +384,5 @@ func getDefaultInputDevice() -> AudioDeviceID? {
 
     return deviceID
 }
+#endif
 #endif

@@ -7,9 +7,12 @@
 
 import AVFoundation
 
-internal protocol MicrophonePCMSampleVendor {
-    var audioConverter: AVAudioConverter? { get }
-    func setAudioConverter(_ audioConverter: AVAudioConverter?)
+// OOP would have been better than using a protocol as mixin here.
+// Or even better, compose in the provider of samples into a single microphone vendor.
+internal protocol MicrophonePCMSampleVendor: AnyObject {
+    var audioConverter: AVAudioConverter? { get set }
+    var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation? { get }
+    var bufferAccumulator: AVAudioPCMBuffer? { get set}
 
     func start() throws -> AsyncStream<AVAudioPCMBuffer>
     func stop()
@@ -18,6 +21,7 @@ internal protocol MicrophonePCMSampleVendor {
 extension MicrophonePCMSampleVendor {
     func convertPCM16BufferToExpectedSampleRate(_ pcm16Buffer: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
         // if ll(.debug) { aiproxyLogger.debug("Captured \(pcm16Buffer.frameLength) pcm16 samples from the mic") }
+        print("Incoming buffer has format: \(pcm16Buffer.format)")
         guard let audioFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
             sampleRate: 24000.0,
@@ -29,7 +33,7 @@ extension MicrophonePCMSampleVendor {
         }
 
         if self.audioConverter == nil {
-            self.setAudioConverter(AVAudioConverter(from: pcm16Buffer.format, to: audioFormat))
+            self.audioConverter = AVAudioConverter(from: pcm16Buffer.format, to: audioFormat)
         }
 
         guard let converter = self.audioConverter else {
@@ -80,6 +84,28 @@ extension MicrophonePCMSampleVendor {
 #endif
 
         return outputBuffer
+    }
+
+    // The incoming buffer here must be guaranteed at 24kHz in PCM16Int format.
+    func accummulateAndNotifyCaller(_ buf: AVAudioPCMBuffer) {
+        print("Incoming buffer has \(buf.frameLength) frames")
+        let targetAccumulatorLength = 2400
+        if self.bufferAccumulator == nil {
+            self.bufferAccumulator = AVAudioPCMBuffer(pcmFormat: buf.format, frameCapacity: AVAudioFrameCount(targetAccumulatorLength * 2))
+        }
+        guard let accumulator = self.bufferAccumulator else { return }
+
+        let copyFrames = min(buf.frameLength, accumulator.frameCapacity - accumulator.frameLength)
+        let dst = accumulator.int16ChannelData![0].advanced(by: Int(accumulator.frameLength))
+        let src = buf.int16ChannelData![0]
+
+        dst.assign(from: src, count: Int(copyFrames))
+        accumulator.frameLength += copyFrames
+
+        if accumulator.frameLength >= targetAccumulatorLength {
+            continuation?.yield(accumulator)
+            self.bufferAccumulator = nil
+        }
     }
 }
 
