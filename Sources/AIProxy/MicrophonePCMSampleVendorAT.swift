@@ -23,15 +23,17 @@ private let kVoiceProcessingInputSampleRate: Double = 44100
 ///
 /// ## Usage
 ///
-/// ```
-///     let microphoneVendor = MicrophonePCMSampleVendor()
-///     try microphoneVendor.start { sample in
-///        // Do something with `sample`
-///
+///     ```
+///     let microphoneVendor = MicrophonePCMSampleVendorAT()
+///     let micStream = try microphoneVendor.start()
+///     Task {
+///         for await buffer in micStream {
+///             // Use buffer
+///         }
 ///     }
-///     // some time later...
+///     // ... some time later ...
 ///     microphoneVendor.stop()
-/// ```
+///     ```
 ///
 ///
 /// ## References:
@@ -329,9 +331,8 @@ internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
             return
         }
 
-        if let inPCMBuf = AVAudioPCMBuffer(pcmFormat: audioFormat, bufferListNoCopy: &bufferList),
-           let resampledBuffer = self.microphonePCMSampleVendorCommon.convertPCM16BufferToExpectedSampleRate(inPCMBuf),
-           let accumulatedBuffer = self.microphonePCMSampleVendorCommon.accummulateAndVendIfFull(resampledBuffer) {
+        if let sampleBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, bufferListNoCopy: &bufferList),
+           let accumulatedBuffer = self.microphonePCMSampleVendorCommon.resampleAndAccumulate(sampleBuffer) {
             self.continuation?.yield(accumulatedBuffer)
         }
     }

@@ -15,16 +15,19 @@ import Foundation
 /// - Assumes an `NSMicrophoneUsageDescription` description has been added to Target > Info
 /// - Assumes that microphone permissions have already been granted
 ///
-/// ## Usage
+/// #Usage
 ///
-/// ```
-///     let microphoneVendor = try MicrophonePCMSampleVendor()
-///     microphoneVendor.start { sample in
-///        // Do something with `sample`
-///        // Note: this callback is invoked on a background thread
+///     ```
+///     let microphoneVendor = try MicrophonePCMSampleVendorAE()
+///     let micStream = try microphoneVendor.start()
+///     Task {
+///         for await buffer in micStream {
+///             // Use buffer
+///         }
 ///     }
-/// ```
-///
+///     // ... some time later ...
+///     microphoneVendor.stop()
+///     ```
 ///
 /// References:
 /// Apple sample code: https://developer.apple.com/documentation/avfaudio/using-voice-processing
@@ -83,11 +86,8 @@ internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor {
             this.inputNode.installTap(onBus: 0, bufferSize: targetBufferSize, format: desiredTapFormat) { [weak this] sampleBuffer, _ in
                 print("Getting mic data")
                 print(sampleBuffer.frameLength)
-                if let resampledBuffer = this?.microphonePCMSampleVendorCommon.convertPCM16BufferToExpectedSampleRate(sampleBuffer) {
-                    print("Resampled has \(resampledBuffer.frameLength)")
-                    if let accumulatedBuffer = this?.microphonePCMSampleVendorCommon.accummulateAndVendIfFull(resampledBuffer) {
-                        continuation.yield(accumulatedBuffer)
-                    }
+                if let accumulatedBuffer = this?.microphonePCMSampleVendorCommon.resampleAndAccumulate(sampleBuffer) {
+                    this?.continuation?.yield(accumulatedBuffer)
                 }
             }
         }
