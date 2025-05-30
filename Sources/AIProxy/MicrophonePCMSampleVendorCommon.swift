@@ -22,8 +22,7 @@ internal final class MicrophonePCMSampleVendorCommon {
     }
 
     private func convertPCM16BufferToExpectedSampleRate(_ pcm16Buffer: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
-        // if ll(.debug) { aiproxyLogger.debug("Captured \(pcm16Buffer.frameLength) pcm16 samples from the mic") }
-        print("Incoming buffer has format: \(pcm16Buffer.format)")
+        logIf(.debug)?.debug("Incoming buffer has format: \(pcm16Buffer.format) and length: \(pcm16Buffer.frameLength)")
         guard let audioFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
             sampleRate: 24000.0,
@@ -91,7 +90,6 @@ internal final class MicrophonePCMSampleVendorCommon {
     // The incoming buffer here must be guaranteed at 24kHz in PCM16Int format.
     private func accummulateAndVendIfFull(_ buf: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
         var returnBuffer: AVAudioPCMBuffer? = nil
-        print("Incoming buffer has \(buf.frameLength) frames")
         let targetAccumulatorLength = 2400
         if self.bufferAccumulator == nil {
             self.bufferAccumulator = AVAudioPCMBuffer(pcmFormat: buf.format, frameCapacity: AVAudioFrameCount(targetAccumulatorLength * 2))

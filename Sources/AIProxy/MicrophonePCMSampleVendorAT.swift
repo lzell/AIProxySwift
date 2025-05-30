@@ -214,10 +214,8 @@ internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
                 &bufferSize
             )
 
-            if status == noErr {
-                print("Buffer size set to \(bufferSize) frames")
-            } else {
-                print("Failed to set buffer size: \(status)")
+            if status != noErr {
+                logIf(.debug)?.debug("Could not set desired buffer size")
             }
         }
         #endif
@@ -292,7 +290,7 @@ internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
         _ inNumberFrames: UInt32
     ) {
         // iOS does not respect the buffer size we ask for. macOS is much closer. I'm accumulating them downstream anyway:
-        print("Got \(inNumberFrames) frames — expected \(UInt(kVoiceProcessingInputSampleRate /  20)) (one tenth of sample rate).")
+        print("Got \(inNumberFrames) frames — expected \(UInt(kVoiceProcessingInputSampleRate /  20))")
         guard let audioUnit = audioUnit else {
             logIf(.error)?.error("There is no audioUnit attached to the sample vendor. Render callback should not be called")
             return

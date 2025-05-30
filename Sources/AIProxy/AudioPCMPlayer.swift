@@ -133,7 +133,7 @@ internal class AudioPCMPlayer {
 
 private func addGain(to buffer: AVAudioPCMBuffer, gain: Float) {
     guard let channelData = buffer.floatChannelData else {
-        print("Buffer doesn't contain float32 audio data")
+        logIf(.info)?.info("Interrupting playback")
         return
     }
 

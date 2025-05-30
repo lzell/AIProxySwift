@@ -7,6 +7,28 @@
 
 import AVFoundation
 
+/// Use this class to control the streaming of mic data and playback of PCM16 data.
+/// Audio played using the `playPCM16Audio` method does not interfere with the mic data streaming out of the `micStream` AsyncStream.
+/// That is, if you use this to control audio in an OpenAI realtime session, the model will not hear itself.
+///
+/// For a usage example, see the OpenAI realtime snippet here:
+/// https://github.com/lzell/AIProxySwift#how-use-realtime-audio-with-openai
+///
+/// ## Implementor's note
+/// We use either AVAudioEngine or AudioToolbox for mic data, depending on the platform and whether headphones are attached.
+/// The following arrangement provides for the best user experience:
+///
+///     +----------+---------------+------------------+
+///     | Platform | Headphones    | Audio API        |
+///     +----------+---------------+------------------+
+///     | macOS    | Yes           | AudioEngine      |
+///     | macOS    | No            | AudioToolbox     |
+///     | iOS      | Yes           | AudioEngine      |
+///     | iOS      | No            | AudioToolbox     |
+///     | watchOS  | Yes           | AudioEngine      |
+///     | watchOS  | No            | AudioEngine      |
+///     +----------+---------------+------------------+
+///
 @RealtimeActor
 open class AudioController {
     private let audioEngine: AVAudioEngine

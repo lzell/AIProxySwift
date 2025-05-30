@@ -78,14 +78,13 @@ internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor {
         // There is a note on the installTap documentation that says AudioEngine may
         // adjust the bufferSize internally.
         let targetBufferSize = UInt32(desiredTapFormat.sampleRate / 20) // 50ms buffers
-        print("Target buffer size is: \(targetBufferSize)")
+        // print("Target buffer size is: \(targetBufferSize)")
 
         return AsyncStream<AVAudioPCMBuffer> { [weak self] continuation in
             guard let this = self else { return }
             this.continuation = continuation
             this.inputNode.installTap(onBus: 0, bufferSize: targetBufferSize, format: desiredTapFormat) { [weak this] sampleBuffer, _ in
-                print("Getting mic data")
-                print(sampleBuffer.frameLength)
+                // print("Getting mic data with frame length: \(sampleBuffer.frameLength)")
                 if let accumulatedBuffer = this?.microphonePCMSampleVendorCommon.resampleAndAccumulate(sampleBuffer) {
                     this?.continuation?.yield(accumulatedBuffer)
                 }
