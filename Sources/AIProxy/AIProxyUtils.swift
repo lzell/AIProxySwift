@@ -143,8 +143,30 @@ private func _audioSessionHeadphonesConnected() -> Bool {
 #endif
 
 #if os(macOS)
-
 private func _audioToolboxHeadphonesConnected() -> Bool {
+    // Why am I getting all audio devices? Couldn't I use this and just get the default device:
+    /*
+     var deviceID = AudioDeviceID()
+     var propSize = UInt32(MemoryLayout<AudioDeviceID>.size)
+     var address = AudioObjectPropertyAddress(
+         mSelector: kAudioHardwarePropertyDefaultInputDevice,
+         mScope: kAudioObjectPropertyScopeGlobal,
+         mElement: kAudioObjectPropertyElementMain
+     )
+     var err = AudioObjectGetPropertyData(
+         AudioObjectID(kAudioObjectSystemObject),
+         &address,
+         0,
+         nil,
+         &propSize,
+         &deviceID
+     )
+     guard err == noErr else {
+         logIf(.error)?.error("Could not query for default audio input devices")
+         return false
+     }
+    */
+
     // Get all audio devices
     var propertySize: UInt32 = 0
     var address = AudioObjectPropertyAddress(
@@ -163,7 +185,6 @@ private func _audioToolboxHeadphonesConnected() -> Bool {
     )
 
     guard status == noErr else {
-        print("Error getting device list size")
         return false
     }
 
@@ -181,17 +202,14 @@ private func _audioToolboxHeadphonesConnected() -> Bool {
     )
 
     guard status == noErr else {
-        print("Error getting device list")
         return false
     }
 
-    // Check each device to see if it's a connected headphone/headset
     for deviceID in devices {
         if isHeadphoneDevice(deviceID) && isDeviceAlive(deviceID) {
             return true
         }
     }
-
     return false
 }
 
@@ -235,34 +253,32 @@ private func isHeadphoneDevice(_ deviceID: AudioDeviceID) -> Bool {
 }
 
 private func isBuiltInHeadphonePort(_ deviceID: AudioDeviceID) -> Bool {
-    // Get device UID
-    var deviceUID: CFString?
-    var propertySize = UInt32(MemoryLayout<CFString>.size)
+    var deviceUID: CFString? = nil
+    var propSize = UInt32(MemoryLayout<CFString>.size)
     var address = AudioObjectPropertyAddress(
         mSelector: kAudioDevicePropertyDeviceUID,
         mScope: kAudioObjectPropertyScopeGlobal,
         mElement: kAudioObjectPropertyElementMain
     )
 
-    let status = AudioObjectGetPropertyData(
-        deviceID,
-        &address,
-        0,
-        nil,
-        &propertySize,
-        &deviceUID
-    )
+    let err = withUnsafeMutablePointer(to: &deviceUID) { ptr -> OSStatus in
+        return AudioObjectGetPropertyData(
+            deviceID,
+            &address,
+            0,
+            nil,
+            &propSize,
+            ptr
+        )
+    }
 
-    guard status == noErr, let uid = deviceUID else { return false }
+    guard let uidString = deviceUID as? String else {
+        logIf(.error)?.error("Could not get mic's uidString from CFString")
+        return false
+    }
 
-    let uidString = uid as String
-
-    // Check for common headphone port identifiers
-    // These are typical UIDs for built-in headphone jacks
-    return uidString.contains("Headphone") ||
-           uidString.contains("headphone") ||
-           uidString.contains("HeadphoneOut") ||
-           uidString.lowercased().contains("lineout") // Some Macs report headphones as line out
+    let retval = ["headphone", "lineout"].contains { uidString.lowercased().contains($0) }
+    return retval
 }
 
 private func hasOutputStreams(_ deviceID: AudioDeviceID) -> Bool {

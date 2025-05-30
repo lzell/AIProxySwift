@@ -23,7 +23,7 @@ import AVFoundation
 /// See the "Sidenote" section here for the unfortunate dependency on order:
 /// https://stackoverflow.com/questions/57612695/avaudioplayer-volume-low-with-voiceprocessingio
 @RealtimeActor
-open class AudioPCMPlayer {
+internal class AudioPCMPlayer {
 
     let audioEngine: AVAudioEngine
     private let inputFormat: AVAudioFormat
@@ -115,12 +115,11 @@ open class AudioPCMPlayer {
         }
 
         if self.audioEngine.isRunning {
-            #if os(macOS)
-            if AIProxyUtils.headphonesConnected {
-                addGain(to: outPCMBuf, gain: 2.0)
-            }
-            #endif
-
+            // #if os(macOS)
+            // if AIProxyUtils.headphonesConnected {
+            //    addGain(to: outPCMBuf, gain: 2.0)
+            // }
+            // #endif
             self.playerNode.scheduleBuffer(outPCMBuf, at: nil, options: [], completionHandler: {})
             self.playerNode.play()
         }
