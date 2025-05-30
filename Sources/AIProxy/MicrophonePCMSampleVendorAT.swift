@@ -52,14 +52,11 @@ private let kVoiceProcessingInputSampleRate: Double = 44100
 /// Apple sample code (Do not use this): https://developer.apple.com/documentation/avfaudio/using-voice-processing
 /// My apple forum question (Do not use this): https://developer.apple.com/forums/thread/771530
 @RealtimeActor
-internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor, MicrophonePCMSampleVendorMixin {
+internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
 
     private var audioUnit: AudioUnit?
-
-    // MicrophonePCMSampleVendor conformance
-    internal var bufferAccumulator: AVAudioPCMBuffer?
-    internal var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
-    internal var audioConverter: AVAudioConverter?
+    private let microphonePCMSampleVendorCommon = MicrophonePCMSampleVendorCommon()
+    private var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
 
     public init() {}
 
@@ -283,7 +280,7 @@ internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor, Microphon
             AudioComponentInstanceDispose(au)
             self.audioUnit = nil
         }
-        self.audioConverter = nil
+        self.microphonePCMSampleVendorCommon.audioConverter = nil
     }
 
     fileprivate func didReceiveRenderCallback(
@@ -333,8 +330,9 @@ internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor, Microphon
         }
 
         if let inPCMBuf = AVAudioPCMBuffer(pcmFormat: audioFormat, bufferListNoCopy: &bufferList),
-           let resampledBuffer = self.convertPCM16BufferToExpectedSampleRate(inPCMBuf)  {
-            self.accummulateAndNotifyCaller(resampledBuffer)
+           let resampledBuffer = self.microphonePCMSampleVendorCommon.convertPCM16BufferToExpectedSampleRate(inPCMBuf),
+           let accumulatedBuffer = self.microphonePCMSampleVendorCommon.accummulateAndVendIfFull(resampledBuffer) {
+            self.continuation?.yield(accumulatedBuffer)
         }
     }
 }

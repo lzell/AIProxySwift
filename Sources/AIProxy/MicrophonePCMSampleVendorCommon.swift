@@ -9,13 +9,10 @@ import AVFoundation
 
 // This protocol is used as a mixin.
 // Please see MicrophonePCMSampleVendor.swift for the protocol that defines a user interface.
-internal protocol MicrophonePCMSampleVendorMixin: AnyObject {
-    var audioConverter: AVAudioConverter? { get set }
-    var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation? { get }
-    var bufferAccumulator: AVAudioPCMBuffer? { get set}
-}
+internal final class MicrophonePCMSampleVendorCommon {
+    var bufferAccumulator: AVAudioPCMBuffer?
+    var audioConverter: AVAudioConverter?
 
-extension MicrophonePCMSampleVendorMixin {
     func convertPCM16BufferToExpectedSampleRate(_ pcm16Buffer: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
         // if ll(.debug) { aiproxyLogger.debug("Captured \(pcm16Buffer.frameLength) pcm16 samples from the mic") }
         print("Incoming buffer has format: \(pcm16Buffer.format)")
@@ -84,13 +81,14 @@ extension MicrophonePCMSampleVendorMixin {
     }
 
     // The incoming buffer here must be guaranteed at 24kHz in PCM16Int format.
-    func accummulateAndNotifyCaller(_ buf: AVAudioPCMBuffer) {
+    func accummulateAndVendIfFull(_ buf: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
+        var returnBuffer: AVAudioPCMBuffer? = nil
         print("Incoming buffer has \(buf.frameLength) frames")
         let targetAccumulatorLength = 2400
         if self.bufferAccumulator == nil {
             self.bufferAccumulator = AVAudioPCMBuffer(pcmFormat: buf.format, frameCapacity: AVAudioFrameCount(targetAccumulatorLength * 2))
         }
-        guard let accumulator = self.bufferAccumulator else { return }
+        guard let accumulator = self.bufferAccumulator else { return nil }
 
         let copyFrames = min(buf.frameLength, accumulator.frameCapacity - accumulator.frameLength)
         let dst = accumulator.int16ChannelData![0].advanced(by: Int(accumulator.frameLength))
@@ -98,13 +96,14 @@ extension MicrophonePCMSampleVendorMixin {
 
         dst.update(from: src, count: Int(copyFrames))
         accumulator.frameLength += copyFrames
-
         if accumulator.frameLength >= targetAccumulatorLength {
-            continuation?.yield(accumulator)
+            returnBuffer = accumulator
             self.bufferAccumulator = nil
         }
+        return returnBuffer
     }
 }
+
 
 
 private func advancedPCMBuffer_noCopy(_ originalBuffer: AVAudioPCMBuffer, offset: UInt32) -> AVAudioPCMBuffer? {

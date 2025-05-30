@@ -31,14 +31,11 @@ import Foundation
 /// Apple technical note: https://developer.apple.com/documentation/technotes/tn3136-avaudioconverter-performing-sample-rate-conversions
 /// My apple forum question: https://developer.apple.com/forums/thread/771530
 @RealtimeActor
-internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor, MicrophonePCMSampleVendorMixin {
+internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor {
     private let audioEngine: AVAudioEngine
     private let inputNode: AVAudioInputNode
-    
-    // MicrophonePCMSampleVendor conformance
-    internal var bufferAccumulator: AVAudioPCMBuffer?
-    internal var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
-    internal var audioConverter: AVAudioConverter?
+    private let microphonePCMSampleVendorCommon = MicrophonePCMSampleVendorCommon()
+    private var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
 
     init(audioEngine: AVAudioEngine) throws {
         self.audioEngine = audioEngine
@@ -59,7 +56,6 @@ internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor, Microphon
         logIf(.debug)?.debug("MicrophonePCMSampleVendorAE is being freed")
     }
 
-
     public func start() throws -> AsyncStream<AVAudioPCMBuffer> {
         guard let desiredTapFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
@@ -72,12 +68,13 @@ internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor, Microphon
 
         // The buffer size argument specifies the target number of audio frames.
         // For a single channel, a single audio frame has a single audio sample.
-        // So we are shooting for 1 sample every 100 ms with this calulation.
+        //
+        // Try to get 50ms updates.
+        // 50ms is half the granularity of our target accumulator (we accumulate into 100ms payloads that we send up to OpenAI)
         //
         // There is a note on the installTap documentation that says AudioEngine may
         // adjust the bufferSize internally.
-
-        let targetBufferSize = UInt32(desiredTapFormat.sampleRate / 10) // 100ms buffers
+        let targetBufferSize = UInt32(desiredTapFormat.sampleRate / 20) // 50ms buffers
         print("Target buffer size is: \(targetBufferSize)")
 
         return AsyncStream<AVAudioPCMBuffer> { [weak self] continuation in
@@ -86,9 +83,11 @@ internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor, Microphon
             this.inputNode.installTap(onBus: 0, bufferSize: targetBufferSize, format: desiredTapFormat) { [weak this] sampleBuffer, _ in
                 print("Getting mic data")
                 print(sampleBuffer.frameLength)
-                if let resampledBuffer = self?.convertPCM16BufferToExpectedSampleRate(sampleBuffer) {
+                if let resampledBuffer = this?.microphonePCMSampleVendorCommon.convertPCM16BufferToExpectedSampleRate(sampleBuffer) {
                     print("Resampled has \(resampledBuffer.frameLength)")
-                    this?.accummulateAndNotifyCaller(resampledBuffer)
+                    if let accumulatedBuffer = this?.microphonePCMSampleVendorCommon.accummulateAndVendIfFull(resampledBuffer) {
+                        continuation.yield(accumulatedBuffer)
+                    }
                 }
             }
         }
@@ -99,6 +98,6 @@ internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor, Microphon
         self.continuation = nil
         inputNode.removeTap(onBus: 0)
         try? inputNode.setVoiceProcessingEnabled(false)
-        audioConverter = nil
+        microphonePCMSampleVendorCommon.audioConverter = nil
     }
 }
