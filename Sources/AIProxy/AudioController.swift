@@ -15,29 +15,24 @@ open class AudioController {
 
     @RealtimeActor
     public init() async throws {
-#if os(iOS)
-// If you use this, and initialize the MicrophonePCMSampleVendor *after* AudioPCMPlayer,
-// then audio on iOS will be very loud. You can dial it down a bit by adjusting the gain
-// in `playPCM16Audio` below
-        //try? AVAudioSession.sharedInstance().setPreferredIOBufferDuration(0.1) //// This is not respected if `setVoiceProcessingEnabled(true)` is used :/
-        print("Actual I/O buffer duration:", AVAudioSession.sharedInstance().ioBufferDuration)
-try? AVAudioSession.sharedInstance().setCategory(
-    .playAndRecord,
-    mode: .voiceChat,
-    options: [.defaultToSpeaker, .allowBluetooth]
-)
-        print("Actual I/O buffer duration:", AVAudioSession.sharedInstance().ioBufferDuration)
+        #if os(iOS)
+        // This is not respected if `setVoiceProcessingEnabled(true)` is used :/
+        // Instead, I've added my own accumulator.
+        // try? AVAudioSession.sharedInstance().setPreferredIOBufferDuration(0.1)
+        // print("I/O buffer duration:", AVAudioSession.sharedInstance().ioBufferDuration)
+        try? AVAudioSession.sharedInstance().setCategory(
+            .playAndRecord,
+            mode: .voiceChat,
+            options: [.defaultToSpeaker, .allowBluetooth]
+        )
         try? AVAudioSession.sharedInstance().setActive(true, options: [])
-        print("Actual I/O buffer duration:", AVAudioSession.sharedInstance().ioBufferDuration)
 
-#elseif os(watchOS)
-try? AVAudioSession.sharedInstance().setCategory(.playAndRecord)
-try? await AVAudioSession.sharedInstance().activate(options: [])
-#endif
+        #elseif os(watchOS)
+        try? AVAudioSession.sharedInstance().setCategory(.playAndRecord)
+        try? await AVAudioSession.sharedInstance().activate(options: [])
+        #endif
 
         self.audioEngine = AVAudioEngine()
-        print("Actual I/O buffer duration:", AVAudioSession.sharedInstance().ioBufferDuration)
-
 
         #if os(macOS) || os(iOS)
         self.microphonePCMSampleVendor = AIProxyUtils.headphonesConnected
@@ -46,17 +41,10 @@ try? await AVAudioSession.sharedInstance().activate(options: [])
         #else
         self.microphonePCMSampleVendor = try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
         #endif
-        print("Actual I/O buffer duration:", AVAudioSession.sharedInstance().ioBufferDuration)
-
 
         self.audioPCMPlayer = await try AudioPCMPlayer(audioEngine: self.audioEngine)
-        print("Actual I/O buffer duration:", AVAudioSession.sharedInstance().ioBufferDuration)
-
-
         self.audioEngine.prepare()
-        print("Actual I/O buffer duration:", AVAudioSession.sharedInstance().ioBufferDuration)
         try self.audioEngine.start()
-        print("Actual I/O buffer duration:", AVAudioSession.sharedInstance().ioBufferDuration)
     }
 
     public func micStream() throws -> AsyncStream<AVAudioPCMBuffer> {
@@ -69,7 +57,6 @@ try? await AVAudioSession.sharedInstance().activate(options: [])
     }
 
     public func playPCM16Audio(from base64String: String) {
-        print("Trying to play")
         self.audioPCMPlayer.playPCM16Audio(from: base64String)
     }
 
