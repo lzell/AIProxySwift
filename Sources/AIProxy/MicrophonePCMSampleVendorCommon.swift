@@ -22,7 +22,7 @@ internal final class MicrophonePCMSampleVendorCommon {
     }
 
     private func convertPCM16BufferToExpectedSampleRate(_ pcm16Buffer: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
-        logIf(.debug)?.debug("Incoming buffer has format: \(pcm16Buffer.format) and length: \(pcm16Buffer.frameLength)")
+        // logIf(.debug)?.debug("Incoming buffer has format: \(pcm16Buffer.format) and length: \(pcm16Buffer.frameLength)")
         guard let audioFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
             sampleRate: 24000.0,
