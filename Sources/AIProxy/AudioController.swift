@@ -1,5 +1,5 @@
 //
-//  RealtimeAudioController.swift
+//  AudioController.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 5/29/25.
@@ -8,11 +8,11 @@
 import AVFoundation
 
 @RealtimeActor
-open class RealtimeAudioController {
+open class AudioController {
     private let useAudioToolbox: Bool
     private let audioEngine = AVAudioEngine()
-    private let audioPCMPlayer: AudioPCMPlayer
     private let microphonePCMSampleVendor: MicrophonePCMSampleVendor
+    private var audioPCMPlayer: AudioPCMPlayer
 
     @RealtimeActor
     public init() async throws {
@@ -31,7 +31,7 @@ open class RealtimeAudioController {
         self.audioPCMPlayer = await try AudioPCMPlayer(audioEngine: self.audioEngine)
     }
 
-    public func start() throws -> AsyncStream<AVAudioPCMBuffer> {
+    public func micStream() throws -> AsyncStream<AVAudioPCMBuffer> {
         if !useAudioToolbox {
             self.audioEngine.prepare()
             try self.audioEngine.start()
@@ -41,6 +41,7 @@ open class RealtimeAudioController {
 
     public func stop() {
         self.microphonePCMSampleVendor.stop()
+        self.audioPCMPlayer.interruptPlayback()
     }
 
     public func playPCM16Audio(from base64String: String) {
