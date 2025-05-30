@@ -31,7 +31,7 @@ import Foundation
 /// Apple technical note: https://developer.apple.com/documentation/technotes/tn3136-avaudioconverter-performing-sample-rate-conversions
 /// My apple forum question: https://developer.apple.com/forums/thread/771530
 @RealtimeActor
-internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor {
+internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor, MicrophonePCMSampleVendorMixin {
     private let audioEngine: AVAudioEngine
     private let inputNode: AVAudioInputNode
     

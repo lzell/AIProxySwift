@@ -52,7 +52,7 @@ private let kVoiceProcessingInputSampleRate: Double = 44100
 /// Apple sample code (Do not use this): https://developer.apple.com/documentation/avfaudio/using-voice-processing
 /// My apple forum question (Do not use this): https://developer.apple.com/forums/thread/771530
 @RealtimeActor
-internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
+internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor, MicrophonePCMSampleVendorMixin {
 
     private var audioUnit: AudioUnit?
 
