@@ -5,11 +5,17 @@
 //  Created by Lou Zell on 7/9/24.
 //
 
+import AVFoundation
 import Foundation
+
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 #elseif canImport(UIKit)
 import UIKit
+#endif
+
+#if canImport(AudioToolbox)
+import AudioToolbox
 #endif
 
 import Network
@@ -89,8 +95,78 @@ enum AIProxyUtils {
         ]
         return fields.joined(separator: "|")
     }
-}
 
+    #if os(macOS)
+    static func getDefaultAudioInputDevice() -> AudioDeviceID? {
+        var deviceID = AudioDeviceID()
+        var propSize = UInt32(MemoryLayout<AudioDeviceID>.size)
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDefaultInputDevice,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        let err = AudioObjectGetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject),
+            &address,
+            0,
+            nil,
+            &propSize,
+            &deviceID
+        )
+        guard err == noErr else {
+            logIf(.error)?.error("Could not query for default audio input device")
+            return nil
+        }
+        return deviceID
+    }
+
+    static func getAllAudioInputDevices() -> [AudioDeviceID] {
+        var propSize: UInt32 = 0
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioHardwarePropertyDevices,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var err = AudioObjectGetPropertyDataSize(
+            AudioObjectID(kAudioObjectSystemObject),
+            &address,
+            0,
+            nil,
+            &propSize
+        )
+        guard err == noErr else {
+            logIf(.error)?.error("Could not set propSize, needed for querying all audio devices")
+            return []
+        }
+
+        var devices = [AudioDeviceID](
+            repeating: 0,
+            count: Int(propSize / UInt32(MemoryLayout<AudioDeviceID>.size))
+        )
+        err = AudioObjectGetPropertyData(
+            AudioObjectID(kAudioObjectSystemObject),
+            &address,
+            0,
+            nil,
+            &propSize,
+            &devices
+        )
+        guard err == noErr else {
+            logIf(.error)?.error("Could not query for all audio devices")
+            return []
+        }
+        return devices
+    }
+    #endif
+
+    static var headphonesConnected: Bool {
+        #if os(macOS)
+        return audioToolboxHeadphonesConnected()
+        #else
+        return audioSessionHeadphonesConnected()
+        #endif
+    }
+}
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 extension NSImage {
@@ -107,5 +183,154 @@ extension NSImage {
         )
         return jpegData
     }
+}
+#endif
+
+
+#if !os(macOS)
+private func audioSessionHeadphonesConnected() -> Bool {
+    let session = AVAudioSession.sharedInstance()
+    let outputs = session.currentRoute.outputs
+
+    for output in outputs {
+        if output.portType == .headphones ||
+            output.portType == .bluetoothA2DP ||
+            output.portType == .bluetoothLE ||
+            output.portType == .bluetoothHFP {
+            return true
+        }
+    }
+    return false
+}
+#endif
+
+
+#if os(macOS)
+private func audioToolboxHeadphonesConnected() -> Bool {
+    for deviceID in AIProxyUtils.getAllAudioInputDevices() {
+        if isHeadphoneDevice(deviceID: deviceID) && isDeviceAlive(deviceID: deviceID) {
+            return true
+        }
+    }
+    return false
+}
+
+private func isHeadphoneDevice(deviceID: AudioDeviceID) -> Bool {
+    guard hasOutputStreams(deviceID: deviceID) else {
+        return false
+    }
+
+    let transportType = getTransportType(deviceID: deviceID)
+
+    if [
+        kAudioDeviceTransportTypeBluetooth,
+        kAudioDeviceTransportTypeBluetoothLE,
+        kAudioDeviceTransportTypeUSB
+    ].contains(transportType) {
+        return true
+    }
+
+    // For built-in devices, we need to check the device name or UID
+    if transportType == kAudioDeviceTransportTypeBuiltIn {
+        return isBuiltInHeadphonePort(deviceID: deviceID)
+    }
+
+    return false
+}
+
+private func getTransportType(deviceID: AudioDeviceID) -> UInt32 {
+    var transportType = UInt32(0)
+    var propSize = UInt32(MemoryLayout<UInt32>.size)
+    var address = AudioObjectPropertyAddress(
+        mSelector: kAudioDevicePropertyTransportType,
+        mScope: kAudioObjectPropertyScopeGlobal,
+        mElement: kAudioObjectPropertyElementMain
+    )
+    let err = AudioObjectGetPropertyData(
+        deviceID,
+        &address,
+        0,
+        nil,
+        &propSize,
+        &transportType
+    )
+    guard err == noErr else {
+        logIf(.error)?.error("Could not get transport type for audio device")
+        return 0
+    }
+    return transportType
+}
+
+private func isBuiltInHeadphonePort(deviceID: AudioDeviceID) -> Bool {
+    var deviceUID: CFString? = nil
+    var propSize = UInt32(MemoryLayout<CFString>.size)
+    var address = AudioObjectPropertyAddress(
+        mSelector: kAudioDevicePropertyDeviceUID,
+        mScope: kAudioObjectPropertyScopeGlobal,
+        mElement: kAudioObjectPropertyElementMain
+    )
+
+    let err = withUnsafeMutablePointer(to: &deviceUID) { ptr -> OSStatus in
+        return AudioObjectGetPropertyData(
+            deviceID,
+            &address,
+            0,
+            nil,
+            &propSize,
+            ptr
+        )
+    }
+
+    guard err == noErr, let uidString = deviceUID as? String else {
+        logIf(.error)?.error("Could not get mic's uidString from CFString")
+        return false
+    }
+
+    let retval = ["headphone", "lineout"].contains { uidString.lowercased().contains($0) }
+    return retval
+}
+
+private func hasOutputStreams(deviceID: AudioDeviceID) -> Bool {
+    var address = AudioObjectPropertyAddress(
+        mSelector: kAudioDevicePropertyStreams,
+        mScope: kAudioObjectPropertyScopeOutput,
+        mElement: kAudioObjectPropertyElementMain
+    )
+    var propSize: UInt32 = 0
+    let err = AudioObjectGetPropertyDataSize(
+        deviceID,
+        &address,
+        0,
+        nil,
+        &propSize
+    )
+    guard err == noErr else {
+        logIf(.error)?.error("Could not check for output streams on audio device")
+        return false
+    }
+    return propSize > 0
+}
+
+private func isDeviceAlive(deviceID: AudioDeviceID) -> Bool {
+    var isAlive: UInt32 = 0
+    var propSize = UInt32(MemoryLayout<UInt32>.size)
+    var address = AudioObjectPropertyAddress(
+        mSelector: kAudioDevicePropertyDeviceIsAlive,
+        mScope: kAudioObjectPropertyScopeGlobal,
+        mElement: kAudioObjectPropertyElementMain
+    )
+    let err = AudioObjectGetPropertyData(
+        deviceID,
+        &address,
+        0,
+        nil,
+        &propSize,
+        &isAlive
+    )
+    guard err == noErr else {
+        logIf(.error)?.error("Could not check if the audio input is alive")
+        return false
+    }
+    return isAlive != 0
 }
 #endif

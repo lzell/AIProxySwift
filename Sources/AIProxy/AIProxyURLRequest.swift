@@ -44,6 +44,7 @@ enum AIProxyURLRequest {
         }
 
         var request = URLRequest(url: url)
+        request.networkServiceType = .avStreaming
         request.httpMethod = verb.toString(hasBody: body != nil)
         request.httpBody = body
         request.addValue(partialKey, forHTTPHeaderField: "aiproxy-partial-key")
@@ -114,6 +115,7 @@ enum AIProxyURLRequest {
         }
 
         var request = URLRequest(url: url)
+        request.networkServiceType = .avStreaming
         request.httpMethod = verb.toString(hasBody: body != nil)
         request.httpBody = body
 

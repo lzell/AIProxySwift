@@ -23,16 +23,17 @@ import AVFoundation
 /// See the "Sidenote" section here for the unfortunate dependency on order:
 /// https://stackoverflow.com/questions/57612695/avaudioplayer-volume-low-with-voiceprocessingio
 @RealtimeActor
-open class AudioPCMPlayer {
+internal class AudioPCMPlayer {
 
+    let audioEngine: AVAudioEngine
     private let inputFormat: AVAudioFormat
     private let playableFormat: AVAudioFormat
-    private let audioEngine: AVAudioEngine
     private let playerNode: AVAudioPlayerNode
-    private let adjustGainOniOS = true
 
-    public init() throws {
-        guard let _inputFormat = AVAudioFormat(
+    @RealtimeActor
+    init(audioEngine: AVAudioEngine) async throws {
+        self.audioEngine = audioEngine
+        guard let inputFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
             sampleRate: 24000,
             channels: 1,
@@ -43,7 +44,7 @@ open class AudioPCMPlayer {
             )
         }
 
-        guard let _playableFormat = AVAudioFormat(
+        guard let playableFormat = AVAudioFormat(
             commonFormat: .pcmFormatFloat32,
             sampleRate: 24000,
             channels: 1,
@@ -54,35 +55,18 @@ open class AudioPCMPlayer {
             )
         }
 
-        let engine = AVAudioEngine()
         let node = AVAudioPlayerNode()
 
-        engine.attach(node)
-        engine.connect(node, to: engine.mainMixerNode, format: _playableFormat)
-        engine.prepare()
+        audioEngine.attach(node)
+        audioEngine.connect(node, to: audioEngine.outputNode, format: playableFormat)
 
-        self.audioEngine = engine
         self.playerNode = node
-        self.inputFormat = _inputFormat
-        self.playableFormat = _playableFormat
-
-#if !os(macOS)
-        if self.adjustGainOniOS {
-            // If you use this, and initialize the MicrophonePCMSampleVendor *after* AudioPCMPlayer,
-            // then audio on iOS will be very loud. You can dial it down a bit by adjusting the gain
-            // in `playPCM16Audio` below
-            try? AVAudioSession.sharedInstance().setCategory(
-                .playAndRecord,
-                mode: .voiceChat,
-                options: [.defaultToSpeaker, .allowBluetooth]
-            )
-        }
-#endif
+        self.inputFormat = inputFormat
+        self.playableFormat = playableFormat
     }
 
     deinit {
         logIf(.debug)?.debug("AudioPCMPlayer is being freed")
-        self.audioEngine.stop()
     }
 
     public func playPCM16Audio(from base64String: String) {
@@ -130,23 +114,15 @@ open class AudioPCMPlayer {
             return
         }
 
-        if !self.audioEngine.isRunning {
-            do {
-                try self.audioEngine.start()
-            } catch {
-                logIf(.error)?.error("Could not start audio engine: \(error.localizedDescription)")
-                return
-            }
+        if self.audioEngine.isRunning {
+            // #if os(macOS)
+            // if AIProxyUtils.headphonesConnected {
+            //    addGain(to: outPCMBuf, gain: 2.0)
+            // }
+            // #endif
+            self.playerNode.scheduleBuffer(outPCMBuf, at: nil, options: [], completionHandler: {})
+            self.playerNode.play()
         }
-
-        #if !os(macOS)
-        if self.adjustGainOniOS {
-            addGain(to: outPCMBuf, gain: 0.5)  // Adjust the gain to your taste. Note that this affects the headphone case too.
-        }
-        #endif
-
-        self.playerNode.scheduleBuffer(outPCMBuf, at: nil, options: [], completionHandler: {})
-        self.playerNode.play()
     }
 
     public func interruptPlayback() {
@@ -157,7 +133,7 @@ open class AudioPCMPlayer {
 
 private func addGain(to buffer: AVAudioPCMBuffer, gain: Float) {
     guard let channelData = buffer.floatChannelData else {
-        print("Buffer doesn't contain float32 audio data")
+        logIf(.info)?.info("Interrupting playback")
         return
     }
 

@@ -65,5 +65,4 @@ enum AIProxyDeviceCheck {
             return nil
         }
     }
-
 }
