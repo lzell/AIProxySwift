@@ -20,7 +20,7 @@ import AudioToolbox
 
 import Network
 
-public enum AIProxyUtils {
+enum AIProxyUtils {
 
     static func directURLSession() -> URLSession {
         return URLSession(configuration: .ephemeral)
@@ -159,7 +159,7 @@ public enum AIProxyUtils {
     }
     #endif
 
-    public static var headphonesConnected: Bool {
+    static var headphonesConnected: Bool {
         #if os(macOS)
         return audioToolboxHeadphonesConnected()
         #else
