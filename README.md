@@ -1192,7 +1192,7 @@ final class RealtimeManager {
         // Set to false if you want your user to speak first
         let aiSpeaksFirst = true
 
-        let audioController = try await AudioController()
+        let audioController = try await AudioController(modes: [.playback, .record])
         let micStream = try audioController.micStream()
 
         // Start the realtime session:
@@ -2422,6 +2422,175 @@ Use the file URL returned from the snippet above.
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create Gemini image edit request: \(error.localizedDescription)")
+    }
+```
+
+### How to use single-speaker TTS with Gemini
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = GeminiGenerateContentRequestBody(
+        contents: [
+            .init(
+                parts: [
+                    .text("Hello world")
+                ],
+                role: "user"
+            )
+        ],
+        generationConfig: .init(
+            responseModalities: [
+                "AUDIO",
+            ],
+            speechConfig: .init(
+                voiceConfig: .init(
+                    prebuiltVoiceConfig: .init(
+                        voiceName: .kore
+                    )
+                )
+            )
+        ),
+        safetySettings: [
+            .init(category: .dangerousContent, threshold: .none),
+            .init(category: .civicIntegrity, threshold: .none),
+            .init(category: .harassment, threshold: .none),
+            .init(category: .hateSpeech, threshold: .none),
+            .init(category: .sexuallyExplicit, threshold: .none)
+        ]
+    )
+
+    do {
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-2.5-flash-preview-tts",
+            secondsToWait: 300
+        )
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            if case .inlineData(mimeType: let mimeType, base64Data: let base64Data) = part {
+                print("Gemini generated inline data with mimetype: \(mimeType) and base64Length: \(base64Data.count)")
+
+                // Do not use a local `let` or `var` for AudioController.
+                // You need the lifecycle of the player to live beyond the scope of this function.
+                // Instead, use file scope or set the player as a member of a reference type with long life.
+                // For example, at the top of this file you may define:
+                //
+                //   fileprivate var audioController: AudioController? = nil
+                //
+                // And then use the code below to play the TTS result:
+                audioController = try await AudioController(modes: [.playback])
+                await audioController?.playPCM16Audio(base64String: base64Data)
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create speech using Gemini: \(error.localizedDescription)")
+    }
+```
+
+### How to use multi-speaker TTS with Gemini
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let geminiService = AIProxy.geminiDirectService(
+    //     unprotectedAPIKey: "your-gemini-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let geminiService = AIProxy.geminiService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = GeminiGenerateContentRequestBody(
+        contents: [
+            .init(
+                parts: [
+                    .text("""
+                          Joe: How's it going today, Jane?
+                          Jane: Not too bad, how about you?
+                          """
+                    )
+                ],
+                role: "user"
+            )
+        ],
+        generationConfig: .init(
+            responseModalities: [
+                "AUDIO",
+            ],
+            speechConfig: .init(
+                multiSpeakerVoiceConfig: .init(
+                    speakerVoiceConfigs: [
+                        .init(
+                            speaker: "Joe",
+                            voiceConfig: .init(
+                                prebuiltVoiceConfig: .init(
+                                    voiceName: .puck
+                                )
+                            )
+                        ),
+                        .init(
+                            speaker: "Jane",
+                            voiceConfig: .init(
+                                prebuiltVoiceConfig: .init(
+                                    voiceName: .kore
+                                )
+                            )
+                        )
+                    ]
+                )
+            )
+        ),
+        safetySettings: [
+            .init(category: .dangerousContent, threshold: .none),
+            .init(category: .civicIntegrity, threshold: .none),
+            .init(category: .harassment, threshold: .none),
+            .init(category: .hateSpeech, threshold: .none),
+            .init(category: .sexuallyExplicit, threshold: .none)
+        ]
+    )
+
+    do {
+        let response = try await geminiService.generateContentRequest(
+            body: requestBody,
+            model: "gemini-2.5-flash-preview-tts",
+            secondsToWait: 300
+        )
+        for part in response.candidates?.first?.content?.parts ?? [] {
+            if case .inlineData(mimeType: let mimeType, base64Data: let base64Data) = part {
+                print("Gemini generated inline data with mimetype: \(mimeType) and base64Length: \(base64Data.count)")
+
+                // Do not use a local `let` or `var` for AudioController.
+                // You need the lifecycle of the player to live beyond the scope of this function.
+                // Instead, use file scope or set the player as a member of a reference type with long life.
+                // For example, at the top of this file you may define:
+                //
+                //   fileprivate var audioController: AudioController? = nil
+                //
+                // And then use the code below to play the TTS result:
+                audioController = try await AudioController(modes: [.playback])
+                await audioController?.playPCM16Audio(base64String: base64Data)
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create multi-speaker speech using Gemini: \(error.localizedDescription)")
     }
 ```
 
