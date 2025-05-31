@@ -33,7 +33,12 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
     /// Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the `content` of `message`.
     /// Defaults to false
     public let logprobs: Bool?
-    
+
+    /// This field is deprecated by OpenAI, but is useful for other providers.
+    /// Here is OpenAI's note:
+    /// The maximum number of tokens that can be generated in the chat completion.
+    /// This value can be used to control costs for text generated via API.
+    /// This value is now deprecated in favor of maxCompletionTokens, and is not compatible with o-series models.
     public let maxTokens: Int?
 
     /// An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and reasoning tokens: https://platform.openai.com/docs/guides/reasoning
@@ -115,7 +120,7 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
     /// This tool searches the web for relevant results to use in a response.
     /// Learn more: https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat
     public let webSearchOptions: OpenAIChatCompletionRequestBody.WebSearchOptions?
-    
+
     private enum CodingKeys: String, CodingKey {
         case model
         case messages
@@ -689,22 +694,22 @@ extension OpenAIChatCompletionRequestBody {
 
 extension OpenAIChatCompletionRequestBody {
     public struct WebSearchOptions: Encodable {
-        
+
         public enum SearchContextSize: String, Encodable {
             case low
             case medium
             case high
         }
-        
+
         public struct UserLocation: Encodable {
-            
+
             public struct Approximate: Encodable {
                 let city: String?
                 let country: String?
                 let region: String?
                 let timezone: String?
                 let type = "approximate"
-                
+
                 public init(
                     city: String? = nil,
                     country: String? = nil,
@@ -717,22 +722,22 @@ extension OpenAIChatCompletionRequestBody {
                     self.timezone = timezone
                 }
             }
-            
+
             let approximate: Approximate
-            
+
             public init(approximate: Approximate) {
                 self.approximate = approximate
             }
         }
-        
+
         let searchContextSize: SearchContextSize?
         let userLocation: UserLocation?
-        
+
         private enum CodingKeys: String, CodingKey {
             case searchContextSize = "search_context_size"
             case userLocation = "user_location"
         }
-        
+
         public init(
             searchContextSize: SearchContextSize?,
             userLocation: UserLocation?
