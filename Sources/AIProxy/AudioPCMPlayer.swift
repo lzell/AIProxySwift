@@ -96,7 +96,7 @@ internal class AudioPCMPlayer {
 
         guard let outPCMBuf = AVAudioPCMBuffer(
             pcmFormat: self.playableFormat,
-            frameCapacity: AVAudioFrameCount(self.playableFormat.sampleRate * 2.0)
+            frameCapacity: AVAudioFrameCount(UInt32(audioData.count) * 2)
         ) else {
             logIf(.error)?.error("Could not create output buffer for audio playback")
             return

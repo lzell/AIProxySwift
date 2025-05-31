@@ -31,12 +31,18 @@ import AVFoundation
 ///
 @RealtimeActor
 open class AudioController {
+    public enum Mode {
+        case record
+        case playback
+    }
+    public let modes: [Mode]
     private let audioEngine: AVAudioEngine
-    private let microphonePCMSampleVendor: MicrophonePCMSampleVendor
-    private var audioPCMPlayer: AudioPCMPlayer
+    private var microphonePCMSampleVendor: MicrophonePCMSampleVendor? = nil
+    private var audioPCMPlayer: AudioPCMPlayer? = nil
 
     @RealtimeActor
-    public init() async throws {
+    public init(modes: [Mode]) async throws {
+        self.modes = modes
         #if os(iOS)
         // This is not respected if `setVoiceProcessingEnabled(true)` is used :/
         // Instead, I've added my own accumulator.
@@ -56,15 +62,21 @@ open class AudioController {
 
         self.audioEngine = AVAudioEngine()
 
-        #if os(macOS) || os(iOS)
-        self.microphonePCMSampleVendor = AIProxyUtils.headphonesConnected
-                                           ? try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
-                                           : MicrophonePCMSampleVendorAT()
-        #else
-        self.microphonePCMSampleVendor = try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
-        #endif
+        if modes.contains(.record) {
+            #if os(macOS) || os(iOS)
+            self.microphonePCMSampleVendor = AIProxyUtils.headphonesConnected
+                                               ? try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
+                                               : MicrophonePCMSampleVendorAT()
+            #else
+            self.microphonePCMSampleVendor = try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
+            #endif
+        }
 
-        self.audioPCMPlayer = try await AudioPCMPlayer(audioEngine: self.audioEngine)
+
+        if modes.contains(.playback) {
+            self.audioPCMPlayer = try await AudioPCMPlayer(audioEngine: self.audioEngine)
+        }
+
         self.audioEngine.prepare()
 
         // Nesting `start` in a Task is necessary on watchOS.
@@ -76,19 +88,33 @@ open class AudioController {
     }
 
     public func micStream() throws -> AsyncStream<AVAudioPCMBuffer> {
-        return try self.microphonePCMSampleVendor.start()
+        guard self.modes.contains(.record),
+              let microphonePCMSampleVendor = self.microphonePCMSampleVendor else {
+            throw AIProxyError.assertion("Please pass [.record] to the AudioController initializer")
+        }
+        return try microphonePCMSampleVendor.start()
     }
 
     public func stop() {
-        self.microphonePCMSampleVendor.stop()
-        self.audioPCMPlayer.interruptPlayback()
+        self.microphonePCMSampleVendor?.stop()
+        self.audioPCMPlayer?.interruptPlayback()
     }
 
-    public func playPCM16Audio(from base64String: String) {
-        self.audioPCMPlayer.playPCM16Audio(from: base64String)
+    public func playPCM16Audio(base64String: String) {
+        guard self.modes.contains(.playback),
+              let audioPCMPlayer = self.audioPCMPlayer else {
+            logIf(.error)?.error("Please pass [.playback] to the AudioController initializer")
+            return
+        }
+        audioPCMPlayer.playPCM16Audio(from: base64String)
     }
 
     public func interruptPlayback() {
-        self.audioPCMPlayer.interruptPlayback()
+        guard self.modes.contains(.playback),
+              let audioPCMPlayer = self.audioPCMPlayer else {
+            logIf(.error)?.error("Please pass [.playback] to the AudioController initializer")
+            return
+        }
+        audioPCMPlayer.interruptPlayback()
     }
 }

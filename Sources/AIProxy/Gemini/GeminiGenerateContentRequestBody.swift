@@ -394,6 +394,7 @@ extension GeminiGenerateContentRequestBody {
         public let responseModalities: [String]?
         public let responseMimeType: String?
         public let responseSchema: [String: AIProxyJSONValue]?
+        public let speechConfig: SpeechConfig?
         public let thinkingConfig: ThinkingConfig?
 
         public init(
@@ -406,6 +407,7 @@ extension GeminiGenerateContentRequestBody {
             responseModalities: [String]? = nil,
             responseMimeType: String? = nil,
             responseSchema: [String: AIProxyJSONValue]? = nil,
+            speechConfig: SpeechConfig? = nil,
             thinkingConfig: ThinkingConfig? = nil
         ) {
             self.maxOutputTokens = maxOutputTokens
@@ -417,6 +419,7 @@ extension GeminiGenerateContentRequestBody {
             self.responseModalities = responseModalities
             self.responseMimeType = responseMimeType
             self.responseSchema = responseSchema
+            self.speechConfig = speechConfig
             self.thinkingConfig = thinkingConfig
         }
 
@@ -430,15 +433,105 @@ extension GeminiGenerateContentRequestBody {
             case responseModalities
             case responseMimeType
             case responseSchema
+            case speechConfig
             case thinkingConfig
         }
-        
-        public struct ThinkingConfig: Encodable {
-            public let thinkingBudget: Int
-            
-            public init(thinkingBudget: Int) {
-                self.thinkingBudget = thinkingBudget
-            }
+    }
+}
+
+extension GeminiGenerateContentRequestBody.GenerationConfig {
+    public struct ThinkingConfig: Encodable {
+        public let thinkingBudget: Int
+
+        public init(thinkingBudget: Int) {
+            self.thinkingBudget = thinkingBudget
         }
+    }
+
+    public struct SpeechConfig: Encodable {
+        public let multiSpeakerVoiceConfig: MultiSpeakerVoiceConfig?
+        public let voiceConfig: VoiceConfig?
+
+        public init(
+            multiSpeakerVoiceConfig: MultiSpeakerVoiceConfig? = nil,
+            voiceConfig: VoiceConfig? = nil
+        ) {
+            self.multiSpeakerVoiceConfig = multiSpeakerVoiceConfig
+            self.voiceConfig = voiceConfig
+        }
+    }
+}
+
+extension GeminiGenerateContentRequestBody.GenerationConfig.SpeechConfig {
+    public struct VoiceConfig: Encodable {
+        public let prebuiltVoiceConfig: PrebuiltVoiceConfig
+
+        public init(prebuiltVoiceConfig: PrebuiltVoiceConfig) {
+            self.prebuiltVoiceConfig = prebuiltVoiceConfig
+        }
+    }
+
+    public struct MultiSpeakerVoiceConfig: Encodable {
+        public let speakerVoiceConfigs: [SpeakerVoiceConfig]
+
+        public init(speakerVoiceConfigs: [SpeakerVoiceConfig]) {
+            self.speakerVoiceConfigs = speakerVoiceConfigs
+        }
+    }
+
+    public struct PrebuiltVoiceConfig: Encodable {
+        public let voiceName: VoiceName
+
+        public init(voiceName: VoiceName) {
+            self.voiceName = voiceName
+        }
+    }
+
+    public struct SpeakerVoiceConfig: Encodable {
+        public let speaker: String
+        public let voiceConfig: VoiceConfig
+
+        public init(
+            speaker: String,
+            voiceConfig: VoiceConfig
+        ) {
+            self.speaker = speaker
+            self.voiceConfig = voiceConfig
+        }
+    }
+
+    /// See this list for voice options:
+    /// https://ai.google.dev/gemini-api/docs/speech-generation#voices
+    public enum VoiceName: String, Encodable {
+        case zephyr = "Zephyr"
+        case puck = "Puck"
+        case charon = "Charon"
+        case kore = "Kore"
+        case fenrir = "Fenrir"
+        case leda = "Leda"
+        case orus = "Orus"
+        case aoede = "Aoede"
+        case callirrhoe = "Callirrhoe"
+        case autonoe = "Autonoe"
+        case enceladus = "Enceladus"
+        case iapetus = "Iapetus"
+        case umbriel = "Umbriel"
+        case algieba = "Algieba"
+        case despina = "Despina"
+        case erinome = "Erinome"
+        case algenib = "Algenib"
+        case rasalgethi = "Rasalgethi"
+        case laomedeia = "Laomedeia"
+        case achernar = "Achernar"
+        case alnilam = "Alnilam"
+        case schedar = "Schedar"
+        case gacrux = "Gacrux"
+        case pulcherrima = "Pulcherrima"
+        case achird = "Achird"
+        case zubenelgenubi = "Zubenelgenubi"
+        case vindemiatrix = "Vindemiatrix"
+        case sadachbia = "Sadachbia"
+        case sadaltager = "Sadaltager"
+        case sulafat = "Sulafat"
     }
 }
