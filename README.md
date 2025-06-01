@@ -3929,6 +3929,92 @@ model owner and model name in the string.
     }
 ```
 
+### How to edit images with Flux Kontext Max
+
+```
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "my_image") else {
+        print("Could not find an image named 'my_image' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.5) else {
+        print("Could not encode image as a data URI")
+        return
+    }
+
+    do {
+        let input = ReplicateFluxKontextInputSchema(
+            inputImage: imageURL,
+            prompt: "Make the letters 3D, floating in space above Monument Valley, Utah"
+        )
+        let url = try await replicateService.createFluxKontextMaxImage(
+            input: input,
+            secondsToWait: 60
+        )
+        print("Done creating Flux Kontext Max image: ", url)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Flux Kontext Max image: \(error.localizedDescription)")
+    }
+```
+
+### How to edit images with Flux Kontext Pro
+
+```
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let replicateService = AIProxy.replicateDirectService(
+    //     unprotectedAPIKey: "your-replicate-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let replicateService = AIProxy.replicateService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "my_image") else {
+        print("Could not find an image named 'my_image' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.5) else {
+        print("Could not encode image as a data URI")
+        return
+    }
+
+    do {
+        let input = ReplicateFluxKontextInputSchema(
+            inputImage: imageURL,
+            prompt: "Make the letters 3D, floating in space above Monument Valley, Utah"
+        )
+        let url = try await replicateService.createFluxKontextProImage(
+            input: input,
+            secondsToWait: 60
+        )
+        print("Done creating Flux Kontext Pro image: ", url)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Flux Kontext Pro image: \(error.localizedDescription)")
+    }
+```
+
 ***
 
 

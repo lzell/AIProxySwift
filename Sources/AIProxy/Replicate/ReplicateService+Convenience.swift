@@ -94,6 +94,48 @@ extension ReplicateService {
         return try await self.getPredictionOutput(prediction)
     }
 
+    /// Convenience method for creating an image through Black Forest Lab's Flux Kontext Max model:
+    /// https://replicate.com/black-forest-labs/flux-kontext-max
+    ///
+    /// - Parameters:
+    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxKontextInputSchema.swift
+    ///   - secondsToWait: Seconds to wait before raising a timeout error
+    ///
+    /// - Returns: The URL of the generated Flux Kontext Max image
+    public func createFluxKontextMaxImage(
+        input: ReplicateFluxKontextInputSchema,
+        secondsToWait: UInt
+    ) async throws -> URL {
+        let prediction: ReplicatePrediction<URL> = try await self.runOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-kontext-max",
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        return try await self.getPredictionOutput(prediction)
+    }
+
+    /// Convenience method for creating an image through Black Forest Lab's Flux Kontext Pro model:
+    /// https://replicate.com/black-forest-labs/flux-kontext-pro
+    ///
+    /// - Parameters:
+    ///   - input: The input specification of the image you'd like to generate. See ReplicateFluxKontextInputSchema.swift
+    ///   - secondsToWait: Seconds to wait before raising a timeout error
+    ///
+    /// - Returns: The URL of the generated Flux Kontext Pro image
+    public func createFluxKontextProImage(
+        input: ReplicateFluxKontextInputSchema,
+        secondsToWait: UInt
+    ) async throws -> URL {
+        let prediction: ReplicatePrediction<URL> = try await self.runOfficialModel(
+            modelOwner: "black-forest-labs",
+            modelName: "flux-kontext-pro",
+            input: input,
+            secondsToWait: secondsToWait
+        )
+        return try await self.getPredictionOutput(prediction)
+    }
+
     /// Convenience method for creating image URLs through Black Forest Lab's Flux-Dev model.
     /// https://replicate.com/black-forest-labs/flux-dev
     ///
