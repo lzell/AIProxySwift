@@ -3962,7 +3962,7 @@ model owner and model name in the string.
         )
         let url = try await replicateService.createFluxKontextMaxImage(
             input: input,
-            secondsToWait: 60
+            secondsToWait: 120
         )
         print("Done creating Flux Kontext Max image: ", url)
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
@@ -4005,7 +4005,7 @@ model owner and model name in the string.
         )
         let url = try await replicateService.createFluxKontextProImage(
             input: input,
-            secondsToWait: 60
+            secondsToWait: 120
         )
         print("Done creating Flux Kontext Pro image: ", url)
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
