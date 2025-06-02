@@ -3929,7 +3929,7 @@ model owner and model name in the string.
     }
 ```
 
-### How to edit images with Flux Kontext Max
+### How to edit images with Flux Kontext Max on Replicate
 
 ```
     import AIProxy
@@ -3972,7 +3972,7 @@ model owner and model name in the string.
     }
 ```
 
-### How to edit images with Flux Kontext Pro
+### How to edit images with Flux Kontext Pro on Replicate
 
 ```
     import AIProxy
