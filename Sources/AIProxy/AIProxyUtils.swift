@@ -18,6 +18,10 @@ import UIKit
 import AudioToolbox
 #endif
 
+#if canImport(StoreKit)
+import StoreKit
+#endif
+
 import Network
 
 enum AIProxyUtils {
@@ -165,6 +169,36 @@ enum AIProxyUtils {
         #else
         return audioSessionHeadphonesConnected()
         #endif
+    }
+
+    static func getAppTransactionID() async -> String? {
+        guard #available(iOS 16.0, watchOS 9.0, macOS 13.0, tvOS 16.0, visionOS 1.0, *) else {
+            return nil
+        }
+
+        // Apple's docstring on `shared` states:
+        // If your app fails to get an AppTransaction by accessing the shared property, see refresh().
+        // Source: https://developer.apple.com/documentation/storekit/apptransaction/shared
+        var appTransaction: VerificationResult<AppTransaction>?
+        do {
+            appTransaction = try await AppTransaction.shared
+        } catch {
+            appTransaction = try? await AppTransaction.refresh()
+        }
+
+        guard let appTransaction = appTransaction,
+              case .verified(let verifiedAppTransaction) = appTransaction else {
+            logIf(.info)?.info("AIProxy: Couldn't get a verified app store receipt. Unable to use appTransactionID as a client identifier")
+            return nil
+        }
+
+        let transactionID = verifiedAppTransaction.appTransactionID
+        guard transactionID != "0" else {
+            logIf(.info)?.info("AIProxy: Storekit's appTransactionID is zero, ignoring it")
+            return nil
+        }
+
+        return transactionID
     }
 }
 

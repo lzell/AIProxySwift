@@ -1240,8 +1240,8 @@ final class RealtimeManager {
                     } else {
                         isOpenAIReadyForAudio = true
                     }
-                case .responseAudioDelta(let base64Audio):
-                    audioController.playPCM16Audio(from: base64Audio)
+                case .responseAudioDelta(let base64String):
+                    audioController.playPCM16Audio(base64String: base64String)
                 case .inputAudioBufferSpeechStarted:
                     audioController.interruptPlayback()
                 case .responseCreated:
