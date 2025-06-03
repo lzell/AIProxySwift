@@ -141,10 +141,12 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/audio/createTranscription
+    ///   - progressCallback: Optional callback to track upload progress. Called with a value between 0.0 and 1.0
     /// - Returns: An transcription response. See this reference:
     ///            https://platform.openai.com/docs/api-reference/audio/json-object
     public func createTranscriptionRequest(
-        body: OpenAICreateTranscriptionRequestBody
+        body: OpenAICreateTranscriptionRequestBody,
+        progressCallback: ((Double) -> Void)? = nil
     ) async throws -> OpenAICreateTranscriptionResponseBody {
         let boundary = UUID().uuidString
         let request = try await AIProxyURLRequest.create(
@@ -159,7 +161,8 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
             self.urlSession,
-            request
+            request,
+            progressCallback
         )
         if body.responseFormat == "text" {
             guard let text = String(data: data, encoding: .utf8) else {
