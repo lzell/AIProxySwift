@@ -51,7 +51,7 @@ import Foundation
 /// please report them to me.
 open class AIProxyCertificatePinningDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
 
-   private var progressCallback: ((Double) -> Void)?
+   public var progressCallback: ((Double) -> Void)?
    
    public func setProgressCallback(_ callback: @escaping (Double) -> Void) {
        self.progressCallback = callback
