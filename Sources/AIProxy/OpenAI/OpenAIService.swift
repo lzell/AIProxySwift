@@ -66,10 +66,12 @@ public protocol OpenAIService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/audio/createTranscription
+    ///   - progressCallback: Optional callback to track upload progress. Called with a value between 0.0 and 1.0
     /// - Returns: An transcription response. See this reference:
     ///            https://platform.openai.com/docs/api-reference/audio/json-object
     func createTranscriptionRequest(
-        body: OpenAICreateTranscriptionRequestBody
+        body: OpenAICreateTranscriptionRequestBody,
+        progressCallback: ((Double) -> Void)?
     ) async throws -> OpenAICreateTranscriptionResponseBody
     
     /// Initiates a create text to speech request to v1/audio/speech
@@ -165,5 +167,11 @@ extension OpenAIService {
         body: OpenAIChatCompletionRequestBody
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
         return try await self.streamingChatCompletionRequest(body: body, secondsToWait: 60)
+    }
+    
+    public func createTranscriptionRequest(
+        body: OpenAICreateTranscriptionRequestBody
+    ) async throws -> OpenAICreateTranscriptionResponseBody {
+        return try await self.createTranscriptionRequest(body: body, progressCallback: nil)
     }
 }

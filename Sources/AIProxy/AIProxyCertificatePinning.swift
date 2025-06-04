@@ -51,6 +51,16 @@ import Foundation
 /// please report them to me.
 open class AIProxyCertificatePinningDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
 
+   public var progressCallback: ((Double) -> Void)?
+   
+   public func setProgressCallback(_ callback: @escaping (Double) -> Void) {
+       self.progressCallback = callback
+   }
+   
+   public func clearProgressCallback() {
+       self.progressCallback = nil
+   }
+
    public func urlSession(
       _ session: URLSession,
       task: URLSessionTask,
@@ -64,6 +74,19 @@ open class AIProxyCertificatePinningDelegate: NSObject, URLSessionDelegate, URLS
       didReceive challenge: URLAuthenticationChallenge
    ) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
       return self.answerChallenge(challenge)
+   }
+   
+   public func urlSession(
+       _ session: URLSession,
+       task: URLSessionTask,
+       didSendBodyData bytesSent: Int64,
+       totalBytesSent: Int64,
+       totalBytesExpectedToSend: Int64
+   ) {
+       guard let progressCallback = progressCallback,
+             totalBytesExpectedToSend > 0 else { return }
+       let progress = Double(totalBytesSent) / Double(totalBytesExpectedToSend)
+       progressCallback(progress)
    }
 
    private func answerChallenge(

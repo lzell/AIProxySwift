@@ -144,7 +144,8 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     /// - Returns: An transcription response. See this reference:
     ///            https://platform.openai.com/docs/api-reference/audio/json-object
     public func createTranscriptionRequest(
-        body: OpenAICreateTranscriptionRequestBody
+        body: OpenAICreateTranscriptionRequestBody,
+        progressCallback: ((Double) -> Void)?
     ) async throws -> OpenAICreateTranscriptionResponseBody {
         let boundary = UUID().uuidString
         let request = try AIProxyURLRequest.createDirect(
@@ -160,8 +161,12 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
             self.urlSession,
-            request
+            request,
+            progressCallback
         )
+        if progressCallback != nil {
+                  logIf(.error)?.error("progressCallback for transcription is not implemented")
+        }
         if body.responseFormat == "text" {
             guard let text = String(data: data, encoding: .utf8) else {
                 throw AIProxyError.assertion("Could not represent OpenAI's whisper response as string")

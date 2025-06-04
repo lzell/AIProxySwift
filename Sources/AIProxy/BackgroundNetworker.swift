@@ -12,8 +12,12 @@ struct BackgroundNetworker {
     @NetworkActor
     static func makeRequestAndWaitForData(
         _ session: URLSession,
-        _ request: URLRequest
+        _ request: URLRequest,
+        _ progressCallback: ((Double) -> Void)? = nil
     ) async throws -> (Data, HTTPURLResponse) {
+        if let progressCallback {
+            (session.delegate as? AIProxyCertificatePinningDelegate)?.setProgressCallback(progressCallback)
+        }
         let (data, res) = try await session.data(for: request)
         guard let httpResponse = res as? HTTPURLResponse else {
             throw AIProxyError.assertion("Network response is not an http response")
