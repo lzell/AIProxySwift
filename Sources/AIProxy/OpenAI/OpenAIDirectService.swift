@@ -164,6 +164,9 @@ open class OpenAIDirectService: OpenAIService, DirectService {
             request,
             progressCallback
         )
+        if progressCallback != nil {
+                  logIf(.error)?.error("progressCallback for transcription is not implemented")
+        }
         if body.responseFormat == "text" {
             guard let text = String(data: data, encoding: .utf8) else {
                 throw AIProxyError.assertion("Could not represent OpenAI's whisper response as string")
