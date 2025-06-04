@@ -8,7 +8,7 @@ import UIKit
 public enum AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.104.0"
+    public static let sdkVersion = "0.105.0"
 
     /// Configures the AIProxy SDK. Call this during app launch by adding an `init` to your SwiftUI MyApp.swift file, e.g.
     ///
@@ -74,6 +74,9 @@ public enum AIProxy {
     ///                              4. Tap the plus sign next to 'Capability'
     ///                              5. Add iCloud
     ///                              6. Select the 'Key-value storage' service
+    ///
+    ///                          If possible, StoreKit's appTransactionID will be used as the stable ID.
+    ///                          If the app store receipt cannot be verified then we fall back to a GUID synced across iCloud-backed keychain and UKVS.
     public static func configure(
         logLevel: AIProxyLogLevel,
         printRequestBodies: Bool,
@@ -111,7 +114,7 @@ public enum AIProxy {
     ///    kdig @1.1.1.1 api.aiproxy.com +noall +stats
     public static var resolveDNSOverTLS = true
 
-    public static var stableID: String? {
+    public private(set) static var stableID: String? {
         get {
             protectedPropertyQueue.sync { _stableID }
         }
@@ -1002,8 +1005,12 @@ public enum AIProxy {
         return await self._getStableIdentifier()
     }
 
-    @NetworkActor
     private static func _getStableIdentifier() async -> String? {
+        #if !DEBUG
+        if let appTransactionID = await AIProxyUtils.getAppTransactionID() {
+            return appTransactionID
+        }
+        #endif
         do {
             return try await AnonymousAccountStorage.sync()
         } catch {
