@@ -168,4 +168,10 @@ extension OpenAIService {
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
         return try await self.streamingChatCompletionRequest(body: body, secondsToWait: 60)
     }
+    
+    public func createTranscriptionRequest(
+        body: OpenAICreateTranscriptionRequestBody
+    ) async throws -> OpenAICreateTranscriptionResponseBody {
+        return try await self.createTranscriptionRequest(body: body, progressCallback: nil)
+    }
 }
