@@ -172,6 +172,9 @@ enum AIProxyUtils {
     }
 
     static func getAppTransactionID() async -> String? {
+        #if compiler(<6.1.2)
+        return nil
+        #else
         guard #available(iOS 16.0, watchOS 9.0, macOS 13.0, tvOS 16.0, visionOS 1.0, *) else {
             return nil
         }
@@ -199,6 +202,7 @@ enum AIProxyUtils {
         }
 
         return transactionID
+        #endif
     }
 }
 
