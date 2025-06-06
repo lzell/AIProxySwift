@@ -172,9 +172,13 @@ enum AIProxyUtils {
     }
 
     static func getAppTransactionID() async -> String? {
+        #if compiler(<6.1.2)
+        return nil
+        #else
         guard #available(iOS 16.0, watchOS 9.0, macOS 13.0, tvOS 16.0, visionOS 1.0, *) else {
             return nil
         }
+        // ...logic to get the verified app transaction...
 
         // Apple's docstring on `shared` states:
         // If your app fails to get an AppTransaction by accessing the shared property, see refresh().
@@ -199,6 +203,7 @@ enum AIProxyUtils {
         }
 
         return transactionID
+        #endif
     }
 }
 
