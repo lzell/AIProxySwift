@@ -225,13 +225,18 @@ public enum AIProxy {
     ///
     /// - Parameters:
     ///   - unprotectedAPIKey: Your OpenAI API key
+    ///   - baseURL: Optional base URL for the API requests
+    ///   - requestFormat: If you are sending requests to your own Azure deployment, set this to `.azureDeployment`.
+    ///                   Otherwise, you may leave this set to its default value of `.standard`
     /// - Returns: An instance of OpenAIService configured and ready to make requests
     public static func openAIDirectService(
         unprotectedAPIKey: String,
-        baseURL: String? = nil
+        baseURL: String? = nil,
+        requestFormat: OpenAIRequestFormat = .standard
     ) -> OpenAIService {
         return OpenAIDirectService(
             unprotectedAPIKey: unprotectedAPIKey,
+            requestFormat: requestFormat,
             baseURL: baseURL
         )
     }

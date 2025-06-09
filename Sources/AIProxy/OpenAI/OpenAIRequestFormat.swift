@@ -21,7 +21,7 @@ public enum OpenAIRequestFormat {
     /// This is useful for API providers that use different version prefixes, like ByteDance's Volcengine:
     /// ```
     /// // For Volcengine API which uses v3:
-    /// let service = AIProxy.directOpenAIService(
+    /// let service = AIProxy.openAIDirectService(
     ///     unprotectedAPIKey: "your-api-key",
     ///     baseURL: "https://ark.cn-beijing.volces.com/api/v3",
     ///     requestFormat: .noVersionPrefix
