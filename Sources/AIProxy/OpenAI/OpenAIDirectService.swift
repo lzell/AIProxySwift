@@ -352,6 +352,8 @@ open class OpenAIDirectService: OpenAIService, DirectService {
             return "/v1/\(common)"
         case .azureDeployment(let apiVersion):
             return "/\(common)?api-version=\(apiVersion)"
+        case .noVersionPrefix:
+            return "/\(common)"
         }
     }
 }
