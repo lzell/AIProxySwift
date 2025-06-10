@@ -5748,6 +5748,11 @@ or
 
      A server with the specified hostname could not be found
 
+or
+
+     NSErrorFailingURLStringKey=https://api.aiproxy.com/your/service/url
+
+
 Modify your macOS project settings by tapping on your project in the Xcode project tree, then
 select `Signing & Capabilities` and enable `Outgoing Connections (client)`
 
