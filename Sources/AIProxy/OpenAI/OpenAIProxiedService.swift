@@ -349,6 +349,8 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
             return "/v1/\(common)"
         case .azureDeployment(let apiVersion):
             return "/\(common)?api-version=\(apiVersion)"
+        case .noVersionPrefix:
+            return "/\(common)"
         }
     }
 }
