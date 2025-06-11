@@ -84,7 +84,6 @@ internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor {
             guard let this = self else { return }
             this.continuation = continuation
             this.inputNode.installTap(onBus: 0, bufferSize: targetBufferSize, format: desiredTapFormat) { [weak this] sampleBuffer, _ in
-                print("Getting mic data with frame length: \(sampleBuffer.frameLength)")
                 if let accumulatedBuffer = this?.microphonePCMSampleVendorCommon.resampleAndAccumulate(sampleBuffer) {
                     this?.continuation?.yield(accumulatedBuffer)
                 }
