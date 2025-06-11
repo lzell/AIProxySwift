@@ -1124,10 +1124,6 @@ Take these steps to build and run an OpenAI realtime example:
 6. Set the `logLevel` argument of the `openAIService.realtimeSession` call to your desired level. If you leave
    it set at `.debug`, then you'll see logs for all audio samples that we send and receive from OpenAI. 
 
-**Important** If you would like to protect your connection through AIProxy's backend, your
-AIProxy project must be enabled for websocket use. Please reach out if you would like to be
-added to the private beta.
-
 ```swift
 import SwiftUI
 import AIProxy
