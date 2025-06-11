@@ -8,11 +8,15 @@
 import Foundation
 import AVFoundation
 
+private let kWebsocketDisconnectedErrorCode = 57
+private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
+
 @RealtimeActor
 open class OpenAIRealtimeSession {
     private var isTearingDown = false
     private let webSocketTask: URLSessionWebSocketTask
     private var continuation: AsyncStream<OpenAIRealtimeMessage>.Continuation?
+    private let setupTime = Date()
     let sessionConfiguration: OpenAIRealtimeSessionConfiguration
 
     init(
@@ -56,7 +60,6 @@ open class OpenAIRealtimeSession {
 
     /// Close the websocket connection
     public func disconnect() {
-        logIf(.debug)?.debug("Disconnecting from realtime session")
         self.isTearingDown = true
         self.continuation?.finish()
         self.continuation = nil
@@ -84,11 +87,19 @@ open class OpenAIRealtimeSession {
         guard !isTearingDown else {
             return
         }
-        if error.code == 57 {
-            logIf(.warning)?.warning("WS disconnected. Check that your AIProxy project is websocket enabled and you've followed the DeviceCheck integration guide")
-        } else {
+
+        switch error.code {
+        case kWebsocketDisconnectedErrorCode:
+            let disconnectedEarly = Date().timeIntervalSince(setupTime) <= kWebsocketDisconnectedEarlyThreshold
+            if disconnectedEarly {
+                logIf(.warning)?.warning("AIProxy: websocket disconnected immediately. Check that you've followed the DeviceCheck integration guide at https://www.aiproxy.com/docs/integration-guide.html")
+            } else {
+                logIf(.debug)?.debug("AIProxy: websocket disconnected normally")
+            }
+        default:
             logIf(.error)?.error("Received ws error: \(error.localizedDescription)")
         }
+
         self.disconnect()
     }
 
