@@ -19,7 +19,7 @@ public struct FalFluxProKontextInputSchema: Encodable {
 
     // Optional
     /// The aspect ratio of the generated image.
-    public let aspectRatio: AspectRatioEnum?
+    public let aspectRatio: AspectRatio?
 
     /// The CFG (Classifier Free Guidance) scale is a measure of how close you want the model to stick to your prompt when looking for a related image to show you. Default value: 3.5
     public let guidanceScale: Float?
@@ -29,12 +29,12 @@ public struct FalFluxProKontextInputSchema: Encodable {
     public let numImages: Int?
 
     /// The format of the generated image. Default value: "jpeg"
-    public let outputFormat: OutputFormatEnum?
+    public let outputFormat: OutputFormat?
 
     /// The safety tolerance level for the generated image. 1 being the most strict and 5 being the most permissive. Default value: "2"
     /// Possible enum values: 1, 2, 3, 4, 5, 6
     /// Note: This property is only available through API calls.
-    public let safetyTolerance: SafetyToleranceEnum?
+    public let safetyTolerance: Int?
 
     /// The same seed and the same prompt given to the same version of the model will output the same image every time.
     public let seed: Int?
@@ -59,11 +59,11 @@ public struct FalFluxProKontextInputSchema: Encodable {
     public init(
         imageURL: URL,
         prompt: String,
-        aspectRatio: AspectRatioEnum? = nil,
+        aspectRatio: AspectRatio? = nil,
         guidanceScale: Float? = nil,
         numImages: Int? = nil,
-        outputFormat: OutputFormatEnum? = nil,
-        safetyTolerance: SafetyToleranceEnum? = nil,
+        outputFormat: OutputFormat? = nil,
+        safetyTolerance: Int? = nil,
         seed: Int? = nil,
         syncMode: Bool? = nil
     ) {
@@ -81,30 +81,20 @@ public struct FalFluxProKontextInputSchema: Encodable {
 
 // MARK: - Enumerations
 extension FalFluxProKontextInputSchema {
-    public enum SafetyToleranceEnum: Int, Encodable {
-        case one = 1
-        case two = 2
-        case three = 3
-        case four = 4
-        case five = 5
-        case six = 6
-    }
-
-    public enum OutputFormatEnum: String, Encodable {
+    public enum OutputFormat: String, Encodable {
         case jpeg
         case png
     }
 
-    public enum AspectRatioEnum: String, Encodable {
-        case _21_9 = "21:9"
-        case _16_9 = "16:9"
-        case _4_3 = "4:3"
-        case _3_2 = "3:2"
-        case _1_1 = "1:1"
-        case _2_3 = "2:3"
-        case _3_4 = "3:4"
-        case _9_16 = "9:16"
-        case _9_21 = "9:21"
+    public enum AspectRatio: String, Encodable {
+        case _21x9 = "21:9"
+        case _16x9 = "16:9"
+        case _4x3 = "4:3"
+        case _3x2 = "3:2"
+        case _1x1 = "1:1"
+        case _2x3 = "2:3"
+        case _3x4 = "3:4"
+        case _9x16 = "9:16"
+        case _9x21 = "9:21"
     }
 }
-
