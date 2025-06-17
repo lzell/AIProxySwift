@@ -4346,6 +4346,55 @@ Using the LoRA URL returned in the step above:
 
 See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
 
+#### How to edit an image using Flux Kontext Pro on Fal
+
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let falService = AIProxy.falDirectService(
+    //     unprotectedAPIKey: "your-fal-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let falService = AIProxy.falService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "myImage") else {
+        print("Could not find an image named 'myImage' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.5) else {
+        print("Could not encode image as a data URI")
+        return
+    }
+
+    let input = FalFluxProKontextInputSchema(
+        imageURL: imageURL,
+        prompt: "Make the letters 3D, floating in space above Monument Valley, Utah",
+    )
+
+    do {
+        let output = try await falService.createFluxProKontextImage(
+            input: input,
+            secondsToWait: 60
+        )
+        guard let imageURL = output.images?.first?.url else {
+            print("Fal response did not include an image URL")
+            return
+        }
+        print("Your Flux Kontext Pro image is available at \(imageURL)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Flux Kontext Pro image: \(error.localizedDescription)")
+    }
+```
+
 
 ***
 
