@@ -108,12 +108,13 @@ extension FalService {
     ///            generated images. Each image has a `url` that you can use to fetch the image contents
     ///            (or use with AsyncImage)
     public func createFluxProKontextImage(
-        input: FalFluxProKontextInputSchema
+        input: FalFluxProKontextInputSchema,
+        secondsToWait: UInt
     ) async throws -> FalFluxProKontextOutputSchema {
         return try await self.createInferenceAndPollForResult(
             model: "fal-ai/flux-pro/kontext",
             input: input,
-            pollAttempts: 60,
+            pollAttempts: Int(ceil(Double(secondsToWait) / 2)),
             secondsBetweenPollAttempts: 2
         )
     }
