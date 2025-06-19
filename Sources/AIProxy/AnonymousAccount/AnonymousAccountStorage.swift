@@ -58,7 +58,7 @@ final class AnonymousAccountStorage {
         // meaning the one that was created earliest. The design of this class is to eventually resolve out
         // to the earliest account across multiple devices.
         if !AIProxyStorage.ukvsSync() {
-            logIf(.error)?.error("Could not synchronize NSUbiquitousKeyValueStore. Please ensure you enabled the key/value store in Target > Signing & Capabilities > iCloud > Key-Value storage?")
+            logIf(.error)?.error("AIProxy: Could not synchronize NSUbiquitousKeyValueStore. Please ensure you enabled the key/value store in Target > Signing & Capabilities > iCloud > Key-Value storage")
         }
         if let ukvsAccountData = AIProxyStorage.ukvsAccountData() {
             let ukvsAccount = try AnonymousAccount.deserialize(from: ukvsAccountData)

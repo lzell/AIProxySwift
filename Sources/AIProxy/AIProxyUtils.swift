@@ -196,8 +196,8 @@ enum AIProxyUtils {
         }
 
         let transactionID = verifiedAppTransaction.appTransactionID
-        guard transactionID != "0" else {
-            logIf(.info)?.info("AIProxy: Storekit's appTransactionID is zero, ignoring it")
+        guard transactionID != "0" && transactionID != "" else {
+            logIf(.info)?.info("AIProxy: Storekit's appTransactionID is zero or empty, ignoring it")
             return nil
         }
 

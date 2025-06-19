@@ -11,18 +11,23 @@ private let kLibError = "client-lib-error"
 private let kGlobal = "global"
 
 struct ClientLibErrorLogger {
+    static func logClientIdentifierIsNil() {
+        let payload = buildPayload(errorType: "error-client-id-nil", errorMessage: nil)
+        deliver(payload, clientID: nil)
+    }
+
     static func logDeviceCheckSingletonIsNil(clientID: String?) {
-        let payload = buildPayload(errorType: "dc-singleton-nil", errorMessage: nil)
+        let payload = buildPayload(errorType: "error-dc-singleton-nil", errorMessage: nil)
         deliver(payload, clientID: clientID)
     }
 
     static func logDeviceCheckNotSupported(clientID: String?) {
-        let payload = buildPayload(errorType: "dc-not-supported", errorMessage: nil)
+        let payload = buildPayload(errorType: "error-dc-not-supported", errorMessage: nil)
         deliver(payload, clientID: clientID)
     }
 
     static func logDeviceCheckCouldNotGenerateToken(_ msg: String, clientID: String?) {
-        let payload = buildPayload(errorType: "dc-token-gen-failed", errorMessage: msg)
+        let payload = buildPayload(errorType: "error-dc-token-gen-failed", errorMessage: msg)
         deliver(payload, clientID: clientID)
     }
 }
@@ -78,10 +83,7 @@ private func buildRequest(_ payload: Payload, clientID: String?) -> URLRequest? 
     var request = URLRequest(url: libErrorURL)
     request.httpMethod = "POST"
     request.httpBody = body
-
-    if let clientID = clientID ?? AIProxyIdentifier.getClientID() {
-        request.addValue(clientID, forHTTPHeaderField: "aiproxy-client-id")
-    }
+    request.addValue(clientID ?? AIProxyIdentifier.getClientID(), forHTTPHeaderField: "aiproxy-client-id")
 
     request.addValue(
         AIProxyUtils.metadataHeader(withBodySize: body.count),

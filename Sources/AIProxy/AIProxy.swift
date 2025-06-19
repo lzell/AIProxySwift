@@ -8,7 +8,7 @@ import UIKit
 public enum AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.110.0"
+    public static let sdkVersion = "0.110.1"
 
     /// Configures the AIProxy SDK. Call this during app launch by adding an `init` to your SwiftUI MyApp.swift file, e.g.
     ///
@@ -1019,7 +1019,7 @@ public enum AIProxy {
         do {
             return try await AnonymousAccountStorage.sync()
         } catch {
-            logIf(.critical)?.critical("Could not configure an AIProxy anonymous account: \(error.localizedDescription)")
+            logIf(.error)?.error("AIProxy: Could not configure an anonymous account: \(error.localizedDescription)")
         }
         return nil
     }
