@@ -1019,7 +1019,7 @@ public enum AIProxy {
         do {
             return try await AnonymousAccountStorage.sync()
         } catch {
-            logIf(.critical)?.critical("Could not configure an AIProxy anonymous account: \(error.localizedDescription)")
+            logIf(.error)?.error("AIProxy: Could not configure an anonymous account: \(error.localizedDescription)")
         }
         return nil
     }
