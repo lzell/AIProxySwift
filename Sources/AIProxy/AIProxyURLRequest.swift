@@ -48,10 +48,7 @@ enum AIProxyURLRequest {
         request.httpMethod = verb.toString(hasBody: body != nil)
         request.httpBody = body
         request.addValue(partialKey, forHTTPHeaderField: "aiproxy-partial-key")
-
-        if let resolvedClientID = resolvedClientID {
-            request.addValue(resolvedClientID, forHTTPHeaderField: "aiproxy-client-id")
-        }
+        request.addValue(resolvedClientID, forHTTPHeaderField: "aiproxy-client-id")
 
         if let deviceCheckToken = deviceCheckToken {
             request.addValue(deviceCheckToken, forHTTPHeaderField: "aiproxy-devicecheck")
