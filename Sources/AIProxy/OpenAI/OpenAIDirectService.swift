@@ -357,3 +357,53 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         }
     }
 }
+
+
+public extension OpenAIDirectService {
+
+    func chatCompletionRequest(
+        body: OpenAIChatCompletionRequestBody,
+        headers: [String: String],
+        secondsToWait: UInt
+    ) async throws -> OpenAIChatCompletionResponseBody {
+        var headers = headers
+        if headers["Authorization"] == nil {
+            headers["Authorization"] = "Bearer \(self.unprotectedAPIKey)"
+        }
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: self.baseURL,
+            path: self.resolvedPath("chat/completions"),
+            body: try body.serialize(),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "application/json",
+            additionalHeaders: headers
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
+    
+
+    func streamingChatCompletionRequest(
+        body: OpenAIChatCompletionRequestBody,
+        headers: [String: String],
+        secondsToWait: UInt
+    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
+        var body = body
+        body.stream = true
+        body.streamOptions = .init(includeUsage: true)
+        var headers = headers
+        if headers["Authorization"] == nil {
+            headers["Authorization"] = "Bearer \(self.unprotectedAPIKey)"
+        }
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: self.baseURL,
+            path: self.resolvedPath("chat/completions"),
+            body: try body.serialize(),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "application/json",
+            additionalHeaders: headers
+        )
+        return try await self.makeRequestAndDeserializeStreamingChunks(request)
+    }
+}
