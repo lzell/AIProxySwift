@@ -354,7 +354,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: An async sequence of response chunks. See this reference:
     ///            https://platform.openai.com/docs/api-reference/responses/streaming
-    public func streamingResponseRequest(
+    public func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody,
         secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingChunk> {

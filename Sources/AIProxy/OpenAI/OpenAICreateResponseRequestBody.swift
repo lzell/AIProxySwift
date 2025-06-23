@@ -645,10 +645,13 @@ extension OpenAICreateResponseRequestBody {
     public struct Format: Codable {
         /// The format type
         public let type: FormatType?
+        
         /// The name of the schema (required for json_schema type)
         public let name: String?
+        
         /// The JSON schema definition (required for json_schema type)
         public let schema: [String: AIProxyJSONValue]?
+        
         /// Whether to enable strict schema adherence (optional for json_schema type)
         public let strict: Bool?
         

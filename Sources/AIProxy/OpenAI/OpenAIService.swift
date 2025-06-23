@@ -163,7 +163,7 @@ public protocol OpenAIService {
     ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: An async sequence of response chunks. See this reference:
     ///            https://platform.openai.com/docs/api-reference/responses/streaming
-    func streamingResponseRequest(
+    func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody,
         secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingChunk>
@@ -188,9 +188,9 @@ extension OpenAIService {
         return try await self.createTranscriptionRequest(body: body, progressCallback: nil)
     }
     
-    public func streamingResponseRequest(
+    public func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingChunk> {
-        return try await self.streamingResponseRequest(requestBody: requestBody, secondsToWait: 60)
+        return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
     }
 }
