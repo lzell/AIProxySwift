@@ -142,37 +142,7 @@ public struct OpenAIResponseStreamingChunk: Decodable {
     public init(from decoder: Decoder) throws {
         self.event = try OpenAIResponseStreamingEvent(from: decoder)
     }
-    
-    /// Creates a chunk from raw server-sent event data
-    /// - Parameters:
-    ///   - eventType: The event type string from the SSE
-    ///   - data: The JSON data string from the SSE
-    /// - Returns: A decoded chunk or nil if decoding fails
-    public static func from(eventType: String, data: String) -> OpenAIResponseStreamingChunk? {
-        guard data.data(using: .utf8) != nil else { return nil }
-        
-        // Create a wrapper JSON that includes both event type and data
-        let wrapper = """
-        {
-            "event": "\(eventType)",
-            \(data.dropFirst().dropLast())
-        }
-        """
-        
-        guard let wrapperData = wrapper.data(using: .utf8) else { return nil }
-        
-        do {
-            return try JSONDecoder().decode(OpenAIResponseStreamingChunk.self, from: wrapperData)
-        } catch {
-            // Log decoding error in debug builds
-            #if DEBUG
-            print("Failed to decode OpenAIResponseStreamingChunk: \(error)")
-            print("Event type: \(eventType)")
-            print("Data: \(data)")
-            #endif
-            return nil
-        }
-    }
+
 }
 
 // MARK: - Helper Methods
@@ -262,18 +232,15 @@ extension OpenAIResponseStreamingChunk {
                 return nil
             }
             
-            // Parse the JSON data
-            guard let jsonData = jsonString.data(using: .utf8) else {
-                return nil
-            }
-            
             do {
-                return try JSONDecoder().decode(OpenAIResponseStreamingChunk.self, from: jsonData)
+                return try OpenAIResponseStreamingChunk.deserialize(from: jsonString)
             } catch {
-                #if DEBUG
-                print("Failed to decode OpenAIResponseStreamingChunk from line: \(line)")
-                print("Error: \(error)")
-                #endif
+                logIf(.debug)?.debug(
+                    """
+                    Failed to decode OpenAIResponseStreamingChunk from line: \(line)"
+                    Error: \(error)"
+                    """
+                )
                 return nil
             }
         }
