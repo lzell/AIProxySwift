@@ -1293,6 +1293,41 @@ final class RealtimeManager {
     }
 ```
 
+### How to make a streaming request using OpenAI's Responses API (new)
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .text("hello world"),
+        model: "gpt-4o"
+    )
+
+    do {
+        let stream = try await openAIService.createStreamingResponse(requestBody: requestBody)
+        for try await chunk in stream {
+            if let textDelta = chunk.textDelta {
+                print(textDelta)
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get a streaming response from OpenAI: \(error.localizedDescription)")
+    }
+```
+
+
 ### How to upload a file to OpenAI's file storage
 
 ```swift
