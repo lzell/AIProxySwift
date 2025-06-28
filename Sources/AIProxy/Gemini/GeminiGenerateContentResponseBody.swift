@@ -191,7 +191,13 @@ extension GeminiGenerateContentResponseBody.Candidate {
     public struct WebInfo: Decodable {
         public let uri: String?
         public let title: String?
-        
+        public var url: URL? {
+            guard let uri = self.uri else {
+                return nil
+            }
+            return URL(string: uri)
+        }
+
         public init(uri: String?, title: String?) {
             self.uri = uri
             self.title = title

@@ -1678,72 +1678,6 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     }
 ```
 
-### How to make a search grounding call with Gemini
-
-It's important that you connect a GCP billing account to your Gemini API key to use this
-feature. Otherwise, Gemini will return 429s for every call. You can connect your billing
-account for the API keys you use [here](https://aistudio.google.com/app/apikey).
-
-Consider applying to [google for startups](https://cloud.google.com/startup?hl=en) to gain
-credits that you can put towards Gemini.
-
-```swift
-    import AIProxy
-
-    /* Uncomment for BYOK use cases */
-    // let geminiService = AIProxy.geminiDirectService(
-    //     unprotectedAPIKey: "your-gemini-key"
-    // )
-
-    /* Uncomment for all other production use cases */
-    // let geminiService = AIProxy.geminiService(
-    //     partialKey: "partial-key-from-your-developer-dashboard",
-    //     serviceURL: "service-url-from-your-developer-dashboard"
-    // )
-
-    let requestBody = GeminiGenerateContentRequestBody(
-        contents: [
-            .init(
-                parts: [.text("What is the price of Google stock today")],
-                role: "user"
-            )
-        ],
-        tools: [
-            .googleSearchRetrieval(.init(dynamicThreshold: 0.7, mode: .dynamic))
-        ]
-    )
-    do {
-        let response = try await geminiService.generateContentRequest(
-            body: requestBody,
-            model: "gemini-1.5-flash",
-            secondsToWait: 60
-        )
-        for part in response.candidates?.first?.content?.parts ?? [] {
-            switch part {
-            case .text(let text):
-                print("Gemini sent: \(text)")
-            case .functionCall(name: let functionName, args: let arguments):
-                print("Gemini wants us to call function \(functionName) with arguments: \(arguments ?? [:])")
-            }
-        }
-        if let usage = response.usageMetadata {
-            print(
-                """
-                Used:
-                 \(usage.promptTokenCount ?? 0) prompt tokens
-                 \(usage.cachedContentTokenCount ?? 0) cached tokens
-                 \(usage.candidatesTokenCount ?? 0) candidate tokens
-                 \(usage.totalTokenCount ?? 0) total tokens
-                """
-            )
-        }
-    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received \(statusCode) status code with response body: \(responseBody)")
-    } catch {
-        print("Could not create Gemini grounding search request: \(error.localizedDescription)")
-    }
-```
-
 ### How to make a google search grounding call with Gemini 2.0
 
 It's important that you connect a GCP billing account to your Gemini API key to use this
@@ -1766,7 +1700,6 @@ credits that you can put towards Gemini.
     //     partialKey: "partial-key-from-your-developer-dashboard",
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
-
     let requestBody = GeminiGenerateContentRequestBody(
         contents: [
             .init(
@@ -1781,9 +1714,10 @@ credits that you can put towards Gemini.
             parts: [.text("You are a helpful assistant")]
         ),
         tools: [
-            .googleSearch(.init())
+            .googleSearch()
         ]
     )
+
     do {
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
@@ -1792,26 +1726,18 @@ credits that you can put towards Gemini.
         )
         for candidate in response.candidates ?? [] {
             for part in candidate.content?.parts ?? [] {
-                switch part {
-                case .text(let text):
+                if case .text(let text) = part {
                     print("Gemini sent: \(text)\n")
                     print("Gemini used \(candidate.groundingMetadata?.groundingChunks?.count ?? 0) grounding chunks")
                     print("Gemini used \(candidate.groundingMetadata?.groundingSupports?.count ?? 0) grounding supports")
-                case .functionCall(name: let functionName, args: let arguments):
-                    print("Gemini wants us to call function \(functionName) with arguments: \(arguments ?? [:])")
                 }
             }
-        }
-        if let usage = response.usageMetadata {
-            print(
-                """
-                Used:
-                \(usage.promptTokenCount ?? 0) prompt tokens
-                \(usage.cachedContentTokenCount ?? 0) cached tokens
-                \(usage.candidatesTokenCount ?? 0) candidate tokens
-                \(usage.totalTokenCount ?? 0) total tokens
-                """
-            )
+
+            for groundingChunk in candidate.groundingMetadata?.groundingChunks ?? [] {
+                if let url = groundingChunk.web?.url {
+                    print("Grounding URL: \(url)")
+                }
+            }
         }
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
