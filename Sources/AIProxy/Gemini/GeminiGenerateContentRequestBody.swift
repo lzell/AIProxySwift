@@ -155,7 +155,7 @@ extension GeminiGenerateContentRequestBody {
         case googleSearchRetrieval(DynamicRetrievalConfig)
         
         /// Google Search tool for Gemini 2.0
-        case googleSearch(GoogleSearch)
+        case googleSearch(GoogleSearch = .init())
 
         private enum RootKey: CodingKey {
             case functionDeclarations
