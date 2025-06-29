@@ -555,6 +555,46 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     }
 ```
 
+### How to make a web search chat completion call with OpenAI
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenAIChatCompletionRequestBody(
+        model: "gpt-4o-mini-search-preview",
+        messages: [.user(
+            content: .text("what is Apple's stock price today?")
+        )],
+        webSearchOptions: .init(
+            searchContextSize: .low,
+            userLocation: nil
+        )
+    )
+    do {
+        let response = try await openAIService.chatCompletionRequest(
+            body: requestBody,
+            secondsToWait: 60
+        )
+        print(response.choices.first?.message.content ?? "")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not make a web search completion call with OpenAI: \(error.localizedDescription)")
+    }
+```
+
+
 ### How to ensure OpenAI returns JSON as the chat message content
 
 If you need to enforce a strict JSON contract, please use Structured Outputs (the next example)
