@@ -92,7 +92,7 @@ extension FalService {
         input: FalTryonInputSchema
     ) async throws -> FalTryonOutputSchema {
         return try await self.createInferenceAndPollForResult(
-            model: "fashn/tryon",
+            model: "fal-ai/fashn/tryon/v1.5",
             input: input,
             pollAttempts: 60,
             secondsBetweenPollAttempts: 2
