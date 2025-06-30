@@ -8,7 +8,7 @@
 import Foundation
 
 /// Represents a streamed chunk of a response returned by the OpenAI Responses API
-/// https://platform.openai.com/docs/api-reference/responses/streaming
+/// https://platform.openai.com/docs/api-reference/responses-streaming
 public struct OpenAIResponseStreamingChunk: Decodable {
     /// The streaming event contained in this chunk
     public let event: OpenAIResponseStreamingEvent

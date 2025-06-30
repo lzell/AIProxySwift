@@ -167,6 +167,20 @@ public protocol OpenAIService {
         requestBody: OpenAICreateResponseRequestBody,
         secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingChunk>
+
+    /// Creates a streaming 'response' using OpenAI's new API product:
+    ///
+    /// - Parameters:
+    ///   - requestBody: The request body to send to OpenAI. See this reference:
+    ///                  https://platform.openai.com/docs/api-reference/responses/create
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    /// - Returns: An async sequence of response chunks. See this reference:
+    ///            https://platform.openai.com/docs/api-reference/responses/streaming
+    func createStreamingResponseEvents(
+        requestBody: OpenAICreateResponseRequestBody,
+        secondsToWait: UInt
+    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent>
+
 }
 
 extension OpenAIService {
@@ -192,5 +206,11 @@ extension OpenAIService {
         requestBody: OpenAICreateResponseRequestBody
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingChunk> {
         return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
+    }
+
+    public func createStreamingResponseEvents(
+        requestBody: OpenAICreateResponseRequestBody
+    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
+        return try await self.createStreamingResponseEvents(requestBody: requestBody, secondsToWait: 60)
     }
 }
