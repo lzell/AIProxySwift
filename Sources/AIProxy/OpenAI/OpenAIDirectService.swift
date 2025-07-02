@@ -376,6 +376,26 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 
+    public func createStreamingResponseEvents(
+        requestBody: OpenAICreateResponseRequestBody,
+        secondsToWait: UInt
+    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
+        var requestBody = requestBody
+        requestBody.stream = true
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: self.baseURL,
+            path: self.resolvedPath("responses"),
+            body: try requestBody.serialize(),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "application/json",
+            additionalHeaders: [
+                "Authorization": "Bearer \(self.unprotectedAPIKey)"
+            ]
+        )
+        return try await self.makeRequestAndDeserializeStreamingChunks(request)
+    }
+
     /// Creates a vector store
     ///
     /// - Parameters:

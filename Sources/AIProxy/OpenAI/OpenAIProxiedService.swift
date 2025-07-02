@@ -372,6 +372,25 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 
+    public func createStreamingResponseEvents(
+        requestBody: OpenAICreateResponseRequestBody,
+        secondsToWait: UInt
+    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
+        var requestBody = requestBody
+        requestBody.stream = true
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL ?? legacyURL,
+            clientID: self.clientID,
+            proxyPath: self.resolvedPath("responses"),
+            body: try requestBody.serialize(),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "application/json"
+        )
+        return try await self.makeRequestAndDeserializeStreamingChunks(request)
+    }
+
     /// Creates a vector store
     ///
     /// - Parameters:

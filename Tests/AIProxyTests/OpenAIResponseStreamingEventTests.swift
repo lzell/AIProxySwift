@@ -17,10 +17,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event)
-        XCTAssertEqual(event?.type, .responseCreated)
-        XCTAssertEqual(event?.sequenceNumber, 0)
+
+        guard case .responseCreated(let data)? = event else {
+            return XCTFail("Expected responseCreated")
+        }
+        XCTAssertEqual(data.sequenceNumber, 0)
     }
     
     func testResponseInProgressEventIsDecodable() throws {
@@ -30,10 +31,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.in_progress event")
-        XCTAssertEqual(event?.type, .responseInProgress)
-        XCTAssertEqual(event?.sequenceNumber, 1)
+
+        guard case .responseInProgress(let data)? = event else {
+            return XCTFail("Expected in_progress")
+        }
+        XCTAssertEqual(data.sequenceNumber, 1)
     }
     
     func testResponseOutputItemAddedEventIsDecodable() throws {
@@ -43,10 +45,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.output_item.added event")
-        XCTAssertEqual(event?.type, .responseOutputItemAdded)
-        XCTAssertEqual(event?.sequenceNumber, 2)
+
+        guard case .outputItemAdded(let data)? = event else {
+            return XCTFail("Expected output_item.added")
+        }
+        XCTAssertEqual(data.sequenceNumber, 2)
     }
     
     func testResponseContentPartAddedEventIsDecodable() throws {
@@ -56,10 +59,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.content_part.added event")
-        XCTAssertEqual(event?.type, .responseContentPartAdded)
-        XCTAssertEqual(event?.sequenceNumber, 3)
+
+        guard case .contentPartAdded(let data)? = event else {
+            return XCTFail("Expected content_part.added")
+        }
+        XCTAssertEqual(data.sequenceNumber, 3)
     }
     
     func testResponseOutputTextDeltaEventIsDecodable() throws {
@@ -69,16 +73,12 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.output_text.delta event")
-        XCTAssertEqual(event?.type, .responseOutputTextDelta)
-        XCTAssertEqual(event?.sequenceNumber, 4)
-        
-        if case .outputTextDelta(let data) = event?.data {
-            XCTAssertEqual(data.delta, "{\"")
-        } else {
-            XCTFail("Expected outputTextDelta data")
+
+        guard case .outputTextDelta(let data)? = event else {
+            return XCTFail("Expected output_text.delta")
         }
+        XCTAssertEqual(data.sequenceNumber, 4)
+        XCTAssertEqual(data.delta, "{\"")
     }
     
     func testResponseOutputTextDoneEventIsDecodable() throws {
@@ -88,10 +88,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.output_text.done event")
-        XCTAssertEqual(event?.type, .responseOutputTextDone)
-        XCTAssertEqual(event?.sequenceNumber, 42)
+
+        guard case .outputTextDone(let data)? = event else {
+            return XCTFail("Expected output_text.done")
+        }
+        XCTAssertEqual(data.sequenceNumber, 42)
     }
     
     func testResponseContentPartDoneEventIsDecodable() throws {
@@ -101,10 +102,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.content_part.done event")
-        XCTAssertEqual(event?.type, .responseContentPartDone)
-        XCTAssertEqual(event?.sequenceNumber, 43)
+
+        guard case .contentPartDone(let data)? = event else {
+            return XCTFail("Expected content_part.done")
+        }
+        XCTAssertEqual(data.sequenceNumber, 43)
     }
     
     func testResponseOutputItemDoneEventIsDecodable() throws {
@@ -114,10 +116,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.output_item.done event")
-        XCTAssertEqual(event?.type, .responseOutputItemDone)
-        XCTAssertEqual(event?.sequenceNumber, 44)
+
+        guard case .outputItemDone(let data)? = event else {
+            return XCTFail("Expected output_item.done")
+        }
+        XCTAssertEqual(data.sequenceNumber, 44)
     }
     
     func testResponseCompletedEventIsDecodable() throws {
@@ -127,10 +130,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.completed event")
-        XCTAssertEqual(event?.type, .responseCompleted)
-        XCTAssertEqual(event?.sequenceNumber, 45)
+
+        guard case .responseCompleted(let data)? = event else {
+            return XCTFail("Expected response.completed")
+        }
+        XCTAssertEqual(data.sequenceNumber, 45)
     }
     
     func testResponseFailedEventIsDecodable() throws {
@@ -140,10 +144,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.failed event")
-        XCTAssertEqual(event?.type, .responseFailed)
-        XCTAssertEqual(event?.sequenceNumber, 1)
+
+        guard case .responseFailed(let data)? = event else {
+            return XCTFail("Expected response.failed")
+        }
+        XCTAssertEqual(data.sequenceNumber, 1)
     }
     
     func testResponseIncompleteEventIsDecodable() throws {
@@ -153,10 +158,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.incomplete event")
-        XCTAssertEqual(event?.type, .responseIncomplete)
-        XCTAssertEqual(event?.sequenceNumber, 1)
+
+        guard case .responseIncomplete(let data)? = event else {
+            return XCTFail("Expected response.incomplete")
+        }
+        XCTAssertEqual(data.sequenceNumber, 1)
     }
     
     func testResponseRefusalDeltaEventIsDecodable() throws {
@@ -166,16 +172,12 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.refusal.delta event")
-        XCTAssertEqual(event?.type, .responseRefusalDelta)
-        XCTAssertEqual(event?.sequenceNumber, 1)
-        
-        if case .refusalDelta(let data) = event?.data {
-            XCTAssertEqual(data.delta, "refusal text so far")
-        } else {
-            XCTFail("Expected refusalDelta data")
+
+        guard case .refusalDelta(let data)? = event else {
+            return XCTFail("Expected refusal.delta")
         }
+        XCTAssertEqual(data.sequenceNumber, 1)
+        XCTAssertEqual(data.delta, "refusal text so far")
     }
     
     func testResponseRefusalDoneEventIsDecodable() throws {
@@ -185,16 +187,12 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.refusal.done event")
-        XCTAssertEqual(event?.type, .responseRefusalDone)
-        XCTAssertEqual(event?.sequenceNumber, 1)
-        
-        if case .refusalDone(let data) = event?.data {
-            XCTAssertEqual(data.refusal, "final refusal text")
-        } else {
-            XCTFail("Expected refusalDone data")
+
+        guard case .refusalDone(let data)? = event else {
+            return XCTFail("Expected refusal.done")
         }
+        XCTAssertEqual(data.sequenceNumber, 1)
+        XCTAssertEqual(data.refusal, "final refusal text")
     }
     
     func testResponseFunctionCallArgumentsDeltaEventIsDecodable() throws {
@@ -204,10 +202,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.function_call_arguments.delta event")
-        XCTAssertEqual(event?.type, .responseFunctionCallArgumentsDelta)
-        XCTAssertEqual(event?.sequenceNumber, 1)
+
+        guard case .functionCallArgumentsDelta(let data)? = event else {
+            return XCTFail("Expected function_call_arguments.delta")
+        }
+        XCTAssertEqual(data.sequenceNumber, 1)
     }
     
     func testResponseFunctionCallArgumentsDoneEventIsDecodable() throws {
@@ -217,10 +216,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.function_call_arguments.done event")
-        XCTAssertEqual(event?.type, .responseFunctionCallArgumentsDone)
-        XCTAssertEqual(event?.sequenceNumber, 1)
+
+        guard case .functionCallArgumentsDone(let data)? = event else {
+            return XCTFail("Expected function_call_arguments.done")
+        }
+        XCTAssertEqual(data.sequenceNumber, 1)
     }
     
     func testResponseFileSearchCallInProgressEventIsDecodable() throws {
@@ -230,10 +230,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.file_search_call.in_progress event")
-        XCTAssertEqual(event?.type, .responseFileSearchCallInProgress)
-        XCTAssertEqual(event?.sequenceNumber, 1)
+
+        guard case .fileSearchCallProgress(let data)? = event else {
+            return XCTFail("Expected file_search_call.in_progress")
+        }
+        XCTAssertEqual(data.sequenceNumber, 1)
     }
     
     func testResponseFileSearchCallSearchingEventIsDecodable() throws {
@@ -243,10 +244,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.file_search_call.searching event")
-        XCTAssertEqual(event?.type, .responseFileSearchCallSearching)
-        XCTAssertEqual(event?.sequenceNumber, 1)
+
+        guard case .fileSearchCallProgress(let data)? = event else {
+            return XCTFail("Expected file_search_call.searching")
+        }
+        XCTAssertEqual(data.sequenceNumber, 1)
     }
     
     func testResponseFileSearchCallCompletedEventIsDecodable() throws {
@@ -256,10 +258,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.file_search_call.completed event")
-        XCTAssertEqual(event?.type, .responseFileSearchCallCompleted)
-        XCTAssertEqual(event?.sequenceNumber, 1)
+
+        guard case .fileSearchCallProgress(let data)? = event else {
+            return XCTFail("Expected file_search_call.completed")
+        }
+        XCTAssertEqual(data.sequenceNumber, 1)
     }
     
     func testResponseWebSearchCallInProgressEventIsDecodable() throws {
@@ -269,10 +272,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.web_search_call.in_progress event")
-        XCTAssertEqual(event?.type, .responseWebSearchCallInProgress)
-        XCTAssertEqual(event?.sequenceNumber, 0)
+
+        guard case .webSearchCallProgress(let data)? = event else {
+            return XCTFail("Expected web_search_call.in_progress")
+        }
+        XCTAssertEqual(data.sequenceNumber, 0)
     }
     
     func testResponseWebSearchCallSearchingEventIsDecodable() throws {
@@ -282,10 +286,11 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.web_search_call.searching event")
-        XCTAssertEqual(event?.type, .responseWebSearchCallSearching)
-        XCTAssertEqual(event?.sequenceNumber, 0)
+
+        guard case .webSearchCallProgress(let data)? = event else {
+            return XCTFail("Expected web_search_call.searching")
+        }
+        XCTAssertEqual(data.sequenceNumber, 0)
     }
     
     func testResponseWebSearchCallCompletedEventIsDecodable() throws {
@@ -295,9 +300,10 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         
         let line = "data: " + json
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-        
-        XCTAssertNotNil(event, "Failed to deserialize response.web_search_call.completed event")
-        XCTAssertEqual(event?.type, .responseWebSearchCallCompleted)
-        XCTAssertEqual(event?.sequenceNumber, 0)
+
+        guard case .webSearchCallProgress(let data)? = event else {
+            return XCTFail("Expected web_search_call.completed")
+        }
+        XCTAssertEqual(data.sequenceNumber, 0)
     }
 }
