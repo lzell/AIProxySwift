@@ -169,11 +169,6 @@ public protocol OpenAIService {
     func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingChunk>
-
-    func createStreamingResponseEvents(
-        requestBody: OpenAICreateResponseRequestBody,
-        secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent>
     
     /// Creates a vector store
@@ -222,15 +217,9 @@ extension OpenAIService {
         return try await self.createTranscriptionRequest(body: body, progressCallback: nil)
     }
     
-    public func createStreamingResponse(
-        requestBody: OpenAICreateResponseRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingChunk> {
-        return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
-    }
-
     public func createStreamingResponseEvents(
         requestBody: OpenAICreateResponseRequestBody
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
-        return try await self.createStreamingResponseEvents(requestBody: requestBody, secondsToWait: 60)
+        return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
     }
 }

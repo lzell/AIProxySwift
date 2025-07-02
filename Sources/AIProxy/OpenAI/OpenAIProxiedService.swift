@@ -346,7 +346,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
     
     /// Creates a streaming 'response' using OpenAI's new API product:
     /// https://platform.openai.com/docs/api-reference/responses/streaming
-    /// 
+    ///
     /// - Parameters:
     ///   - requestBody: The request body to send to OpenAI. See this reference:
     ///                  https://platform.openai.com/docs/api-reference/responses/create
@@ -354,25 +354,6 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
     /// - Returns: An async sequence of response chunks. See this reference:
     ///            https://platform.openai.com/docs/api-reference/responses/streaming
     public func createStreamingResponse(
-        requestBody: OpenAICreateResponseRequestBody,
-        secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingChunk> {
-        var requestBody = requestBody
-        requestBody.stream = true
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("responses"),
-            body: try requestBody.serialize(),
-            verb: .post,
-            secondsToWait: secondsToWait,
-            contentType: "application/json"
-        )
-        return try await self.makeRequestAndDeserializeStreamingChunks(request)
-    }
-
-    public func createStreamingResponseEvents(
         requestBody: OpenAICreateResponseRequestBody,
         secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
