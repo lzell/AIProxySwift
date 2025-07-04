@@ -27,7 +27,9 @@ public enum OpenAIResponseStreamingEvent: Decodable {
     case functionCallArgumentsDelta(FunctionCallArgumentsDelta)
     case functionCallArgumentsDone(FunctionCallArgumentsDone)
     case fileSearchCallProgress(FileSearchCallProgress)
-    case webSearchCallProgress(WebSearchCallProgress)
+    case webSearchCallInProgress(WebSearchCallInProgress)
+    case webSearchCallSearching(WebSearchCallSearching)
+    case webSearchCallCompleted(WebSearchCallCompleted)
     case audioDelta(AudioDelta)
     case audioDone(AudioDone)
     case audioTranscriptDelta(AudioTranscriptDelta)
@@ -53,25 +55,25 @@ public enum OpenAIResponseStreamingEvent: Decodable {
 
     private enum CodingKeys: String, CodingKey {
         case type
-        case sequenceNumber = "sequence_number"
-        case response
-        case outputIndex = "output_index"
-        case item
-        case itemId = "item_id"
-        case contentIndex = "content_index"
-        case summaryIndex = "summary_index"
-        case part
-        case delta
-        case text
-        case refusal
-        case arguments
-        case partialImageIndex = "partial_image_index"
-        case partialImageB64 = "partial_image_b64"
-        case annotationIndex = "annotation_index"
-        case annotation
-        case code
-        case message
-        case param
+//        case sequenceNumber = "sequence_number"
+//        case response
+//        case outputIndex = "output_index"
+//        case item
+//        case itemId = "item_id"
+//        case contentIndex = "content_index"
+//        case summaryIndex = "summary_index"
+//        case part
+//        case delta
+//        case text
+//        case refusal
+//        case arguments
+//        case partialImageIndex = "partial_image_index"
+//        case partialImageB64 = "partial_image_b64"
+//        case annotationIndex = "annotation_index"
+//        case annotation
+//        case code
+//        case message
+//        case param
     }
 
     public init(from decoder: Decoder) throws {
@@ -135,8 +137,14 @@ public enum OpenAIResponseStreamingEvent: Decodable {
         case .responseFileSearchCallInProgress, .responseFileSearchCallSearching, .responseFileSearchCallCompleted:
             self = .fileSearchCallProgress(try FileSearchCallProgress(from: decoder))
 
-        case .responseWebSearchCallInProgress, .responseWebSearchCallSearching, .responseWebSearchCallCompleted:
-            self = .webSearchCallProgress(try WebSearchCallProgress(from: decoder))
+        case .responseWebSearchCallInProgress:
+            self = .webSearchCallInProgress(try WebSearchCallInProgress(from: decoder))
+
+        case .responseWebSearchCallSearching:
+            self = .webSearchCallSearching(try WebSearchCallSearching(from: decoder))
+
+        case .responseWebSearchCallCompleted:
+            self = .webSearchCallCompleted(try WebSearchCallCompleted(from: decoder))
 
         case .responseReasoningSummaryPartAdded:
             self = .reasoningSummaryPartAdded(try ReasoningSummaryPartAdded(from: decoder))
@@ -211,7 +219,9 @@ public enum OpenAIResponseStreamingEvent: Decodable {
         case .functionCallArgumentsDelta: return .responseFunctionCallArgumentsDelta
         case .functionCallArgumentsDone: return .responseFunctionCallArgumentsDone
         case .fileSearchCallProgress: return .responseFileSearchCallInProgress
-        case .webSearchCallProgress: return .responseWebSearchCallInProgress
+        case .webSearchCallInProgress: return .responseWebSearchCallInProgress
+        case .webSearchCallSearching: return .responseWebSearchCallSearching
+        case .webSearchCallCompleted: return .responseWebSearchCallCompleted
         case .audioDelta: return .responseReasoningDelta // not ideal but no dedicated type
         case .audioDone: return .responseReasoningDelta
         case .audioTranscriptDelta: return .responseReasoningDelta
@@ -315,9 +325,14 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Output Item Events
 extension OpenAIResponseStreamingEvent {
+
+    /// Represents `response.output_item.added`
+    /// https://platform.openai.com/docs/api-reference/responses-streaming/response/output_item/added
     public struct OutputItemAdded: Decodable {
         public let sequenceNumber: Int
         public let index: Int
+
+        // This should be an enum:
         public let item: PartialOutputItem
 
         private enum CodingKeys: String, CodingKey {
@@ -531,17 +546,42 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct WebSearchCallProgress: Decodable {
+    /// Represents `response.web_search_call.in_progress`
+    public struct WebSearchCallInProgress: Decodable {
         public let sequenceNumber: Int
-        public let outputItemIndex: Int
-        public let id: String
-        public let status: String
+        public let outputIndex: Int
+        public let itemID: String
 
         private enum CodingKeys: String, CodingKey {
             case sequenceNumber = "sequence_number"
-            case outputItemIndex = "output_item_index"
-            case id
-            case status
+            case outputIndex = "output_index"
+            case itemID = "item_id"
+        }
+    }
+
+    /// Represents `response.web_search_call.searching`
+    public struct WebSearchCallSearching: Decodable {
+        public let sequenceNumber: Int
+        public let outputIndex: Int
+        public let itemID: String
+
+        private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
+            case outputIndex = "output_index"
+            case itemID = "item_id"
+        }
+    }
+
+    /// Represents `response.web_search_call.completed`
+    public struct WebSearchCallCompleted: Decodable {
+        public let sequenceNumber: Int
+        public let outputIndex: Int
+        public let itemID: String
+
+        private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
+            case outputIndex = "output_index"
+            case itemID = "item_id"
         }
     }
 }

@@ -43,7 +43,62 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         XCTAssertEqual(outputItemAdded.item.id, "ws_123")
         XCTAssertEqual(outputItemAdded.item.type, "web_search_call")
     }
-    
+
+    func testWebSearchCallInProgressIsDecodable() throws {
+        let line = #"data: {"type":"response.web_search_call.in_progress","sequence_number":3,"output_index":0,"item_id":"ws_123"}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .webSearchCallInProgress(let webSearchCallInProgress) = event else {
+            return XCTFail("Expected response.web_search_call.in_progress")
+        }
+        XCTAssertEqual(webSearchCallInProgress.sequenceNumber, 3)
+        XCTAssertEqual(webSearchCallInProgress.outputIndex, 0)
+        XCTAssertEqual(webSearchCallInProgress.itemID, "ws_123")
+    }
+
+    func testWebSearchCallSearchingIsDecodable() throws {
+        let line = #"data: {"type":"response.web_search_call.searching","sequence_number":4,"output_index":0,"item_id":"ws_123"}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .webSearchCallSearching(let webSearchCallSearching) = event else {
+            return XCTFail("Expected response.web_search_call.searching")
+        }
+        XCTAssertEqual(webSearchCallSearching.sequenceNumber, 4)
+        XCTAssertEqual(webSearchCallSearching.outputIndex, 0)
+        XCTAssertEqual(webSearchCallSearching.itemID, "ws_123")
+    }
+
+    func testWebSearchCallCompletedIsDecodable() throws {
+        let line = #"data: {"type":"response.web_search_call.completed","sequence_number":5,"output_index":0,"item_id":"ws_123"}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .webSearchCallCompleted(let webSearchCallCompleted) = event else {
+            return XCTFail("Expected response.web_search_call.completed")
+        }
+        XCTAssertEqual(webSearchCallCompleted.sequenceNumber, 5)
+        XCTAssertEqual(webSearchCallCompleted.outputIndex, 0)
+        XCTAssertEqual(webSearchCallCompleted.itemID, "ws_123")
+    }
+
+    func testResponseOutputItemDoneEventIsDecodable() throws {
+        let line = #"data: {"type":"response.output_item.done","sequence_number":6,"output_index":0,"item":{"id":"ws_123","type":"web_search_call","status":"completed","action":{"type":"search","query":"Apple stock price today"}}}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .outputItemDone(let outputItemDone) = event else {
+            return XCTFail("Expected response.output_item.done")
+        }
+        XCTAssertEqual(outputItemDone.sequenceNumber, 6)
+
+        guard case .webSearchCall(let webSearchCall) = outputItemDone.item else {
+            return XCTFail("Expected web search call")
+        }
+
+        XCTAssertEqual(webSearchCall.id, "ws_123")
+        XCTAssertEqual(webSearchCall.status, "completed")
+    }
+
+
+
 //    func testResponseContentPartAddedEventIsDecodable() throws {
 //        let json = """
 //        {"type":"response.content_part.added","sequence_number":3,"item_id":"msg_6856e03c97888199971fa4d4fa47f4d20484fb09fc524d66","output_index":0,"content_index":0,"part":{"type":"output_text","annotations":[],"text":""}}
@@ -101,20 +156,7 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
 //        XCTAssertEqual(data.sequenceNumber, 43)
 //    }
 //    
-//    func testResponseOutputItemDoneEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.output_item.done","sequence_number":44,"output_index":0,"item":{"id":"msg_6856e03c97888199971fa4d4fa47f4d20484fb09fc524d66","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"text":"{\\"aaReply\\":\\"Hey! How can I assist you today?\\",\\"keyPhrasesAndIdeas\\":[],\\"newMemories\\":[],\\"questions\\":[],\\"removeMemories\\":[],\\"title\\":null}"}],"role":"assistant"}}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
 //
-//        guard case .outputItemDone(let data)? = event else {
-//            return XCTFail("Expected output_item.done")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 44)
-//    }
-//    
 //    func testResponseCompletedEventIsDecodable() throws {
 //        let json = """
 //        {"type":"response.completed","sequence_number":45,"response":{"id":"resp_6856e03bd0588199b0a48736fe3bec190484fb09fc524d66","object":"response","created_at":1750523963,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"model":"gpt-4o-mini-2024-07-18","output":[{"id":"msg_6856e03c97888199971fa4d4fa47f4d20484fb09fc524d66","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"text":"{\\"aaReply\\":\\"Hey! How can I assist you today?\\",\\"keyPhrasesAndIdeas\\":[],\\"newMemories\\":[],\\"questions\\":[],\\"removeMemories\\":[],\\"title\\":null}"}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"service_tier":"default","store":true,"temperature":0.6,"text":{"format":{"type":"json_schema","description":null,"name":"brainstorm_response","schema":{"additionalProperties":false,"properties":{"aaReply":{"type":"string"},"keyPhrasesAndIdeas":{"items":{"additionalProperties":false,"properties":{"ideas":{"items":{"type":"string"},"type":"array"},"keyPhrase":{"type":"string"}},"required":["keyPhrase","ideas"],"type":"object"},"type":["array","null"]},"newMemories":{"items":{"type":"string"},"type":["array","null"]},"questions":{"items":{"type":"string"},"type":["array","null"]},"removeMemories":{"items":{"type":"string"},"type":["array","null"]},"title":{"type":["string","null"]}},"required":["keyPhrasesAndIdeas","questions","newMemories","removeMemories","title","aaReply"],"type":"object"},"strict":true}},"tool_choice":"auto","tools":[],"top_p":0.8,"truncation":"disabled","usage":{"input_tokens":1332,"input_tokens_details":{"cached_tokens":0},"output_tokens":39,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":1371},"user":"98558159-A4EB-48B5-8DB6-9A5A67D2644F","metadata":{}}}
