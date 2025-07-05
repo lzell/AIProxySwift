@@ -18,7 +18,7 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
             return XCTFail("Expected responseCreated")
         }
         XCTAssertEqual(responseCreated.sequenceNumber, 0)
-        XCTAssertEqual(responseCreated.response?.id, "resp_123")
+        XCTAssertEqual(responseCreated.response.id, "resp_123")
     }
     
     func testResponseInProgressEventIsDecodable() throws {
@@ -29,7 +29,7 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
             return XCTFail("Expected in_progress")
         }
         XCTAssertEqual(responseInProgress.sequenceNumber, 1)
-        XCTAssertEqual(responseInProgress.response?.id, "resp_123")
+        XCTAssertEqual(responseInProgress.response.id, "resp_123")
     }
     
     func testOutputItemAddedForWebSearchIsDecodable() throws {
@@ -149,7 +149,7 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
     }
     
     func testResponseOutputTextDoneEventIsDecodable() throws {
-        let line = #"data: {"type":"response.output_text.done","sequence_number":89,"item_id":"msg_123","output_index":1,"content_index":0,"text":"As of June 30, 2025, snip","logprobs":[]}"#
+        let line = #"data: {"type":"response.output_text.done","sequence_number":89,"item_id":"msg_123","output_index":1,"content_index":0,"text":"As of June 30, 2025, <snip>","logprobs":[]}"#
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
 
         guard case .outputTextDone(let outputTextDone) = event else {
@@ -157,81 +157,87 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         }
         XCTAssertEqual(outputTextDone.sequenceNumber, 89)
         XCTAssertEqual(outputTextDone.itemID, "msg_123")
-        XCTAssertEqual(outputTextDone.text, "As of June 30, 2025, snip")
+        XCTAssertEqual(outputTextDone.text, "As of June 30, 2025, <snip>")
     }
-//    
-//    func testResponseContentPartDoneEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.content_part.done","sequence_number":43,"item_id":"msg_6856e03c97888199971fa4d4fa47f4d20484fb09fc524d66","output_index":0,"content_index":0,"part":{"type":"output_text","annotations":[],"text":"{\\"aaReply\\":\\"Hey! How can I assist you today?\\",\\"keyPhrasesAndIdeas\\":[],\\"newMemories\\":[],\\"questions\\":[],\\"removeMemories\\":[],\\"title\\":null}"}}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .contentPartDone(let data)? = event else {
-//            return XCTFail("Expected content_part.done")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 43)
-//    }
-//    
-//
-//    func testResponseCompletedEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.completed","sequence_number":45,"response":{"id":"resp_6856e03bd0588199b0a48736fe3bec190484fb09fc524d66","object":"response","created_at":1750523963,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"model":"gpt-4o-mini-2024-07-18","output":[{"id":"msg_6856e03c97888199971fa4d4fa47f4d20484fb09fc524d66","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"text":"{\\"aaReply\\":\\"Hey! How can I assist you today?\\",\\"keyPhrasesAndIdeas\\":[],\\"newMemories\\":[],\\"questions\\":[],\\"removeMemories\\":[],\\"title\\":null}"}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"service_tier":"default","store":true,"temperature":0.6,"text":{"format":{"type":"json_schema","description":null,"name":"brainstorm_response","schema":{"additionalProperties":false,"properties":{"aaReply":{"type":"string"},"keyPhrasesAndIdeas":{"items":{"additionalProperties":false,"properties":{"ideas":{"items":{"type":"string"},"type":"array"},"keyPhrase":{"type":"string"}},"required":["keyPhrase","ideas"],"type":"object"},"type":["array","null"]},"newMemories":{"items":{"type":"string"},"type":["array","null"]},"questions":{"items":{"type":"string"},"type":["array","null"]},"removeMemories":{"items":{"type":"string"},"type":["array","null"]},"title":{"type":["string","null"]}},"required":["keyPhrasesAndIdeas","questions","newMemories","removeMemories","title","aaReply"],"type":"object"},"strict":true}},"tool_choice":"auto","tools":[],"top_p":0.8,"truncation":"disabled","usage":{"input_tokens":1332,"input_tokens_details":{"cached_tokens":0},"output_tokens":39,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":1371},"user":"98558159-A4EB-48B5-8DB6-9A5A67D2644F","metadata":{}}}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .responseCompleted(let data)? = event else {
-//            return XCTFail("Expected response.completed")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 45)
-//    }
-//    
-//    func testResponseFailedEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.failed","sequence_number":1,"response":{"id":"resp_123","object":"response","created_at":1740855869,"status":"failed","error":{"code":"server_error","message":"The model failed to generate a response."},"incomplete_details":null,"instructions":null,"max_output_tokens":null,"model":"gpt-4o-mini-2024-07-18","output":[],"previous_response_id":null,"reasoning_effort":null,"store":false,"temperature":1,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .responseFailed(let data)? = event else {
-//            return XCTFail("Expected response.failed")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 1)
-//    }
-//    
-//    func testResponseIncompleteEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.incomplete","response":{"id":"resp_123","object":"response","created_at":1740855869,"status":"incomplete","error":null,"incomplete_details":{"reason":"max_tokens"},"instructions":null,"max_output_tokens":null,"model":"gpt-4o-mini-2024-07-18","output":[],"previous_response_id":null,"reasoning_effort":null,"store":false,"temperature":1,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1,"truncation":"disabled","usage":null,"user":null,"metadata":{}},"sequence_number":1}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .responseIncomplete(let data)? = event else {
-//            return XCTFail("Expected response.incomplete")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 1)
-//    }
-//    
-//    func testResponseRefusalDeltaEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.refusal.delta","item_id":"msg_123","output_index":0,"content_index":0,"delta":"refusal text so far","sequence_number":1}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .refusalDelta(let data)? = event else {
-//            return XCTFail("Expected refusal.delta")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 1)
-//        XCTAssertEqual(data.delta, "refusal text so far")
-//    }
-//    
+    
+    func testResponseContentPartDoneEventIsDecodable() throws {
+        let line = #"data: {"type":"response.content_part.done","sequence_number":72,"item_id":"msg_123","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":"As of June 30, 2025, <snip>"}}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+        guard case .contentPartDone(let contentPartDone) = event else {
+            return XCTFail("Expected response.content_part.done")
+        }
+        XCTAssertEqual(contentPartDone.sequenceNumber, 72)
+
+        guard case .outputText(let outputText) = contentPartDone.part else {
+            return XCTFail("Expected the content part to contain output text")
+        }
+        XCTAssertEqual(outputText.text, "As of June 30, 2025, <snip>")
+    }
+
+    func testResponseOutputItemDoneIsDecodable() throws {
+        let line = #"data: {"type":"response.output_item.done","sequence_number":73,"output_index":1,"item":{"id":"msg_123","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"As of June 30, 2025, <snip>"}],"role":"assistant"}}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+        guard case .outputItemDone(let outputItemDone) = event else {
+            return XCTFail("Expected response.output_item.done")
+        }
+        XCTAssertEqual(outputItemDone.sequenceNumber, 73)
+
+        guard case .message(let message) = outputItemDone.item else {
+            return XCTFail("Expected the output item to contain a message")
+        }
+        XCTAssertEqual(message.id, "msg_123")
+        XCTAssertEqual(message.role, "assistant")
+
+        guard case .outputText(let outputText) = message.content.first else {
+            return XCTFail("Expected the message to contain output text")
+        }
+        XCTAssertEqual(outputText.text, "As of June 30, 2025, <snip>")
+
+    }
+
+    func testResponseCompletedEventIsDecodable() throws {
+        let line = #"data: {"type":"response.completed","sequence_number":74,"response":{"id":"resp_6862e16d59ec819c82a9bb2ef50b05580011e56165dda6f9","object":"response","created_at":1751310701,"status":"completed","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[{"id":"ws_6862e16e17b8819c9704cda771dc37e10011e56165dda6f9","type":"web_search_call","status":"completed","action":{"type":"search","query":"Apple stock price today"}},{"id":"msg_6862e1709424819cbd4b8c0d552e48970011e56165dda6f9","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"As of June 30, 2025, <snip>"}],"role":"assistant"}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"service_tier":"default","store":true,"temperature":1.0,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[{"type":"web_search_preview","search_context_size":"low","user_location":{"type":"approximate","city":null,"country":"US","region":null,"timezone":null}}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":308,"input_tokens_details":{"cached_tokens":0},"output_tokens":192,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":500},"user":null,"metadata":{}}}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+        guard case .responseCompleted(let responseCompleted) = event else {
+            return XCTFail("Expected response.completed")
+        }
+        XCTAssertEqual(responseCompleted.sequenceNumber, 74)
+        XCTAssertEqual(responseCompleted.response.outputText, "As of June 30, 2025, <snip>")
+    }
+
+    func testResponseFailedEventIsDecodable() throws {
+        let line = #"data: {"type":"response.failed","sequence_number":1,"response":{"id":"resp_123","object":"response","created_at":1740855869,"status":"failed","error":{"code":"server_error","message":"The model failed to generate a response."},"incomplete_details":null,"instructions":null,"max_output_tokens":null,"model":"gpt-4o-mini-2024-07-18","output":[],"previous_response_id":null,"reasoning_effort":null,"store":false,"temperature":1,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .responseFailed(let responseFailed) = event else {
+            return XCTFail("Expected response.failed")
+        }
+        XCTAssertEqual(responseFailed.sequenceNumber, 1)
+        XCTAssertEqual(responseFailed.response.id, "resp_123")
+    }
+    
+    func testResponseIncompleteEventIsDecodable() throws {
+        let line = #"data: {"type":"response.incomplete","response":{"id":"resp_123","object":"response","created_at":1740855869,"status":"incomplete","error":null,"incomplete_details":{"reason":"max_tokens"},"instructions":null,"max_output_tokens":null,"model":"gpt-4o-mini-2024-07-18","output":[],"previous_response_id":null,"reasoning_effort":null,"store":false,"temperature":1,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1,"truncation":"disabled","usage":null,"user":null,"metadata":{}},"sequence_number":1}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .responseIncomplete(let responseIncomplete) = event else {
+            return XCTFail("Expected response.incomplete")
+        }
+        XCTAssertEqual(responseIncomplete.sequenceNumber, 1)
+        XCTAssertEqual(responseIncomplete.response.id, "resp_123")
+    }
+    
+    func testResponseRefusalDeltaEventIsDecodable() throws {
+        let line = #"data: {"type":"response.refusal.delta","item_id":"msg_123","output_index":0,"content_index":0,"delta":"refusal text so far","sequence_number":1}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .refusalDelta(let refusalDelta) = event else {
+            return XCTFail("Expected refusal.delta")
+        }
+        XCTAssertEqual(refusalDelta.sequenceNumber, 1)
+        XCTAssertEqual(refusalDelta.delta, "refusal text so far")
+    }
+
 //    func testResponseRefusalDoneEventIsDecodable() throws {
 //        let json = """
 //        {"type":"response.refusal.done","item_id":"item-abc","output_index":1,"content_index":2,"refusal":"final refusal text","sequence_number":1}

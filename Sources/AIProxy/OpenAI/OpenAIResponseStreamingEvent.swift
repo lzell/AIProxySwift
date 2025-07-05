@@ -252,7 +252,7 @@ public enum OpenAIResponseStreamingEvent: Decodable {
 // MARK: - Response Lifecycle Events
 extension OpenAIResponseStreamingEvent {
     public struct ResponseCreated: Decodable {
-        public let response: OpenAIResponse?
+        public let response: OpenAIResponse
         public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
@@ -284,7 +284,7 @@ extension OpenAIResponseStreamingEvent {
 //    }
 
     public struct ResponseInProgress: Decodable {
-        public let response: OpenAIResponse?
+        public let response: OpenAIResponse
         public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
@@ -294,7 +294,7 @@ extension OpenAIResponseStreamingEvent {
     }
 
     public struct ResponseCompleted: Decodable {
-        public let response: OpenAIResponse?
+        public let response: OpenAIResponse
         public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
@@ -304,7 +304,7 @@ extension OpenAIResponseStreamingEvent {
     }
 
     public struct ResponseFailed: Decodable {
-        public let response: OpenAIResponse?
+        public let response: OpenAIResponse
         public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
@@ -314,7 +314,7 @@ extension OpenAIResponseStreamingEvent {
     }
 
     public struct ResponseIncomplete: Decodable {
-        public let response: OpenAIResponse?
+        public let response: OpenAIResponse
         public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
@@ -330,8 +330,8 @@ extension OpenAIResponseStreamingEvent {
     /// Represents `response.output_item.added`
     /// https://platform.openai.com/docs/api-reference/responses-streaming/response/output_item/added
     public struct OutputItemAdded: Decodable {
-        public let sequenceNumber: Int
-        public let index: Int
+        public let sequenceNumber: Int?
+        public let index: Int?
 
         // This should be an enum:
         public let item: OpenAIResponse.ResponseOutputItem
@@ -344,14 +344,14 @@ extension OpenAIResponseStreamingEvent {
     }
 
     public struct OutputItemDone: Decodable {
-        public let sequenceNumber: Int
-        public let index: Int
         public let item: OpenAIResponse.ResponseOutputItem
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case sequenceNumber = "sequence_number"
-            case index = "output_index"
             case item
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 }
@@ -362,13 +362,13 @@ extension OpenAIResponseStreamingEvent {
     /// https://platform.openai.com/docs/api-reference/responses-streaming/response/content_part/added
     public struct ContentPartAdded: Decodable {
         /// The sequence number of this event.
-        public let sequenceNumber: Int
+        public let sequenceNumber: Int?
 
         /// The index of the content part that was added.
-        public let contentIndex: Int
+        public let contentIndex: Int?
 
         /// The index of the output item that the content part was added to.
-        public let outputIndex: Int
+        public let outputIndex: Int?
 
         /// The content part that was added.
         public let part: OpenAIResponse.Content
@@ -382,16 +382,18 @@ extension OpenAIResponseStreamingEvent {
     }
 
     public struct ContentPartDone: Decodable {
-        public let sequenceNumber: Int
-        public let index: Int
-        public let outputItemIndex: Int
+        public let contentIndex: Int?
+        public let itemID: String?
+        public let outputIndex: Int?
         public let part: OpenAIResponse.Content
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case sequenceNumber = "sequence_number"
-            case index = "content_index"
-            case outputItemIndex = "output_item_index"
+            case contentIndex = "content_index"
+            case itemID = "item_id"
+            case outputIndex = "output_index"
             case part
+            case sequenceNumber = "sequence_number"
         }
     }
 }
@@ -445,7 +447,7 @@ extension OpenAIResponseStreamingEvent {
         public let itemID: String?
         public let outputIndex: Int?
         public let sequenceNumber: Int?
-        public let text: String?
+        public let text: String
 
         private enum CodingKeys: String, CodingKey {
             case contentIndex = "content_index"
@@ -460,16 +462,16 @@ extension OpenAIResponseStreamingEvent {
 // MARK: - Refusal Events
 extension OpenAIResponseStreamingEvent {
     public struct RefusalDelta: Decodable {
-        public let sequenceNumber: Int
-        public let outputItemIndex: Int
-        public let contentPartIndex: Int
+        public let contentIndex: Int?
         public let delta: String
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case sequenceNumber = "sequence_number"
-            case outputItemIndex = "output_item_index"
-            case contentPartIndex = "content_part_index"
+            case contentIndex = "content_index"
             case delta
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 

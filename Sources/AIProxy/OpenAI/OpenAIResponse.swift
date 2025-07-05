@@ -397,17 +397,16 @@ extension OpenAIResponse {
 
 extension OpenAIResponse {
     public struct ResponseOutputMessage: Decodable {
-        public let id: String
-        public let type = "message"
-        public let status: String
-        public let role: String
         public let content: [Content]
+        public let id: String?
+        public let role: String?
+        public let status: String?
 
         private enum CodingKeys: String, CodingKey {
-            case id
-            case status
-            case role
             case content
+            case id
+            case role
+            case status
         }
     }
 
