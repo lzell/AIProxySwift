@@ -333,7 +333,7 @@ extension OpenAIResponseStreamingEvent {
         public let index: Int
 
         // This should be an enum:
-        public let item: PartialOutputItem
+        public let item: OpenAIResponse.ResponseOutputItem
 
         private enum CodingKeys: String, CodingKey {
             case sequenceNumber = "sequence_number"
@@ -353,45 +353,29 @@ extension OpenAIResponseStreamingEvent {
             case item
         }
     }
-
-    /// Represents a partial output item during streaming
-    public struct PartialOutputItem: Decodable {
-        public let type: String
-        public let id: String?
-        public let status: String?
-
-        // For message type
-        public let role: String?
-        public let content: [PartialContentPart]?
-
-        // For tool calls
-        public let callId: String?
-        public let name: String?
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case id
-            case status
-            case role
-            case content
-            case callId = "call_id"
-            case name
-        }
-    }
 }
 
 // MARK: - Content Part Events
 extension OpenAIResponseStreamingEvent {
+    /// Representation of `response.content_part.added`
+    /// https://platform.openai.com/docs/api-reference/responses-streaming/response/content_part/added
     public struct ContentPartAdded: Decodable {
+        /// The sequence number of this event.
         public let sequenceNumber: Int
-        public let index: Int
-        public let outputItemIndex: Int
-        public let part: PartialContentPart
+
+        /// The index of the content part that was added.
+        public let contentIndex: Int
+
+        /// The index of the output item that the content part was added to.
+        public let outputIndex: Int
+
+        /// The content part that was added.
+        public let part: OpenAIResponse.Content
 
         private enum CodingKeys: String, CodingKey {
             case sequenceNumber = "sequence_number"
-            case index = "content_index"
-            case outputItemIndex = "output_item_index"
+            case contentIndex = "content_index"
+            case outputIndex = "output_index"
             case part
         }
     }
@@ -408,12 +392,6 @@ extension OpenAIResponseStreamingEvent {
             case outputItemIndex = "output_item_index"
             case part
         }
-    }
-
-    public struct PartialContentPart: Decodable {
-        public let type: String
-        public let annotations: [String]?
-        public let text: String?
     }
 }
 

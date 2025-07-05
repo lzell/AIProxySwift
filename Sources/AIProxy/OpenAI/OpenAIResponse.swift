@@ -5,9 +5,9 @@
 //  Created by Lou Zell on 3/13/25.
 //
 
+import Foundation
+
 /// https://platform.openai.com/docs/api-reference/responses/object
-// Implementor's note:
-// See 'class Response' in `src/openai/types/responses/response.py `
 public struct OpenAIResponse: Decodable {
     /// Unix timestamp (in seconds) of when this Response was created.
     public let createdAt: Double?
@@ -412,7 +412,10 @@ extension OpenAIResponse {
     }
 
     public enum Content: Decodable {
+        /// A text output from the model.
         case outputText(OutputText)
+
+        /// A refusal from the model.
         case refusal(String)
 
         private enum CodingKeys: String, CodingKey {
@@ -477,7 +480,7 @@ extension OpenAIResponse {
     public struct URLCitation: Decodable {
         public let startIndex: Int
         public let endIndex: Int
-        public let url: String
+        public let url: URL
         public let title: String
 
         private enum CodingKeys: String, CodingKey {

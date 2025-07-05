@@ -32,7 +32,7 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         XCTAssertEqual(responseInProgress.response.id, "resp_123")
     }
     
-    func testResponseOutputItemAddedEventIsDecodable() throws {
+    func testOutputItemAddedForWebSearchIsDecodable() throws {
         let line = #"data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"ws_123","type":"web_search_call","status":"in_progress","action":{"type":"search"}}}"#
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
 
@@ -40,8 +40,13 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
             return XCTFail("Expected output_item.added")
         }
         XCTAssertEqual(outputItemAdded.sequenceNumber, 2)
-        XCTAssertEqual(outputItemAdded.item.id, "ws_123")
-        XCTAssertEqual(outputItemAdded.item.type, "web_search_call")
+
+        guard case .webSearchCall(let webSearchCall) = outputItemAdded.item else {
+            return XCTFail("Expected web search call")
+        }
+
+        XCTAssertEqual(webSearchCall.id, "ws_123")
+        XCTAssertEqual(webSearchCall.status, "in_progress")
     }
 
     func testWebSearchCallInProgressIsDecodable() throws {
@@ -80,7 +85,7 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         XCTAssertEqual(webSearchCallCompleted.itemID, "ws_123")
     }
 
-    func testResponseOutputItemDoneEventIsDecodable() throws {
+    func testOutputItemDoneForWebSearchIsDecodable() throws {
         let line = #"data: {"type":"response.output_item.done","sequence_number":6,"output_index":0,"item":{"id":"ws_123","type":"web_search_call","status":"completed","action":{"type":"search","query":"Apple stock price today"}}}"#
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
 
@@ -97,21 +102,39 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         XCTAssertEqual(webSearchCall.status, "completed")
     }
 
+    func testOutputItemAddedForContentIsDecodable() throws {
+        let line = #"data: {"type":"response.output_item.added","sequence_number":7,"output_index":1,"item":{"id":"msg_123","type":"message","status":"in_progress","content":[],"role":"assistant"}}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
 
+        guard case .outputItemAdded(let outputItemAdded) = event else {
+            return XCTFail("Expected output_item.added")
+        }
+        XCTAssertEqual(outputItemAdded.sequenceNumber, 7)
 
-//    func testResponseContentPartAddedEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.content_part.added","sequence_number":3,"item_id":"msg_6856e03c97888199971fa4d4fa47f4d20484fb09fc524d66","output_index":0,"content_index":0,"part":{"type":"output_text","annotations":[],"text":""}}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .contentPartAdded(let data)? = event else {
-//            return XCTFail("Expected content_part.added")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 3)
-//    }
+        guard case .message(let message) = outputItemAdded.item else {
+            return XCTFail("Expected web search call")
+        }
+
+        XCTAssertEqual(message.id, "msg_123")
+        XCTAssertEqual(message.status, "in_progress")
+        XCTAssertEqual(message.role, "assistant")
+        XCTAssertEqual(message.content.count, 0)
+    }
+
+    func testResponseContentPartAddedEventIsDecodable() throws {
+        let line = #"data: {"type":"response.content_part.added","sequence_number":8,"item_id":"msg_6862e954231081a286253cf98401608e0986383194b1e8b5","output_index":1,"content_index":0,"part":{"type":"output_text","annotations":[],"logprobs":[],"text":""}}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .contentPartAdded(let contentPartAdded) = event else {
+            return XCTFail("Expected response.content_part.added")
+        }
+
+        guard case .outputText(let outputText) = contentPartAdded.part else {
+            return XCTFail("Expected the content part to contain output text")
+        }
+
+        XCTAssertEqual("", outputText.text)
+    }
 //    
 //    func testResponseOutputTextDeltaEventIsDecodable() throws {
 //        let json = """
