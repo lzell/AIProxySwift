@@ -18,7 +18,7 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
             return XCTFail("Expected responseCreated")
         }
         XCTAssertEqual(responseCreated.sequenceNumber, 0)
-        XCTAssertEqual(responseCreated.response.id, "resp_123")
+        XCTAssertEqual(responseCreated.response?.id, "resp_123")
     }
     
     func testResponseInProgressEventIsDecodable() throws {
@@ -29,7 +29,7 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
             return XCTFail("Expected in_progress")
         }
         XCTAssertEqual(responseInProgress.sequenceNumber, 1)
-        XCTAssertEqual(responseInProgress.response.id, "resp_123")
+        XCTAssertEqual(responseInProgress.response?.id, "resp_123")
     }
     
     func testOutputItemAddedForWebSearchIsDecodable() throws {
@@ -147,20 +147,18 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         XCTAssertEqual(outputTextDelta.itemID, "msg_123")
         XCTAssertEqual(outputTextDelta.delta, "As")
     }
-//    
-//    func testResponseOutputTextDoneEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.output_text.done","sequence_number":42,"item_id":"msg_6856e03c97888199971fa4d4fa47f4d20484fb09fc524d66","output_index":0,"content_index":0,"text":"{\\"aaReply\\":\\"Hey! How can I assist you today?\\",\\"keyPhrasesAndIdeas\\":[],\\"newMemories\\":[],\\"questions\\":[],\\"removeMemories\\":[],\\"title\\":null}"}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .outputTextDone(let data)? = event else {
-//            return XCTFail("Expected output_text.done")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 42)
-//    }
+    
+    func testResponseOutputTextDoneEventIsDecodable() throws {
+        let line = #"data: {"type":"response.output_text.done","sequence_number":89,"item_id":"msg_123","output_index":1,"content_index":0,"text":"As of June 30, 2025, snip","logprobs":[]}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .outputTextDone(let outputTextDone) = event else {
+            return XCTFail("Expected output_text.done")
+        }
+        XCTAssertEqual(outputTextDone.sequenceNumber, 89)
+        XCTAssertEqual(outputTextDone.itemID, "msg_123")
+        XCTAssertEqual(outputTextDone.text, "As of June 30, 2025, snip")
+    }
 //    
 //    func testResponseContentPartDoneEventIsDecodable() throws {
 //        let json = """
