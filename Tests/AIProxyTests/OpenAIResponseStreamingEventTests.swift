@@ -235,52 +235,45 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
             return XCTFail("Expected refusal.delta")
         }
         XCTAssertEqual(refusalDelta.sequenceNumber, 1)
+        XCTAssertEqual(refusalDelta.itemID, "msg_123")
         XCTAssertEqual(refusalDelta.delta, "refusal text so far")
     }
 
-//    func testResponseRefusalDoneEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.refusal.done","item_id":"item-abc","output_index":1,"content_index":2,"refusal":"final refusal text","sequence_number":1}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+    func testResponseRefusalDoneEventIsDecodable() throws {
+        let line = #"data: {"type":"response.refusal.done","item_id":"item-abc","output_index":1,"content_index":2,"refusal":"final refusal text","sequence_number":1}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .refusalDone(let refusalDone) = event else {
+            return XCTFail("Expected refusal.done")
+        }
+        XCTAssertEqual(refusalDone.sequenceNumber, 1)
+        XCTAssertEqual(refusalDone.itemID, "item-abc")
+        XCTAssertEqual(refusalDone.refusal, "final refusal text")
+    }
+    
+    func testResponseFunctionCallArgumentsDeltaEventIsDecodable() throws {
+        let line = #"data: {"type":"response.function_call_arguments.delta","sequence_number":4,"item_id":"fc_68694bba5e6c8191a205c5a06bb80c670c2a075a273406eb","output_index":0,"delta":"location"}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .functionCallArgumentsDelta(let functionCallArgumentsDelta) = event else {
+            return XCTFail("Expected function_call_arguments.delta")
+        }
+        XCTAssertEqual(functionCallArgumentsDelta.sequenceNumber, 4)
+        XCTAssertEqual(functionCallArgumentsDelta.delta, "location")
+    }
+
+    func testResponseFunctionCallArgumentsDoneEventIsDecodable() throws {
+        let line = #"data: {"type":"response.function_call_arguments.done","sequence_number":10,"item_id":"fc_68694bba5e6c8191a205c5a06bb80c670c2a075a273406eb","output_index":0,"arguments":"{\"location\":\"Paris, France\"}"}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .functionCallArgumentsDone(let functionCallArgumentsDone) = event else {
+            return XCTFail("Expected function_call_arguments.done")
+        }
+        XCTAssertEqual(functionCallArgumentsDone.sequenceNumber, 10)
+        XCTAssertEqual(functionCallArgumentsDone.arguments, #"{"location":"Paris, France"}"#)
+    }
+
 //
-//        guard case .refusalDone(let data)? = event else {
-//            return XCTFail("Expected refusal.done")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 1)
-//        XCTAssertEqual(data.refusal, "final refusal text")
-//    }
-//    
-//    func testResponseFunctionCallArgumentsDeltaEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.function_call_arguments.delta","item_id":"item-abc","output_index":0,"delta":"{ \\"arg\\":","sequence_number":1}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .functionCallArgumentsDelta(let data)? = event else {
-//            return XCTFail("Expected function_call_arguments.delta")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 1)
-//    }
-//    
-//    func testResponseFunctionCallArgumentsDoneEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.function_call_arguments.done","item_id":"item-abc","output_index":1,"arguments":"{ \\"arg\\": 123 }","sequence_number":1}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .functionCallArgumentsDone(let data)? = event else {
-//            return XCTFail("Expected function_call_arguments.done")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 1)
-//    }
-//    
 //    func testResponseFileSearchCallInProgressEventIsDecodable() throws {
 //        let json = """
 //        {"type":"response.file_search_call.in_progress","output_index":0,"item_id":"fs_123","sequence_number":1}

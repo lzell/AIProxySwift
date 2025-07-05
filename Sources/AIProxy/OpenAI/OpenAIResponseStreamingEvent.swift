@@ -464,59 +464,78 @@ extension OpenAIResponseStreamingEvent {
     public struct RefusalDelta: Decodable {
         public let contentIndex: Int?
         public let delta: String
+        public let itemID: String?
         public let outputIndex: Int?
         public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
             case contentIndex = "content_index"
             case delta
+            case itemID = "item_id"
             case outputIndex = "output_index"
             case sequenceNumber = "sequence_number"
         }
     }
 
     public struct RefusalDone: Decodable {
-        public let sequenceNumber: Int
-        public let outputItemIndex: Int
-        public let contentPartIndex: Int
+        public let contentIndex: Int?
+        public let itemID: String?
+        public let outputIndex: Int?
         public let refusal: String
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case sequenceNumber = "sequence_number"
-            case outputItemIndex = "output_item_index"
-            case contentPartIndex = "content_part_index"
+            case contentIndex = "content_index"
+            case itemID = "item_id"
+            case outputIndex = "output_index"
             case refusal
+            case sequenceNumber = "sequence_number"
         }
     }
 }
 
 // MARK: - Function Call Events
 extension OpenAIResponseStreamingEvent {
+    /// https://platform.openai.com/docs/api-reference/responses-streaming/response/function_call_arguments/delta
     public struct FunctionCallArgumentsDelta: Decodable {
-        public let sequenceNumber: Int
-        public let outputItemIndex: Int
-        public let callId: String
+        ///  The function-call arguments delta that is added.
         public let delta: String
 
+        /// The ID of the output item that the function-call arguments delta is added to.
+        public let itemID: String?
+
+        /// The index of the output item that the function-call arguments delta is added to.
+        public let outputIndex: Int?
+
+        /// The sequence number of this event.
+        public let sequenceNumber: Int?
+
         private enum CodingKeys: String, CodingKey {
-            case sequenceNumber = "sequence_number"
-            case outputItemIndex = "output_item_index"
-            case callId = "call_id"
             case delta
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 
     public struct FunctionCallArgumentsDone: Decodable {
-        public let sequenceNumber: Int
-        public let outputItemIndex: Int
-        public let callId: String
+        ///  The function-call arguments delta that is added.
         public let arguments: String
 
+        /// The ID of the output item that the function-call arguments delta is added to.
+        public let itemID: String?
+
+        /// The index of the output item that the function-call arguments delta is added to.
+        public let outputIndex: Int?
+
+        /// The sequence number of this event.
+        public let sequenceNumber: Int?
+
         private enum CodingKeys: String, CodingKey {
-            case sequenceNumber = "sequence_number"
-            case outputItemIndex = "output_item_index"
-            case callId = "call_id"
             case arguments
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 }

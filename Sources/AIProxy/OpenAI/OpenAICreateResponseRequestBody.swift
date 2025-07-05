@@ -56,26 +56,26 @@ public struct OpenAICreateResponseRequestBody: Encodable {
         case auto
     }
     public let truncation: Truncation?
-    
+
     /// If set, partial response deltas will be sent as server-sent events.
     /// Set this to true when using the streaming response method.
     public var stream: Bool?
-    
+
     /// What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random,
     /// while lower values like 0.2 will make it more focused and deterministic.
     public let temperature: Double?
-    
+
     /// An alternative to sampling with temperature, called nucleus sampling, where the model considers the results
     /// of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability
     /// mass are considered.
     public let topP: Double?
-    
+
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
     public let user: String?
-    
+
     /// Text generation settings.
     public let text: TextSettings?
-    
+
     private enum CodingKeys: String, CodingKey {
         case input
         case model
@@ -493,19 +493,32 @@ extension OpenAICreateResponseRequestBody {
 
     // MARK: - Function Tool
     public struct FunctionTool: Codable {
+        // Required
+
+        /// The name of the function to call.
+        public let name: String
+
+        /// A JSON schema object describing the parameters of the function.
+        public let parameters: [String: AIProxyJSONValue]
+
+        /// Whether to enforce strict parameter validation. Default true.
+        public let strict: Bool
+
+        /// The type of the function tool. Always `function`
+        public let type = "function"
+
+        // Optional
+
+        /// A description of the function. Used by the model to determine whether or not to call the function.
+        public let description: String?
+
         private enum CodingKeys: String, CodingKey {
-            case type
+            case description
             case name
             case parameters
             case strict
-            case description
+            case type
         }
-
-        public let type = "function"
-        public let name: String
-        public let parameters: [String: AIProxyJSONValue]
-        public let strict: Bool
-        public let description: String?
 
         public init(
             name: String,
@@ -635,26 +648,26 @@ extension OpenAICreateResponseRequestBody {
     public struct TextSettings: Codable {
         /// The format specification for the text output
         public let format: Format?
-        
+
         public init(format: Format? = nil) {
             self.format = format
         }
     }
-    
+
     /// Format specification for text output
     public struct Format: Codable {
         /// The format type
         public let type: FormatType?
-        
+
         /// The name of the schema (required for json_schema type)
         public let name: String?
-        
+
         /// The JSON schema definition (required for json_schema type)
         public let schema: [String: AIProxyJSONValue]?
-        
+
         /// Whether to enable strict schema adherence (optional for json_schema type)
         public let strict: Bool?
-        
+
         public init(
             type: FormatType? = nil,
             name: String? = nil,
@@ -667,7 +680,7 @@ extension OpenAICreateResponseRequestBody {
             self.strict = strict
         }
     }
-    
+
     /// Available text output format types
     public enum FormatType: String, Codable {
         /// Plain text format
