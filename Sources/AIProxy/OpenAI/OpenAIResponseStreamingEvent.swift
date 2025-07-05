@@ -398,16 +398,27 @@ extension OpenAIResponseStreamingEvent {
 // MARK: - Text Events
 extension OpenAIResponseStreamingEvent {
     public struct OutputTextDelta: Decodable {
-        public let sequenceNumber: Int
-        public let outputItemIndex: Int
-        public let contentPartIndex: Int
+        /// The index of the content part that the text delta was added to.
+        public let contentIndex: Int
+
+        /// The text delta that was added.
         public let delta: String
 
+        /// The ID of the output item that the text delta was added to.
+        public let itemID: String
+
+        /// The index of the output item that the text delta was added to.
+        public let outputIndex: Int
+
+        /// The sequence number for this event.
+        public let sequenceNumber: Int
+
         private enum CodingKeys: String, CodingKey {
-            case sequenceNumber = "sequence_number"
-            case outputItemIndex = "output_item_index"
-            case contentPartIndex = "content_part_index"
+            case contentIndex = "content_index"
             case delta
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 

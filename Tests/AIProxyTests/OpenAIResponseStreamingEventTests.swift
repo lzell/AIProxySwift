@@ -135,21 +135,18 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
 
         XCTAssertEqual("", outputText.text)
     }
-//    
-//    func testResponseOutputTextDeltaEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.output_text.delta","sequence_number":4,"item_id":"msg_6856e03c97888199971fa4d4fa47f4d20484fb09fc524d66","output_index":0,"content_index":0,"delta":"{\\""}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .outputTextDelta(let data)? = event else {
-//            return XCTFail("Expected output_text.delta")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 4)
-//        XCTAssertEqual(data.delta, "{\"")
-//    }
+    
+    func testResponseOutputTextDeltaEventIsDecodable() throws {
+        let line = #"data: {"type":"response.output_text.delta","sequence_number":9,"item_id":"msg_123","output_index":1,"content_index":0,"delta":"As","logprobs":[]}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .outputTextDelta(let outputTextDelta) = event else {
+            return XCTFail("Expected response.output_text.delta")
+        }
+        XCTAssertEqual(outputTextDelta.sequenceNumber, 9)
+        XCTAssertEqual(outputTextDelta.itemID, "msg_123")
+        XCTAssertEqual(outputTextDelta.delta, "As")
+    }
 //    
 //    func testResponseOutputTextDoneEventIsDecodable() throws {
 //        let json = """
