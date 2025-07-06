@@ -374,6 +374,31 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         return try await self.makeRequestAndDeserializeStreamingChunks(request)
     }
 
+    /// Creates a vector store
+    ///
+    /// - Parameters:
+    ///   - requestBody: The request body to send to OpenAI. See this reference:
+    ///                  https://platform.openai.com/docs/api-reference/vector-stores/create
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    /// - Returns: The vector store object
+    public func createVectorStore(
+        requestBody: OpenAICreateVectorStoreRequestBody,
+        secondsToWait: UInt
+    ) async throws -> OpenAIVectorStore {
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: self.baseURL,
+            path: self.resolvedPath("vector_stores"),
+            body: try requestBody.serialize(),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "application/json",
+            additionalHeaders: [
+                "Authorization": "Bearer \(self.unprotectedAPIKey)"
+            ]
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
+
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
         switch self.requestFormat {

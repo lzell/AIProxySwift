@@ -167,6 +167,18 @@ public protocol OpenAIService {
         requestBody: OpenAICreateResponseRequestBody,
         secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingChunk>
+    
+    /// Creates a vector store
+    ///
+    /// - Parameters:
+    ///   - requestBody: The request body to send to OpenAI. See this reference:
+    ///                  https://platform.openai.com/docs/api-reference/vector-stores/create
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    /// - Returns: The vector store object
+    func createVectorStore(
+        requestBody: OpenAICreateVectorStoreRequestBody,
+        secondsToWait: UInt
+    ) async throws -> OpenAIVectorStore
 }
 
 extension OpenAIService {
