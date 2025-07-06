@@ -1496,6 +1496,75 @@ Replace the `fileID` with the ID returned from the snippet above.
     }
 ```
 
+### How to create a vector store with default chunking on OpenAI
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+
+    let requestBody = OpenAICreateVectorStoreRequestBody(
+        chunkingStrategy: .auto,
+        name: "my-vector-store"
+    )
+    do {
+        let vectorStore = try await openAIService.createVectorStore(
+            requestBody: requestBody,
+            secondsToWait: 60
+        )
+        print("Created vector store with id: \(vectorStore.id)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create an OpenAI vector store: \(error.localizedDescription)")
+    }
+```
+
+### How to create a vector store with specific chunking on OpenAI
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenAICreateVectorStoreRequestBody(
+        chunkingStrategy: .static(chunkOverlapTokens: 300, maxChunkSizeTokens: 700),
+        name: "my-vector-store"
+    )
+
+    do {
+        let vectorStore = try await openAIService.createVectorStore(
+            requestBody: requestBody,
+            secondsToWait: 60
+        )
+        print("Created vector store with id: \(vectorStore.id)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create an OpenAI vector store: \(error.localizedDescription)")
+    }
+```
+
+
 ### How to use OpenAI through an Azure deployment
 
 You can use all of the OpenAI snippets aboves with one change. Initialize the OpenAI service with:
