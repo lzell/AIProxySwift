@@ -273,20 +273,16 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         XCTAssertEqual(functionCallArgumentsDone.arguments, #"{"location":"Paris, France"}"#)
     }
 
-//
-//    func testResponseFileSearchCallInProgressEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.file_search_call.in_progress","output_index":0,"item_id":"fs_123","sequence_number":1}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .fileSearchCallProgress(let data)? = event else {
-//            return XCTFail("Expected file_search_call.in_progress")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 1)
-//    }
+    func testResponseFileSearchCallInProgressEventIsDecodable() throws {
+        let line = #"data: {"type":"response.file_search_call.in_progress","output_index":0,"item_id":"fs_123","sequence_number":1}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .fileSearchCallProgress(let fileSearchCallProgress) = event else {
+            return XCTFail("Expected file_search_call.in_progress")
+        }
+        XCTAssertEqual(fileSearchCallProgress.sequenceNumber, 1)
+        XCTAssertEqual(fileSearchCallProgress.itemID, "fs_123")
+    }
 //    
 //    func testResponseFileSearchCallSearchingEventIsDecodable() throws {
 //        let json = """
@@ -314,47 +310,5 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
 //            return XCTFail("Expected file_search_call.completed")
 //        }
 //        XCTAssertEqual(data.sequenceNumber, 1)
-//    }
-//    
-//    func testResponseWebSearchCallInProgressEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.web_search_call.in_progress","output_index":0,"item_id":"ws_123","sequence_number":0}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .webSearchCallProgress(let data)? = event else {
-//            return XCTFail("Expected web_search_call.in_progress")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 0)
-//    }
-//    
-//    func testResponseWebSearchCallSearchingEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.web_search_call.searching","output_index":0,"item_id":"ws_123","sequence_number":0}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .webSearchCallProgress(let data)? = event else {
-//            return XCTFail("Expected web_search_call.searching")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 0)
-//    }
-//    
-//    func testResponseWebSearchCallCompletedEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.web_search_call.completed","output_index":0,"item_id":"ws_123","sequence_number":0}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .webSearchCallProgress(let data)? = event else {
-//            return XCTFail("Expected web_search_call.completed")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 0)
 //    }
 }

@@ -543,17 +543,17 @@ extension OpenAIResponseStreamingEvent {
 // MARK: - Search Call Events
 extension OpenAIResponseStreamingEvent {
     public struct FileSearchCallProgress: Decodable {
-        public let sequenceNumber: Int
-        public let outputItemIndex: Int
-        public let id: String
-        public let status: String
+        public let sequenceNumber: Int?
+        public let outputIndex: Int?
+        public let itemID: String?
+        public let status: String?
         public let queries: [String]?
         public let results: [OpenAIResponse.FileSearchCall.FileSearchResult]?
 
         private enum CodingKeys: String, CodingKey {
             case sequenceNumber = "sequence_number"
-            case outputItemIndex = "output_item_index"
-            case id
+            case outputIndex = "output_item_index"
+            case itemID = "item_id"
             case status
             case queries
             case results
