@@ -73,6 +73,10 @@ extension OpenAICreateVectorStoreRequestBody {
 
         private enum CodingKeys: String, CodingKey {
             case type
+            case `static`
+        }
+
+        private enum NestedKeys: String, CodingKey {
             case chunkOverlapTokens = "chunk_overlap_tokens"
             case maxChunkSizeTokens = "max_chunk_size_tokens"
         }
@@ -84,8 +88,9 @@ extension OpenAICreateVectorStoreRequestBody {
                 try container.encode("auto", forKey: .type)
             case .static(let chunkOverlapTokens, let maxChunkSizeTokens):
                 try container.encode("static", forKey: .type)
-                try container.encodeIfPresent(chunkOverlapTokens, forKey: .chunkOverlapTokens)
-                try container.encodeIfPresent(maxChunkSizeTokens, forKey: .maxChunkSizeTokens)
+                var nested = try container.nestedContainer(keyedBy: NestedKeys.self, forKey: .static)
+                try nested.encode(chunkOverlapTokens, forKey: .chunkOverlapTokens)
+                try nested.encode(maxChunkSizeTokens, forKey: .maxChunkSizeTokens)
             }
         }
     }
