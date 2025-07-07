@@ -131,6 +131,7 @@ public protocol OpenAIService {
 
 
     /// Uploads a file to OpenAI for use in a future tool call
+    /// https://platform.openai.com/docs/api-reference/files/create
     ///
     /// - Parameters:
     ///   - contents: The binary contents of your file. If you've added your file to xcassets, you
@@ -141,12 +142,14 @@ public protocol OpenAIService {
     ///                          let pdfData = try? Data(contentsOf: localURL) else { return }
     ///
     ///   - name: The name of the file, e.g. `myfile.pdf`
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     ///
     /// - Returns: The file upload response body, which contains the file's ID that can be used in subsequent calls
     func uploadFile(
         contents: Data,
         name: String,
-        purpose: String
+        purpose: OpenAIFilePurpose,
+        secondsToWait: UInt
     ) async throws -> OpenAIFileUploadResponseBody
 
     /// Creates a 'response' using OpenAI's new API product:
@@ -179,6 +182,20 @@ public protocol OpenAIService {
         requestBody: OpenAICreateVectorStoreRequestBody,
         secondsToWait: UInt
     ) async throws -> OpenAIVectorStore
+
+    /// Creates a vector store file
+    ///
+    /// - Parameters:
+    ///   - vectorStoreID: The ID of the vector store for which to create a File.
+    ///   - requestBody: The request body to send to OpenAI. See this reference:
+    ///                  https://platform.openai.com/docs/api-reference/vector-stores-files/createFile
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    /// - Returns: The vector store object
+    func createVectorStoreFile(
+        vectorStoreID: String,
+        requestBody: OpenAICreateVectorStoreFileRequestBody,
+        secondsToWait: UInt
+    ) async throws -> OpenAIVectorStoreFile
 }
 
 extension OpenAIService {

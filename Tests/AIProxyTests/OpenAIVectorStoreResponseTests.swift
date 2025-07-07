@@ -37,4 +37,34 @@ final class OpenAIVectorStoreResponseTests: XCTestCase {
         XCTAssertEqual(0, res.fileCounts?.inProgress)
         XCTAssertEqual("vs_686", res.id)
     }
+
+    func testCreateFileResponseIsDecodable() throws {
+        let sampleResponse = """
+        {
+          "id": "file-R4bFXPpUPizrLf6hqsvxps",
+          "object": "vector_store.file",
+          "usage_bytes": 0,
+          "created_at": 1751898270,
+          "vector_store_id": "vs_686",
+          "status": "in_progress",
+          "last_error": null,
+          "chunking_strategy": {
+            "type": "static",
+            "static": {
+              "max_chunk_size_tokens": 800,
+              "chunk_overlap_tokens": 400
+            }
+          },
+          "attributes": {}
+        }
+        """
+        let res = try OpenAIVectorStoreFile.deserialize(from: sampleResponse)
+        XCTAssertEqual(.inProgress, res.status)
+        XCTAssertEqual("vs_686", res.vectorStoreId)
+        guard case .static(let chunkOverlapTokens, let maxChunkSizeTokens) = res.chunkingStrategy else {
+            return XCTFail("Expected a static chunking strategy")
+        }
+        XCTAssertEqual(400, chunkOverlapTokens)
+        XCTAssertEqual(800, maxChunkSizeTokens)
+    }
 }

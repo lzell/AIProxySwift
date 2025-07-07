@@ -288,11 +288,12 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     }
 
     /// Uploads a file to OpenAI for use in a future tool call
+    /// https://platform.openai.com/docs/api-reference/files/create
     ///
     /// - Parameters:
     ///   - contents: The binary contents of your file. If you've added your file to xcassets, you
     ///               can access the file's data with `NSDataAsset(name: "myfile").data`.
-    ///                If you've added your file to the app bundle, you can access the file's data with:
+    ///               If you've added your file to the app bundle, you can access the file's data with:
     ///
     ///                    guard let localURL = Bundle.main.url(forResource: "myfile", withExtension: "pdf"),
     ///                          let pdfData = try? Data(contentsOf: localURL) else { return }
@@ -303,7 +304,8 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     public func uploadFile(
         contents: Data,
         name: String,
-        purpose: String
+        purpose: OpenAIFilePurpose,
+        secondsToWait: UInt
     ) async throws -> OpenAIFileUploadResponseBody {
         let body = OpenAIFileUploadRequestBody(
             contents: contents,
@@ -317,7 +319,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
             path: "/v1/files",
             body: formEncode(body, boundary),
             verb: .post,
-            secondsToWait: 60,
+            secondsToWait: secondsToWait,
             contentType: "multipart/form-data; boundary=\(boundary)",
             additionalHeaders: [
                 "Authorization": "Bearer \(self.unprotectedAPIKey)"
@@ -398,6 +400,37 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }
+
+    /// Creates a vector store file
+    ///
+    /// - Parameters:
+    ///   - vectorStoreID: The ID of the vector store for which to create a File.
+    ///   - requestBody: The request body to send to OpenAI. See this reference:
+    ///                  https://platform.openai.com/docs/api-reference/vector-stores-files/createFile
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    /// - Returns: The vector store object
+    public func createVectorStoreFile(
+        vectorStoreID: String,
+        requestBody: OpenAICreateVectorStoreFileRequestBody,
+        secondsToWait: UInt
+    ) async throws -> OpenAIVectorStoreFile {
+        guard let escapedStoreID = vectorStoreID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+            throw AIProxyError.assertion("Vector store IDs must be URL encodable")
+        }
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: self.baseURL,
+            path: self.resolvedPath("vector_stores/\(escapedStoreID)/files"),
+            body: try requestBody.serialize(),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "application/json",
+            additionalHeaders: [
+                "Authorization": "Bearer \(self.unprotectedAPIKey)"
+            ]
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
+
 
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
