@@ -26,7 +26,7 @@ public enum OpenAIResponseStreamingEvent: Decodable {
     case refusalDone(RefusalDone)
     case functionCallArgumentsDelta(FunctionCallArgumentsDelta)
     case functionCallArgumentsDone(FunctionCallArgumentsDone)
-    case fileSearchCallProgress(FileSearchCallProgress)
+    case fileSearchCallInProgress(FileSearchCallInProgress)
     case webSearchCallInProgress(WebSearchCallInProgress)
     case webSearchCallSearching(WebSearchCallSearching)
     case webSearchCallCompleted(WebSearchCallCompleted)
@@ -134,8 +134,16 @@ public enum OpenAIResponseStreamingEvent: Decodable {
         case .responseFunctionCallArgumentsDone:
             self = .functionCallArgumentsDone(try FunctionCallArgumentsDone(from: decoder))
 
-        case .responseFileSearchCallInProgress, .responseFileSearchCallSearching, .responseFileSearchCallCompleted:
-            self = .fileSearchCallProgress(try FileSearchCallProgress(from: decoder))
+        case .responseFileSearchCallInProgress:
+            self = .fileSearchCallInProgress(try FileSearchCallInProgress(from: decoder))
+
+        case .responseFileSearchCallSearching:
+            fatalError()
+            //self = .fileSearchCallSearching
+
+        case .responseFileSearchCallCompleted:
+            fatalError()
+            //self = .fileSearchCallCompleted
 
         case .responseWebSearchCallInProgress:
             self = .webSearchCallInProgress(try WebSearchCallInProgress(from: decoder))
@@ -218,7 +226,7 @@ public enum OpenAIResponseStreamingEvent: Decodable {
         case .refusalDone: return .responseRefusalDone
         case .functionCallArgumentsDelta: return .responseFunctionCallArgumentsDelta
         case .functionCallArgumentsDone: return .responseFunctionCallArgumentsDone
-        case .fileSearchCallProgress: return .responseFileSearchCallInProgress
+        case .fileSearchCallInProgress: return .responseFileSearchCallInProgress
         case .webSearchCallInProgress: return .responseWebSearchCallInProgress
         case .webSearchCallSearching: return .responseWebSearchCallSearching
         case .webSearchCallCompleted: return .responseWebSearchCallCompleted
@@ -542,21 +550,15 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Search Call Events
 extension OpenAIResponseStreamingEvent {
-    public struct FileSearchCallProgress: Decodable {
-        public let sequenceNumber: Int?
-        public let outputIndex: Int?
+    public struct FileSearchCallInProgress: Decodable {
         public let itemID: String?
-        public let status: String?
-        public let queries: [String]?
-        public let results: [OpenAIResponse.FileSearchCall.FileSearchResult]?
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case sequenceNumber = "sequence_number"
-            case outputIndex = "output_item_index"
             case itemID = "item_id"
-            case status
-            case queries
-            case results
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 

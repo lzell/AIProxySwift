@@ -38,7 +38,7 @@ public enum OpenAIVectorStoreChunkingStrategy: Codable {
             try container.encode("auto", forKey: .type)
         case .static(let chunkOverlapTokens, let maxChunkSizeTokens):
             try container.encode("static", forKey: .type)
-            var nested = try container.nestedContainer(keyedBy: NestedKeys.self, forKey: .static)
+            var nested = container.nestedContainer(keyedBy: NestedKeys.self, forKey: .static)
             try nested.encode(chunkOverlapTokens, forKey: .chunkOverlapTokens)
             try nested.encode(maxChunkSizeTokens, forKey: .maxChunkSizeTokens)
         }

@@ -273,17 +273,65 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         XCTAssertEqual(functionCallArgumentsDone.arguments, #"{"location":"Paris, France"}"#)
     }
 
-    func testResponseFileSearchCallInProgressEventIsDecodable() throws {
-        let line = #"data: {"type":"response.file_search_call.in_progress","output_index":0,"item_id":"fs_123","sequence_number":1}"#
+    // MARK: - File search tests
+    func testFileSearchResponseCreatedEventIsDecodable() throws {
+        let line = #"data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_686","object":"response","created_at":1751901922,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[{"type":"file_search","filters":null,"max_num_results":20,"ranking_options":{"ranker":"auto","score_threshold":0.0},"vector_store_ids":["vs_686bd866f7d48191ba47bfafa5f446ba"]}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}"#
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
 
-        guard case .fileSearchCallProgress(let fileSearchCallProgress) = event else {
-            return XCTFail("Expected file_search_call.in_progress")
+        guard case .responseCreated(let responseCreated) = event else {
+            return XCTFail("Expected responseCreated")
         }
-        XCTAssertEqual(fileSearchCallProgress.sequenceNumber, 1)
-        XCTAssertEqual(fileSearchCallProgress.itemID, "fs_123")
+        XCTAssertEqual(responseCreated.sequenceNumber, 0)
+        XCTAssertEqual(responseCreated.response.id, "resp_686")
+
+        guard case .fileSearch(let fileSearch) = responseCreated.response.tools?.first else {
+            return XCTFail("Expected fileSearch tool")
+        }
+        XCTAssertEqual(fileSearch.vectorStoreIDs, ["vs_686bd866f7d48191ba47bfafa5f446ba"])
     }
-//    
+
+    func testFileSearchResponseInProgressIsDecodable() throws {
+        let line = #"data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_686","object":"response","created_at":1751901922,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":null,"max_output_tokens":null,"max_tool_calls":null,"model":"gpt-4o-2024-08-06","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[{"type":"file_search","filters":null,"max_num_results":20,"ranking_options":{"ranker":"auto","score_threshold":0.0},"vector_store_ids":["vs_686bd866f7d48191ba47bfafa5f446ba"]}],"top_logprobs":0,"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .responseInProgress(let responseInProgress) = event else {
+            return XCTFail("Expected responseInProgress")
+        }
+        XCTAssertEqual(responseInProgress.response.id, "resp_686")
+    }
+
+    func testFileSearchCallInProgressIsDecodable() throws {
+        let line = #"data: {"type":"response.file_search_call.in_progress","sequence_number":3,"output_index":0,"item_id":"fs_686"}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .fileSearchCallInProgress(let fileSearchCallInProgress) = event else {
+            return XCTFail("Expected fileSearchCallInProgress")
+        }
+        XCTAssertEqual(fileSearchCallInProgress.sequenceNumber, 3)
+        XCTAssertEqual(fileSearchCallInProgress.itemID, "fs_686")
+        XCTAssertEqual(fileSearchCallInProgress.outputIndex, 0)
+    }
+
+    
+
+
+
+
+//    func testResponseFileSearchCallInProgressEventIsDecodable() throws {
+//        let line = #"data: {"type":"response.file_search_call.in_progress","output_index":0,"item_id":"fs_123","sequence_number":1}"#
+//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+//
+//        guard case .fileSearchCallProgress(let fileSearchCallProgress) = event else {
+//            return XCTFail("Expected file_search_call.in_progress")
+//        }
+//        XCTAssertEqual(fileSearchCallProgress.sequenceNumber, 1)
+//        XCTAssertEqual(fileSearchCallProgress.itemID, "fs_123")
+//    }
+//
+//
+//
+//    func testResponse
+//
 //    func testResponseFileSearchCallSearchingEventIsDecodable() throws {
 //        let json = """
 //        {"type":"response.file_search_call.searching","output_index":0,"item_id":"fs_123","sequence_number":1}
