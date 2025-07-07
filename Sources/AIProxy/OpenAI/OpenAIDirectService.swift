@@ -414,8 +414,21 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         requestBody: OpenAICreateVectorStoreFileRequestBody,
         secondsToWait: UInt
     ) async throws -> OpenAIVectorStoreFile {
-        fatalError()
-
+        guard let escapedStoreID = vectorStoreID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+            throw AIProxyError.assertion("Vector store IDs must be URL encodable")
+        }
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: self.baseURL,
+            path: self.resolvedPath("vector_stores/\(escapedStoreID)/files"),
+            body: try requestBody.serialize(),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "application/json",
+            additionalHeaders: [
+                "Authorization": "Bearer \(self.unprotectedAPIKey)"
+            ]
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
     }
 
 
