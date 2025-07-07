@@ -1302,6 +1302,7 @@ final class RealtimeManager {
 ```
 
 ### How to make a basic request using OpenAI's Responses API
+Note: there is also a streaming version of this snippet below.
 
 ```swift
     import AIProxy
@@ -1330,6 +1331,41 @@ final class RealtimeManager {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not get a text response from OpenAI: \(error.localizedDescription)")
+    }
+```
+
+### How to make a web search call using OpenAI's Responses API
+Note: there is also a streaming version of this snippet below.
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .text("What is Apple's stock price today?"),
+        model: "gpt-4o",
+        tools: [
+            .webSearch(.init(searchContextSize: .low))
+        ]
+    )
+
+    do {
+        let response = try await openAIService.createResponse(requestBody: requestBody)
+        print(response.outputText)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get web search result from OpenAI: \(error.localizedDescription)")
     }
 ```
 
