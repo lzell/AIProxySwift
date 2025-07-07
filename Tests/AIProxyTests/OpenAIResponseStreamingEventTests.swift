@@ -312,51 +312,30 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         XCTAssertEqual(fileSearchCallInProgress.outputIndex, 0)
     }
 
-    
+    func testFileSearchCallSearchingIsDecodable() throws {
+        let line = #"data: {"type":"response.file_search_call.searching","sequence_number":4,"output_index":0,"item_id":"fs_686"}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
 
+        guard case .fileSearchCallSearching(let fileSearchCallSearching) = event else {
+            return XCTFail("Expected fileSearchCallSearching")
+        }
+        XCTAssertEqual(fileSearchCallSearching.sequenceNumber, 4)
+        XCTAssertEqual(fileSearchCallSearching.itemID, "fs_686")
+        XCTAssertEqual(fileSearchCallSearching.outputIndex, 0)
+    }
 
+    func testFileSearchOutputAnnotationIsDecodable() throws {
+        let line = #"data: {"type":"response.output_text.annotation.added","sequence_number":293,"item_id":"msg_686be6e65b0481a38512af808f5958590fe027ff85b7abdb","output_index":1,"content_index":0,"annotation_index":1,"annotation":{"type":"file_citation","file_id":"file-R4bFXPpUPizrLf6hqsvxps","filename":"The-Swift-Programming-Language.6.2b1.pdf","index":1313}}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+        guard case .outputTextAnnotationAdded(let outputAnnotation) = event else {
+            return XCTFail("Expected outputTextAnnotationAdded")
+        }
 
+        guard case .fileCitation(let fileCitation) = outputAnnotation.annotation else {
+            return XCTFail("Expected a file citation")
+        }
 
-//    func testResponseFileSearchCallInProgressEventIsDecodable() throws {
-//        let line = #"data: {"type":"response.file_search_call.in_progress","output_index":0,"item_id":"fs_123","sequence_number":1}"#
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .fileSearchCallProgress(let fileSearchCallProgress) = event else {
-//            return XCTFail("Expected file_search_call.in_progress")
-//        }
-//        XCTAssertEqual(fileSearchCallProgress.sequenceNumber, 1)
-//        XCTAssertEqual(fileSearchCallProgress.itemID, "fs_123")
-//    }
-//
-//
-//
-//    func testResponse
-//
-//    func testResponseFileSearchCallSearchingEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.file_search_call.searching","output_index":0,"item_id":"fs_123","sequence_number":1}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .fileSearchCallProgress(let data)? = event else {
-//            return XCTFail("Expected file_search_call.searching")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 1)
-//    }
-//    
-//    func testResponseFileSearchCallCompletedEventIsDecodable() throws {
-//        let json = """
-//        {"type":"response.file_search_call.completed","output_index":0,"item_id":"fs_123","sequence_number":1}
-//        """
-//        
-//        let line = "data: " + json
-//        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
-//
-//        guard case .fileSearchCallProgress(let data)? = event else {
-//            return XCTFail("Expected file_search_call.completed")
-//        }
-//        XCTAssertEqual(data.sequenceNumber, 1)
-//    }
+        XCTAssertEqual("The-Swift-Programming-Language.6.2b1.pdf", fileCitation.filename)
+        XCTAssertEqual(1313, fileCitation.index)
+    }
 }

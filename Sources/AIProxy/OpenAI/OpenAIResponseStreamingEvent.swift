@@ -27,6 +27,8 @@ public enum OpenAIResponseStreamingEvent: Decodable {
     case functionCallArgumentsDelta(FunctionCallArgumentsDelta)
     case functionCallArgumentsDone(FunctionCallArgumentsDone)
     case fileSearchCallInProgress(FileSearchCallInProgress)
+    case fileSearchCallSearching(FileSearchCallSearching)
+    case fileSearchCallCompleted(FileSearchCallCompleted)
     case webSearchCallInProgress(WebSearchCallInProgress)
     case webSearchCallSearching(WebSearchCallSearching)
     case webSearchCallCompleted(WebSearchCallCompleted)
@@ -138,12 +140,10 @@ public enum OpenAIResponseStreamingEvent: Decodable {
             self = .fileSearchCallInProgress(try FileSearchCallInProgress(from: decoder))
 
         case .responseFileSearchCallSearching:
-            fatalError()
-            //self = .fileSearchCallSearching
+            self = .fileSearchCallSearching(try FileSearchCallSearching(from: decoder))
 
         case .responseFileSearchCallCompleted:
-            fatalError()
-            //self = .fileSearchCallCompleted
+            self = .fileSearchCallCompleted(try FileSearchCallCompleted(from: decoder))
 
         case .responseWebSearchCallInProgress:
             self = .webSearchCallInProgress(try WebSearchCallInProgress(from: decoder))
@@ -227,6 +227,8 @@ public enum OpenAIResponseStreamingEvent: Decodable {
         case .functionCallArgumentsDelta: return .responseFunctionCallArgumentsDelta
         case .functionCallArgumentsDone: return .responseFunctionCallArgumentsDone
         case .fileSearchCallInProgress: return .responseFileSearchCallInProgress
+        case .fileSearchCallSearching: return .responseFileSearchCallSearching
+        case .fileSearchCallCompleted: return .responseFileSearchCallCompleted
         case .webSearchCallInProgress: return .responseWebSearchCallInProgress
         case .webSearchCallSearching: return .responseWebSearchCallSearching
         case .webSearchCallCompleted: return .responseWebSearchCallCompleted
@@ -434,17 +436,20 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
+    /// Represents `response.output_text.annotation.added`
     public struct OutputTextAnnotationAdded: Decodable {
-        public let sequenceNumber: Int
-        public let outputItemIndex: Int
-        public let contentPartIndex: Int
-        public let annotationIndex: Int
-        public let annotation: AIProxyJSONValue
+        public let sequenceNumber: Int?
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let contentIndex: Int?
+        public let annotationIndex: Int?
+        public let annotation: OpenAIResponse.Annotation?
 
         private enum CodingKeys: String, CodingKey {
             case sequenceNumber = "sequence_number"
-            case outputItemIndex = "output_item_index"
-            case contentPartIndex = "content_part_index"
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case contentIndex = "content_index"
             case annotationIndex = "annotation_index"
             case annotation
         }
@@ -550,7 +555,34 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Search Call Events
 extension OpenAIResponseStreamingEvent {
+    /// Represents `response.file_search_call.in_progress`
     public struct FileSearchCallInProgress: Decodable {
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
+
+        private enum CodingKeys: String, CodingKey {
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
+        }
+    }
+
+    /// Represents `response.file_search_call.searching`
+    public struct FileSearchCallSearching: Decodable {
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
+
+        private enum CodingKeys: String, CodingKey {
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
+        }
+    }
+
+    /// Represents `response.file_search_call.completed`
+    public struct FileSearchCallCompleted: Decodable {
         public let itemID: String?
         public let outputIndex: Int?
         public let sequenceNumber: Int?
