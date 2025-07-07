@@ -1367,41 +1367,6 @@ final class RealtimeManager {
     }
 ```
 
-
-### How to upload a file to OpenAI's file storage
-
-```swift
-    import AIProxy
-
-    /* Uncomment for BYOK use cases */
-    // let openAIService = AIProxy.openAIDirectService(
-    //     unprotectedAPIKey: "your-openai-key"
-    // )
-
-    /* Uncomment for all other production use cases */
-    // let openAIService = AIProxy.openAIService(
-    //     partialKey: "partial-key-from-your-developer-dashboard",
-    //     serviceURL: "service-url-from-your-developer-dashboard"
-    // )
-
-    do {
-        let openAIFile = try await openAIService.uploadFile(
-            contents: pdfData,
-            name: "my.pdf",
-            purpose: "user_data"
-        )
-        print("""
-              File uploaded to OpenAI's media storage.
-              It will be available until \(openAIFile.expiresAt.flatMap {String($0)} ?? "forever")
-              Use it in subsequent requests with ID: \(openAIFile.id)
-              """)
-    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
-    } catch {
-        print("Could not upload file to OpenAI: \(error.localizedDescription)")
-    }
-```
-
 ### How to use a stored file in an OpenAI prompt using the Responses API (new)
 
 Replace the `fileID` with the ID returned from the snippet above.
@@ -1564,6 +1529,89 @@ Replace the `fileID` with the ID returned from the snippet above.
     }
 ```
 
+### How to upload a file to OpenAI's file storage
+
+Add the file `The-Swift-Programming-Language.pdf` to your Xcode project tree.
+This will upload the pdf to OpenAI for use in a future vector store request:
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let localURL = Bundle.main.url(forResource: "The-Swift-Programming-Language", withExtension: "pdf"),
+          let pdfData = try? Data(contentsOf: localURL) else {
+        print("Drop The-Swift-Programming-Language.pdf file the project tree first.")
+        return
+    }
+
+    do {
+        let openAIFile = try await openAIService.uploadFile(
+            contents: pdfData,
+            name: "The-Swift-Programming-Language.pdf",
+            purpose: .userData,
+            secondsToWait: 300
+        )
+        print("""
+              File uploaded to OpenAI's media storage.
+              It will be available until \(openAIFile.expiresAt.flatMap {String($0)} ?? "forever")
+              Use it in subsequent requests with ID: \(openAIFile.id)
+              """)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not upload file to OpenAI: \(error.localizedDescription)")
+    }
+```
+
+### How to add an uploaded file to an OpenAI vector store
+
+You'll need two IDs for this snippet:
+1. The file ID returned in the `How to upload a file to OpenAI's file storage` snippet
+2. The vector store ID returned in the `How to create a vector store with default chunking on OpenAI` snippet
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let fileID = /* ID from the file upload example */
+    let vectorStoreID = /* ID from the vector store example */
+
+    let requestBody = OpenAICreateVectorStoreFileRequestBody(
+        fileID: fileID
+    )
+    do {
+        let vectorStoreFile = try await openAIService.createVectorStoreFile(
+            vectorStoreID: vectorStoreID,
+            requestBody: requestBody,
+            secondsToWait: 120
+        )
+        print("Created vector store file with id: \(vectorStoreFile.id ?? "unknown")")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create an OpenAI vector store file: \(error.localizedDescription)")
+    }
+```
 
 ### How to use OpenAI through an Azure deployment
 

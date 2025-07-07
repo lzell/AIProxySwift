@@ -49,6 +49,5 @@ final class OpenAIVectorStoreRequestTests: XCTestCase {
             try requestBody.serialize(pretty: true)
         )
     }
-
 }
 
