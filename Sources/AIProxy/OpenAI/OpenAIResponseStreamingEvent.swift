@@ -9,37 +9,73 @@ import Foundation
 
 /// Represents a streaming event from the OpenAI Responses API
 /// https://platform.openai.com/docs/api-reference/responses-streaming/response
-public struct OpenAIResponseStreamingEvent: Decodable {
-    /// The type of event
-    public let type: OpenAIResponseStreamEventType
-
-    /// The sequence number of this event
-    public let sequenceNumber: Int
-
-    /// The event-specific data
-    public let data: EventData
+public enum OpenAIResponseStreamingEvent: Decodable {
+    case responseCreated(ResponseCreated)
+    case responseInProgress(ResponseInProgress)
+    case responseCompleted(ResponseCompleted)
+    case responseFailed(ResponseFailed)
+    case responseIncomplete(ResponseIncomplete)
+    case outputItemAdded(OutputItemAdded)
+    case outputItemDone(OutputItemDone)
+    case contentPartAdded(ContentPartAdded)
+    case contentPartDone(ContentPartDone)
+    case outputTextDelta(OutputTextDelta)
+    case outputTextDone(OutputTextDone)
+    case outputTextAnnotationAdded(OutputTextAnnotationAdded)
+    case refusalDelta(RefusalDelta)
+    case refusalDone(RefusalDone)
+    case functionCallArgumentsDelta(FunctionCallArgumentsDelta)
+    case functionCallArgumentsDone(FunctionCallArgumentsDone)
+    case fileSearchCallInProgress(FileSearchCallInProgress)
+    case fileSearchCallSearching(FileSearchCallSearching)
+    case fileSearchCallCompleted(FileSearchCallCompleted)
+    case webSearchCallInProgress(WebSearchCallInProgress)
+    case webSearchCallSearching(WebSearchCallSearching)
+    case webSearchCallCompleted(WebSearchCallCompleted)
+    case audioDelta(AudioDelta)
+    case audioDone(AudioDone)
+    case audioTranscriptDelta(AudioTranscriptDelta)
+    case audioTranscriptDone(AudioTranscriptDone)
+    case codeInterpreterCallProgress(CodeInterpreterCallProgress)
+    case computerCallProgress(ComputerCallProgress)
+    case reasoningDelta(ReasoningDelta)
+    case reasoningDone(ReasoningDone)
+    case reasoningSummaryPartAdded(ReasoningSummaryPartAdded)
+    case reasoningSummaryPartDone(ReasoningSummaryPartDone)
+    case reasoningSummaryTextDelta(ReasoningSummaryTextDelta)
+    case reasoningSummaryTextDone(ReasoningSummaryTextDone)
+    case reasoningSummaryDelta(ReasoningSummaryDelta)
+    case reasoningSummaryDone(ReasoningSummaryDone)
+    case imageGenerationCallProgress(ImageGenerationCallProgress)
+    case imageGenerationCallPartialImage(ImageGenerationCallPartialImage)
+    case mcpCallArgumentsDelta(McpCallArgumentsDelta)
+    case mcpCallArgumentsDone(McpCallArgumentsDone)
+    case mcpCallProgress(McpCallProgress)
+    case mcpListToolsProgress(McpListToolsProgress)
+    case responseQueued(ResponseQueued)
+    case error(ErrorEvent)
 
     private enum CodingKeys: String, CodingKey {
         case type
-        case sequenceNumber = "sequence_number"
-        case response
-        case outputIndex = "output_index"
-        case item
-        case itemId = "item_id"
-        case contentIndex = "content_index"
-        case summaryIndex = "summary_index"
-        case part
-        case delta
-        case text
-        case refusal
-        case arguments
-        case partialImageIndex = "partial_image_index"
-        case partialImageB64 = "partial_image_b64"
-        case annotationIndex = "annotation_index"
-        case annotation
-        case code
-        case message
-        case param
+//        case sequenceNumber = "sequence_number"
+//        case response
+//        case outputIndex = "output_index"
+//        case item
+//        case itemId = "item_id"
+//        case contentIndex = "content_index"
+//        case summaryIndex = "summary_index"
+//        case part
+//        case delta
+//        case text
+//        case refusal
+//        case arguments
+//        case partialImageIndex = "partial_image_index"
+//        case partialImageB64 = "partial_image_b64"
+//        case annotationIndex = "annotation_index"
+//        case annotation
+//        case code
+//        case message
+//        case param
     }
 
     public init(from decoder: Decoder) throws {
@@ -54,282 +90,114 @@ public struct OpenAIResponseStreamingEvent: Decodable {
             )
         }
 
-        self.type = eventType
-        self.sequenceNumber = try container.decode(Int.self, forKey: .sequenceNumber)
-
-        // Decode based on event type
         switch eventType {
         case .responseCreated:
-            let responseData = try container.decode(ResponseCreatedData.self, forKey: .response)
-            self.data = .responseCreated(responseData)
+            self = .responseCreated(try ResponseCreated(from: decoder))
 
         case .responseInProgress:
-            let responseData = try container.decode(ResponseInProgressData.self, forKey: .response)
-            self.data = .responseInProgress(responseData)
+            self = .responseInProgress(try ResponseInProgress(from: decoder))
 
         case .responseCompleted:
-            let responseData = try container.decode(ResponseCompletedData.self, forKey: .response)
-            self.data = .responseCompleted(responseData)
+            self = .responseCompleted(try ResponseCompleted(from: decoder))
 
         case .responseFailed:
-            let responseData = try container.decode(ResponseFailedData.self, forKey: .response)
-            self.data = .responseFailed(responseData)
+            self = .responseFailed(try ResponseFailed(from: decoder))
 
         case .responseIncomplete:
-            let responseData = try container.decode(ResponseIncompleteData.self, forKey: .response)
-            self.data = .responseIncomplete(responseData)
+            self = .responseIncomplete(try ResponseIncomplete(from: decoder))
 
         case .responseOutputItemAdded:
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let item = try container.decode(PartialOutputItem.self, forKey: .item)
-            self.data = .outputItemAdded(OutputItemAddedData(index: outputIndex, item: item))
+            self = .outputItemAdded(try OutputItemAdded(from: decoder))
 
         case .responseOutputItemDone:
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let item = try container.decode(OpenAIResponse.ResponseOutputItem.self, forKey: .item)
-            self.data = .outputItemDone(OutputItemDoneData(index: outputIndex, item: item))
+            self = .outputItemDone(try OutputItemDone(from: decoder))
 
         case .responseContentPartAdded:
-            _ = try container.decode(String.self, forKey: .itemId) // itemId is not used in the data structure
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let contentIndex = try container.decode(Int.self, forKey: .contentIndex)
-            let part = try container.decode(PartialContentPart.self, forKey: .part)
-            self.data = .contentPartAdded(ContentPartAddedData(
-                index: contentIndex,
-                outputItemIndex: outputIndex,
-                part: part
-            ))
+            self = .contentPartAdded(try ContentPartAdded(from: decoder))
 
         case .responseContentPartDone:
-            _ = try container.decode(String.self, forKey: .itemId) // itemId is not used in the data structure
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let contentIndex = try container.decode(Int.self, forKey: .contentIndex)
-            let part = try container.decode(OpenAIResponse.Content.self, forKey: .part)
-            self.data = .contentPartDone(ContentPartDoneData(
-                index: contentIndex,
-                outputItemIndex: outputIndex,
-                part: part
-            ))
+            self = .contentPartDone(try ContentPartDone(from: decoder))
 
         case .responseOutputTextDelta:
-            _ = try container.decode(String.self, forKey: .itemId) // itemId is not used in the data structure
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let contentIndex = try container.decode(Int.self, forKey: .contentIndex)
-            let delta = try container.decode(String.self, forKey: .delta)
-            self.data = .outputTextDelta(OutputTextDeltaData(
-                outputItemIndex: outputIndex,
-                contentPartIndex: contentIndex,
-                delta: delta
-            ))
+            self = .outputTextDelta(try OutputTextDelta(from: decoder))
 
         case .responseOutputTextDone:
-            _ = try container.decode(String.self, forKey: .itemId) // itemId is not used in the data structure
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let contentIndex = try container.decode(Int.self, forKey: .contentIndex)
-            let text = try container.decode(String.self, forKey: .text)
-            self.data = .outputTextDone(OutputTextDoneData(
-                outputItemIndex: outputIndex,
-                contentPartIndex: contentIndex,
-                text: text
-            ))
+            self = .outputTextDone(try OutputTextDone(from: decoder))
 
         case .responseRefusalDelta:
-            _ = try container.decode(String.self, forKey: .itemId) // itemId is not used in the data structure
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let contentIndex = try container.decode(Int.self, forKey: .contentIndex)
-            let delta = try container.decode(String.self, forKey: .delta)
-            self.data = .refusalDelta(RefusalDeltaData(
-                outputItemIndex: outputIndex,
-                contentPartIndex: contentIndex,
-                delta: delta
-            ))
+            self = .refusalDelta(try RefusalDelta(from: decoder))
 
         case .responseRefusalDone:
-            _ = try container.decode(String.self, forKey: .itemId) // itemId is not used in the data structure
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let contentIndex = try container.decode(Int.self, forKey: .contentIndex)
-            let refusal = try container.decode(String.self, forKey: .refusal)
-            self.data = .refusalDone(RefusalDoneData(
-                outputItemIndex: outputIndex,
-                contentPartIndex: contentIndex,
-                refusal: refusal
-            ))
+            self = .refusalDone(try RefusalDone(from: decoder))
 
         case .responseFunctionCallArgumentsDelta:
-            _ = try container.decode(String.self, forKey: .itemId) // itemId is not used in the data structure
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let delta = try container.decode(String.self, forKey: .delta)
-            self.data = .functionCallArgumentsDelta(FunctionCallArgumentsDeltaData(
-                outputItemIndex: outputIndex,
-                callId: "", // Will need to update this based on actual API response
-                delta: delta
-            ))
+            self = .functionCallArgumentsDelta(try FunctionCallArgumentsDelta(from: decoder))
 
         case .responseFunctionCallArgumentsDone:
-            _ = try container.decode(String.self, forKey: .itemId) // itemId is not used in the data structure
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let arguments = try container.decode(String.self, forKey: .arguments)
-            self.data = .functionCallArgumentsDone(FunctionCallArgumentsDoneData(
-                outputItemIndex: outputIndex,
-                callId: "", // Will need to update this based on actual API response
-                arguments: arguments
-            ))
+            self = .functionCallArgumentsDone(try FunctionCallArgumentsDone(from: decoder))
 
-        case .responseFileSearchCallInProgress, .responseFileSearchCallSearching, .responseFileSearchCallCompleted:
-            _ = try container.decode(String.self, forKey: .itemId) // itemId is not used in the data structure
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            self.data = .fileSearchCallProgress(FileSearchCallProgressData(
-                outputItemIndex: outputIndex,
-                id: "", // Will need to update based on actual API
-                status: typeString.components(separatedBy: ".").last ?? "",
-                queries: nil,
-                results: nil
-            ))
+        case .responseFileSearchCallInProgress:
+            self = .fileSearchCallInProgress(try FileSearchCallInProgress(from: decoder))
 
-        case .responseWebSearchCallInProgress, .responseWebSearchCallSearching, .responseWebSearchCallCompleted:
-            _ = try container.decode(String.self, forKey: .itemId) // itemId is not used in the data structure
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            self.data = .webSearchCallProgress(WebSearchCallProgressData(
-                outputItemIndex: outputIndex,
-                id: "", // Will need to update based on actual API
-                status: typeString.components(separatedBy: ".").last ?? ""
-            ))
+        case .responseFileSearchCallSearching:
+            self = .fileSearchCallSearching(try FileSearchCallSearching(from: decoder))
+
+        case .responseFileSearchCallCompleted:
+            self = .fileSearchCallCompleted(try FileSearchCallCompleted(from: decoder))
+
+        case .responseWebSearchCallInProgress:
+            self = .webSearchCallInProgress(try WebSearchCallInProgress(from: decoder))
+
+        case .responseWebSearchCallSearching:
+            self = .webSearchCallSearching(try WebSearchCallSearching(from: decoder))
+
+        case .responseWebSearchCallCompleted:
+            self = .webSearchCallCompleted(try WebSearchCallCompleted(from: decoder))
 
         case .responseReasoningSummaryPartAdded:
-            _ = try container.decode(String.self, forKey: .itemId)
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let summaryIndex = try container.decode(Int.self, forKey: .summaryIndex)
-            let part = try container.decode(ReasoningSummaryPart.self, forKey: .part)
-            self.data = .reasoningSummaryPartAdded(ReasoningSummaryPartAddedData(
-                outputIndex: outputIndex,
-                summaryIndex: summaryIndex,
-                part: part
-            ))
+            self = .reasoningSummaryPartAdded(try ReasoningSummaryPartAdded(from: decoder))
 
         case .responseReasoningSummaryPartDone:
-            _ = try container.decode(String.self, forKey: .itemId)
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let summaryIndex = try container.decode(Int.self, forKey: .summaryIndex)
-            let part = try container.decode(ReasoningSummaryPart.self, forKey: .part)
-            self.data = .reasoningSummaryPartDone(ReasoningSummaryPartDoneData(
-                outputIndex: outputIndex,
-                summaryIndex: summaryIndex,
-                part: part
-            ))
+            self = .reasoningSummaryPartDone(try ReasoningSummaryPartDone(from: decoder))
 
         case .responseReasoningSummaryTextDelta:
-            _ = try container.decode(String.self, forKey: .itemId)
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let summaryIndex = try container.decode(Int.self, forKey: .summaryIndex)
-            let delta = try container.decode(String.self, forKey: .delta)
-            self.data = .reasoningSummaryTextDelta(ReasoningSummaryTextDeltaData(
-                outputIndex: outputIndex,
-                summaryIndex: summaryIndex,
-                delta: delta
-            ))
+            self = .reasoningSummaryTextDelta(try ReasoningSummaryTextDelta(from: decoder))
 
         case .responseReasoningSummaryTextDone:
-            _ = try container.decode(String.self, forKey: .itemId)
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let summaryIndex = try container.decode(Int.self, forKey: .summaryIndex)
-            let text = try container.decode(String.self, forKey: .text)
-            self.data = .reasoningSummaryTextDone(ReasoningSummaryTextDoneData(
-                outputIndex: outputIndex,
-                summaryIndex: summaryIndex,
-                text: text
-            ))
+            self = .reasoningSummaryTextDone(try ReasoningSummaryTextDone(from: decoder))
 
         case .responseReasoningSummaryDelta:
-            _ = try container.decode(String.self, forKey: .itemId)
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let summaryIndex = try container.decode(Int.self, forKey: .summaryIndex)
-            let delta = try container.decode(AIProxyJSONValue.self, forKey: .delta)
-            self.data = .reasoningSummaryDelta(ReasoningSummaryDeltaData(
-                outputIndex: outputIndex,
-                summaryIndex: summaryIndex,
-                delta: delta
-            ))
+            self = .reasoningSummaryDelta(try ReasoningSummaryDelta(from: decoder))
 
         case .responseReasoningSummaryDone:
-            _ = try container.decode(String.self, forKey: .itemId)
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let summaryIndex = try container.decode(Int.self, forKey: .summaryIndex)
-            let text = try container.decode(String.self, forKey: .text)
-            self.data = .reasoningSummaryDone(ReasoningSummaryDoneData(
-                outputIndex: outputIndex,
-                summaryIndex: summaryIndex,
-                text: text
-            ))
+            self = .reasoningSummaryDone(try ReasoningSummaryDone(from: decoder))
 
         case .responseImageGenerationCallInProgress, .responseImageGenerationCallGenerating, .responseImageGenerationCallCompleted:
-            _ = try container.decode(String.self, forKey: .itemId)
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            self.data = .imageGenerationCallProgress(ImageGenerationCallProgressData(
-                outputIndex: outputIndex,
-                status: typeString.components(separatedBy: ".").last ?? ""
-            ))
+            self = .imageGenerationCallProgress(try ImageGenerationCallProgress(from: decoder))
 
         case .responseImageGenerationCallPartialImage:
-            _ = try container.decode(String.self, forKey: .itemId)
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let partialImageIndex = try container.decode(Int.self, forKey: .partialImageIndex)
-            let partialImageB64 = try container.decode(String.self, forKey: .partialImageB64)
-            self.data = .imageGenerationCallPartialImage(ImageGenerationCallPartialImageData(
-                outputIndex: outputIndex,
-                partialImageIndex: partialImageIndex,
-                partialImageB64: partialImageB64
-            ))
+            self = .imageGenerationCallPartialImage(try ImageGenerationCallPartialImage(from: decoder))
 
         case .responseMcpCallArgumentsDelta:
-            _ = try container.decode(String.self, forKey: .itemId)
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let delta = try container.decode(AIProxyJSONValue.self, forKey: .delta)
-            self.data = .mcpCallArgumentsDelta(McpCallArgumentsDeltaData(
-                outputIndex: outputIndex,
-                delta: delta
-            ))
+            self = .mcpCallArgumentsDelta(try McpCallArgumentsDelta(from: decoder))
 
         case .responseMcpCallArgumentsDone:
-            _ = try container.decode(String.self, forKey: .itemId)
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let arguments = try container.decode(AIProxyJSONValue.self, forKey: .arguments)
-            self.data = .mcpCallArgumentsDone(McpCallArgumentsDoneData(
-                outputIndex: outputIndex,
-                arguments: arguments
-            ))
+            self = .mcpCallArgumentsDone(try McpCallArgumentsDone(from: decoder))
 
         case .responseMcpCallCompleted, .responseMcpCallFailed:
-            self.data = .mcpCallProgress(McpCallProgressData(
-                status: typeString.components(separatedBy: ".").last ?? ""
-            ))
+            self = .mcpCallProgress(try McpCallProgress(from: decoder))
 
         case .responseMcpListToolsInProgress, .responseMcpListToolsCompleted, .responseMcpListToolsFailed:
-            self.data = .mcpListToolsProgress(McpListToolsProgressData(
-                status: typeString.components(separatedBy: ".").last ?? ""
-            ))
+            self = .mcpListToolsProgress(try McpListToolsProgress(from: decoder))
 
         case .responseOutputTextAnnotationAdded:
-            _ = try container.decode(String.self, forKey: .itemId)
-            let outputIndex = try container.decode(Int.self, forKey: .outputIndex)
-            let contentIndex = try container.decode(Int.self, forKey: .contentIndex)
-            let annotationIndex = try container.decode(Int.self, forKey: .annotationIndex)
-            let annotation = try container.decode(AIProxyJSONValue.self, forKey: .annotation)
-            self.data = .outputTextAnnotationAdded(OutputTextAnnotationAddedData(
-                outputItemIndex: outputIndex,
-                contentPartIndex: contentIndex,
-                annotationIndex: annotationIndex,
-                annotation: annotation
-            ))
+            self = .outputTextAnnotationAdded(try OutputTextAnnotationAdded(from: decoder))
 
         case .responseQueued:
-            let responseData = try container.decode(AIProxyJSONValue.self, forKey: .response)
-            self.data = .responseQueued(ResponseQueuedData(response: responseData))
+            self = .responseQueued(try ResponseQueued(from: decoder))
 
         case .error:
-            let code = try container.decode(String.self, forKey: .code)
-            let message = try container.decode(String.self, forKey: .message)
-            let param = try container.decodeIfPresent(String.self, forKey: .param)
-            self.data = .error(ErrorData(code: code, message: message, param: param))
+            self = .error(try ErrorEvent(from: decoder))
 
         default:
             throw DecodingError.dataCorruptedError(
@@ -340,375 +208,265 @@ public struct OpenAIResponseStreamingEvent: Decodable {
         }
     }
 
-}
-
-// MARK: - Event Data
-extension OpenAIResponseStreamingEvent {
-    /// Contains the event-specific data based on the event type
-    public enum EventData {
-        case responseCreated(ResponseCreatedData)
-        case responseInProgress(ResponseInProgressData)
-        case responseCompleted(ResponseCompletedData)
-        case responseFailed(ResponseFailedData)
-        case responseIncomplete(ResponseIncompleteData)
-        case outputItemAdded(OutputItemAddedData)
-        case outputItemDone(OutputItemDoneData)
-        case contentPartAdded(ContentPartAddedData)
-        case contentPartDone(ContentPartDoneData)
-        case outputTextDelta(OutputTextDeltaData)
-        case outputTextDone(OutputTextDoneData)
-        case outputTextAnnotationAdded(OutputTextAnnotationAddedData)
-        case refusalDelta(RefusalDeltaData)
-        case refusalDone(RefusalDoneData)
-        case functionCallArgumentsDelta(FunctionCallArgumentsDeltaData)
-        case functionCallArgumentsDone(FunctionCallArgumentsDoneData)
-        case fileSearchCallProgress(FileSearchCallProgressData)
-        case webSearchCallProgress(WebSearchCallProgressData)
-        case audioDelta(AudioDeltaData)
-        case audioDone(AudioDoneData)
-        case audioTranscriptDelta(AudioTranscriptDeltaData)
-        case audioTranscriptDone(AudioTranscriptDoneData)
-        case codeInterpreterCallProgress(CodeInterpreterCallProgressData)
-        case computerCallProgress(ComputerCallProgressData)
-        case reasoningDelta(ReasoningDeltaData)
-        case reasoningDone(ReasoningDoneData)
-        case reasoningSummaryPartAdded(ReasoningSummaryPartAddedData)
-        case reasoningSummaryPartDone(ReasoningSummaryPartDoneData)
-        case reasoningSummaryTextDelta(ReasoningSummaryTextDeltaData)
-        case reasoningSummaryTextDone(ReasoningSummaryTextDoneData)
-        case reasoningSummaryDelta(ReasoningSummaryDeltaData)
-        case reasoningSummaryDone(ReasoningSummaryDoneData)
-        case imageGenerationCallProgress(ImageGenerationCallProgressData)
-        case imageGenerationCallPartialImage(ImageGenerationCallPartialImageData)
-        case mcpCallArgumentsDelta(McpCallArgumentsDeltaData)
-        case mcpCallArgumentsDone(McpCallArgumentsDoneData)
-        case mcpCallProgress(McpCallProgressData)
-        case mcpListToolsProgress(McpListToolsProgressData)
-        case responseQueued(ResponseQueuedData)
-        case error(ErrorData)
-
+    public var type: OpenAIResponseStreamEventType {
+        switch self {
+        case .responseCreated: return .responseCreated
+        case .responseInProgress: return .responseInProgress
+        case .responseCompleted: return .responseCompleted
+        case .responseFailed: return .responseFailed
+        case .responseIncomplete: return .responseIncomplete
+        case .outputItemAdded: return .responseOutputItemAdded
+        case .outputItemDone: return .responseOutputItemDone
+        case .contentPartAdded: return .responseContentPartAdded
+        case .contentPartDone: return .responseContentPartDone
+        case .outputTextDelta: return .responseOutputTextDelta
+        case .outputTextDone: return .responseOutputTextDone
+        case .outputTextAnnotationAdded: return .responseOutputTextAnnotationAdded
+        case .refusalDelta: return .responseRefusalDelta
+        case .refusalDone: return .responseRefusalDone
+        case .functionCallArgumentsDelta: return .responseFunctionCallArgumentsDelta
+        case .functionCallArgumentsDone: return .responseFunctionCallArgumentsDone
+        case .fileSearchCallInProgress: return .responseFileSearchCallInProgress
+        case .fileSearchCallSearching: return .responseFileSearchCallSearching
+        case .fileSearchCallCompleted: return .responseFileSearchCallCompleted
+        case .webSearchCallInProgress: return .responseWebSearchCallInProgress
+        case .webSearchCallSearching: return .responseWebSearchCallSearching
+        case .webSearchCallCompleted: return .responseWebSearchCallCompleted
+        case .audioDelta: return .responseReasoningDelta // not ideal but no dedicated type
+        case .audioDone: return .responseReasoningDelta
+        case .audioTranscriptDelta: return .responseReasoningDelta
+        case .audioTranscriptDone: return .responseReasoningDelta
+        case .codeInterpreterCallProgress: return .responseReasoningDelta
+        case .computerCallProgress: return .responseReasoningDelta
+        case .reasoningDelta: return .responseReasoningDelta
+        case .reasoningDone: return .responseReasoningDone
+        case .reasoningSummaryPartAdded: return .responseReasoningSummaryPartAdded
+        case .reasoningSummaryPartDone: return .responseReasoningSummaryPartDone
+        case .reasoningSummaryTextDelta: return .responseReasoningSummaryTextDelta
+        case .reasoningSummaryTextDone: return .responseReasoningSummaryTextDone
+        case .reasoningSummaryDelta: return .responseReasoningSummaryDelta
+        case .reasoningSummaryDone: return .responseReasoningSummaryDone
+        case .imageGenerationCallProgress: return .responseImageGenerationCallInProgress
+        case .imageGenerationCallPartialImage: return .responseImageGenerationCallPartialImage
+        case .mcpCallArgumentsDelta: return .responseMcpCallArgumentsDelta
+        case .mcpCallArgumentsDone: return .responseMcpCallArgumentsDone
+        case .mcpCallProgress: return .responseMcpCallCompleted
+        case .mcpListToolsProgress: return .responseMcpListToolsCompleted
+        case .responseQueued: return .responseQueued
+        case .error: return .error
+        }
     }
+
 }
 
 // MARK: - Response Lifecycle Events
 extension OpenAIResponseStreamingEvent {
-    public struct ResponseCreatedData: Decodable {
-        public let id: String
-        public let object: String
-        public let model: String
-        public let createdAt: Double
-        public let status: OpenAIResponse.Status
-        public let error: String?
-        public let incompleteDetails: String?
-        public let instructions: String?
-        public let maxOutputTokens: Int?
-        public let output: [AIProxyJSONValue]
-        public let parallelToolCalls: Bool
-        public let previousResponseId: String?
-        public let reasoning: ReasoningData?
-        public let store: Bool
-        public let temperature: Double
-        public let text: TextFormat?
-        public let toolChoice: String
-        public let tools: [AIProxyJSONValue]
-        public let topP: Double
-        public let truncation: String
-        public let usage: OpenAIResponse.ResponseUsage?
-        public let user: String?
-        public let metadata: [String: String]
+    public struct ResponseCreated: Decodable {
+        public let response: OpenAIResponse
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case id, object, model, status, error, instructions, output, tools, metadata, user, usage, truncation
-            case createdAt = "created_at"
-            case incompleteDetails = "incomplete_details"
-            case maxOutputTokens = "max_output_tokens"
-            case parallelToolCalls = "parallel_tool_calls"
-            case previousResponseId = "previous_response_id"
-            case reasoning
-            case store, temperature, text
-            case toolChoice = "tool_choice"
-            case topP = "top_p"
+            case response
+            case sequenceNumber = "sequence_number"
         }
     }
 
-    public struct ReasoningData: Decodable {
-        public let effort: String?
-        public let summary: String?
-    }
+    // Dead code?
+//    public struct ReasoningData: Decodable {
+//        public let effort: String?
+//        public let summary: String?
+//    }
 
-    public struct TextFormat: Decodable {
-        public let format: FormatType
+//    public struct TextFormat: Decodable {
+//        public let format: FormatType
+//
+//        public struct FormatType: Decodable {
+//            public let type: String
+//            public let description: String?
+//            public let name: String?
+//            public let schema: AIProxyJSONValue?
+//            public let strict: Bool?
+//
+//            private enum CodingKeys: String, CodingKey {
+//                case type, description, name, schema, strict
+//            }
+//        }
+//    }
 
-        public struct FormatType: Decodable {
-            public let type: String
-            public let description: String?
-            public let name: String?
-            public let schema: AIProxyJSONValue?
-            public let strict: Bool?
+    public struct ResponseInProgress: Decodable {
+        public let response: OpenAIResponse
+        public let sequenceNumber: Int?
 
-            private enum CodingKeys: String, CodingKey {
-                case type, description, name, schema, strict
-            }
+        private enum CodingKeys: String, CodingKey {
+            case response
+            case sequenceNumber = "sequence_number"
         }
     }
 
-    public struct ResponseInProgressData: Decodable {
-        public let id: String
-        public let object: String
-        public let model: String
-        public let createdAt: Double
-        public let status: OpenAIResponse.Status
-        public let error: String?
-        public let incompleteDetails: String?
-        public let instructions: String?
-        public let maxOutputTokens: Int?
-        public let output: [AIProxyJSONValue]
-        public let parallelToolCalls: Bool
-        public let previousResponseId: String?
-        public let reasoning: ReasoningData?
-        public let store: Bool
-        public let temperature: Double
-        public let text: TextFormat?
-        public let toolChoice: String
-        public let tools: [AIProxyJSONValue]
-        public let topP: Double
-        public let truncation: String
-        public let usage: OpenAIResponse.ResponseUsage?
-        public let user: String?
-        public let metadata: [String: String]
+    public struct ResponseCompleted: Decodable {
+        public let response: OpenAIResponse
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case id, object, model, status, error, instructions, output, tools, metadata, user, usage, truncation
-            case createdAt = "created_at"
-            case incompleteDetails = "incomplete_details"
-            case maxOutputTokens = "max_output_tokens"
-            case parallelToolCalls = "parallel_tool_calls"
-            case previousResponseId = "previous_response_id"
-            case reasoning
-            case store, temperature, text
-            case toolChoice = "tool_choice"
-            case topP = "top_p"
+            case response
+            case sequenceNumber = "sequence_number"
         }
     }
 
-    public struct ResponseCompletedData: Decodable {
-        public let id: String
-        public let object: String
-        public let model: String
-        public let createdAt: Double
-        public let status: OpenAIResponse.Status
-        public let error: String?
-        public let incompleteDetails: String?
-        public let input: [AIProxyJSONValue]?
-        public let instructions: String?
-        public let maxOutputTokens: Int?
-        public let output: [OpenAIResponse.ResponseOutputItem]
-        public let previousResponseId: String?
-        public let reasoningEffort: String?
-        public let store: Bool
-        public let temperature: Double
-        public let text: TextFormat?
-        public let toolChoice: String
-        public let tools: [AIProxyJSONValue]
-        public let topP: Double
-        public let truncation: String
-        public let usage: OpenAIResponse.ResponseUsage?
-        public let user: String?
-        public let metadata: [String: String]
+    public struct ResponseFailed: Decodable {
+        public let response: OpenAIResponse
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case id, object, model, status, error, instructions, input, output, tools, metadata, user, usage, truncation
-            case createdAt = "created_at"
-            case incompleteDetails = "incomplete_details"
-            case maxOutputTokens = "max_output_tokens"
-            case previousResponseId = "previous_response_id"
-            case reasoningEffort = "reasoning_effort"
-            case store, temperature, text
-            case toolChoice = "tool_choice"
-            case topP = "top_p"
+            case response
+            case sequenceNumber = "sequence_number"
         }
     }
 
-    public struct ResponseFailedData: Decodable {
-        public let id: String
-        public let object: String
-        public let createdAt: Double
-        public let status: OpenAIResponse.Status
-        public let error: OpenAIResponse.ResponseError
-        public let incompleteDetails: String?
-        public let instructions: String?
-        public let maxOutputTokens: Int?
-        public let model: String
-        public let output: [OpenAIResponse.ResponseOutputItem]
-        public let previousResponseId: String?
-        public let reasoningEffort: String?
-        public let store: Bool
-        public let temperature: Double
-        public let text: TextFormat?
-        public let toolChoice: String
-        public let tools: [String]
-        public let topP: Double
-        public let truncation: String
-        public let usage: OpenAIResponse.ResponseUsage?
-        public let user: String?
-        public let metadata: [String: String]
+    public struct ResponseIncomplete: Decodable {
+        public let response: OpenAIResponse
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case id, object, status, error, instructions, model, output, store, temperature, text, tools, usage, user, metadata, truncation
-            case createdAt = "created_at"
-            case incompleteDetails = "incomplete_details"
-            case maxOutputTokens = "max_output_tokens"
-            case previousResponseId = "previous_response_id"
-            case reasoningEffort = "reasoning_effort"
-            case toolChoice = "tool_choice"
-            case topP = "top_p"
-        }
-    }
-
-    public struct ResponseIncompleteData: Decodable {
-        public let id: String
-        public let object: String
-        public let createdAt: Double
-        public let status: OpenAIResponse.Status
-        public let error: String?
-        public let incompleteDetails: OpenAIResponse.IncompleteDetails
-        public let instructions: String?
-        public let maxOutputTokens: Int?
-        public let model: String
-        public let output: [OpenAIResponse.ResponseOutputItem]
-        public let previousResponseId: String?
-        public let reasoningEffort: String?
-        public let store: Bool
-        public let temperature: Double
-        public let text: TextFormat?
-        public let toolChoice: String
-        public let tools: [String]
-        public let topP: Double
-        public let truncation: String
-        public let usage: OpenAIResponse.ResponseUsage?
-        public let user: String?
-        public let metadata: [String: String]
-
-        private enum CodingKeys: String, CodingKey {
-            case id, object, status, error, instructions, model, output, store, temperature, text, tools, usage, user, metadata, truncation
-            case createdAt = "created_at"
-            case incompleteDetails = "incomplete_details"
-            case maxOutputTokens = "max_output_tokens"
-            case previousResponseId = "previous_response_id"
-            case reasoningEffort = "reasoning_effort"
-            case toolChoice = "tool_choice"
-            case topP = "top_p"
+            case response
+            case sequenceNumber = "sequence_number"
         }
     }
 }
 
 // MARK: - Output Item Events
 extension OpenAIResponseStreamingEvent {
-    public struct OutputItemAddedData: Decodable {
-        public let index: Int
-        public let item: PartialOutputItem
-    }
 
-    public struct OutputItemDoneData: Decodable {
-        public let index: Int
+    /// Represents `response.output_item.added`
+    /// https://platform.openai.com/docs/api-reference/responses-streaming/response/output_item/added
+    public struct OutputItemAdded: Decodable {
+        public let sequenceNumber: Int?
+        public let index: Int?
+
+        // This should be an enum:
         public let item: OpenAIResponse.ResponseOutputItem
-    }
-
-    /// Represents a partial output item during streaming
-    public struct PartialOutputItem: Decodable {
-        public let type: String
-        public let id: String?
-        public let status: String?
-
-        // For message type
-        public let role: String?
-        public let content: [PartialContentPart]?
-
-        // For tool calls
-        public let callId: String?
-        public let name: String?
 
         private enum CodingKeys: String, CodingKey {
-            case type
-            case id
-            case status
-            case role
-            case content
-            case callId = "call_id"
-            case name
+            case sequenceNumber = "sequence_number"
+            case index = "output_index"
+            case item
+        }
+    }
+
+    public struct OutputItemDone: Decodable {
+        public let item: OpenAIResponse.ResponseOutputItem
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
+
+        private enum CodingKeys: String, CodingKey {
+            case item
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 }
 
 // MARK: - Content Part Events
 extension OpenAIResponseStreamingEvent {
-    public struct ContentPartAddedData: Decodable {
-        public let index: Int
-        public let outputItemIndex: Int
-        public let part: PartialContentPart
+    /// Representation of `response.content_part.added`
+    /// https://platform.openai.com/docs/api-reference/responses-streaming/response/content_part/added
+    public struct ContentPartAdded: Decodable {
+        /// The sequence number of this event.
+        public let sequenceNumber: Int?
 
-        private enum CodingKeys: String, CodingKey {
-            case index
-            case outputItemIndex = "output_item_index"
-            case part
-        }
-    }
+        /// The index of the content part that was added.
+        public let contentIndex: Int?
 
-    public struct ContentPartDoneData: Decodable {
-        public let index: Int
-        public let outputItemIndex: Int
+        /// The index of the output item that the content part was added to.
+        public let outputIndex: Int?
+
+        /// The content part that was added.
         public let part: OpenAIResponse.Content
 
         private enum CodingKeys: String, CodingKey {
-            case index
-            case outputItemIndex = "output_item_index"
+            case sequenceNumber = "sequence_number"
+            case contentIndex = "content_index"
+            case outputIndex = "output_index"
             case part
         }
     }
 
-    public struct PartialContentPart: Decodable {
-        public let type: String
-        public let annotations: [String]?
-        public let text: String?
+    public struct ContentPartDone: Decodable {
+        public let contentIndex: Int?
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let part: OpenAIResponse.Content
+        public let sequenceNumber: Int?
+
+        private enum CodingKeys: String, CodingKey {
+            case contentIndex = "content_index"
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case part
+            case sequenceNumber = "sequence_number"
+        }
     }
 }
 
 // MARK: - Text Events
 extension OpenAIResponseStreamingEvent {
-    public struct OutputTextDeltaData: Decodable {
-        public let outputItemIndex: Int
-        public let contentPartIndex: Int
+    /// https://platform.openai.com/docs/api-reference/responses-streaming/response/output_text/delta
+    public struct OutputTextDelta: Decodable {
+        /// The index of the content part that the text delta was added to.
+        public let contentIndex: Int?
+
+        /// The text delta that was added.
         public let delta: String
 
+        /// The ID of the output item that the text delta was added to.
+        public let itemID: String?
+
+        /// The index of the output item that the text delta was added to.
+        public let outputIndex: Int?
+
+        /// The sequence number for this event.
+        public let sequenceNumber: Int?
+
         private enum CodingKeys: String, CodingKey {
-            case outputItemIndex = "output_item_index"
-            case contentPartIndex = "content_part_index"
+            case contentIndex = "content_index"
             case delta
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 
-    public struct OutputTextAnnotationAddedData: Decodable {
-        public let outputItemIndex: Int
-        public let contentPartIndex: Int
-        public let annotationIndex: Int
-        public let annotation: AIProxyJSONValue
+    /// Represents `response.output_text.annotation.added`
+    public struct OutputTextAnnotationAdded: Decodable {
+        public let sequenceNumber: Int?
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let contentIndex: Int?
+        public let annotationIndex: Int?
+        public let annotation: OpenAIResponse.Annotation?
 
         private enum CodingKeys: String, CodingKey {
-            case outputItemIndex = "output_item_index"
-            case contentPartIndex = "content_part_index"
+            case sequenceNumber = "sequence_number"
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case contentIndex = "content_index"
             case annotationIndex = "annotation_index"
             case annotation
         }
     }
 
-    public struct OutputTextDoneData: Decodable {
-        public let outputItemIndex: Int
-        public let contentPartIndex: Int
+    public struct OutputTextDone: Decodable {
+        public let contentIndex: Int?
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
         public let text: String
 
         private enum CodingKeys: String, CodingKey {
-            case outputItemIndex = "output_item_index"
-            case contentPartIndex = "content_part_index"
+            case contentIndex = "content_index"
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
             case text
         }
     }
@@ -716,131 +474,216 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Refusal Events
 extension OpenAIResponseStreamingEvent {
-    public struct RefusalDeltaData: Decodable {
-        public let outputItemIndex: Int
-        public let contentPartIndex: Int
+    public struct RefusalDelta: Decodable {
+        public let contentIndex: Int?
         public let delta: String
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case outputItemIndex = "output_item_index"
-            case contentPartIndex = "content_part_index"
+            case contentIndex = "content_index"
             case delta
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 
-    public struct RefusalDoneData: Decodable {
-        public let outputItemIndex: Int
-        public let contentPartIndex: Int
+    public struct RefusalDone: Decodable {
+        public let contentIndex: Int?
+        public let itemID: String?
+        public let outputIndex: Int?
         public let refusal: String
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case outputItemIndex = "output_item_index"
-            case contentPartIndex = "content_part_index"
+            case contentIndex = "content_index"
+            case itemID = "item_id"
+            case outputIndex = "output_index"
             case refusal
+            case sequenceNumber = "sequence_number"
         }
     }
 }
 
 // MARK: - Function Call Events
 extension OpenAIResponseStreamingEvent {
-    public struct FunctionCallArgumentsDeltaData: Decodable {
-        public let outputItemIndex: Int
-        public let callId: String
+    /// https://platform.openai.com/docs/api-reference/responses-streaming/response/function_call_arguments/delta
+    public struct FunctionCallArgumentsDelta: Decodable {
+        ///  The function-call arguments delta that is added.
         public let delta: String
 
+        /// The ID of the output item that the function-call arguments delta is added to.
+        public let itemID: String?
+
+        /// The index of the output item that the function-call arguments delta is added to.
+        public let outputIndex: Int?
+
+        /// The sequence number of this event.
+        public let sequenceNumber: Int?
+
         private enum CodingKeys: String, CodingKey {
-            case outputItemIndex = "output_item_index"
-            case callId = "call_id"
             case delta
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 
-    public struct FunctionCallArgumentsDoneData: Decodable {
-        public let outputItemIndex: Int
-        public let callId: String
+    public struct FunctionCallArgumentsDone: Decodable {
+        ///  The function-call arguments delta that is added.
         public let arguments: String
 
+        /// The ID of the output item that the function-call arguments delta is added to.
+        public let itemID: String?
+
+        /// The index of the output item that the function-call arguments delta is added to.
+        public let outputIndex: Int?
+
+        /// The sequence number of this event.
+        public let sequenceNumber: Int?
+
         private enum CodingKeys: String, CodingKey {
-            case outputItemIndex = "output_item_index"
-            case callId = "call_id"
             case arguments
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 }
 
 // MARK: - Search Call Events
 extension OpenAIResponseStreamingEvent {
-    public struct FileSearchCallProgressData: Decodable {
-        public let outputItemIndex: Int
-        public let id: String
-        public let status: String
-        public let queries: [String]?
-        public let results: [OpenAIResponse.FileSearchCall.FileSearchResult]?
+    /// Represents `response.file_search_call.in_progress`
+    public struct FileSearchCallInProgress: Decodable {
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case outputItemIndex = "output_item_index"
-            case id
-            case status
-            case queries
-            case results
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 
-    public struct WebSearchCallProgressData: Decodable {
-        public let outputItemIndex: Int
-        public let id: String
-        public let status: String
+    /// Represents `response.file_search_call.searching`
+    public struct FileSearchCallSearching: Decodable {
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
 
         private enum CodingKeys: String, CodingKey {
-            case outputItemIndex = "output_item_index"
-            case id
-            case status
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
+        }
+    }
+
+    /// Represents `response.file_search_call.completed`
+    public struct FileSearchCallCompleted: Decodable {
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
+
+        private enum CodingKeys: String, CodingKey {
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
+        }
+    }
+
+    /// Represents `response.web_search_call.in_progress`
+    public struct WebSearchCallInProgress: Decodable {
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
+
+        private enum CodingKeys: String, CodingKey {
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
+        }
+    }
+
+    /// Represents `response.web_search_call.searching`
+    public struct WebSearchCallSearching: Decodable {
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
+
+        private enum CodingKeys: String, CodingKey {
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
+        }
+    }
+
+    /// Represents `response.web_search_call.completed`
+    public struct WebSearchCallCompleted: Decodable {
+        public let itemID: String?
+        public let outputIndex: Int?
+        public let sequenceNumber: Int?
+
+        private enum CodingKeys: String, CodingKey {
+            case itemID = "item_id"
+            case outputIndex = "output_index"
+            case sequenceNumber = "sequence_number"
         }
     }
 }
 
 // MARK: - Audio Events
 extension OpenAIResponseStreamingEvent {
-    public struct AudioDeltaData: Decodable {
+    public struct AudioDelta: Decodable {
+        public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let contentPartIndex: Int
         public let delta: String // Base64 encoded audio data
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputItemIndex = "output_item_index"
             case contentPartIndex = "content_part_index"
             case delta
         }
     }
 
-    public struct AudioDoneData: Decodable {
+    public struct AudioDone: Decodable {
+        public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let contentPartIndex: Int
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputItemIndex = "output_item_index"
             case contentPartIndex = "content_part_index"
         }
     }
 
-    public struct AudioTranscriptDeltaData: Decodable {
+    public struct AudioTranscriptDelta: Decodable {
+        public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let contentPartIndex: Int
         public let delta: String
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputItemIndex = "output_item_index"
             case contentPartIndex = "content_part_index"
             case delta
         }
     }
 
-    public struct AudioTranscriptDoneData: Decodable {
+    public struct AudioTranscriptDone: Decodable {
+        public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let contentPartIndex: Int
         public let transcript: String
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputItemIndex = "output_item_index"
             case contentPartIndex = "content_part_index"
             case transcript
@@ -850,19 +693,22 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Code Interpreter and Computer Call Events
 extension OpenAIResponseStreamingEvent {
-    public struct CodeInterpreterCallProgressData: Decodable {
+    public struct CodeInterpreterCallProgress: Decodable {
+        public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let id: String
         public let status: String
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputItemIndex = "output_item_index"
             case id
             case status
         }
     }
 
-    public struct ComputerCallProgressData: Decodable {
+    public struct ComputerCallProgress: Decodable {
+        public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let id: String
         public let callId: String
@@ -871,6 +717,7 @@ extension OpenAIResponseStreamingEvent {
         public let pendingSafetyChecks: [OpenAIResponse.SafetyCheck]?
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputItemIndex = "output_item_index"
             case id
             case callId = "call_id"
@@ -883,21 +730,25 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Reasoning Events
 extension OpenAIResponseStreamingEvent {
-    public struct ReasoningDeltaData: Decodable {
+    public struct ReasoningDelta: Decodable {
+        public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let delta: String
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputItemIndex = "output_item_index"
             case delta
         }
     }
 
-    public struct ReasoningDoneData: Decodable {
+    public struct ReasoningDone: Decodable {
+        public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let reasoning: String
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputItemIndex = "output_item_index"
             case reasoning
         }
@@ -911,72 +762,84 @@ extension OpenAIResponseStreamingEvent {
         public let text: String?
     }
 
-    public struct ReasoningSummaryPartAddedData: Decodable {
+    public struct ReasoningSummaryPartAdded: Decodable {
+        public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
         public let part: ReasoningSummaryPart
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputIndex = "output_index"
             case summaryIndex = "summary_index"
             case part
         }
     }
 
-    public struct ReasoningSummaryPartDoneData: Decodable {
+    public struct ReasoningSummaryPartDone: Decodable {
+        public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
         public let part: ReasoningSummaryPart
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputIndex = "output_index"
             case summaryIndex = "summary_index"
             case part
         }
     }
 
-    public struct ReasoningSummaryTextDeltaData: Decodable {
+    public struct ReasoningSummaryTextDelta: Decodable {
+        public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
         public let delta: String
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputIndex = "output_index"
             case summaryIndex = "summary_index"
             case delta
         }
     }
 
-    public struct ReasoningSummaryTextDoneData: Decodable {
+    public struct ReasoningSummaryTextDone: Decodable {
+        public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
         public let text: String
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputIndex = "output_index"
             case summaryIndex = "summary_index"
             case text
         }
     }
 
-    public struct ReasoningSummaryDeltaData: Decodable {
+    public struct ReasoningSummaryDelta: Decodable {
+        public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
         public let delta: AIProxyJSONValue
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputIndex = "output_index"
             case summaryIndex = "summary_index"
             case delta
         }
     }
 
-    public struct ReasoningSummaryDoneData: Decodable {
+    public struct ReasoningSummaryDone: Decodable {
+        public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
         public let text: String
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputIndex = "output_index"
             case summaryIndex = "summary_index"
             case text
@@ -986,22 +849,26 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Image Generation Events
 extension OpenAIResponseStreamingEvent {
-    public struct ImageGenerationCallProgressData: Decodable {
+    public struct ImageGenerationCallProgress: Decodable {
+        public let sequenceNumber: Int
         public let outputIndex: Int
         public let status: String
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputIndex = "output_index"
             case status
         }
     }
 
-    public struct ImageGenerationCallPartialImageData: Decodable {
+    public struct ImageGenerationCallPartialImage: Decodable {
+        public let sequenceNumber: Int
         public let outputIndex: Int
         public let partialImageIndex: Int
         public let partialImageB64: String
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputIndex = "output_index"
             case partialImageIndex = "partial_image_index"
             case partialImageB64 = "partial_image_b64"
@@ -1011,48 +878,78 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - MCP Call Events
 extension OpenAIResponseStreamingEvent {
-    public struct McpCallArgumentsDeltaData: Decodable {
+    public struct McpCallArgumentsDelta: Decodable {
+        public let sequenceNumber: Int
         public let outputIndex: Int
         public let delta: AIProxyJSONValue
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputIndex = "output_index"
             case delta
         }
     }
 
-    public struct McpCallArgumentsDoneData: Decodable {
+    public struct McpCallArgumentsDone: Decodable {
+        public let sequenceNumber: Int
         public let outputIndex: Int
         public let arguments: AIProxyJSONValue
 
         private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
             case outputIndex = "output_index"
             case arguments
         }
     }
 
-    public struct McpCallProgressData: Decodable {
+    public struct McpCallProgress: Decodable {
+        public let sequenceNumber: Int
         public let status: String
+
+        private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
+            case status
+        }
     }
 
-    public struct McpListToolsProgressData: Decodable {
+    public struct McpListToolsProgress: Decodable {
+        public let sequenceNumber: Int
         public let status: String
+
+        private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
+            case status
+        }
     }
 }
 
 
 // MARK: - Response Queue Events
 extension OpenAIResponseStreamingEvent {
-    public struct ResponseQueuedData: Decodable {
+    public struct ResponseQueued: Decodable {
+        public let sequenceNumber: Int
         public let response: AIProxyJSONValue
+
+        private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
+            case response
+        }
     }
 }
 
 // MARK: - Error Events
 extension OpenAIResponseStreamingEvent {
-    public struct ErrorData: Decodable {
+    public struct ErrorEvent: Decodable {
+        public let sequenceNumber: Int
         public let code: String
         public let message: String
         public let param: String?
+
+        private enum CodingKeys: String, CodingKey {
+            case sequenceNumber = "sequence_number"
+            case code
+            case message
+            case param
+        }
     }
 }

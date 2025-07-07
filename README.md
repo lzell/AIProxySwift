@@ -1301,7 +1301,7 @@ final class RealtimeManager {
 }
 ```
 
-### How to make a basic request using OpenAI's Responses API (new)
+### How to make a basic request using OpenAI's Responses API
 
 ```swift
     import AIProxy
@@ -1333,43 +1333,11 @@ final class RealtimeManager {
     }
 ```
 
-### How to make a streaming request using OpenAI's Responses API (new)
+### How to use a stored file in an OpenAI prompt using the Responses API
 
-```swift
-    import AIProxy
+Note: This example is for including a file in a prompt. For searching through a file, see the vector store examples below.
 
-    /* Uncomment for BYOK use cases */
-    // let openAIService = AIProxy.openAIDirectService(
-    //     unprotectedAPIKey: "your-openai-key"
-    // )
-
-    /* Uncomment for all other production use cases */
-    // let openAIService = AIProxy.openAIService(
-    //     partialKey: "partial-key-from-your-developer-dashboard",
-    //     serviceURL: "service-url-from-your-developer-dashboard"
-    // )
-    let requestBody = OpenAICreateResponseRequestBody(
-        input: .text("hello world"),
-        model: "gpt-4o"
-    )
-
-    do {
-        let stream = try await openAIService.createStreamingResponse(requestBody: requestBody)
-        for try await chunk in stream {
-            if let textDelta = chunk.textDelta {
-                print(textDelta)
-            }
-        }
-    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received \(statusCode) status code with response body: \(responseBody)")
-    } catch {
-        print("Could not get a streaming response from OpenAI: \(error.localizedDescription)")
-    }
-```
-
-### How to use a stored file in an OpenAI prompt using the Responses API (new)
-
-Replace the `fileID` with the ID returned from the snippet above.
+Replace the `fileID` with the ID returned from the snippet `How to upload a file to OpenAI's file storage`
 
 ```swift
     import AIProxy
@@ -1610,6 +1578,197 @@ You'll need two IDs for this snippet:
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not create an OpenAI vector store file: \(error.localizedDescription)")
+    }
+```
+
+### How to make a streaming request using OpenAI's Responses API
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .text("hello world"),
+        model: "gpt-4o"
+    )
+
+    do {
+        let stream = try await openAIService.createStreamingResponseEvents(requestBody: requestBody)
+        for try await event in stream {
+            switch event {
+            case .outputTextDelta(let outputTextDelta):
+                print(outputTextDelta.delta)
+            default:
+                break
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get a streaming response from OpenAI: \(error.localizedDescription)")
+    }
+```
+
+### How to make a streaming function call through OpenAI's Responses API
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let schema: [String: AIProxyJSONValue] = [
+        "type": "object",
+        "properties": [
+            "location": [
+                "type": "string",
+                "description": "City and country e.g. Bogotá, Colombia"
+            ]
+        ],
+        "required": ["location"],
+        "additionalProperties": false
+    ]
+
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .text("What is the weather like in Paris today?"),
+        model: "gpt-4o",
+        tools: [
+            .function(
+                .init(
+                    name: "get_weather",
+                    parameters: schema
+                )
+            )
+        ]
+    )
+
+    do {
+        let stream = try await openAIService.createStreamingResponseEvents(requestBody: requestBody)
+        for try await event in stream {
+            switch event {
+            case .functionCallArgumentsDelta(let functionCallArgumentsDelta):
+                print(functionCallArgumentsDelta.delta)
+            default:
+                break
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get a streaming response from OpenAI: \(error.localizedDescription)")
+    }
+```
+
+### How to make a streaming web search call through OpenAI's Responses API
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .text("What is Apple's stock price today?"),
+        model: "gpt-4o",
+        tools: [
+            .webSearch(.init(searchContextSize: .low))
+        ]
+    )
+
+    do {
+        let stream = try await openAIService.createStreamingResponseEvents(requestBody: requestBody)
+        for try await event in stream {
+            switch event {
+            case .outputTextDelta(let outputTextDelta):
+                print(outputTextDelta.delta)
+            default:
+                break
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get a text response from OpenAI: \(error.localizedDescription)")
+    }
+```
+
+### How to make a streaming file search call through OpenAI's Responses API
+
+To run this snippet, you'll first need to add your files to a vector store.
+See the snippet above titled `How to add an uploaded file to an OpenAI vector store`.
+Once your files are added and processed, you can run this snippet on your `vectorStoreID`.
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let vectorStoreID = /* your vector store ID */
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .text("How do I use 'async let'?"),
+        model: "gpt-4o",
+        tools: [
+            .fileSearch(
+                .init(
+                    vectorStoreIDs: [
+                        vectorStoreID
+                    ]
+                )
+            )
+        ]
+    )
+    do {
+        let stream = try await openAIService.createStreamingResponseEvents(requestBody: requestBody)
+        for try await event in stream {
+            switch event {
+            case .outputTextDelta(let outputTextDelta):
+                print(outputTextDelta.delta)
+            case .outputTextAnnotationAdded(let outputTextAnnotationAdded):
+                if case .fileCitation(let fileCitation) = outputTextAnnotationAdded.annotation {
+                    print("Citing: \(fileCitation.filename) at index: \(fileCitation.index)")
+                }
+            default:
+                break
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get a text response from OpenAI: \(error.localizedDescription)")
     }
 ```
 

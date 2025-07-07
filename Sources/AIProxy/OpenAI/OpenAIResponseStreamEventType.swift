@@ -25,7 +25,7 @@ public enum OpenAIResponseStreamEventType: String {
     
     // MARK: - Output Text Events
     case responseOutputTextDelta = "response.output_text.delta"
-    case responseOutputTextAnnotationAdded = "response.output_text_annotation.added"
+    case responseOutputTextAnnotationAdded = "response.output_text.annotation.added"
     case responseOutputTextDone = "response.output_text.done"
     
     // MARK: - Refusal Events

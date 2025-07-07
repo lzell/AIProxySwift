@@ -56,26 +56,26 @@ public struct OpenAICreateResponseRequestBody: Encodable {
         case auto
     }
     public let truncation: Truncation?
-    
+
     /// If set, partial response deltas will be sent as server-sent events.
     /// Set this to true when using the streaming response method.
     public var stream: Bool?
-    
+
     /// What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random,
     /// while lower values like 0.2 will make it more focused and deterministic.
     public let temperature: Double?
-    
+
     /// An alternative to sampling with temperature, called nucleus sampling, where the model considers the results
     /// of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability
     /// mass are considered.
     public let topP: Double?
-    
+
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
     public let user: String?
-    
+
     /// Text generation settings.
     public let text: TextSettings?
-    
+
     private enum CodingKeys: String, CodingKey {
         case input
         case model
@@ -259,7 +259,7 @@ extension OpenAICreateResponseRequestBody {
             case strict
             case type
             case userLocation = "user_location"
-            case vectorStoreIds = "vector_store_ids"
+            case vectorStoreIDs = "vector_store_ids"
         }
 
         public func encode(to encoder: Encoder) throws {
@@ -268,7 +268,7 @@ extension OpenAICreateResponseRequestBody {
             switch self {
             case .fileSearch(let tool):
                 try container.encode("file_search", forKey: .type)
-                try container.encode(tool.vectorStoreIds, forKey: .vectorStoreIds)
+                try container.encode(tool.vectorStoreIDs, forKey: .vectorStoreIDs)
                 try container.encodeIfPresent(tool.filters, forKey: .filters)
                 try container.encodeIfPresent(tool.maxNumResults, forKey: .maxNumResults)
                 try container.encodeIfPresent(tool.rankingOptions, forKey: .rankingOptions)
@@ -299,11 +299,11 @@ extension OpenAICreateResponseRequestBody {
 
             switch type {
             case "file_search":
-                let vectorStoreIds = try container.decode([String].self, forKey: .vectorStoreIds)
+                let vectorStoreIDs = try container.decode([String].self, forKey: .vectorStoreIDs)
                 let filters = try container.decodeIfPresent(FileSearchFilter.self, forKey: .filters)
                 let maxNumResults = try container.decodeIfPresent(Int.self, forKey: .maxNumResults)
                 let rankingOptions = try container.decodeIfPresent(FileSearchTool.RankingOptions.self, forKey: .rankingOptions)
-                self = .fileSearch(FileSearchTool(vectorStoreIds: vectorStoreIds, filters: filters, maxNumResults: maxNumResults, rankingOptions: rankingOptions))
+                self = .fileSearch(FileSearchTool(vectorStoreIDs: vectorStoreIDs, filters: filters, maxNumResults: maxNumResults, rankingOptions: rankingOptions))
 
             case "web_search_preview":
                 let searchContextSize = try container.decodeIfPresent(WebSearchTool.SearchContextSize.self, forKey: .searchContextSize)
@@ -335,34 +335,51 @@ extension OpenAICreateResponseRequestBody {
 
     // MARK: - File Search Tool
     public struct FileSearchTool: Codable {
+
+        // Required
+        /// The type of the file search tool. Always `file_search`.
+        public let type = "file_search"
+
+        /// The IDs of the vector stores to search.
+        public let vectorStoreIDs: [String]
+
+        // Optional
+        /// A filter to apply.
+        public let filters: FileSearchFilter?
+
+        /// The maximum number of results to return. This number should be between 1 and 50 inclusive.
+        public let maxNumResults: Int?
+
+        /// Ranking options for search.
+        /// If not specified, the file search tool will use the `auto` ranker and a `score_threshold` of 0.
+        public let rankingOptions: RankingOptions?
+
         private enum CodingKeys: String, CodingKey {
             case type
-            case vectorStoreIds = "vector_store_ids"
+            case vectorStoreIDs = "vector_store_ids"
             case filters
             case maxNumResults = "max_num_results"
             case rankingOptions = "ranking_options"
         }
 
-        public let type = "file_search"
-        public let vectorStoreIds: [String]
-        public let filters: FileSearchFilter?
-        public let maxNumResults: Int?
-        public let rankingOptions: RankingOptions?
-
         public init(
-            vectorStoreIds: [String],
+            vectorStoreIDs: [String],
             filters: FileSearchFilter? = nil,
             maxNumResults: Int? = nil,
             rankingOptions: RankingOptions? = nil
         ) {
-            self.vectorStoreIds = vectorStoreIds
+            self.vectorStoreIDs = vectorStoreIDs
             self.filters = filters
             self.maxNumResults = maxNumResults
             self.rankingOptions = rankingOptions
         }
 
         public struct RankingOptions: Codable {
+            /// The ranker to use for the file search.
             public let ranker: String?
+
+            /// The score threshold for the file search, a number between 0 and 1.
+            /// Numbers closer to 1 will attempt to return only the most relevant results, but may return fewer results.
             public let scoreThreshold: Double?
 
             private enum CodingKeys: String, CodingKey {
@@ -389,26 +406,50 @@ extension OpenAICreateResponseRequestBody {
             }
         }
 
+        /// A filter used to compare a specified attribute key to a given value using a defined comparison operation.
         public struct ComparisonFilter: Codable {
+            /// The key to compare against the value.
             public let key: String
-            public let type: String // eq, ne, gt, gte, lt, lte
+
+            /// Specifies the comparison operator: eq, ne, gt, gte, lt, lte
+            public let type: ComparisonOperator
+
+            /// The value to compare against the attribute key; supports string, number, or boolean types.
             public let value: AIProxyJSONValue
 
-            public init(key: String, type: String, value: AIProxyJSONValue) {
+            public init(key: String, type: ComparisonOperator, value: AIProxyJSONValue) {
                 self.key = key
                 self.type = type
                 self.value = value
             }
         }
 
-        public struct CompoundFilter: Codable {
-            public let filters: [FileSearchFilter]
-            public let type: String // and, or
+        public enum ComparisonOperator: String, Codable {
+            case eq
+            case ne
+            case gt
+            case gte
+            case lt
+            case lte
+        }
 
-            public init(filters: [FileSearchFilter], type: String) {
+        /// Combine multiple filters using `and` or `or`.
+        public struct CompoundFilter: Codable {
+            /// Array of filters to combine. Items can be `ComparisonFilter` or `CompoundFilter`.
+            public let filters: [FileSearchFilter]
+
+            /// Type of operation: `and` or `or`.
+            public let type: CompoundOperator
+
+            public init(filters: [FileSearchFilter], type: CompoundOperator) {
                 self.filters = filters
                 self.type = type
             }
+        }
+
+        public enum CompoundOperator: String, Codable {
+            case and
+            case or
         }
     }
 
@@ -493,19 +534,32 @@ extension OpenAICreateResponseRequestBody {
 
     // MARK: - Function Tool
     public struct FunctionTool: Codable {
+        // Required
+
+        /// The name of the function to call.
+        public let name: String
+
+        /// A JSON schema object describing the parameters of the function.
+        public let parameters: [String: AIProxyJSONValue]
+
+        /// Whether to enforce strict parameter validation. Default true.
+        public let strict: Bool
+
+        /// The type of the function tool. Always `function`
+        public let type = "function"
+
+        // Optional
+
+        /// A description of the function. Used by the model to determine whether or not to call the function.
+        public let description: String?
+
         private enum CodingKeys: String, CodingKey {
-            case type
+            case description
             case name
             case parameters
             case strict
-            case description
+            case type
         }
-
-        public let type = "function"
-        public let name: String
-        public let parameters: [String: AIProxyJSONValue]
-        public let strict: Bool
-        public let description: String?
 
         public init(
             name: String,
@@ -635,26 +689,26 @@ extension OpenAICreateResponseRequestBody {
     public struct TextSettings: Codable {
         /// The format specification for the text output
         public let format: Format?
-        
+
         public init(format: Format? = nil) {
             self.format = format
         }
     }
-    
+
     /// Format specification for text output
     public struct Format: Codable {
         /// The format type
         public let type: FormatType?
-        
+
         /// The name of the schema (required for json_schema type)
         public let name: String?
-        
+
         /// The JSON schema definition (required for json_schema type)
         public let schema: [String: AIProxyJSONValue]?
-        
+
         /// Whether to enable strict schema adherence (optional for json_schema type)
         public let strict: Bool?
-        
+
         public init(
             type: FormatType? = nil,
             name: String? = nil,
@@ -667,7 +721,7 @@ extension OpenAICreateResponseRequestBody {
             self.strict = strict
         }
     }
-    
+
     /// Available text output format types
     public enum FormatType: String, Codable {
         /// Plain text format
