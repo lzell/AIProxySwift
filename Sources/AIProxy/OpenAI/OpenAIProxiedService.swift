@@ -20,7 +20,8 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
         )
         super.init(
             requestFormat: requestFormat,
-            requestBuilder: requestBuilder
+            requestBuilder: requestBuilder,
+            serviceNetworker: OpenAIProxiedServiceNetworker()
         )
     }
 }
