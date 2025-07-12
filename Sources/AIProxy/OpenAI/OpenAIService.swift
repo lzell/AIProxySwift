@@ -10,12 +10,18 @@ import Foundation
 open class OpenAIService {
     private let requestFormat: OpenAIRequestFormat
     private let requestBuilder: OpenAIRequestBuilder
+    private let serviceNetworker: ServiceMixin
 
     /// This designated initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.directOpenAIService` defined in AIProxy.swift.
-    init(requestFormat: OpenAIRequestFormat, requestBuilder: OpenAIRequestBuilder) {
+    init(
+        requestFormat: OpenAIRequestFormat,
+        requestBuilder: OpenAIRequestBuilder,
+        serviceNetworker: ServiceMixin
+    ) {
         self.requestFormat = requestFormat
         self.requestBuilder = requestBuilder
+        self.serviceNetworker = serviceNetworker
     }
 
     /// Initiates a non-streaming chat completion request to /v1/chat/completions.
@@ -33,8 +39,13 @@ open class OpenAIService {
         var body = body
         body.stream = false
         body.streamOptions = nil
-        let request = try await self.requestBuilder.jsonPOST(path: self.resolvedPath("chat/completions"), body: body, secondsToWait: secondsToWait, additionalHeaders: [:])
-        return try await self.makeRequestAndDeserializeResponse(request)
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("chat/completions"),
+            body: body,
+            secondsToWait: secondsToWait,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
     /// Initiates a streaming chat completion request to /v1/chat/completions.
@@ -52,17 +63,13 @@ open class OpenAIService {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("chat/completions"),
-            body: try body.serialize(),
-            verb: .post,
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("chat/completions"),
+            body: body,
             secondsToWait: secondsToWait,
-            contentType: "application/json"
+            additionalHeaders: [:]
         )
-        return try await self.makeRequestAndDeserializeStreamingChunks(request)
+        return try await self.serviceNetworker.makeRequestAndDeserializeStreamingChunks(request)
     }
 
     /// Initiates a create image request to /v1/images/generations

@@ -20,7 +20,8 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         )
         super.init(
             requestFormat: requestFormat,
-            requestBuilder: requestBuilder
+            requestBuilder: requestBuilder,
+            serviceNetworker: OpenAIDirectServiceNetworker()
         )
     }
 }
