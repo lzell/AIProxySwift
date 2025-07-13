@@ -60,7 +60,7 @@ open class OpenRouterDirectService: OpenRouterService, DirectService {
     public func streamingChatCompletionRequest(
         body: OpenRouterChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenRouterChatCompletionChunk> {
+    ) async throws -> AsyncThrowingStream<OpenRouterChatCompletionChunk, Error> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)

@@ -64,7 +64,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     public func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
+    ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
@@ -359,7 +359,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
     public func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
+    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
         var requestBody = requestBody
         requestBody.stream = true
         let request = try AIProxyURLRequest.createDirect(

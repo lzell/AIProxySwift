@@ -66,7 +66,7 @@ open class DeepSeekProxiedService: DeepSeekService, ProxiedService {
     public func streamingChatCompletionRequest(
         body: DeepSeekChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk> {
+    ) async throws -> AsyncThrowingStream<DeepSeekChatCompletionChunk, Error> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)

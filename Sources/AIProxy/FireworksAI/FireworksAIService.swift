@@ -35,5 +35,5 @@ public protocol FireworksAIService {
     func streamingDeepSeekR1Request(
         body: DeepSeekChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk>
+    ) async throws -> AsyncThrowingStream<DeepSeekChatCompletionChunk, Error>
 }

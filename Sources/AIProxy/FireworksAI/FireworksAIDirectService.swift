@@ -65,7 +65,7 @@ open class FireworksAIDirectService: FireworksAIService, DirectService {
     public func streamingDeepSeekR1Request(
         body: DeepSeekChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk> {
+    ) async throws -> AsyncThrowingStream<DeepSeekChatCompletionChunk, Error> {
         if body.model != "accounts/fireworks/models/deepseek-r1" {
             logIf(.warning)?.warning("Attempting to use deepSeekR1Request with an unknown model")
         }

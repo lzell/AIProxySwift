@@ -67,7 +67,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
     public func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
+    ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
@@ -356,7 +356,7 @@ open class OpenAIProxiedService: OpenAIService, ProxiedService {
     public func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
+    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
         var requestBody = requestBody
         requestBody.stream = true
         let request = try await AIProxyURLRequest.create(

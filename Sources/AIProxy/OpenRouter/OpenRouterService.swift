@@ -35,7 +35,7 @@ public protocol OpenRouterService {
     func streamingChatCompletionRequest(
         body: OpenRouterChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenRouterChatCompletionChunk>
+    ) async throws -> AsyncThrowingStream<OpenRouterChatCompletionChunk, Error>
 }
 
 extension OpenRouterService {
@@ -47,7 +47,7 @@ extension OpenRouterService {
 
     public func streamingChatCompletionRequest(
         body: OpenRouterChatCompletionRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenRouterChatCompletionChunk> {
+    ) async throws -> AsyncThrowingStream<OpenRouterChatCompletionChunk, Error> {
         return try await self.streamingChatCompletionRequest(body: body, secondsToWait: 60)
     }
 }

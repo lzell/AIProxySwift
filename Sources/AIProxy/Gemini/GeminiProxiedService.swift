@@ -64,7 +64,7 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
         body: GeminiGenerateContentRequestBody,
         model: String,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, GeminiGenerateContentResponseBody> {
+    ) async throws -> AsyncThrowingStream<GeminiGenerateContentResponseBody, Error> {
         let proxyPath = "/v1beta/models/\(model):streamGenerateContent?alt=sse"
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
