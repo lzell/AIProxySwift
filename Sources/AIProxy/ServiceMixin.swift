@@ -46,7 +46,7 @@ extension ServiceMixin {
         // This swift juggling is because I don't want the return types of our API to be
         // something like: AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk>
         //
-        // So instead I manually map it to an AsyncStream with a nice signature of AsyncStream<OpenAIChatCompletionChunk>.
+        // So instead I manually map it to an AsyncStream with a nice signature of AsyncThrowingStream<OpenAIChatCompletionChunk, Error>.
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
