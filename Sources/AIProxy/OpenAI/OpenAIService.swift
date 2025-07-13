@@ -1,6 +1,6 @@
 //
 //  OpenAIService.swift
-//  
+//
 //
 //  Created by Lou Zell on 12/14/24.
 //
@@ -21,7 +21,7 @@ public protocol OpenAIService {
         body: OpenAIChatCompletionRequestBody,
         secondsToWait: UInt
     ) async throws -> OpenAIChatCompletionResponseBody
-    
+
     /// Initiates a streaming chat completion request to /v1/chat/completions.
     ///
     /// - Parameters:
@@ -34,7 +34,7 @@ public protocol OpenAIService {
         body: OpenAIChatCompletionRequestBody,
         secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk>
-    
+
     /// Initiates a create image request to /v1/images/generations
     ///
     /// - Parameters:
@@ -73,7 +73,7 @@ public protocol OpenAIService {
         body: OpenAICreateTranscriptionRequestBody,
         progressCallback: ((Double) -> Void)?
     ) async throws -> OpenAICreateTranscriptionResponseBody
-    
+
     /// Initiates a create text to speech request to v1/audio/speech
     ///
     /// - Parameters:
@@ -84,7 +84,7 @@ public protocol OpenAIService {
     func createTextToSpeechRequest(
         body: OpenAITextToSpeechRequestBody
     ) async throws -> Data
-    
+
     /// Initiates a moderation request to /v1/moderations
     ///
     /// - Parameters:
@@ -110,10 +110,10 @@ public protocol OpenAIService {
     ) async throws -> OpenAIEmbeddingResponseBody
 
     /// Starts a realtime session.
-    /// 
+    ///
     /// To protect this connection through AIProxy's backend, your project must have websocket support enabled.
     /// If you would like to be added to the private beta for websocket support, please reach out.
-    /// 
+    ///
     /// - Parameters:
     ///   - model: The model to use. See the available model names here:
     ///            https://platform.openai.com/docs/models#gpt-4o-realtime
@@ -157,7 +157,7 @@ public protocol OpenAIService {
     func createResponse(
         requestBody: OpenAICreateResponseRequestBody
     ) async throws -> OpenAIResponse
-    
+
     /// Creates a streaming 'response' using OpenAI's new API product:
     ///
     /// - Parameters:
@@ -170,7 +170,7 @@ public protocol OpenAIService {
         requestBody: OpenAICreateResponseRequestBody,
         secondsToWait: UInt
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent>
-    
+
     /// Creates a vector store
     ///
     /// - Parameters:
@@ -210,14 +210,14 @@ extension OpenAIService {
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
         return try await self.streamingChatCompletionRequest(body: body, secondsToWait: 60)
     }
-    
+
     public func createTranscriptionRequest(
         body: OpenAICreateTranscriptionRequestBody
     ) async throws -> OpenAICreateTranscriptionResponseBody {
         return try await self.createTranscriptionRequest(body: body, progressCallback: nil)
     }
-    
-    public func createStreamingResponseEvents(
+
+    public func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
         return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)

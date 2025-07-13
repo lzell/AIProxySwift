@@ -1638,7 +1638,7 @@ You'll need two IDs for this snippet:
     )
 
     do {
-        let stream = try await openAIService.createStreamingResponseEvents(requestBody: requestBody)
+        let stream = try await openAIService.createStreamingResponse(requestBody: requestBody)
         for try await event in stream {
             switch event {
             case .outputTextDelta(let outputTextDelta):
@@ -1696,7 +1696,7 @@ You'll need two IDs for this snippet:
     )
 
     do {
-        let stream = try await openAIService.createStreamingResponseEvents(requestBody: requestBody)
+        let stream = try await openAIService.createStreamingResponse(requestBody: requestBody)
         for try await event in stream {
             switch event {
             case .functionCallArgumentsDelta(let functionCallArgumentsDelta):
@@ -1737,7 +1737,7 @@ You'll need two IDs for this snippet:
     )
 
     do {
-        let stream = try await openAIService.createStreamingResponseEvents(requestBody: requestBody)
+        let stream = try await openAIService.createStreamingResponse(requestBody: requestBody)
         for try await event in stream {
             switch event {
             case .outputTextDelta(let outputTextDelta):
@@ -1788,7 +1788,7 @@ Once your files are added and processed, you can run this snippet on your `vecto
         ]
     )
     do {
-        let stream = try await openAIService.createStreamingResponseEvents(requestBody: requestBody)
+        let stream = try await openAIService.createStreamingResponse(requestBody: requestBody)
         for try await event in stream {
             switch event {
             case .outputTextDelta(let outputTextDelta):
