@@ -315,6 +315,15 @@ open class OpenAIService {
         return try await self.serviceNetworker.makeRequestAndDeserializeStreamingChunks(request)
     }
 
+    @available(*, deprecated, message: "This has been renamed to createStreamingResponse")
+    public func createStreamingResponseEvents(
+        requestBody: OpenAICreateResponseRequestBody,
+        secondsToWait: UInt = 60
+    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
+        return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: secondsToWait)
+    }
+
+
     /// Creates a vector store
     ///
     /// - Parameters:
