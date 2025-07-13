@@ -114,7 +114,6 @@ open class OpenAIService {
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
-
     /// Initiates a create transcription request to v1/audio/transcriptions
     ///
     /// - Parameters:
@@ -381,31 +380,3 @@ open class OpenAIService {
         }
     }
 }
-
-
-// These are still needed
-//extension OpenAIService {
-//    public func chatCompletionRequest(
-//        body: OpenAIChatCompletionRequestBody
-//    ) async throws -> OpenAIChatCompletionResponseBody {
-//        return try await self.chatCompletionRequest(body: body, secondsToWait: 60)
-//    }
-//
-//    public func streamingChatCompletionRequest(
-//        body: OpenAIChatCompletionRequestBody
-//    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
-//        return try await self.streamingChatCompletionRequest(body: body, secondsToWait: 60)
-//    }
-//    
-//    public func createTranscriptionRequest(
-//        body: OpenAICreateTranscriptionRequestBody
-//    ) async throws -> OpenAICreateTranscriptionResponseBody {
-//        return try await self.createTranscriptionRequest(body: body, progressCallback: nil)
-//    }
-//    
-//    public func createStreamingResponseEvents(
-//        requestBody: OpenAICreateResponseRequestBody
-//    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
-//        return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
-//    }
-//}
