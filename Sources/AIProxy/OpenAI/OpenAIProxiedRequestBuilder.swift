@@ -32,4 +32,41 @@ internal struct OpenAIProxiedRequestBuilder: OpenAIRequestBuilder {
             additionalHeaders: additionalHeaders
         )
     }
+
+    func multipartPOST(
+        path: String,
+        body: MultipartFormEncodable,
+        secondsToWait: UInt,
+        additionalHeaders: [String : String]
+    ) async throws -> URLRequest {
+        let boundary = UUID().uuidString
+        return try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL ?? legacyURL,
+            clientID: self.clientID,
+            proxyPath: path,
+            body: formEncode(body, boundary),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "multipart/form-data; boundary=\(boundary)",
+            additionalHeaders: additionalHeaders
+        )
+    }
+
+    func plainGET(
+        path: String,
+        secondsToWait: UInt,
+        additionalHeaders: [String : String]
+    ) async throws -> URLRequest {
+        return try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL ?? legacyURL,
+            clientID: self.clientID,
+            proxyPath: path,
+            body: nil,
+            verb: .get,
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders
+        )
+    }
 }

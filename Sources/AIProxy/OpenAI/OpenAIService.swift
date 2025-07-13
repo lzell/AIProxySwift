@@ -84,17 +84,13 @@ open class OpenAIService {
         body: OpenAICreateImageRequestBody,
         secondsToWait: UInt
     ) async throws -> OpenAICreateImageResponseBody {
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("images/generations"),
-            body:  try JSONEncoder().encode(body),
-            verb: .post,
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("images/generations"),
+            body: body,
             secondsToWait: secondsToWait,
-            contentType: "application/json"
+            additionalHeaders: [:]
         )
-        return try await self.makeRequestAndDeserializeResponse(request)
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
     /// Initiates a create image edit request to `v1/images/edits`
@@ -109,18 +105,13 @@ open class OpenAIService {
         body: OpenAICreateImageEditRequestBody,
         secondsToWait: UInt
     ) async throws -> OpenAICreateImageResponseBody {
-        let boundary = UUID().uuidString
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("images/edits"),
-            body: formEncode(body, boundary),
-            verb: .post,
+        let request = try await self.requestBuilder.multipartPOST(
+            path: self.resolvedPath("images/edits"),
+            body: body,
             secondsToWait: secondsToWait,
-            contentType: "multipart/form-data; boundary=\(boundary)"
+            additionalHeaders: [:]
         )
-        return try await self.makeRequestAndDeserializeResponse(request)
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
 
@@ -136,19 +127,14 @@ open class OpenAIService {
         body: OpenAICreateTranscriptionRequestBody,
         progressCallback: ((Double) -> Void)? = nil
     ) async throws -> OpenAICreateTranscriptionResponseBody {
-        let boundary = UUID().uuidString
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("audio/transcriptions"),
-            body: formEncode(body, boundary),
-            verb: .post,
+        let request = try await self.requestBuilder.multipartPOST(
+            path: self.resolvedPath("audio/transcriptions"),
+            body: body,
             secondsToWait: 60,
-            contentType: "multipart/form-data; boundary=\(boundary)"
+            additionalHeaders: [:]
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            self.urlSession,
+            self.serviceNetworker.urlSession,
             request,
             progressCallback
         )
@@ -172,18 +158,14 @@ open class OpenAIService {
     public func createTextToSpeechRequest(
         body: OpenAITextToSpeechRequestBody
     ) async throws -> Data {
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("audio/speech"),
-            body:  try body.serialize(),
-            verb: .post,
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("audio/speech"),
+            body: body,
             secondsToWait: 60,
-            contentType: "application/json"
+            additionalHeaders: [:]
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
-            self.urlSession,
+            self.serviceNetworker.urlSession,
             request
         )
         return data
@@ -199,17 +181,13 @@ open class OpenAIService {
     public func moderationRequest(
         body: OpenAIModerationRequestBody
     ) async throws -> OpenAIModerationResponseBody {
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("moderations"),
-            body: try body.serialize(),
-            verb: .post,
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("moderations"),
+            body: body,
             secondsToWait: 60,
-            contentType: "application/json"
+            additionalHeaders: [:]
         )
-        return try await self.makeRequestAndDeserializeResponse(request)
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
     /// Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms. Related guide:
@@ -222,17 +200,13 @@ open class OpenAIService {
     public func embeddingRequest(
         body: OpenAIEmbeddingRequestBody
     ) async throws -> OpenAIEmbeddingResponseBody {
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("embeddings"),
-            body: try body.serialize(),
-            verb: .post,
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("embeddings"),
+            body: body,
             secondsToWait: 60,
-            contentType: "application/json"
+            additionalHeaders: [:]
         )
-        return try await self.makeRequestAndDeserializeResponse(request)
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
     /// Starts a realtime session.
@@ -255,20 +229,15 @@ open class OpenAIService {
         logLevel: AIProxyLogLevel
     ) async throws -> OpenAIRealtimeSession {
         aiproxyCallerDesiredLogLevel = logLevel
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: "/v1/realtime?model=\(model)",
-            body: nil,
-            verb: .get,
+        let request = try await self.requestBuilder.plainGET(
+            path: "/v1/realtime?model=\(model)",
             secondsToWait: 60,
             additionalHeaders: [
                 "openai-beta": "realtime=v1"
             ]
         )
         return await OpenAIRealtimeSession(
-            webSocketTask: self.urlSession.webSocketTask(with: request),
+            webSocketTask: self.serviceNetworker.urlSession.webSocketTask(with: request),
             sessionConfiguration: configuration
         )
     }
@@ -299,18 +268,13 @@ open class OpenAIService {
             fileName: name,
             purpose: purpose
         )
-        let boundary = UUID().uuidString
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("files"),
-            body: formEncode(body, boundary),
-            verb: .post,
+        let request = try await self.requestBuilder.multipartPOST(
+            path: self.resolvedPath("files"),
+            body: body,
             secondsToWait: secondsToWait,
-            contentType: "multipart/form-data; boundary=\(boundary)"
+            additionalHeaders: [:]
         )
-        return try await self.makeRequestAndDeserializeResponse(request)
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
     /// Creates a 'response' using OpenAI's new API product:
@@ -318,18 +282,13 @@ open class OpenAIService {
     public func createResponse(
         requestBody: OpenAICreateResponseRequestBody
     ) async throws -> OpenAIResponse {
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("responses"),
-            body: try requestBody.serialize(),
-            verb: .post,
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("responses"),
+            body: requestBody,
             secondsToWait: 60,
-            contentType: "application/json"
+            additionalHeaders: [:]
         )
-
-        return try await self.makeRequestAndDeserializeResponse(request)
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
     /// Creates a streaming 'response' using OpenAI's new API product:
@@ -347,17 +306,13 @@ open class OpenAIService {
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
         var requestBody = requestBody
         requestBody.stream = true
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("responses"),
-            body: try requestBody.serialize(),
-            verb: .post,
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("responses"),
+            body: requestBody,
             secondsToWait: secondsToWait,
-            contentType: "application/json"
+            additionalHeaders: [:]
         )
-        return try await self.makeRequestAndDeserializeStreamingChunks(request)
+        return try await self.serviceNetworker.makeRequestAndDeserializeStreamingChunks(request)
     }
 
     /// Creates a vector store
@@ -371,17 +326,13 @@ open class OpenAIService {
         requestBody: OpenAICreateVectorStoreRequestBody,
         secondsToWait: UInt
     ) async throws -> OpenAIVectorStore {
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("vector_stores"),
-            body: try requestBody.serialize(),
-            verb: .post,
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("vector_stores"),
+            body: requestBody,
             secondsToWait: secondsToWait,
-            contentType: "application/json"
+            additionalHeaders: [:]
         )
-        return try await self.makeRequestAndDeserializeResponse(request)
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
     /// Creates a vector store file
@@ -400,17 +351,13 @@ open class OpenAIService {
         guard let escapedStoreID = vectorStoreID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
             throw AIProxyError.assertion("Vector store IDs must be URL encodable")
         }
-        let request = try await AIProxyURLRequest.create(
-            partialKey: self.partialKey,
-            serviceURL: self.serviceURL ?? legacyURL,
-            clientID: self.clientID,
-            proxyPath: self.resolvedPath("vector_stores/\(escapedStoreID)/files"),
-            body: try requestBody.serialize(),
-            verb: .post,
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("vector_stores/\(escapedStoreID)/files"),
+            body: requestBody,
             secondsToWait: secondsToWait,
-            contentType: "application/json"
+            additionalHeaders: [:]
         )
-        return try await self.makeRequestAndDeserializeResponse(request)
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
     private func resolvedPath(_ common: String) -> String {
