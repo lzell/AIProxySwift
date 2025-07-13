@@ -222,4 +222,11 @@ extension OpenAIService {
     ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
         return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
     }
+
+    @available(*, deprecated, message: "This has been renamed to createStreamingResponse")
+    public func createStreamingResponseEvents(
+        requestBody: OpenAICreateResponseRequestBody
+    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
+        return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
+    }
 }
