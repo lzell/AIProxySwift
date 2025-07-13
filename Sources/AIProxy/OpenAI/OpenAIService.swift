@@ -34,7 +34,7 @@ open class OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func chatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: UInt
+        secondsToWait: UInt = 60
     ) async throws -> OpenAIChatCompletionResponseBody {
         var body = body
         body.stream = false
@@ -58,8 +58,8 @@ open class OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
     public func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: UInt
-) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error> {
+        secondsToWait: UInt = 60
+    ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error> {
         var body = body
         body.stream = true
         body.streamOptions = .init(includeUsage: true)
@@ -302,7 +302,7 @@ open class OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/responses/streaming
     public func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody,
-        secondsToWait: UInt
+        secondsToWait: UInt = 60
     ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
         var requestBody = requestBody
         requestBody.stream = true

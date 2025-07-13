@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol OpenAIRequestBuilder {
+internal protocol OpenAIRequestBuilder {
 
     func jsonPOST(
         path: String,
