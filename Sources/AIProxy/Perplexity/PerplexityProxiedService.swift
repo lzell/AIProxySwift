@@ -59,7 +59,7 @@ open class PerplexityProxiedService: PerplexityService, ProxiedService {
     /// - Returns: An async sequence of completion chunks.
     public func streamingChatCompletionRequest(
         body: PerplexityChatCompletionRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, PerplexityChatCompletionResponseBody> {
+    ) async throws -> AsyncThrowingStream<PerplexityChatCompletionResponseBody, Error> {
         var body = body
         body.stream = true
         let request = try await AIProxyURLRequest.create(

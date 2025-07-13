@@ -33,7 +33,7 @@ public protocol DeepSeekService {
     func streamingChatCompletionRequest(
         body: DeepSeekChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk>
+    ) async throws -> AsyncThrowingStream<DeepSeekChatCompletionChunk, Error>
 }
 
 extension DeepSeekService {
@@ -45,7 +45,7 @@ extension DeepSeekService {
 
     public func streamingChatCompletionRequest(
         body: DeepSeekChatCompletionRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, DeepSeekChatCompletionChunk> {
+    ) async throws -> AsyncThrowingStream<DeepSeekChatCompletionChunk, Error> {
         return try await self.streamingChatCompletionRequest(body: body, secondsToWait: 60)
     }
 }

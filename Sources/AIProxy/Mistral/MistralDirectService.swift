@@ -56,7 +56,7 @@ open class MistralDirectService: MistralService, DirectService {
     public func streamingChatCompletionRequest(
         body: MistralChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, MistralChatCompletionStreamingChunk> {
+    ) async throws -> AsyncThrowingStream<MistralChatCompletionStreamingChunk, Error> {
         var body = body
         body.stream = true
         let request = try AIProxyURLRequest.createDirect(

@@ -62,7 +62,7 @@ open class GroqProxiedService: GroqService, ProxiedService {
     public func streamingChatCompletionRequest(
         body: GroqChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, GroqChatCompletionStreamingChunk> {
+    ) async throws -> AsyncThrowingStream<GroqChatCompletionStreamingChunk, Error> {
         var body = body
         body.stream = true
         let request = try await AIProxyURLRequest.create(

@@ -40,7 +40,7 @@ public protocol GeminiService {
         body: GeminiGenerateContentRequestBody,
         model: String,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, GeminiGenerateContentResponseBody>
+    ) async throws -> AsyncThrowingStream<GeminiGenerateContentResponseBody, Error>
 
     /// Generate images with the Imagen API
     func makeImagenRequest(

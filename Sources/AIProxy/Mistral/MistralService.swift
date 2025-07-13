@@ -31,7 +31,7 @@ public protocol MistralService {
     func streamingChatCompletionRequest(
         body: MistralChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, MistralChatCompletionStreamingChunk>
+    ) async throws -> AsyncThrowingStream<MistralChatCompletionStreamingChunk, Error>
 
     /// Initiates an OCR request to Mistral
     ///

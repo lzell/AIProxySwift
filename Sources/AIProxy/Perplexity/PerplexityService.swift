@@ -29,5 +29,5 @@ public protocol PerplexityService {
     /// - Returns: An async sequence of completion chunks.
     func streamingChatCompletionRequest(
         body: PerplexityChatCompletionRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, PerplexityChatCompletionResponseBody>
+    ) async throws -> AsyncThrowingStream<PerplexityChatCompletionResponseBody, Error>
 }

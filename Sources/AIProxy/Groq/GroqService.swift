@@ -32,7 +32,7 @@ public protocol GroqService {
     func streamingChatCompletionRequest(
         body: GroqChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, GroqChatCompletionStreamingChunk>
+    ) async throws -> AsyncThrowingStream<GroqChatCompletionStreamingChunk, Error>
 
     /// Initiates a transcription request to /openai/v1/audio/transcriptions
     ///

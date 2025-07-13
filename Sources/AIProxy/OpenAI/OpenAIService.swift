@@ -33,7 +33,7 @@ public protocol OpenAIService {
     func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk>
+    ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error>
 
     /// Initiates a create image request to /v1/images/generations
     ///
@@ -169,7 +169,7 @@ public protocol OpenAIService {
     func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent>
+    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error>
 
     /// Creates a vector store
     ///
@@ -207,7 +207,7 @@ extension OpenAIService {
 
     public func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
+    ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error> {
         return try await self.streamingChatCompletionRequest(body: body, secondsToWait: 60)
     }
 
@@ -219,14 +219,14 @@ extension OpenAIService {
 
     public func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
+    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
         return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
     }
 
     @available(*, deprecated, message: "This has been renamed to createStreamingResponse")
     public func createStreamingResponseEvents(
         requestBody: OpenAICreateResponseRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
+    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
         return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
     }
 }

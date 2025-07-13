@@ -51,7 +51,7 @@ open class TogetherAIDirectService: TogetherAIService, DirectService {
     /// - Returns: A chat completion response. See the reference above.
     public func streamingChatCompletionRequest(
         body: TogetherAIChatCompletionRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk> {
+    ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error> {
         var body = body
         body.stream = true
         let request = try AIProxyURLRequest.createDirect(

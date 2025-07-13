@@ -28,5 +28,5 @@ public protocol TogetherAIService {
     /// - Returns: A chat completion response. See the reference above.
     func streamingChatCompletionRequest(
         body: TogetherAIChatCompletionRequestBody
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIChatCompletionChunk>
+    ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error>
 }

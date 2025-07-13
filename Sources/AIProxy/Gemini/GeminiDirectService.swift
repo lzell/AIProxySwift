@@ -63,7 +63,7 @@ open class GeminiDirectService: GeminiService, DirectService {
         body: GeminiGenerateContentRequestBody,
         model: String,
         secondsToWait: UInt
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, GeminiGenerateContentResponseBody> {
+    ) async throws -> AsyncThrowingStream<GeminiGenerateContentResponseBody, Error> {
         let proxyPath = "/v1beta/models/\(model):streamGenerateContent?alt=sse"
         let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://generativelanguage.googleapis.com",
