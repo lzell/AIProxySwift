@@ -318,7 +318,7 @@ open class OpenAIService {
     public func createStreamingResponseEvents(
         requestBody: OpenAICreateResponseRequestBody,
         secondsToWait: UInt = 60
-    ) async throws -> AsyncCompactMapSequence<AsyncLineSequence<URLSession.AsyncBytes>, OpenAIResponseStreamingEvent> {
+    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
         return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: secondsToWait)
     }
 
