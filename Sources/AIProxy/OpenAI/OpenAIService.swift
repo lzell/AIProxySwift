@@ -7,7 +7,22 @@
 
 import Foundation
 
-public protocol OpenAIService {
+open class OpenAIService {
+    private let requestFormat: OpenAIRequestFormat
+    private let requestBuilder: OpenAIRequestBuilder
+    private let serviceNetworker: ServiceMixin
+
+    /// This designated initializer is not public on purpose.
+    /// Customers are expected to use the factory `AIProxy.directOpenAIService` defined in AIProxy.swift.
+    init(
+        requestFormat: OpenAIRequestFormat,
+        requestBuilder: OpenAIRequestBuilder,
+        serviceNetworker: ServiceMixin
+    ) {
+        self.requestFormat = requestFormat
+        self.requestBuilder = requestBuilder
+        self.serviceNetworker = serviceNetworker
+    }
 
     /// Initiates a non-streaming chat completion request to /v1/chat/completions.
     ///
@@ -17,10 +32,21 @@ public protocol OpenAIService {
     ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: A ChatCompletionResponse. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/object
-    func chatCompletionRequest(
+    public func chatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: UInt
-    ) async throws -> OpenAIChatCompletionResponseBody
+        secondsToWait: UInt = 60
+    ) async throws -> OpenAIChatCompletionResponseBody {
+        var body = body
+        body.stream = false
+        body.streamOptions = nil
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("chat/completions"),
+            body: body,
+            secondsToWait: secondsToWait,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
 
     /// Initiates a streaming chat completion request to /v1/chat/completions.
     ///
@@ -30,23 +56,42 @@ public protocol OpenAIService {
     ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: An async sequence of completion chunks. See this reference:
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
-    func streamingChatCompletionRequest(
+    public func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: UInt
-    ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error>
+        secondsToWait: UInt = 60
+    ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error> {
+        var body = body
+        body.stream = true
+        body.streamOptions = .init(includeUsage: true)
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("chat/completions"),
+            body: body,
+            secondsToWait: secondsToWait,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeStreamingChunks(request)
+    }
 
     /// Initiates a create image request to /v1/images/generations
     ///
     /// - Parameters:
-    ///   - body: The request body to send to OpenAI. See this reference:
+    ///   - body: The request body to send to openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/images/create
     ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     /// - Returns: A response body containing the generated image as base64, or a reference to the image on a CDN
     ///            https://platform.openai.com/docs/api-reference/images/object
-    func createImageRequest(
+    public func createImageRequest(
         body: OpenAICreateImageRequestBody,
         secondsToWait: UInt
-    ) async throws -> OpenAICreateImageResponseBody
+    ) async throws -> OpenAICreateImageResponseBody {
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("images/generations"),
+            body: body,
+            secondsToWait: secondsToWait,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
 
     /// Initiates a create image edit request to `v1/images/edits`
     ///
@@ -56,10 +101,18 @@ public protocol OpenAIService {
     ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     /// - Returns: A response body containing the generated image as base64, or a reference to the image on a CDN
     ///            https://platform.openai.com/docs/api-reference/images/object
-    func createImageEditRequest(
+    public func createImageEditRequest(
         body: OpenAICreateImageEditRequestBody,
         secondsToWait: UInt
-    ) async throws -> OpenAICreateImageResponseBody
+    ) async throws -> OpenAICreateImageResponseBody {
+        let request = try await self.requestBuilder.multipartPOST(
+            path: self.resolvedPath("images/edits"),
+            body: body,
+            secondsToWait: secondsToWait,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
 
     /// Initiates a create transcription request to v1/audio/transcriptions
     ///
@@ -69,10 +122,30 @@ public protocol OpenAIService {
     ///   - progressCallback: Optional callback to track upload progress. Called with a value between 0.0 and 1.0
     /// - Returns: An transcription response. See this reference:
     ///            https://platform.openai.com/docs/api-reference/audio/json-object
-    func createTranscriptionRequest(
+    public func createTranscriptionRequest(
         body: OpenAICreateTranscriptionRequestBody,
-        progressCallback: ((Double) -> Void)?
-    ) async throws -> OpenAICreateTranscriptionResponseBody
+        progressCallback: ((Double) -> Void)? = nil
+    ) async throws -> OpenAICreateTranscriptionResponseBody {
+        let request = try await self.requestBuilder.multipartPOST(
+            path: self.resolvedPath("audio/transcriptions"),
+            body: body,
+            secondsToWait: 60,
+            additionalHeaders: [:]
+        )
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            self.serviceNetworker.urlSession,
+            request,
+            progressCallback
+        )
+        if body.responseFormat == "text" {
+            guard let text = String(data: data, encoding: .utf8) else {
+                throw AIProxyError.assertion("Could not represent OpenAI's whisper response as string")
+            }
+            return OpenAICreateTranscriptionResponseBody(text: text, language: nil, duration: nil, words: nil, segments: nil)
+        }
+
+        return try OpenAICreateTranscriptionResponseBody.deserialize(from: data)
+    }
 
     /// Initiates a create text to speech request to v1/audio/speech
     ///
@@ -81,9 +154,21 @@ public protocol OpenAIService {
     ///           https://platform.openai.com/docs/api-reference/audio/createSpeech
     /// - Returns: The audio file content. See this reference:
     ///            https://platform.openai.com/docs/api-reference/audio/createSpeech
-    func createTextToSpeechRequest(
+    public func createTextToSpeechRequest(
         body: OpenAITextToSpeechRequestBody
-    ) async throws -> Data
+    ) async throws -> Data {
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("audio/speech"),
+            body: body,
+            secondsToWait: 60,
+            additionalHeaders: [:]
+        )
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            self.serviceNetworker.urlSession,
+            request
+        )
+        return data
+    }
 
     /// Initiates a moderation request to /v1/moderations
     ///
@@ -92,22 +177,36 @@ public protocol OpenAIService {
     ///           https://platform.openai.com/docs/api-reference/moderations
     /// - Returns: A moderation response that contains a `flagged` boolean. See this reference:
     ///            https://platform.openai.com/docs/api-reference/moderations/object
-    func moderationRequest(
+    public func moderationRequest(
         body: OpenAIModerationRequestBody
-    ) async throws -> OpenAIModerationResponseBody
+    ) async throws -> OpenAIModerationResponseBody {
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("moderations"),
+            body: body,
+            secondsToWait: 60,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
 
     /// Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms. Related guide:
     /// https://platform.openai.com/docs/guides/embeddings
-    ///
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/embeddings/create
-    ///
     /// - Returns: An embedding response. See this reference:
     ///            https://platform.openai.com/docs/api-reference/embeddings/object
-    func embeddingRequest(
+    public func embeddingRequest(
         body: OpenAIEmbeddingRequestBody
-    ) async throws -> OpenAIEmbeddingResponseBody
+    ) async throws -> OpenAIEmbeddingResponseBody {
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("embeddings"),
+            body: body,
+            secondsToWait: 60,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
 
     /// Starts a realtime session.
     ///
@@ -123,12 +222,24 @@ public protocol OpenAIService {
     ///               For example, if you set this to `info`, then you'll see all `info`, `warning`, `error`, and `critical` logs.
     ///
     /// - Returns: A realtime session manager that the caller can send and receive messages with.
-    func realtimeSession(
+    public func realtimeSession(
         model: String,
         configuration: OpenAIRealtimeSessionConfiguration,
         logLevel: AIProxyLogLevel
-    ) async throws -> OpenAIRealtimeSession
-
+    ) async throws -> OpenAIRealtimeSession {
+        aiproxyCallerDesiredLogLevel = logLevel
+        let request = try await self.requestBuilder.plainGET(
+            path: "/v1/realtime?model=\(model)",
+            secondsToWait: 60,
+            additionalHeaders: [
+                "openai-beta": "realtime=v1"
+            ]
+        )
+        return await OpenAIRealtimeSession(
+            webSocketTask: self.serviceNetworker.urlSession.webSocketTask(with: request),
+            sessionConfiguration: configuration
+        )
+    }
 
     /// Uploads a file to OpenAI for use in a future tool call
     /// https://platform.openai.com/docs/api-reference/files/create
@@ -142,23 +253,45 @@ public protocol OpenAIService {
     ///                          let pdfData = try? Data(contentsOf: localURL) else { return }
     ///
     ///   - name: The name of the file, e.g. `myfile.pdf`
-    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     ///
     /// - Returns: The file upload response body, which contains the file's ID that can be used in subsequent calls
-    func uploadFile(
+    public func uploadFile(
         contents: Data,
         name: String,
         purpose: OpenAIFilePurpose,
         secondsToWait: UInt
-    ) async throws -> OpenAIFileUploadResponseBody
+    ) async throws -> OpenAIFileUploadResponseBody {
+        let body = OpenAIFileUploadRequestBody(
+            contents: contents,
+            contentType: "application/octet-stream",
+            fileName: name,
+            purpose: purpose
+        )
+        let request = try await self.requestBuilder.multipartPOST(
+            path: self.resolvedPath("files"),
+            body: body,
+            secondsToWait: secondsToWait,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
 
     /// Creates a 'response' using OpenAI's new API product:
     /// https://platform.openai.com/docs/api-reference/responses
-    func createResponse(
+    public func createResponse(
         requestBody: OpenAICreateResponseRequestBody
-    ) async throws -> OpenAIResponse
+    ) async throws -> OpenAIResponse {
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("responses"),
+            body: requestBody,
+            secondsToWait: 60,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
 
     /// Creates a streaming 'response' using OpenAI's new API product:
+    /// https://platform.openai.com/docs/api-reference/responses/streaming
     ///
     /// - Parameters:
     ///   - requestBody: The request body to send to OpenAI. See this reference:
@@ -166,10 +299,29 @@ public protocol OpenAIService {
     ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: An async sequence of response chunks. See this reference:
     ///            https://platform.openai.com/docs/api-reference/responses/streaming
-    func createStreamingResponse(
+    public func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody,
-        secondsToWait: UInt
-    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error>
+        secondsToWait: UInt = 60
+    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
+        var requestBody = requestBody
+        requestBody.stream = true
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("responses"),
+            body: requestBody,
+            secondsToWait: secondsToWait,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeStreamingChunks(request)
+    }
+
+    @available(*, deprecated, message: "This has been renamed to createStreamingResponse")
+    public func createStreamingResponseEvents(
+        requestBody: OpenAICreateResponseRequestBody,
+        secondsToWait: UInt = 60
+    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
+        return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: secondsToWait)
+    }
+
 
     /// Creates a vector store
     ///
@@ -178,10 +330,18 @@ public protocol OpenAIService {
     ///                  https://platform.openai.com/docs/api-reference/vector-stores/create
     ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: The vector store object
-    func createVectorStore(
+    public func createVectorStore(
         requestBody: OpenAICreateVectorStoreRequestBody,
         secondsToWait: UInt
-    ) async throws -> OpenAIVectorStore
+    ) async throws -> OpenAIVectorStore {
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("vector_stores"),
+            body: requestBody,
+            secondsToWait: secondsToWait,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
 
     /// Creates a vector store file
     ///
@@ -191,42 +351,32 @@ public protocol OpenAIService {
     ///                  https://platform.openai.com/docs/api-reference/vector-stores-files/createFile
     ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
     /// - Returns: The vector store object
-    func createVectorStoreFile(
+    public func createVectorStoreFile(
         vectorStoreID: String,
         requestBody: OpenAICreateVectorStoreFileRequestBody,
         secondsToWait: UInt
-    ) async throws -> OpenAIVectorStoreFile
-}
-
-extension OpenAIService {
-    public func chatCompletionRequest(
-        body: OpenAIChatCompletionRequestBody
-    ) async throws -> OpenAIChatCompletionResponseBody {
-        return try await self.chatCompletionRequest(body: body, secondsToWait: 60)
+    ) async throws -> OpenAIVectorStoreFile {
+        guard let escapedStoreID = vectorStoreID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else {
+            throw AIProxyError.assertion("Vector store IDs must be URL encodable")
+        }
+        let request = try await self.requestBuilder.jsonPOST(
+            path: self.resolvedPath("vector_stores/\(escapedStoreID)/files"),
+            body: requestBody,
+            secondsToWait: secondsToWait,
+            additionalHeaders: [:]
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
-    public func streamingChatCompletionRequest(
-        body: OpenAIChatCompletionRequestBody
-    ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error> {
-        return try await self.streamingChatCompletionRequest(body: body, secondsToWait: 60)
-    }
-
-    public func createTranscriptionRequest(
-        body: OpenAICreateTranscriptionRequestBody
-    ) async throws -> OpenAICreateTranscriptionResponseBody {
-        return try await self.createTranscriptionRequest(body: body, progressCallback: nil)
-    }
-
-    public func createStreamingResponse(
-        requestBody: OpenAICreateResponseRequestBody
-    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
-        return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
-    }
-
-    @available(*, deprecated, message: "This has been renamed to createStreamingResponse")
-    public func createStreamingResponseEvents(
-        requestBody: OpenAICreateResponseRequestBody
-    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
-        return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
+    private func resolvedPath(_ common: String) -> String {
+        assert(common[common.startIndex] != "/")
+        switch self.requestFormat {
+        case .standard:
+            return "/v1/\(common)"
+        case .azureDeployment(let apiVersion):
+            return "/\(common)?api-version=\(apiVersion)"
+        case .noVersionPrefix:
+            return "/\(common)"
+        }
     }
 }
