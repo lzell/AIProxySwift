@@ -34,7 +34,7 @@ open class OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/chat/object
     public func chatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: UInt = 60
+        secondsToWait: UInt
     ) async throws -> OpenAIChatCompletionResponseBody {
         var body = body
         body.stream = false
@@ -58,7 +58,7 @@ open class OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/chat/streaming
     public func streamingChatCompletionRequest(
         body: OpenAIChatCompletionRequestBody,
-        secondsToWait: UInt = 60
+        secondsToWait: UInt
     ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error> {
         var body = body
         body.stream = true
@@ -119,17 +119,19 @@ open class OpenAIService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/audio/createTranscription
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     ///   - progressCallback: Optional callback to track upload progress. Called with a value between 0.0 and 1.0
     /// - Returns: An transcription response. See this reference:
     ///            https://platform.openai.com/docs/api-reference/audio/json-object
     public func createTranscriptionRequest(
         body: OpenAICreateTranscriptionRequestBody,
+        secondsToWait: UInt,
         progressCallback: ((Double) -> Void)? = nil
     ) async throws -> OpenAICreateTranscriptionResponseBody {
         let request = try await self.requestBuilder.multipartPOST(
             path: self.resolvedPath("audio/transcriptions"),
             body: body,
-            secondsToWait: 60,
+            secondsToWait: secondsToWait,
             additionalHeaders: [:]
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
@@ -152,15 +154,17 @@ open class OpenAIService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/audio/createSpeech
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     /// - Returns: The audio file content. See this reference:
     ///            https://platform.openai.com/docs/api-reference/audio/createSpeech
     public func createTextToSpeechRequest(
-        body: OpenAITextToSpeechRequestBody
+        body: OpenAITextToSpeechRequestBody,
+        secondsToWait: UInt
     ) async throws -> Data {
         let request = try await self.requestBuilder.jsonPOST(
             path: self.resolvedPath("audio/speech"),
             body: body,
-            secondsToWait: 60,
+            secondsToWait: secondsToWait,
             additionalHeaders: [:]
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
@@ -175,15 +179,17 @@ open class OpenAIService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/moderations
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     /// - Returns: A moderation response that contains a `flagged` boolean. See this reference:
     ///            https://platform.openai.com/docs/api-reference/moderations/object
     public func moderationRequest(
-        body: OpenAIModerationRequestBody
+        body: OpenAIModerationRequestBody,
+        secondsToWait: UInt
     ) async throws -> OpenAIModerationResponseBody {
         let request = try await self.requestBuilder.jsonPOST(
             path: self.resolvedPath("moderations"),
             body: body,
-            secondsToWait: 60,
+            secondsToWait: secondsToWait,
             additionalHeaders: [:]
         )
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
@@ -194,15 +200,17 @@ open class OpenAIService {
     /// - Parameters:
     ///   - body: The request body to send to aiproxy and openai. See this reference:
     ///           https://platform.openai.com/docs/api-reference/embeddings/create
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     /// - Returns: An embedding response. See this reference:
     ///            https://platform.openai.com/docs/api-reference/embeddings/object
     public func embeddingRequest(
-        body: OpenAIEmbeddingRequestBody
+        body: OpenAIEmbeddingRequestBody,
+        secondsToWait: UInt
     ) async throws -> OpenAIEmbeddingResponseBody {
         let request = try await self.requestBuilder.jsonPOST(
             path: self.resolvedPath("embeddings"),
             body: body,
-            secondsToWait: 60,
+            secondsToWait: secondsToWait,
             additionalHeaders: [:]
         )
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
@@ -278,13 +286,20 @@ open class OpenAIService {
 
     /// Creates a 'response' using OpenAI's new API product:
     /// https://platform.openai.com/docs/api-reference/responses
+    /// - Parameters:
+    ///   - requestBody: The request body to send to OpenAI. See this reference:
+    ///                  https://platform.openai.com/docs/api-reference/responses/create
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    /// - Returns: An OpenAI response. See this reference:
+    ///            https://platform.openai.com/docs/api-reference/responses/object#responses/object-output
     public func createResponse(
-        requestBody: OpenAICreateResponseRequestBody
+        requestBody: OpenAICreateResponseRequestBody,
+        secondsToWait: UInt
     ) async throws -> OpenAIResponse {
         let request = try await self.requestBuilder.jsonPOST(
             path: self.resolvedPath("responses"),
             body: requestBody,
-            secondsToWait: 60,
+            secondsToWait: secondsToWait,
             additionalHeaders: [:]
         )
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
@@ -301,7 +316,7 @@ open class OpenAIService {
     ///            https://platform.openai.com/docs/api-reference/responses/streaming
     public func createStreamingResponse(
         requestBody: OpenAICreateResponseRequestBody,
-        secondsToWait: UInt = 60
+        secondsToWait: UInt
     ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
         var requestBody = requestBody
         requestBody.stream = true
@@ -321,7 +336,6 @@ open class OpenAIService {
     ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
         return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: secondsToWait)
     }
-
 
     /// Creates a vector store
     ///
@@ -378,5 +392,65 @@ open class OpenAIService {
         case .noVersionPrefix:
             return "/\(common)"
         }
+    }
+}
+
+// Deprecated methods
+extension OpenAIService {
+    @available(*, deprecated, message: "This has been renamed to chatCompletionRequest(body:secondsToWait:). For parity with your existing call, pass 60 as the secondsToWait argument.")
+    public func chatCompletionRequest(
+        body: OpenAIChatCompletionRequestBody
+    ) async throws -> OpenAIChatCompletionResponseBody {
+        return try await self.chatCompletionRequest(body: body, secondsToWait: 60)
+    }
+
+    @available(*, deprecated, message: "This has been renamed to streamingChatCompletionRequest(body:secondsToWait:). For parity with your existing call, pass 60 as the secondsToWait argument.")
+    public func streamingChatCompletionRequest(
+        body: OpenAIChatCompletionRequestBody,
+    ) async throws -> AsyncThrowingStream<OpenAIChatCompletionChunk, Error> {
+        return try await self.streamingChatCompletionRequest(body: body, secondsToWait: 60)
+    }
+
+    @available(*, deprecated, message: "This has been renamed to createTranscriptionRequest(body:secondsToWait:). For parity with your existing call, pass 60 as the secondsToWait argument.")
+    public func createTranscriptionRequest(
+        body: OpenAICreateTranscriptionRequestBody,
+        progressCallback: ((Double) -> Void)? = nil
+    ) async throws -> OpenAICreateTranscriptionResponseBody {
+        return try await self.createTranscriptionRequest(body: body, secondsToWait: 60, progressCallback: progressCallback)
+    }
+
+    @available(*, deprecated, message: "This has been renamed to createTextToSpeechRequest(body:secondsToWait:). For parity with your existing call, pass 60 as the secondsToWait argument.")
+    public func createTextToSpeechRequest(
+        body: OpenAITextToSpeechRequestBody
+    ) async throws -> Data {
+        return try await self.createTextToSpeechRequest(body: body, secondsToWait: 60)
+    }
+
+    @available(*, deprecated, message: "This has been renamed to moderationRequest(body:secondsToWait:). For parity with your existing call, pass 60 as the secondsToWait argument.")
+    public func moderationRequest(
+        body: OpenAIModerationRequestBody
+    ) async throws -> OpenAIModerationResponseBody {
+        return try await self.moderationRequest(body: body, secondsToWait: 60)
+    }
+
+    @available(*, deprecated, message: "This has been renamed to embeddingRequest(body:secondsToWait:). For parity with your existing call, pass 60 as the secondsToWait argument.")
+    public func embeddingRequest(
+        body: OpenAIEmbeddingRequestBody
+    ) async throws -> OpenAIEmbeddingResponseBody {
+        return try await self.embeddingRequest(body: body, secondsToWait: 60)
+    }
+
+    @available(*, deprecated, message: "This has been renamed to createResponse(body:secondsToWait:). For parity with your existing call, pass 60 as the secondsToWait argument.")
+    public func createResponse(
+        requestBody: OpenAICreateResponseRequestBody
+    ) async throws -> OpenAIResponse {
+        return try await self.createResponse(requestBody: requestBody, secondsToWait: 60)
+    }
+
+    @available(*, deprecated, message: "This has been renamed to createStreamingResponse(body:secondsToWait:). For parity with your existing call, pass 60 as the secondsToWait argument.")
+    public func createStreamingResponse(
+        requestBody: OpenAICreateResponseRequestBody
+    ) async throws -> AsyncThrowingStream<OpenAIResponseStreamingEvent, Error> {
+        return try await self.createStreamingResponse(requestBody: requestBody, secondsToWait: 60)
     }
 }
