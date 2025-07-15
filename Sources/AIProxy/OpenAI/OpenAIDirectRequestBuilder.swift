@@ -17,8 +17,6 @@ internal struct OpenAIDirectRequestBuilder: OpenAIRequestBuilder {
     }
 
     func jsonPOST(path: String, body: Encodable, secondsToWait: UInt, additionalHeaders: [String: String]) async throws -> URLRequest {
-        var mergedHeaders = additionalHeaders
-        mergedHeaders["Authorization"] = "Bearer \(self.unprotectedAPIKey)"
         return try AIProxyURLRequest.createDirect(
             baseURL: self.baseURL,
             path: path,
@@ -26,7 +24,7 @@ internal struct OpenAIDirectRequestBuilder: OpenAIRequestBuilder {
             verb: .post,
             secondsToWait: secondsToWait,
             contentType: "application/json",
-            additionalHeaders: mergedHeaders
+            additionalHeaders: self.mergedHeaders(additionalHeaders: additionalHeaders)
         )
     }
 
@@ -36,8 +34,6 @@ internal struct OpenAIDirectRequestBuilder: OpenAIRequestBuilder {
         secondsToWait: UInt,
         additionalHeaders: [String : String]
     ) async throws -> URLRequest {
-        var mergedHeaders = additionalHeaders
-        mergedHeaders["Authorization"] = "Bearer \(self.unprotectedAPIKey)"
         let boundary = UUID().uuidString
         return try AIProxyURLRequest.createDirect(
             baseURL: self.baseURL,
@@ -46,7 +42,7 @@ internal struct OpenAIDirectRequestBuilder: OpenAIRequestBuilder {
             verb: .post,
             secondsToWait: secondsToWait,
             contentType: "multipart/form-data; boundary=\(boundary)",
-            additionalHeaders: mergedHeaders
+            additionalHeaders: self.mergedHeaders(additionalHeaders: additionalHeaders)
         )
     }
 
@@ -55,15 +51,21 @@ internal struct OpenAIDirectRequestBuilder: OpenAIRequestBuilder {
         secondsToWait: UInt,
         additionalHeaders: [String : String]
     ) async throws -> URLRequest {
-        var mergedHeaders = additionalHeaders
-        mergedHeaders["Authorization"] = "Bearer \(self.unprotectedAPIKey)"
         return try AIProxyURLRequest.createDirect(
             baseURL: self.baseURL,
             path: path,
             body: nil,
             verb: .get,
             secondsToWait: secondsToWait,
-            additionalHeaders: mergedHeaders
+            additionalHeaders: self.mergedHeaders(additionalHeaders: additionalHeaders)
         )
+    }
+
+    private func mergedHeaders(additionalHeaders: [String: String]) -> [String: String] {
+        var mergedHeaders = additionalHeaders
+        if mergedHeaders["Authorization"] == nil {
+            mergedHeaders["Authorization"] = "Bearer \(self.unprotectedAPIKey)"
+        }
+        return mergedHeaders
     }
 }
