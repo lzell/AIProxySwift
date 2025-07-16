@@ -6042,6 +6042,38 @@ If you do not have existing client or user IDs, no problem! Leave the `clientID`
 out, and we'll generate IDs for you. See `AIProxyIdentifier.swift` if you would like to see
 ID generation specifics.
 
+### How to respond to DeviceCheck errors
+
+Apple's DeviceCheck is a core component of our security model.
+
+If your app can't generate a DeviceCheck token from the device, then it is unable to make a request to AIProxy's backend.
+In such a case, you can pop UI to the end user by catching AIProxyError.deviceCheckIsUnavailble:
+
+```swift
+    let requestBody = OpenAIChatCompletionRequestBody(
+        model: "gpt-4.1-mini-2025-04-14",
+        messages: [
+            .system(content: .text("You are a helpful assistant")),
+            .user(content: .text("hello world"))
+        ]
+    )
+
+    do {
+        let response = try await openAIService.chatCompletionRequest(
+            body: requestBody,
+            secondsToWait: 60
+        )
+    } catch let error as AIProxyError where error == .deviceCheckIsUnavailable {
+        // Pop UI to the end user here. Here is a sample message:
+        //
+        //     We could not create a required credential to make your AI request.
+        //     Please make sure you are connected to the internet and your system clock is accurately set.
+        //
+    } catch {
+        print("Could not create an OpenAI chat completion: \(error.localizedDescription)")
+    }
+```
+
 
 ### How to catch Foundation errors for specific conditions
 

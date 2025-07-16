@@ -10,6 +10,7 @@ import Foundation
 enum AIProxyURLRequest {
 
     /// Creates a URLRequest that is configured for use with an AIProxy URLSession.
+    /// Can raise `AIProxyError.deviceCheckIsUnavailable` or `AIProxyError.deviceCheckBypassIsMissing`
     static func create(
         partialKey: String,
         serviceURL: String,
@@ -22,7 +23,6 @@ enum AIProxyURLRequest {
         additionalHeaders: [String: String] = [:]
     ) async throws -> URLRequest {
         let resolvedClientID = clientID ?? AIProxyIdentifier.getClientID()
-        let deviceCheckToken = await AIProxyDeviceCheck.getToken(forClient: resolvedClientID)
 
         var proxyPath = proxyPath
         if !proxyPath.starts(with: "/") {
@@ -50,10 +50,6 @@ enum AIProxyURLRequest {
         request.addValue(partialKey, forHTTPHeaderField: "aiproxy-partial-key")
         request.addValue(resolvedClientID, forHTTPHeaderField: "aiproxy-client-id")
 
-        if let deviceCheckToken = deviceCheckToken {
-            request.addValue(deviceCheckToken, forHTTPHeaderField: "aiproxy-devicecheck")
-        }
-
         request.addValue(
             AIProxyUtils.metadataHeader(withBodySize: body?.count ?? 0),
             forHTTPHeaderField: "aiproxy-metadata"
@@ -64,9 +60,15 @@ enum AIProxyURLRequest {
         }
 
     #if targetEnvironment(simulator)
-        if let deviceCheckBypass = ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] {
-            request.addValue(deviceCheckBypass, forHTTPHeaderField: "aiproxy-devicecheck-bypass")
+        guard let deviceCheckBypass = ProcessInfo.processInfo.environment["AIPROXY_DEVICE_CHECK_BYPASS"] else {
+            throw AIProxyError.deviceCheckBypassIsMissing
         }
+        request.addValue(deviceCheckBypass, forHTTPHeaderField: "aiproxy-devicecheck-bypass")
+    #else
+        guard let deviceCheckToken = await AIProxyDeviceCheck.getToken(forClient: resolvedClientID) else {
+            throw AIProxyError.deviceCheckIsUnavailable
+        }
+        request.addValue(deviceCheckToken, forHTTPHeaderField: "aiproxy-devicecheck")
     #endif
 
         if let contentType = contentType {

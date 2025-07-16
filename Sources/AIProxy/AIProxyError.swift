@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum AIProxyError: LocalizedError {
+public enum AIProxyError: LocalizedError, Equatable {
 
     /// This error is thrown if any programmer assumptions are broken and the library can't continue.
     ///
@@ -45,14 +45,29 @@ public enum AIProxyError: LocalizedError {
     /// production, because the rate limits that you apply will rate limit live users!
     case unsuccessfulRequest(statusCode: Int, responseBody: String)
 
+    /// A core component of our security model is Apple's DeviceCheck.
+    /// If we can't generate a DeviceCheck token, then the app is not allowed to make requests to AIProxy's backend.
+    /// Catch this error to pop UI to the end user.
+    /// Our suggested copy for the alert is:
+    /// "We could not create a required credential to make your AI request. Please make sure you are connected to the internet and your system clock is accurately set."
+    case deviceCheckIsUnavailable
+
+    /// Raised from the iOS simulator if the `AIPROXY_DEVICE_CHECK_BYPASS` token is not set.
+    /// The bypass token is needed on simulators only, where Apple's DeviceCheck is not available.
+    case deviceCheckBypassIsMissing
+
     public var errorDescription: String? {
         switch self {
         case .assertion(let message):
-            return "An AIProxy precondition was not met: \(message)"
-
+            return "AIProxy - A library precondition was not met: \(message)"
         case .unsuccessfulRequest(statusCode: let statusCode, responseBody: let responseBody):
-            return "An AIProxy request resulted in a status code of \(statusCode) with response body: \(responseBody)."
+            return "AIProxy - the request resulted in a status code of \(statusCode) with response body: \(responseBody)."
+        case .deviceCheckIsUnavailable:
+            return "AIProxy - Apple's DeviceCheck is not available on this device. Please make sure you are connected to the internet and your system clock is accurately set."
+        case .deviceCheckBypassIsMissing:
+            return "AIProxy - You are running on a simulator without setting the AIPROXY_DEVICE_CHECK_BYPASS env variable. Please see the integration guide for instructions on setting AIPROXY_DEVICE_CHECK_BYPASS: https://www.aiproxy.pro/docs/integration-guide.html"
         }
+
     }
 }
 
