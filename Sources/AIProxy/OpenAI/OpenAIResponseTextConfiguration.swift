@@ -6,7 +6,7 @@
 //
 
 extension OpenAIResponse {
-    public struct Text: Codable {
+    public struct TextConfiguration: Codable {
         /// The format specification for the text output
         public let format: Format?
 
@@ -16,7 +16,7 @@ extension OpenAIResponse {
     }
 }
 
-extension OpenAIResponse.Text {
+extension OpenAIResponse.TextConfiguration {
     /// An object specifying the format that the model must output.
     /// The case `.jsonObject` is **not recommended for gpt-4o and newer models.**
     public enum Format: Codable {

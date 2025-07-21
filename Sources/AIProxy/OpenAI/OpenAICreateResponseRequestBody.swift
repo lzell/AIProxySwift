@@ -73,8 +73,10 @@ public struct OpenAICreateResponseRequestBody: Encodable {
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
     public let user: String?
 
+    /// This field is not well-named; it's a configuration field that controls the response text, not the response text itself.
+    ///
     /// Configuration options for a text response from the model. Can be plain text or structured JSON data.
-    public let text: OpenAIResponse.Text?
+    public let text: OpenAIResponse.TextConfiguration?
 
     private enum CodingKeys: String, CodingKey {
         case input
@@ -108,7 +110,7 @@ public struct OpenAICreateResponseRequestBody: Encodable {
         temperature: Double? = nil,
         topP: Double? = nil,
         user: String? = nil,
-        text: OpenAIResponse.Text? = nil
+        text: OpenAIResponse.TextConfiguration? = nil
     ) {
         self.input = input
         self.model = model

@@ -14,7 +14,7 @@ final class OpenAIResponseObjectTests: XCTestCase {
         let sampleResponse = #"""
         { "type": "text" }
         """#
-        let res = try OpenAIResponse.Text.Format.deserialize(from: sampleResponse)
+        let res = try OpenAIResponse.TextConfiguration.Format.deserialize(from: sampleResponse)
         guard case .text = res else {
             return XCTFail()
         }
@@ -26,7 +26,7 @@ final class OpenAIResponseObjectTests: XCTestCase {
           "format": { "type": "text" }
         }
         """#
-        let res = try OpenAIResponse.Text.deserialize(from: sampleResponse)
+        let res = try OpenAIResponse.TextConfiguration.deserialize(from: sampleResponse)
         guard case .text = res.format else {
             return XCTFail()
         }
