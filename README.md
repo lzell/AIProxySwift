@@ -1334,6 +1334,116 @@ Note: there is also a streaming version of this snippet below.
     }
 ```
 
+### How to make a Structured Outputs request with OpenAI's Responses API
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let schema: [String: AIProxyJSONValue] = [
+        "type": "object",
+        "properties": [
+            "colors": [
+                "type": "array",
+                "items": [
+                    "type": "object",
+                    "properties": [
+                        "name": [
+                            "type": "string",
+                            "description": "A descriptive name to give the color"
+                        ],
+                        "hex_code": [
+                            "type": "string",
+                            "description": "The hex code of the color"
+                        ]
+                    ],
+                    "required": ["name", "hex_code"],
+                    "additionalProperties": false
+                ]
+            ]
+        ],
+        "required": ["colors"],
+        "additionalProperties": false
+    ]
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .items([
+            .message(role: .system, content: .text("You are a color palette generator")),
+            .message(role: .user, content: .text("Return a peaches and cream color palette"))
+        ]),
+        model: "gpt-4o",
+        text: .init(
+            format: .jsonSchema(
+                name: "palette",
+                schema: schema,
+                description: "A list of colors that make up a color pallete",
+                strict: true
+            )
+        )
+    )
+
+    do {
+        let response = try await openAIService.createResponse(
+            requestBody: requestBody,
+            secondsToWait: 120
+        )
+        print(response.outputText)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get a structured output response from OpenAI: \(error.localizedDescription)")
+    }
+```
+
+### How to make a JSON mode request with OpenAI's Responses API
+
+Please also see the Structured Outputs snippet above, which is a more modern way of getting a JSON response
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .items([
+            .message(role: .system, content: .text("Return valid JSON only")),
+            .message(role: .user, content: .text("Return alice and bob in a list of names"))
+        ]),
+        model: "gpt-4o",
+        text: .init(format: .jsonObject)
+    )
+
+    do {
+        let response = try await openAIService.createResponse(
+            requestBody: requestBody,
+            secondsToWait: 120
+        )
+        print(response.outputText)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get a JSON mode response from OpenAI: \(error.localizedDescription)")
+    }
+```
+
 ### How to make a web search call using OpenAI's Responses API
 Note: there is also a streaming version of this snippet below.
 

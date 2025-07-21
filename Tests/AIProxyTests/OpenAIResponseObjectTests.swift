@@ -14,18 +14,22 @@ final class OpenAIResponseObjectTests: XCTestCase {
         let sampleResponse = #"""
         { "type": "text" }
         """#
-        let res = try OpenAIResponse.ResponseTextConfig.Format.deserialize(from: sampleResponse)
-        XCTAssertEqual(.text, res)
+        let res = try OpenAIResponse.TextConfiguration.Format.deserialize(from: sampleResponse)
+        guard case .text = res else {
+            return XCTFail()
+        }
     }
 
-    func testTextConfigIsDecodable() throws {
+    func testResponseTextIsDecodable() throws {
         let sampleResponse = #"""
         {
           "format": { "type": "text" }
         }
         """#
-        let res = try OpenAIResponse.ResponseTextConfig.deserialize(from: sampleResponse)
-        XCTAssertEqual(.text, res.format)
+        let res = try OpenAIResponse.TextConfiguration.deserialize(from: sampleResponse)
+        guard case .text = res.format else {
+            return XCTFail()
+        }
     }
 
     func testCreateResponseResponseBodyIsDecodable() throws {
@@ -114,7 +118,9 @@ final class OpenAIResponseObjectTests: XCTestCase {
         XCTAssertNil(res.reasoning?.effort)
         XCTAssertNil(res.reasoning?.generateSummary)
         XCTAssertEqual(1.0, res.temperature)
-        XCTAssertEqual(.text, res.text?.format)
+        guard case .text = res.text?.format else {
+            return XCTFail()
+        }
 
 //        if case .option(let toolOption) = res.toolChoice {
 //            XCTAssertEqual(.auto, toolOption)
@@ -131,5 +137,184 @@ final class OpenAIResponseObjectTests: XCTestCase {
         XCTAssertEqual(36, res.usage?.totalTokens)
         XCTAssertNil(res.user)
         XCTAssertEqual(true, res.metadata?.isEmpty)
+    }
+
+
+    func testJSONModeResponseIsDecodable() throws {
+        let sampleResponse = #"""
+        {
+          "id": "resp_687e452b61d0819baf8a1bd210ebc8c40215ea063ccfb679",
+          "object": "response",
+          "created_at": 1753105707,
+          "status": "completed",
+          "background": false,
+          "error": null,
+          "incomplete_details": null,
+          "instructions": null,
+          "max_output_tokens": null,
+          "max_tool_calls": null,
+          "model": "gpt-4o-2024-08-06",
+          "output": [
+            {
+              "id": "msg_687e452bb2bc819bbb7f330a29ee10d50215ea063ccfb679",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "{\n  \"names\": [\"Alice\", \"Bob\"]\n}"
+                }
+              ],
+              "role": "assistant"
+            }
+          ],
+          "parallel_tool_calls": true,
+          "previous_response_id": null,
+          "prompt_cache_key": null,
+          "reasoning": {
+            "effort": null,
+            "summary": null
+          },
+          "safety_identifier": null,
+          "service_tier": "default",
+          "store": true,
+          "temperature": 1.0,
+          "text": {
+            "format": {
+              "type": "json_object"
+            }
+          },
+          "tool_choice": "auto",
+          "tools": [],
+          "top_logprobs": 0,
+          "top_p": 1.0,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 24,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 13,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 37
+          },
+          "user": null,
+          "metadata": {}
+        }
+        """#
+        let res = try OpenAIResponse.deserialize(from: sampleResponse)
+    }
+
+    func testStructuredOutputsResponseIsDecodable() throws {
+        let sampleResponse = #"""
+        {
+          "id": "resp_687e5a064e24819aa64214483e6838e2008e7175c867dce4",
+          "object": "response",
+          "created_at": 1753111046,
+          "status": "completed",
+          "background": false,
+          "error": null,
+          "incomplete_details": null,
+          "instructions": null,
+          "max_output_tokens": null,
+          "max_tool_calls": null,
+          "model": "gpt-4o-2024-08-06",
+          "output": [
+            {
+              "id": "msg_687e5a07008c819a97b7939a2f5c18f9008e7175c867dce4",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "{\"colors\":[{\"hex_code\":\"#FFDAB9\",\"name\":\"Peach Puff\"},{\"hex_code\":\"#FFE5B4\",\"name\":\"Peaches\"},{\"hex_code\":\"#FFF5EE\",\"name\":\"Seashell\"},{\"hex_code\":\"#FFF0E1\",\"name\":\"Papaya Whip\"},{\"hex_code\":\"#FFF2E2\",\"name\":\"Cream Blush\"}]}"
+                }
+              ],
+              "role": "assistant"
+            }
+          ],
+          "parallel_tool_calls": true,
+          "previous_response_id": null,
+          "prompt_cache_key": null,
+          "reasoning": {
+            "effort": null,
+            "summary": null
+          },
+          "safety_identifier": null,
+          "service_tier": "default",
+          "store": true,
+          "temperature": 1.0,
+          "text": {
+            "format": {
+              "type": "json_schema",
+              "description": "A list of colors that make up a color pallete",
+              "name": "palette",
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "colors": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "hex_code": {
+                          "description": "The hex code of the color",
+                          "type": "string"
+                        },
+                        "name": {
+                          "description": "A descriptive name to give the color",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "hex_code"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "colors"
+                ],
+                "type": "object"
+              },
+              "strict": true
+            }
+          },
+          "tool_choice": "auto",
+          "tools": [],
+          "top_logprobs": 0,
+          "top_p": 1.0,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 102,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 79,
+            "output_tokens_details": {
+              "reasoning_tokens": 0
+            },
+            "total_tokens": 181
+          },
+          "user": null,
+          "metadata": {}
+        }
+        """#
+        let res = try OpenAIResponse.deserialize(from: sampleResponse)
+        guard case .jsonSchema(let name, let schema, let description, let strict) = res.text?.format else {
+            return XCTFail()
+        }
+        XCTAssertEqual("palette", name)
+        XCTAssertEqual(["colors"], schema.untypedDictionary["required"] as? [String])
+        XCTAssertEqual("A list of colors that make up a color pallete", description)
+        XCTAssert(strict == true)
     }
 }

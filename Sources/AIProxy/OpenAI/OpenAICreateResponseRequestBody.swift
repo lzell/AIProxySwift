@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 /// OpenAI's most advanced interface for generating model responses.
 /// Supports text and image inputs, and text outputs.
 /// Create stateful interactions with the model, using the output of previous responses as input.
@@ -73,8 +74,10 @@ public struct OpenAICreateResponseRequestBody: Encodable {
     /// A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse.
     public let user: String?
 
-    /// Text generation settings.
-    public let text: TextSettings?
+    /// This field is not well-named; it's a configuration field that controls the response text, not the response text itself.
+    ///
+    /// Configuration options for a text response from the model. Can be plain text or structured JSON data.
+    public let text: OpenAIResponse.TextConfiguration?
 
     private enum CodingKeys: String, CodingKey {
         case input
@@ -108,7 +111,7 @@ public struct OpenAICreateResponseRequestBody: Encodable {
         temperature: Double? = nil,
         topP: Double? = nil,
         user: String? = nil,
-        text: OpenAICreateResponseRequestBody.TextSettings? = nil
+        text: OpenAIResponse.TextConfiguration? = nil
     ) {
         self.input = input
         self.model = model
@@ -124,6 +127,9 @@ public struct OpenAICreateResponseRequestBody: Encodable {
         self.user = user
         self.text = text
     }
+
+    // For naming consistency with sdkVersion <= 0.120.0
+    public typealias TextSettings = OpenAIResponse.TextConfiguration
 }
 
 extension OpenAICreateResponseRequestBody {
@@ -682,54 +688,3 @@ extension OpenAICreateResponseRequestBody {
         }
     }
 }
-
-// MARK: - Text Settings
-extension OpenAICreateResponseRequestBody {
-    /// Text generation settings for the response
-    public struct TextSettings: Codable {
-        /// The format specification for the text output
-        public let format: Format?
-
-        public init(format: Format? = nil) {
-            self.format = format
-        }
-    }
-
-    /// Format specification for text output
-    public struct Format: Codable {
-        /// The format type
-        public let type: FormatType?
-
-        /// The name of the schema (required for json_schema type)
-        public let name: String?
-
-        /// The JSON schema definition (required for json_schema type)
-        public let schema: [String: AIProxyJSONValue]?
-
-        /// Whether to enable strict schema adherence (optional for json_schema type)
-        public let strict: Bool?
-
-        public init(
-            type: FormatType? = nil,
-            name: String? = nil,
-            schema: [String: AIProxyJSONValue]? = nil,
-            strict: Bool? = nil
-        ) {
-            self.type = type
-            self.name = name
-            self.schema = schema
-            self.strict = strict
-        }
-    }
-
-    /// Available text output format types
-    public enum FormatType: String, Codable {
-        /// Plain text format
-        case text
-        /// JSON object format
-        case jsonObject = "json_object"
-        /// Structured JSON with schema validation
-        case jsonSchema = "json_schema"
-    }
-}
-
