@@ -57,25 +57,6 @@ public enum OpenAIResponseStreamingEvent: Decodable {
 
     private enum CodingKeys: String, CodingKey {
         case type
-//        case sequenceNumber = "sequence_number"
-//        case response
-//        case outputIndex = "output_index"
-//        case item
-//        case itemId = "item_id"
-//        case contentIndex = "content_index"
-//        case summaryIndex = "summary_index"
-//        case part
-//        case delta
-//        case text
-//        case refusal
-//        case arguments
-//        case partialImageIndex = "partial_image_index"
-//        case partialImageB64 = "partial_image_b64"
-//        case annotationIndex = "annotation_index"
-//        case annotation
-//        case code
-//        case message
-//        case param
     }
 
     public init(from decoder: Decoder) throws {
