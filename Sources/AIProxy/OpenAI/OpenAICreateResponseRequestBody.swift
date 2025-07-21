@@ -126,6 +126,9 @@ public struct OpenAICreateResponseRequestBody: Encodable {
         self.user = user
         self.text = text
     }
+
+    // For naming consistency with sdkVersion <= 0.120.0
+    public typealias TextSettings = OpenAIResponse.TextConfiguration
 }
 
 extension OpenAICreateResponseRequestBody {
