@@ -1,5 +1,5 @@
 //
-//  OpenAIResponseText.swift
+//  OpenAIResponseTextConfiguration.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 7/21/25.

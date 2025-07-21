@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 /// OpenAI's most advanced interface for generating model responses.
 /// Supports text and image inputs, and text outputs.
 /// Create stateful interactions with the model, using the output of previous responses as input.
