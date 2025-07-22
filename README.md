@@ -1444,6 +1444,64 @@ Please also see the Structured Outputs snippet above, which is a more modern way
     }
 ```
 
+### How to use an image as input (multi-modal) using OpenAI's Responses API
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = UIImage(named: "myImage") else {
+        print("Could not find an image named 'myImage' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.5) else {
+        print("Could not convert image to OpenAI's imageURL format")
+        return
+    }
+
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .items(
+            [
+                .message(
+                    role: .system,
+                    content: .text("You are a visual assistant")
+                ),
+                .message(
+                    role: .user,
+                    content: .list([
+                        .text("What do you see?"),
+                        .imageURL(imageURL)
+                    ])
+                )
+            ]
+        ),
+        model: "gpt-4o"
+    )
+
+    do {
+        let response = try await openAIService.createResponse(
+            requestBody: requestBody,
+            secondsToWait: 60
+        )
+        print(response.outputText)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create a multi-modal OpenAI Response: \(error.localizedDescription)")
+    }
+```
+
 ### How to make a web search call using OpenAI's Responses API
 Note: there is also a streaming version of this snippet below.
 
