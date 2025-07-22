@@ -383,7 +383,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     }
 
     guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.6) else {
-        print("Could not convert image to OpenAI's imageURL format")
+        print("Could not encode image as data URL")
         return
     }
 
@@ -1466,7 +1466,7 @@ Please also see the Structured Outputs snippet above, which is a more modern way
     }
 
     guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.5) else {
-        print("Could not convert image to OpenAI's imageURL format")
+        print("Could not encode image as data URL")
         return
     }
 
@@ -4850,7 +4850,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     }
 
     guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.5) else {
-        print("Could not encode image as a data URI")
+        print("Could not encode image as a data URL")
         return
     }
 
@@ -5642,7 +5642,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     }
 
     guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.6) else {
-        print("Could not encode image as a data URI")
+        print("Could not encode image as a data URL")
         return
     }
 
