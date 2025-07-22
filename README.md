@@ -383,7 +383,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     }
 
     guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.6) else {
-        print("Could not convert image to OpenAI's imageURL format")
+        print("Could not encode image as data URL")
         return
     }
 
@@ -1441,6 +1441,64 @@ Please also see the Structured Outputs snippet above, which is a more modern way
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
         print("Could not get a JSON mode response from OpenAI: \(error.localizedDescription)")
+    }
+```
+
+### How to use an image as input (multi-modal) using OpenAI's Responses API
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = UIImage(named: "myImage") else {
+        print("Could not find an image named 'myImage' in your app assets")
+        return
+    }
+
+    guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.5) else {
+        print("Could not encode image as data URL")
+        return
+    }
+
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .items(
+            [
+                .message(
+                    role: .system,
+                    content: .text("You are a visual assistant")
+                ),
+                .message(
+                    role: .user,
+                    content: .list([
+                        .text("What do you see?"),
+                        .imageURL(imageURL)
+                    ])
+                )
+            ]
+        ),
+        model: "gpt-4o"
+    )
+
+    do {
+        let response = try await openAIService.createResponse(
+            requestBody: requestBody,
+            secondsToWait: 60
+        )
+        print(response.outputText)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create a multi-modal OpenAI Response: \(error.localizedDescription)")
     }
 ```
 
@@ -4792,7 +4850,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     }
 
     guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.5) else {
-        print("Could not encode image as a data URI")
+        print("Could not encode image as a data URL")
         return
     }
 
@@ -5584,7 +5642,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     }
 
     guard let imageURL = AIProxy.encodeImageAsURL(image: image, compressionQuality: 0.6) else {
-        print("Could not encode image as a data URI")
+        print("Could not encode image as a data URL")
         return
     }
 
