@@ -67,4 +67,14 @@ open class EachAIDirectService: EachAIService, DirectService {
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }
+
+    /// Kicks off a single model run.
+    /// You probably want `runModelAndPollForComplete` defined in the protocol extension below.
+    public func runModel<T: Encodable>(
+        body: EachAIRunModelRequestBody<T>
+    ) async throws -> EachAIRunModelResponseBody {
+        // request.addValue("api.eachlabs.ai", forHTTPHeaderField: "aiproxy-proxy-base-url")
+
+        fatalError()
+    }
 }

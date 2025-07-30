@@ -71,4 +71,23 @@ open class EachAIProxiedService: EachAIService, ProxiedService {
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }
+
+    /// Kicks off a single model run.
+    /// You probably want `runModelAndPollForComplete` defined in the protocol extension below.
+    public func runModel<T: Encodable>(
+        body: EachAIRunModelRequestBody<T>
+    ) async throws -> EachAIRunModelResponseBody {
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/prediction/run",
+            body: try body.serialize(),
+            verb: .post,
+            secondsToWait: 60,
+            contentType: "application/json",
+            additionalHeaders: ["aiproxy-proxy-base-url": "api.eachlabs.ai"]
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
 }

@@ -25,14 +25,21 @@ public protocol EachAIService {
         body: EachAITriggerWorkflowRequestBody
     ) async throws -> EachAITriggerWorkflowResponseBody
 
-    /// You probably want to use `pollForWorkflowExecutionComplete`, defined below.
+    /// You probably want to use `pollForWorkflowExecutionComplete`, defined in the protocol extension below.
     /// This method gets the workflow execution response a single time, which may still be in the processing state.
     /// https://docs.eachlabs.ai/api-reference/execution/get-flow-execution
     func getWorkflowExecution(
         workflowID: String,
         triggerID: String
     ) async throws -> EachAIWorkflowExecutionResponseBody
+
+    /// Kicks off a single model run.
+    /// You probably want `runModelAndPollForComplete` defined in the protocol extension below.
+    func runModel<T: Encodable>(
+        body: EachAIRunModelRequestBody<T>
+    ) async throws -> EachAIRunModelResponseBody
 }
+
 
 extension EachAIService {
     /// Polls for the completion of a workflow. By default, the time between polls is 10 seconds.
