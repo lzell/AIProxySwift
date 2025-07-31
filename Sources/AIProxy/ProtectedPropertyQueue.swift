@@ -7,7 +7,17 @@
 
 import Foundation
 
-internal let protectedPropertyQueue = DispatchQueue(
-    label: "aiproxy-protected-property-queue",
-    attributes: .concurrent
-)
+internal enum ProtectedPropertyQueue {
+    static let resolvedAccount = DispatchQueue(
+        label: "aiproxy-protected-resolved-account",
+        attributes: .concurrent
+    )
+    static let stableID = DispatchQueue(
+        label: "aiproxy-protected-stable-id",
+        attributes: .concurrent
+    )
+    static let useStableID = DispatchQueue(
+        label: "aiproxy-protected-use-stable-id",
+        attributes: .concurrent
+    )
+}

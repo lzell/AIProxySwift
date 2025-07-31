@@ -8,7 +8,7 @@ import UIKit
 public enum AIProxy {
 
     /// The current sdk version
-    public static let sdkVersion = "0.122.0"
+    public static let sdkVersion = "0.122.1"
 
     /// Configures the AIProxy SDK. Call this during app launch by adding an `init` to your SwiftUI MyApp.swift file, e.g.
     ///
@@ -85,16 +85,10 @@ public enum AIProxy {
         useStableID: Bool
     ) {
         aiproxyCallerDesiredLogLevel = logLevel
-        self.printRequestBodies = printRequestBodies
-        self.printResponseBodies = printResponseBodies
-        self.resolveDNSOverTLS = resolveDNSOverTLS
-        if useStableID {
-            Task.detached {
-                if let stableID = await self._getStableIdentifier() {
-                    self.stableID = stableID
-                }
-            }
-        }
+        AIProxyConfiguration.printRequestBodies = printRequestBodies
+        AIProxyConfiguration.printResponseBodies = printResponseBodies
+        AIProxyConfiguration.resolveDNSOverTLS = resolveDNSOverTLS
+        AIProxyConfiguration.useStableID = useStableID
     }
 
     /// Flag to use DNS over TLS.
@@ -112,21 +106,21 @@ public enum AIProxy {
     /// Or using cloudflare's resolver
     ///
     ///    kdig @1.1.1.1 api.aiproxy.com +noall +stats
-    public static var resolveDNSOverTLS = true
-
-    public private(set) static var stableID: String? {
-        get {
-            protectedPropertyQueue.sync { _stableID }
-        }
-        set {
-            protectedPropertyQueue.async(flags: .barrier) { _stableID = newValue }
-        }
+    public static var resolveDNSOverTLS: Bool {
+        AIProxyConfiguration.resolveDNSOverTLS
     }
-    private static var _stableID: String?
 
-    public static var printRequestBodies: Bool = false
-    public static var printResponseBodies: Bool = false
+    public static var stableID: String? {
+        AIProxyConfiguration.stableID
+    }
 
+    public static var printRequestBodies: Bool {
+        AIProxyConfiguration.printRequestBodies
+    }
+
+    public static var printResponseBodies: Bool {
+        AIProxyConfiguration.printResponseBodies
+    }
 
     /// - Parameters:
     ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your provider's key.
@@ -1007,21 +1001,7 @@ public enum AIProxy {
 
     @available(*, deprecated, message: "Use AIProxy.configure and pass true for useStableID")
     public static func getStableIdentifier() async -> String? {
-        return await self._getStableIdentifier()
-    }
-
-    private static func _getStableIdentifier() async -> String? {
-        #if !DEBUG
-        if let appTransactionID = await AIProxyUtils.getAppTransactionID() {
-            return appTransactionID
-        }
-        #endif
-        do {
-            return try await AnonymousAccountStorage.sync()
-        } catch {
-            logIf(.error)?.error("AIProxy: Could not configure an anonymous account: \(error.localizedDescription)")
-        }
-        return nil
+        return await AIProxyConfiguration._getStableIdentifier()
     }
 
     public static func base64EncodeAudioPCMBuffer(from buffer: AVAudioPCMBuffer) -> String? {

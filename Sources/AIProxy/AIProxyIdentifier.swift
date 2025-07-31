@@ -20,7 +20,7 @@ enum AIProxyIdentifier {
     /// - Returns: The AIProxy stableID if the developer configured the SDK with `useStableID`.
     ///            Otherwise, a UIDevice ID on iOS, an IOKit ID on macOS
     internal static func getClientID() -> String {
-        if let stableID = AIProxy.stableID {
+        if let stableID = AIProxyConfiguration.stableID {
             return stableID
         }
 #if os(watchOS)

@@ -13,21 +13,21 @@ protocol ServiceMixin {
 
 extension ServiceMixin {
     func makeRequestAndDeserializeResponse<T: Decodable>(_ request: URLRequest) async throws -> T {
-        if AIProxy.printRequestBodies {
+        if AIProxyConfiguration.printRequestBodies {
             printRequestBody(request)
         }
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
             self.urlSession,
             request
         )
-        if AIProxy.printResponseBodies {
+        if AIProxyConfiguration.printResponseBodies {
             printBufferedResponseBody(data)
         }
         return try T.deserialize(from: data)
     }
 
     func makeRequestAndDeserializeStreamingChunks<T: Decodable>(_ request: URLRequest) async throws -> AsyncThrowingStream<T, Error> {
-        if AIProxy.printRequestBodies {
+        if AIProxyConfiguration.printRequestBodies {
             printRequestBody(request)
         }
 
@@ -37,7 +37,7 @@ extension ServiceMixin {
         )
 
         let sequence = asyncBytes.lines.compactMap { (line: String) -> T? in
-            if AIProxy.printResponseBodies {
+            if AIProxyConfiguration.printResponseBodies {
                 printStreamingResponseChunk(line)
             }
             return T.deserialize(fromLine: line)
