@@ -59,4 +59,13 @@ final class OpenRouterToolCallResponseBodyTests: XCTestCase {
             functionToCall?.arguments?["location"] as? String
         )
     }
+
+    func testStreamingResponseWithToolUseIsDecodable() throws {
+        let line = #"data: {"id":"snip","provider":"OpenAI","model":"openai/gpt-4.1","object":"chat.completion.chunk","created":1753924334,"choices":[{"index":0,"delta":{"role":"assistant","content":null,"tool_calls":[{"index":0,"function":{"arguments":" USA"},"type":"function"}]},"finish_reason":null,"native_finish_reason":null,"logprobs":null}],"system_fingerprint":"snip"}"#
+        let chunk = OpenRouterChatCompletionChunk.deserialize(fromLine: line)
+        XCTAssertEqual(
+            " USA",
+            chunk?.choices.first?.delta.toolCalls?.first?.function?.arguments
+        )
+    }
 }
