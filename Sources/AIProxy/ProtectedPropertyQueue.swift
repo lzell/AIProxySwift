@@ -17,7 +17,7 @@ internal enum ProtectedPropertyQueue {
         attributes: .concurrent
     )
     static let useStableID = DispatchQueue(
-        label: "aiproxy-caller-use-stable-id",
+        label: "aiproxy-protected-use-stable-id",
         attributes: .concurrent
     )
 }
