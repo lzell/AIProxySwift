@@ -31,7 +31,7 @@ enum AIProxyUtils {
     }
 
     static func proxiedURLSession() -> URLSession {
-        if AIProxy.resolveDNSOverTLS {
+        if AIProxyConfiguration.resolveDNSOverTLS {
             let host = NWEndpoint.hostPort(host: "one.one.one.one", port: 853)
             let endpoints: [NWEndpoint] = [
                 .hostPort(host: "1.1.1.1", port: 853),

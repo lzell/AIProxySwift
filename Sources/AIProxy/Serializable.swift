@@ -9,7 +9,7 @@ import Foundation
 
 extension Encodable {
     func serialize(pretty: Bool = false) throws -> Data {
-        let pretty = pretty || AIProxy.printRequestBodies
+        let pretty = pretty || AIProxyConfiguration.printRequestBodies
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         if pretty {
