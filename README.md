@@ -5535,6 +5535,73 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
 ```
 
 
+### How to make a streaming tool call with OpenRouter
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openRouterService = AIProxy.openRouterDirectService(
+    //     unprotectedAPIKey: "your-openRouter-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openRouterService = AIProxy.openRouterService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenRouterChatCompletionRequestBody(
+        messages: [
+            .user(
+                content: .text("What is the weather in SF?")
+            )
+        ],
+        models: [
+            "openai/gpt-4.1",
+            // Add additional models here
+        ],
+        route: .fallback,
+        tools: [
+            .function(
+                name: "get_weather",
+                description: "Get current temperature for a given location.",
+                parameters: [
+                    "type": "object",
+                    "properties": [
+                        "location": [
+                            "type": "string",
+                            "description": "City and country e.g. Bogotá, Colombia"
+                        ]
+                    ],
+                    "required": ["location"],
+                    "additionalProperties": false
+                ],
+                strict: true
+            )
+        ]
+    )
+    do {
+        let stream = try await openRouterService.streamingChatCompletionRequest(body: requestBody)
+        for try await chunk in stream {
+            guard let toolCall = chunk.choices.first?.delta.toolCalls?.first else {
+                continue
+            }
+            if let name = toolCall.function?.name {
+                print("Model wants to call the function \(name) with arguments:")
+            }
+            print(toolCall.function?.arguments ?? "")
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not get OpenRouter streaming tool call: \(error.localizedDescription)")
+    }
+}
+
+```
+
+
 ### How to make a structured outputs chat completion with OpenRouter
 
 ```swift
