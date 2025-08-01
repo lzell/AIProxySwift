@@ -16,7 +16,7 @@ open class OpenAIDirectService: OpenAIService, DirectService {
         let baseURL = baseURL ?? "https://api.openai.com"
         let requestBuilder = OpenAIDirectRequestBuilder(
             baseURL: baseURL,
-            unprotectedAPIKey: unprotectedAPIKey
+            unprotectedAuthHeader: (key: "Authorization", value: "Bearer \(unprotectedAPIKey)")
         )
         super.init(
             requestFormat: requestFormat,

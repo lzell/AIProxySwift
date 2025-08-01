@@ -5267,6 +5267,98 @@ Use `flows.eachlabs.ai` as the proxy domain when creating your AIProxy service i
     }
 ```
 
+### How to call Imagen on EachAI
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let eachAIService = AIProxy.eachAIDirectService(
+    //     unprotectedAPIKey: "your-eachAI-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let eachAIService = AIProxy.eachAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let input: EachAIImagenInput = EachAIImagenInput(prompt: "a skier")
+
+    do {
+        let url = try await eachAIService.createImagen4FastImage(
+            input: input,
+            pollAttempts: 60,
+            secondsBetweenPollAttempts: 2
+        )
+        print("Your imagen output is available at: \(url)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not run Imagen 4 on EachAI: \(error.localizedDescription)")
+    }
+```
+
+### How to call Google Veo 3 Fast (Image to Video) on EachAI
+
+The snippet below costs a few dollars per run on EachAI.
+We recommend first running the Imagen example above, which is cheap.
+This way you ensure that your EachAI + AIProxy integration is working correctly before kicking off many Veo runs.
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let eachAIService = AIProxy.eachAIDirectService(
+    //     unprotectedAPIKey: "your-eachAI-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let eachAIService = AIProxy.eachAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+     // This model on EachAI does not currently accept a data URL. So you have to host the image somewhere first.
+    let imageURL = URL(string: "https://storage.googleapis.com/magicpoint/inputs/veo3-fast-i2v-input.jpeg")!
+    let input = EachAIVeoInput(
+        imageURL: imageURL,
+        prompt: """
+            Cinematic video set in a bioluminescent underwater cave system on
+            an alien ocean world, illuminated by glowing turquoise and violet
+            corals. The scene opens with a smooth tracking shot through a
+            tunnel of shimmering water, revealing a vast cavern where a swarm
+            of robotic fish, each engraved with the 'eachlabs.ai' logo, swims
+            in synchronized patterns. The camera follows the swarm as they
+            weave through towering coral structures, their metallic bodies
+            reflecting the cave’s radiant glow. A faint, rhythmic pulse of
+            light emanates from the corals, creating a hypnotic effect.
+            Suddenly, a massive, bioluminescent jellyfish-like creature drifts
+            into view, its tentacles gently pulsating as it emits a low,
+            resonant hum.  The audio includes the soft gurgle of water, a
+            futuristic ambient soundtrack with ethereal tones, and the
+            jellyfish’s hum synced with its movements. The video ends with a
+            slow zoom-out, showing the swarm of robotic fish forming the shape
+            of the 'eachlabs.ai' logo against the glowing cave backdrop,
+            followed by a gentle fade to black. The style is photorealistic,
+            with realistic fluid dynamics, vibrant lighting, and an immersive,
+            otherworldly aesthetic.
+            """
+    )
+    do {
+        let url = try await eachAIService.createVeo3FastVideo(
+            input: input,
+            pollAttempts: 60,
+            secondsBetweenPollAttempts: 10
+        )
+        print("Your veo3 output is available at: \(url)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not run Veo3 on EachAI: \(error.localizedDescription)")
+    }
+```
+
 ***
 
 ## OpenRouter
