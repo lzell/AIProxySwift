@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct EachAIRunModelRequestBody<T: Encodable>: Encodable {
+public struct EachAIPredictionRequestBody<T: Encodable>: Encodable {
     public let input: T
     public let model: String
     public let version: String

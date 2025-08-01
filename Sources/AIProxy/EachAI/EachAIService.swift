@@ -35,9 +35,9 @@ public protocol EachAIService {
 
     /// Kicks off a single model run.
     /// You probably want `runModelAndPollForComplete` defined in the protocol extension below.
-    func runModel<T: Encodable>(
-        body: EachAIRunModelRequestBody<T>
-    ) async throws -> EachAIRunModelResponseBody
+    func createPrediction<T: Encodable>(
+        body: EachAIPredictionRequestBody<T>
+    ) async throws -> EachAIPredictionResponseBody
 }
 
 
