@@ -11,9 +11,9 @@ import Foundation
 
 final class EachAIPredictionTests: XCTestCase {
 
-    func testPredictionRequestIsEncodable() throws {
+    func testCreatePredictionRequestIsEncodable() throws {
         let input: EachAIImagenInput = EachAIImagenInput(prompt: "skier")
-        let requestBody = EachAIPredictionRequestBody(
+        let requestBody = EachAICreatePredictionRequestBody(
             input: input,
             model: "imagen-4-fast",
             version: "0.0.1"
@@ -33,7 +33,7 @@ final class EachAIPredictionTests: XCTestCase {
         )
     }
 
-    func testPredictionResponseIsDecodable() throws {
+    func testCreatePredictionResponseIsDecodable() throws {
         let sampleResponse = #"""
         {
           "status": "success",
@@ -41,10 +41,37 @@ final class EachAIPredictionTests: XCTestCase {
           "predictionID": "abc"
         }
         """#
-        let res = try EachAIPredictionResponseBody.deserialize(from: sampleResponse)
+        let res = try EachAICreatePredictionResponseBody.deserialize(from: sampleResponse)
         XCTAssertEqual("abc", res.predictionID)
         XCTAssertEqual("success", res.status)
         XCTAssertEqual("Prediction created successfully", res.message)
+    }
+
+    func testGetPredictionResponseIsDecodable() throws {
+        let sampleResponse = #"""
+        {
+          "id": "abc",
+          "input": {
+            "prompt": "skier"
+          },
+          "logs": null,
+          "status": "starting",
+          "output": "",
+          "metrics": {
+            "predict_time": 123,
+            "cost": 0
+          },
+          "urls": {
+            "cancel": "https://api.eachlabs.ai/v1/prediction/abc/cancel",
+            "get": "https://api.eachlabs.ai/v1/prediction/abc"
+          }
+        }
+        """#
+        let res = try EachAIPrediction.deserialize(from: sampleResponse)
+        XCTAssertEqual("abc", res.id)
+        XCTAssertEqual("skier", res.input?.prompt)
+        XCTAssertEqual(123, res.metrics?.predictTime)
+        XCTAssertEqual("https://api.eachlabs.ai/v1/prediction/abc", res.urls?.get)
     }
 }
 

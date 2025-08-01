@@ -206,7 +206,7 @@ final class OpenAIResponseObjectTests: XCTestCase {
           "metadata": {}
         }
         """#
-        let res = try OpenAIResponse.deserialize(from: sampleResponse)
+        _ = try OpenAIResponse.deserialize(from: sampleResponse)
     }
 
     func testStructuredOutputsResponseIsDecodable() throws {

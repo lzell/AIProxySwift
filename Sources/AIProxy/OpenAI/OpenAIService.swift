@@ -13,7 +13,7 @@ open class OpenAIService {
     private let serviceNetworker: ServiceMixin
 
     /// This designated initializer is not public on purpose.
-    /// Customers are expected to use the factory `AIProxy.directOpenAIService` defined in AIProxy.swift.
+    /// Customers are expected to use the factory `AIProxy.openAIService` or `AIProxy.directOpenAIService` defined in AIProxy.swift.
     init(
         requestFormat: OpenAIRequestFormat,
         requestBuilder: OpenAIRequestBuilder,

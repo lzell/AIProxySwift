@@ -18,8 +18,13 @@ internal struct OpenAIProxiedRequestBuilder: OpenAIRequestBuilder {
         path: String,
         body: Encodable,
         secondsToWait: UInt,
-        additionalHeaders: [String: String]
+        additionalHeaders: [String: String],
+        baseURLOverride: String?
     ) async throws -> URLRequest {
+        var additionalHeaders = additionalHeaders
+        if let baseURLOverride = baseURLOverride {
+            additionalHeaders["aiproxy-base-url"] = baseURLOverride
+        }
         return try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
@@ -37,8 +42,13 @@ internal struct OpenAIProxiedRequestBuilder: OpenAIRequestBuilder {
         path: String,
         body: MultipartFormEncodable,
         secondsToWait: UInt,
-        additionalHeaders: [String : String]
+        additionalHeaders: [String : String],
+        baseURLOverride: String?
     ) async throws -> URLRequest {
+        var additionalHeaders = additionalHeaders
+        if let baseURLOverride = baseURLOverride {
+            additionalHeaders["aiproxy-base-url"] = baseURLOverride
+        }
         let boundary = UUID().uuidString
         return try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
@@ -56,8 +66,13 @@ internal struct OpenAIProxiedRequestBuilder: OpenAIRequestBuilder {
     func plainGET(
         path: String,
         secondsToWait: UInt,
-        additionalHeaders: [String : String]
+        additionalHeaders: [String : String],
+        baseURLOverride: String?
     ) async throws -> URLRequest {
+        var additionalHeaders = additionalHeaders
+        if let baseURLOverride = baseURLOverride {
+            additionalHeaders["aiproxy-base-url"] = baseURLOverride
+        }
         return try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL ?? legacyURL,
