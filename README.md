@@ -486,7 +486,62 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     }
 ```
 
-### How to edit an image with OpenAI's gpt-image-1
+### How to make a high fidelity image edit with OpenAI's gpt-image-1
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+    let openAIService = getOpenAIService(config)
+
+    guard let image = UIImage(named: "my-image") else {
+        print("Could not find an image named 'my-image' in your app assets")
+        return
+    }
+
+    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.5) else {
+        print("Could not encode image as jpeg")
+        return
+    }
+
+    let requestBody = OpenAICreateImageEditRequestBody(
+        images: [.jpeg(jpegData)],
+        prompt: "Change the coffee cup to red",
+        inputFidelity: .high,
+        model: .gptImage1
+    )
+
+    do {
+        let response = try await openAIService.createImageEditRequest(
+            body: requestBody,
+            secondsToWait: 300
+        )
+        guard let base64Data = response.data.first?.b64JSON,
+              let imageData = Data(base64Encoded: base64Data),
+              let editedImage = UIImage(data: imageData) else {
+            print("Could not create a UIImage out of the base64 returned by OpenAI")
+            return
+        }
+
+        // Do something with 'editedImage' here
+
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create OpenAI edit image generation: \(error.localizedDescription)")
+    }
+```
+
+### How to upload multiple images for use in an image edit with OpenAI's gpt-image-1
 
 - This snippet uploads two images to `gpt-image-1`, transfering the material of one to the other.
 - One image is uploaded as a png and the other as a jpeg.

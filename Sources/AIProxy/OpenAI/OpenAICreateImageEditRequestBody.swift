@@ -22,6 +22,16 @@ public struct OpenAICreateImageEditRequestBody: MultipartFormEncodable {
 
     // MARK: Optional properties
 
+    /// Control how much effort the model will exert to match the style and features, especially facial features, of input images.
+    /// This parameter is only supported for gpt-image-1. Supports `high` and `low`. Defaults to `low`.
+    ///
+    /// High input fidelity allows you to make subtle edits to an image without altering unrelated areas.
+    /// This is ideal for controlled, localized changes.
+    ///
+    /// Setting `inputFidelity=.high` is especially useful when editing images with faces, logos, or any other details that require high fidelity in the output.
+    /// Source: https://cookbook.openai.com/examples/generate_images_with_high_input_fidelity
+    public let inputFidelity: InputFidelity?
+
     /// An additional image whose fully transparent areas (e.g. where alpha is zero) indicate where image should be edited.
     /// If there are multiple images provided, the mask will be applied on the first image.
     /// Must be a valid PNG file, less than 4MB, and have the same dimensions as image.
@@ -69,6 +79,7 @@ public struct OpenAICreateImageEditRequestBody: MultipartFormEncodable {
 
         return builder + [
             .textField(name: "prompt", content: self.prompt),
+            self.inputFidelity.flatMap { .textField(name: "input_fidelity", content: $0.rawValue) },
             self.model.flatMap { .textField(name: "model", content: $0.rawValue) },
             self.mask.flatMap { .fileField(name: "mask", content: $0, contentType: "image/png", filename: "tmpfile-mask") },
             self.n.flatMap { .textField(name: "n", content: String($0)) },
@@ -85,6 +96,7 @@ public struct OpenAICreateImageEditRequestBody: MultipartFormEncodable {
     public init(
         images: [OpenAICreateImageEditRequestBody.InputImage],
         prompt: String,
+        inputFidelity: OpenAICreateImageEditRequestBody.InputFidelity? = nil,
         mask: Data? = nil,
         model: OpenAICreateImageEditRequestBody.Model? = nil,
         n: Int? = nil,
@@ -95,6 +107,7 @@ public struct OpenAICreateImageEditRequestBody: MultipartFormEncodable {
     ) {
         self.images = images
         self.prompt = prompt
+        self.inputFidelity = inputFidelity
         self.mask = mask
         self.model = model
         self.n = n
@@ -105,7 +118,14 @@ public struct OpenAICreateImageEditRequestBody: MultipartFormEncodable {
     }
 }
 
+
 extension OpenAICreateImageEditRequestBody {
+
+    public enum InputFidelity: String {
+        case low
+        case high
+    }
+
     public enum InputImage {
         case png(Data)
         case jpeg(Data)
