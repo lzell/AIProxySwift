@@ -539,7 +539,6 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     } catch {
         print("Could not create OpenAI edit image generation: \(error.localizedDescription)")
     }
-    return
 ```
 
 ### How to upload multiple images for use in an image edit with OpenAI's gpt-image-1
