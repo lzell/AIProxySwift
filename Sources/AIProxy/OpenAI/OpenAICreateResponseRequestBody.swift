@@ -587,7 +587,7 @@ extension OpenAICreateResponseRequestBody {
     public struct Reasoning: Encodable {
         private enum CodingKeys: String, CodingKey {
             case effort
-            case generateSummary = "generate_summary"
+            case summary
         }
 
         /// Constrains effort on reasoning for reasoning models.
@@ -595,17 +595,16 @@ extension OpenAICreateResponseRequestBody {
         /// Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
         public let effort: Effort?
 
-        /// computer_use_preview only
         /// A summary of the reasoning performed by the model. This can be useful for debugging and
-        /// understanding the model's reasoning process. One of concise or detailed.
-        public let generateSummary: SummaryType?
+        /// understanding the model's reasoning process. One of auto, concise, or detailed.
+        public let summary: SummaryType?
 
         public init(
             effort: Effort? = nil,
-            generateSummary: SummaryType? = nil
+            summary: SummaryType? = nil
         ) {
             self.effort = effort
-            self.generateSummary = generateSummary
+            self.summary = summary
         }
     }
 }
@@ -614,13 +613,15 @@ extension OpenAICreateResponseRequestBody {
 extension OpenAICreateResponseRequestBody.Reasoning {
     /// Supported effort levels for reasoning models
     public enum Effort: String, Encodable {
+        case minimal
         case low
         case medium
         case high
     }
 
-    /// Summary types for reasoning models with computer use preview
+    /// Summary types for reasoning models
     public enum SummaryType: String, Encodable {
+        case auto
         case concise
         case detailed
     }

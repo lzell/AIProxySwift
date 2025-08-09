@@ -1375,8 +1375,10 @@ Note: there is also a streaming version of this snippet below.
 
     let requestBody = OpenAICreateResponseRequestBody(
         input: .text("hello world"),
-        previousResponseId: nil,  // Pass this in on future requests to save chat history
-        model: "gpt-4o"
+        model: "gpt-5",
+        reasoning: .init(effort: .minimal, summary: .detailed),  // Optional: Use minimal effort with auto summary
+        text: .init(verbosity: .high),                           // Optional: Use low verbosity for concise responses
+        previousResponseId: nil                                  // Pass this in on future requests to save chat history
     )
 
     do {
