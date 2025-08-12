@@ -122,13 +122,11 @@ final class OpenAIResponseObjectTests: XCTestCase {
             return XCTFail()
         }
 
-//        if case .option(let toolOption) = res.toolChoice {
-//            XCTAssertEqual(.auto, toolOption)
-//        } else {
-//            XCTFail("Expected toolChoice to be an option with value 'auto'")
-//        }
-//
-//        XCTAssertEqual(0, res.tools?.count)
+        guard case .auto = res.toolChoice else {
+            return XCTFail("Expected toolChoice to be an option with value 'auto'")
+        }
+
+        XCTAssertEqual(0, res.tools?.count)
         XCTAssertEqual(1.0, res.topP)
         XCTAssertEqual("disabled", res.truncation)
         XCTAssertEqual(26, res.usage?.inputTokens)
@@ -317,4 +315,118 @@ final class OpenAIResponseObjectTests: XCTestCase {
         XCTAssertEqual("A list of colors that make up a color pallete", description)
         XCTAssert(strict == true)
     }
+
+    func testPromptTemplateResponseIsDecodable() throws {
+        let sampleResponse = #"""
+        {
+          "id": "resp_689ac924fff0819695e2ddcc51a6e2e00a4bdce165b44517",
+          "object": "response",
+          "created_at": 1754974501,
+          "status": "completed",
+          "background": false,
+          "error": null,
+          "incomplete_details": null,
+          "instructions": [
+            {
+              "type": "message",
+              "content": [
+                {
+                  "type": "input_text",
+                  "text": "You are a chipper assistant that always starts responses with Ahoy Matey"
+                }
+              ],
+              "role": "developer"
+            },
+            {
+              "type": "message",
+              "content": [
+                {
+                  "type": "input_text",
+                  "text": "Tell me about sandwiches"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "max_output_tokens": 2048,
+          "max_tool_calls": null,
+          "model": "gpt-5-2025-08-07",
+          "output": [
+            {
+              "id": "rs_689ac9260b6c81968f94e054abb03ac30a4bdce165b44517",
+              "type": "reasoning",
+              "summary": []
+            },
+            {
+              "id": "msg_689ac92ad97c8196971bf4b3b2dd22a50a4bdce165b44517",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "Ahoy Matey! <snip>"
+                }
+              ],
+              "role": "assistant"
+            }
+          ],
+          "parallel_tool_calls": true,
+          "previous_response_id": null,
+          "prompt": {
+            "id": "pmpt_689a79c0b47c81949cab20262ce9b2c30f6dd8abfad9145a",
+            "variables": {
+              "topic": {
+                "type": "input_text",
+                "text": "sandwiches"
+              }
+            },
+            "version": "1"
+          },
+          "prompt_cache_key": null,
+          "reasoning": {
+            "effort": "medium",
+            "summary": null
+          },
+          "safety_identifier": null,
+          "service_tier": "auto",
+          "store": true,
+          "temperature": 1.0,
+          "text": {
+            "format": {
+              "type": "text"
+            },
+            "verbosity": "medium"
+          },
+          "tool_choice": "auto",
+          "tools": [],
+          "top_logprobs": 0,
+          "top_p": 1.0,
+          "truncation": "disabled",
+          "usage": {
+            "input_tokens": 31,
+            "input_tokens_details": {
+              "cached_tokens": 0
+            },
+            "output_tokens": 1167,
+            "output_tokens_details": {
+              "reasoning_tokens": 384
+            },
+            "total_tokens": 1198
+          },
+          "user": null,
+          "metadata": {}
+        }
+        """#
+        let res = try OpenAIResponse.deserialize(from: sampleResponse)
+//        guard case .jsonSchema(let name, let schema, let description, let strict) = res.text?.format else {
+//            return XCTFail()
+//        }
+//        XCTAssertEqual("palette", name)
+//        XCTAssertEqual(["colors"], schema.untypedDictionary["required"] as? [String])
+//        XCTAssertEqual("A list of colors that make up a color pallete", description)
+//        XCTAssert(strict == true)
+    }
+
 }
