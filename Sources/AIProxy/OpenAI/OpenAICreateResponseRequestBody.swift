@@ -587,6 +587,7 @@ extension OpenAICreateResponseRequestBody {
     public struct Reasoning: Encodable {
         private enum CodingKeys: String, CodingKey {
             case effort
+            case generateSummary = "generate_summary"
             case summary
         }
 
@@ -597,14 +598,29 @@ extension OpenAICreateResponseRequestBody {
 
         /// A summary of the reasoning performed by the model. This can be useful for debugging and
         /// understanding the model's reasoning process. One of auto, concise, or detailed.
+        @available(*, deprecated, message: "This has been renamed to 'summary' by OpenAI")
+        public let generateSummary: SummaryType?
+
+        /// A summary of the reasoning performed by the model. This can be useful for debugging and
+        /// understanding the model's reasoning process. One of auto, concise, or detailed.
         public let summary: SummaryType?
 
         public init(
             effort: Effort? = nil,
+            generateSummary: SummaryType? = nil,
             summary: SummaryType? = nil
         ) {
             self.effort = effort
-            self.summary = summary
+            if let summary {
+                self.summary = summary
+            } else if generateSummary != nil {
+               logIf(.warning)?.warning("AIProxy: generateSummary has been renamed to summary by OpenAI, please update your call site.")
+               self.summary = generateSummary
+            } else {
+                self.summary = nil
+            }
+            
+            self.generateSummary = nil
         }
     }
 }
