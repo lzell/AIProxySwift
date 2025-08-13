@@ -332,7 +332,7 @@ final class OpenAIResponseObjectTests: XCTestCase {
               "content": [
                 {
                   "type": "input_text",
-                  "text": "You are a chipper assistant that always starts responses with Ahoy Matey"
+                  "text": "You always starts responses with Ahoy Matey"
                 }
               ],
               "role": "developer"
@@ -419,14 +419,31 @@ final class OpenAIResponseObjectTests: XCTestCase {
           "metadata": {}
         }
         """#
-        let res = try OpenAIResponse.deserialize(from: sampleResponse)
-//        guard case .jsonSchema(let name, let schema, let description, let strict) = res.text?.format else {
-//            return XCTFail()
-//        }
-//        XCTAssertEqual("palette", name)
-//        XCTAssertEqual(["colors"], schema.untypedDictionary["required"] as? [String])
-//        XCTAssertEqual("A list of colors that make up a color pallete", description)
-//        XCTAssert(strict == true)
-    }
 
+
+
+
+
+        let res = try OpenAIResponse.deserialize(from: sampleResponse)
+
+        guard case .inputs(let inputs) = res.instructions else {
+            return XCTFail("Expected the .inputs case for instructions")
+        }
+
+        guard case .message(let role, let content) = inputs.first! else {
+            return XCTFail("Expected the .message case from the first input")
+        }
+
+        XCTAssertEqual(.developer, role)
+
+        guard case .list(let itemContent) = content else {
+            return XCTFail("Expected the .list from content")
+        }
+
+        guard case .text(let str) = itemContent.first else {
+            return XCTFail("Expected the .text case for the first content item")
+        }
+
+        XCTAssertEqual("You always starts responses with Ahoy Matey", str)
+    }
 }
