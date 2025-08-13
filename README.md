@@ -2033,6 +2033,67 @@ Once your files are added and processed, you can run this snippet on your `vecto
     }
 ```
 
+### How to use prompt templates with the OpenAI Responses API
+
+- Follow OpenAI's guide for [creating a prompt](https://platform.openai.com/docs/guides/prompting#create-a-prompt).
+- Use the returned prompt ID in the snippet below
+- Fill in the prompt variables as part of the request body (for example, I used the variable 'topic' below)
+
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let templateID = "<your-prompt-ID-here>"
+    let requestBody = OpenAICreateResponseRequestBody(
+        model: "gpt-5",
+        prompt: .init(
+            id: templateID,
+            variables: [
+                "topic": .text("sandwiches")
+            ],
+            version: "1"
+        )
+    )
+    do {
+        // Uncomment for the buffered case:
+        let response = try await openAIService.createResponse(
+            requestBody: requestBody,
+            secondsToWait: 60
+        )
+        print(response.outputText)
+
+        // Uncomment for the streaming case:
+        // let stream = try await openAIService.createStreamingResponse(
+        //     requestBody: requestBody,
+        //     secondsToWait: 60
+        // )
+        // for try await event in stream {
+        //     switch event {
+        //     case .outputTextDelta(let outputTextDelta):
+        //         print(outputTextDelta.delta)
+        //     default:
+        //         break
+        //     }
+        // }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get a text response from OpenAI: \(error.localizedDescription)")
+    }
+}
+```
+
 ### How to use OpenAI through an Azure deployment
 
 You can use all of the OpenAI snippets aboves with one change. Initialize the OpenAI service with:
