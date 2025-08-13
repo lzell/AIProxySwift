@@ -596,9 +596,14 @@ extension OpenAICreateResponseRequestBody {
         /// Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
         public let effort: Effort?
 
+        /// Deprecated!
         /// A summary of the reasoning performed by the model. This can be useful for debugging and
         /// understanding the model's reasoning process. One of auto, concise, or detailed.
-        @available(*, deprecated, message: "This has been renamed to 'summary' by OpenAI")
+        ///
+        /// I'm removing this deprecation notice, because it seems there is no way to avoid raising
+        /// The deprecation warning from within our own initializer.
+        /// We still have the runtime log in the initializer to communicate to developers that the field is deprecated.
+        /// @available(*, deprecated, message: "This has been renamed to 'summary' by OpenAI")
         public let generateSummary: SummaryType?
 
         /// A summary of the reasoning performed by the model. This can be useful for debugging and
