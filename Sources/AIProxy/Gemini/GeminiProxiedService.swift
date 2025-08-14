@@ -249,7 +249,7 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
             body: nil,
             verb: .post,
             secondsToWait: 60,
-            contentType: "application/json",
+            contentType: "application/json"
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }
