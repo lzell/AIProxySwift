@@ -201,7 +201,7 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
         model: String
     ) async throws -> GeminiBatchResponseBody {
         let proxyPath = "/v1beta/models/\(model):batchGenerateContent"
-        let request = try AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -241,7 +241,7 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
         batchJobName: String
     ) async throws -> GeminiBatchResponseBody {
         let proxyPath = "/v1beta/\(batchJobName):cancel"
-        let request = try AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
@@ -261,7 +261,7 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
         responsesFileName fileName: String
     ) async throws -> Data {
         let proxyPath = "/v1beta/\(fileName):download?alt=media"
-        let request = try AIProxyURLRequest.create(
+        let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
             clientID: self.clientID,
