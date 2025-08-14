@@ -21,10 +21,32 @@ public struct OpenAIResponse: Decodable {
     /// Details about why the response is incomplete.
     public let incompleteDetails: IncompleteDetails?
 
+    public enum Instructions: Decodable {
+        case text(String)
+        case inputs([OpenAIResponse.Input.InputItem])
+        case unknown
+
+        public init(from decoder: any Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let str = try? container.decode(String.self) {
+                self = .text(str)
+                return
+            }
+
+            if let inputs = try? container.decode([OpenAIResponse.Input.InputItem].self) {
+                self = .inputs(inputs)
+                return
+            }
+
+            // I want to prevent hard-crashes if the API shape of instructions changes again
+            self = .unknown
+        }
+    }
+
     /// Inserts a system (or developer) message as the first item in the model's context.
     /// When using along with `previousResponseId`, the instructions from a previous response will not be carried over to the next response.
     /// This makes it simple to swap out system (or developer) messages in new responses.
-    public let instructions: String?
+    public let instructions: Instructions?
 
     /// An upper bound for the number of tokens that can be generated for a response, including visible output tokens and [reasoning tokens](https://platform.openai.com/docs/guides/reasoning).
     public let maxOutputTokens: Int?
@@ -110,7 +132,7 @@ public struct OpenAIResponse: Decodable {
         error: ResponseError?,
         id: String?,
         incompleteDetails: IncompleteDetails?,
-        instructions: String?,
+        instructions: Instructions?,
         maxOutputTokens: Int?,
         metadata: [String : String]?,
         model: String?,

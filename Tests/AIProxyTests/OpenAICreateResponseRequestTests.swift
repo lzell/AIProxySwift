@@ -229,5 +229,95 @@ final class OpenAICreateResponseRequestTests: XCTestCase {
         )
     }
 
+    func testResponseRequestWithMinimalReasoningEffort() throws {
+        let requestBody = OpenAICreateResponseRequestBody(
+            input: .text("Explain quantum physics"),
+            model: "o1-mini",
+            reasoning: .init(effort: .minimal)
+        )
+        
+        XCTAssertEqual(
+            """
+            {
+              "input" : "Explain quantum physics",
+              "model" : "o1-mini",
+              "reasoning" : {
+                "effort" : "minimal"
+              }
+            }
+            """,
+            try requestBody.serialize(pretty: true)
+        )
+    }
+
+    func testResponseRequestWithVerbosity() throws {
+        let requestBody = OpenAICreateResponseRequestBody(
+            input: .text("Write a short story"),
+            model: "gpt-4o",
+            text: .init(verbosity: .low)
+        )
+        
+        XCTAssertEqual(
+            """
+            {
+              "input" : "Write a short story",
+              "model" : "gpt-4o",
+              "text" : {
+                "verbosity" : "low"
+              }
+            }
+            """,
+            try requestBody.serialize(pretty: true)
+        )
+    }
+
+    func testResponseRequestWithReasoningSummary() throws {
+        let requestBody = OpenAICreateResponseRequestBody(
+            input: .text("Explain your reasoning"),
+            model: "o1",
+            reasoning: .init(effort: .high, summary: .detailed)
+        )
+        
+        XCTAssertEqual(
+            """
+            {
+              "input" : "Explain your reasoning",
+              "model" : "o1",
+              "reasoning" : {
+                "effort" : "high",
+                "summary" : "detailed"
+              }
+            }
+            """,
+            try requestBody.serialize(pretty: true)
+        )
+    }
+
+    func testResponseRequestWithAllNewFeatures() throws {
+        let requestBody = OpenAICreateResponseRequestBody(
+            input: .text("Solve this complex problem with full detail"),
+            model: "o1",
+            reasoning: .init(effort: .minimal, summary: .auto),
+            text: .init(verbosity: .high)
+        )
+        
+        XCTAssertEqual(
+            """
+            {
+              "input" : "Solve this complex problem with full detail",
+              "model" : "o1",
+              "reasoning" : {
+                "effort" : "minimal",
+                "summary" : "auto"
+              },
+              "text" : {
+                "verbosity" : "high"
+              }
+            }
+            """,
+            try requestBody.serialize(pretty: true)
+        )
+    }
+
 }
 

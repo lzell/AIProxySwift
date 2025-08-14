@@ -10,8 +10,13 @@ extension OpenAIResponse {
         /// The format specification for the text output
         public let format: Format?
 
-        public init(format: Format) {
+        /// Constrains the verbosity of the model's response. Lower values will result in more concise responses,
+        /// while higher values will result in more verbose responses. Currently supported values are low, medium, and high.
+        public let verbosity: Verbosity?
+
+        public init(format: Format? = nil, verbosity: Verbosity? = nil) {
             self.format = format
+            self.verbosity = verbosity
         }
     }
 }
@@ -117,5 +122,12 @@ extension OpenAIResponse.TextConfiguration {
                 )
             }
         }
+    }
+
+    /// Supported verbosity levels for model responses
+    public enum Verbosity: String, Codable {
+        case low
+        case medium
+        case high
     }
 }
