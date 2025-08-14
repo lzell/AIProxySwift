@@ -201,9 +201,11 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
         model: String
     ) async throws -> GeminiBatchResponseBody {
         let proxyPath = "/v1beta/models/\(model):batchGenerateContent"
-        let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://generativelanguage.googleapis.com",
-            path: proxyPath,
+        let request = try AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: proxyPath,
             body: body.serialize(),
             verb: .post,
             secondsToWait: 60,
@@ -239,9 +241,11 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
         batchJobName: String
     ) async throws -> GeminiBatchResponseBody {
         let proxyPath = "/v1beta/\(batchJobName):cancel"
-        let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://generativelanguage.googleapis.com",
-            path: proxyPath,
+        let request = try AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: proxyPath,
             body: nil,
             verb: .post,
             secondsToWait: 60,
@@ -257,9 +261,11 @@ open class GeminiProxiedService: GeminiService, ProxiedService {
         responsesFileName fileName: String
     ) async throws -> Data {
         let proxyPath = "/v1beta/\(fileName):download?alt=media"
-        let request = try AIProxyURLRequest.createDirect(
-            baseURL: "https://generativelanguage.googleapis.com",
-            path: proxyPath,
+        let request = try AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: proxyPath,
             body: nil,
             verb: .get,
             secondsToWait: 60,
