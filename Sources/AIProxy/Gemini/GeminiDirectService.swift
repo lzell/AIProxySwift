@@ -192,4 +192,99 @@ open class GeminiDirectService: GeminiService, DirectService {
         )
         return try GeminiFile.deserialize(from: data)
     }
+
+    /// Creates a batch job for processing multiple requests asynchronously
+    /// - Parameters:
+    ///   - body: The batch request body containing the file name and configuration
+    ///   - model: The model to use for the batch processing, e.g. "gemini-1.5-flash"
+    /// - Returns: A batch job response containing the job details
+    public func createBatchJob(
+        body: GeminiBatchRequestBody,
+        model: String
+    ) async throws -> GeminiBatchResponseBody {
+        let proxyPath = "/v1beta/models/\(model):batchGenerateContent"
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: "https://generativelanguage.googleapis.com",
+            path: proxyPath,
+            body: body.serialize(),
+            verb: .post,
+            secondsToWait: 60,
+            contentType: "application/json",
+            additionalHeaders: [
+                "X-Goog-Api-Key": self.unprotectedAPIKey
+            ]
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
+    
+    /// Gets the status of a batch job
+    /// - Parameter batchJobName: The name of the batch job to check
+    /// - Returns: The current status of the batch job
+    public func getBatchJobStatus(
+        batchJobName: String
+    ) async throws -> GeminiBatchResponseBody {
+        let proxyPath = "/v1beta/\(batchJobName)"
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: "https://generativelanguage.googleapis.com",
+            path: proxyPath,
+            body: nil,
+            verb: .get,
+            secondsToWait: 60,
+            contentType: "application/json",
+            additionalHeaders: [
+                "X-Goog-Api-Key": self.unprotectedAPIKey
+            ]
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
+    
+    /// Cancels a batch job
+    /// - Parameter batchJobName: The name of the batch job to cancel
+    /// - Returns: The updated status of the cancelled batch job
+    public func cancelBatchJob(
+        batchJobName: String
+    ) async throws -> GeminiBatchResponseBody {
+        let proxyPath = "/v1beta/\(batchJobName):cancel"
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: "https://generativelanguage.googleapis.com",
+            path: proxyPath,
+            body: nil,
+            verb: .post,
+            secondsToWait: 60,
+            contentType: "application/json",
+            additionalHeaders: [
+                "X-Goog-Api-Key": self.unprotectedAPIKey
+            ]
+        )
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            self.urlSession,
+            request
+        )
+        return try GeminiBatchResponseBody.deserialize(from: data)
+    }
+    
+    /// Downloads the completed batch job results file
+    /// - Parameter responsesFileName: The name of the responses file from the batch job status (e.g., from batch.response.responsesFile or batch.dest.fileName)
+    /// - Returns: The raw data and response of the results file in JSONL format
+    public func downloadBatchResults(
+        responsesFileName fileName: String
+    ) async throws -> Data {
+        let proxyPath = "/v1beta/\(fileName):download?alt=media"
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: "https://generativelanguage.googleapis.com",
+            path: proxyPath,
+            body: nil,
+            verb: .get,
+            secondsToWait: 60,
+            contentType: "application/json",
+            additionalHeaders: [
+                "X-Goog-Api-Key": self.unprotectedAPIKey
+            ]
+        )
+        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+            self.urlSession,
+            request
+        )
+        return data
+    }
 }
