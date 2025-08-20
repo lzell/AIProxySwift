@@ -262,7 +262,10 @@ This is useful for `o1` and `o3` models.
     )
 
     do {
-        let stream = try await openAIService.streamingChatCompletionRequest(body: requestBody)
+        let stream = try await openAIService.streamingChatCompletionRequest(
+            body: requestBody,
+            secondsToWait: 60
+        )
         for try await chunk in stream {
             print(chunk.choices.first?.delta.content ?? "")
         }
