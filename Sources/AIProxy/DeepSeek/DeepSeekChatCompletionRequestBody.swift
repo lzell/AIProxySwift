@@ -7,7 +7,7 @@
 
 /// Chat completion request body. Docstrings are taken from this reference:
 /// https://api-docs.deepseek.com/api/create-chat-completion
-public struct DeepSeekChatCompletionRequestBody: Encodable {
+public struct DeepSeekChatCompletionRequestBody: Encodable, Sendable {
     // Required
 
     /// A list of messages comprising the conversation so far.
@@ -155,7 +155,7 @@ public struct DeepSeekChatCompletionRequestBody: Encodable {
 // MARK: - RequestBody.Message
 extension DeepSeekChatCompletionRequestBody {
     ///
-    public enum Message: Encodable {
+    public enum Message: Encodable, Sendable {
         /// Messages sent by the model in response to user messages
         ///
         /// - Parameters:
@@ -249,7 +249,7 @@ extension DeepSeekChatCompletionRequestBody {
 extension DeepSeekChatCompletionRequestBody {
 
     /// An object specifying the format that the model must output.
-    public enum ResponseFormat: Encodable {
+    public enum ResponseFormat: Encodable, Sendable {
 
         /// Enables JSON mode, which ensures the message the model generates is valid JSON.
         ///
@@ -283,7 +283,7 @@ extension DeepSeekChatCompletionRequestBody {
 
 // MARK: - RequestBody.StreamOptions
 extension DeepSeekChatCompletionRequestBody {
-    public struct StreamOptions: Encodable {
+    public struct StreamOptions: Encodable, Sendable {
        /// If set, an additional chunk will be streamed before the data: [DONE] message.
        /// The usage field on this chunk shows the token usage statistics for the entire request,
        /// and the choices field will always be an empty array. All other chunks will also include
@@ -298,7 +298,7 @@ extension DeepSeekChatCompletionRequestBody {
 
 // MARK: - RequestBody.Tool
 extension DeepSeekChatCompletionRequestBody {
-    public enum Tool: Encodable {
+    public enum Tool: Encodable, Sendable {
 
         /// A function that DeepSeek can instruct us to call when appropriate
         ///
@@ -355,7 +355,7 @@ extension DeepSeekChatCompletionRequestBody {
 // MARK: - RequestBody.ToolChoice
 extension DeepSeekChatCompletionRequestBody {
     /// Controls which (if any) tool is called by the model.
-    public enum ToolChoice: Encodable {
+    public enum ToolChoice: Encodable, Sendable {
 
         /// The model will not call any tool and instead generates a message.
         /// This is the default when no tools are present in the request body

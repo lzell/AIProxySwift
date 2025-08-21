@@ -8,7 +8,7 @@
 import Foundation
 
 /// Response body for a Gemini batch job
-public struct GeminiBatchResponseBody: Decodable {
+public struct GeminiBatchResponseBody: Decodable, Sendable {
     /// The unique name/identifier for the batch job
     public let name: String
     
@@ -67,7 +67,7 @@ extension GeminiBatchResponseBody {
 }
 
 extension GeminiBatchResponseBody {
-    public struct BatchMetadata: Decodable {
+    public struct BatchMetadata: Decodable, Sendable {
         public let type: String?
         public let model: String?
         public let displayName: String?
@@ -121,7 +121,7 @@ extension GeminiBatchResponseBody {
         }
     }
     
-    public struct BatchResponse: Decodable {
+    public struct BatchResponse: Decodable, Sendable {
         public let type: String?
         public let responsesFile: String?
         
@@ -138,7 +138,7 @@ extension GeminiBatchResponseBody {
 }
 
 extension GeminiBatchResponseBody.BatchMetadata {
-    public enum State: String, Decodable {
+    public enum State: String, Decodable, Sendable {
         case unspecified = "BATCH_STATE_UNSPECIFIED"
         case pending = "BATCH_STATE_PENDING"
         case running = "BATCH_STATE_RUNNING"
@@ -148,7 +148,7 @@ extension GeminiBatchResponseBody.BatchMetadata {
         case expired = "BATCH_STATE_EXPIRED"
     }
     
-    public struct InputConfig: Decodable {
+    public struct InputConfig: Decodable, Sendable {
         public let fileName: String?
         
         public init(fileName: String?) {
@@ -156,7 +156,7 @@ extension GeminiBatchResponseBody.BatchMetadata {
         }
     }
     
-    public struct OutputConfig: Decodable {
+    public struct OutputConfig: Decodable, Sendable {
         public let responsesFile: String?
         
         public init(responsesFile: String?) {
@@ -164,7 +164,7 @@ extension GeminiBatchResponseBody.BatchMetadata {
         }
     }
     
-    public struct BatchStats: Decodable {
+    public struct BatchStats: Decodable, Sendable {
         public let requestCount: String?
         public let successfulRequestCount: String?
         

@@ -9,7 +9,7 @@ import Foundation
 
 /// Chat completion request body. Docstrings are taken from this reference:
 /// https://platform.openai.com/docs/api-reference/chat/create
-public struct OpenAIChatCompletionRequestBody: Encodable {
+public struct OpenAIChatCompletionRequestBody: Encodable, Sendable {
 
     /// ID of the model to use. See the model endpoint compatibility table for details on which models work
     /// with the Chat API:
@@ -209,7 +209,7 @@ public struct OpenAIChatCompletionRequestBody: Encodable {
 // MARK: -
 extension OpenAIChatCompletionRequestBody {
     /// https://platform.openai.com/docs/api-reference/chat/create#chat-create-messages
-    public enum Message: Encodable {
+    public enum Message: Encodable, Sendable {
         /// Messages sent by the model in response to user messages
         ///
         /// - Parameters:
@@ -315,13 +315,13 @@ extension OpenAIChatCompletionRequestBody {
 // MARK: -
 extension OpenAIChatCompletionRequestBody.Message {
     public enum MessageContent<
-        SingleType: Encodable,
-        PartsType: Encodable
-    >: Encodable, SingleOrPartsEncodable {
+        SingleType: Encodable & Sendable,
+        PartsType: Encodable & Sendable
+    >: Encodable, SingleOrPartsEncodable, Sendable {
         case text(SingleType)
         case parts(PartsType)
 
-        var encodableItem: Encodable {
+        var encodableItem: Encodable & Sendable {
             switch self {
             case .text(let single): return single
             case .parts(let parts): return parts
@@ -332,7 +332,7 @@ extension OpenAIChatCompletionRequestBody.Message {
 
 // MARK: -
 extension OpenAIChatCompletionRequestBody.Message {
-    public enum ContentPart: Encodable {
+    public enum ContentPart: Encodable, Sendable {
         /// The text content.
         case text(String)
 
@@ -382,7 +382,7 @@ extension OpenAIChatCompletionRequestBody.Message {
 
 // MARK: -
 extension OpenAIChatCompletionRequestBody.Message.ContentPart {
-    public enum ImageDetail: String, Encodable {
+    public enum ImageDetail: String, Encodable, Sendable {
         case auto
         case low
         case high
@@ -391,7 +391,7 @@ extension OpenAIChatCompletionRequestBody.Message.ContentPart {
 
 // MARK: -
 extension OpenAIChatCompletionRequestBody.Message {
-    public struct ToolCall: Encodable {
+    public struct ToolCall: Encodable, Sendable {
         /// The ID of the tool call.
         let id: String
 
@@ -415,7 +415,7 @@ extension OpenAIChatCompletionRequestBody.Message {
 extension OpenAIChatCompletionRequestBody.Message.ToolCall {
     /// Represents the 'Function' object at `messages > assistant message > tool_calls > function`
     /// https://platform.openai.com/docs/api-reference/chat/create#chat-create-messages
-    public struct Function: Encodable {
+    public struct Function: Encodable, Sendable {
         /// The name of the function that the assistant asked you to call.
         public let name: String
 
@@ -437,7 +437,7 @@ extension OpenAIChatCompletionRequestBody.Message.ToolCall {
 extension OpenAIChatCompletionRequestBody {
     /// An object specifying the format that the model must output. Compatible with GPT-4o, GPT-4o mini, GPT-4
     /// Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.
-    public enum ResponseFormat: Encodable {
+    public enum ResponseFormat: Encodable, Sendable {
 
         /// Enables JSON mode, which ensures the message the model generates is valid JSON. Note, if you want to
         /// supply your own schema use `jsonSchema` instead.
@@ -515,7 +515,7 @@ extension OpenAIChatCompletionRequestBody {
 
 // MARK: -
 extension OpenAIChatCompletionRequestBody {
-    public struct StreamOptions: Encodable {
+    public struct StreamOptions: Encodable, Sendable {
        /// If set, an additional chunk will be streamed before the data: [DONE] message.
        /// The usage field on this chunk shows the token usage statistics for the entire request,
        /// and the choices field will always be an empty array. All other chunks will also include
@@ -530,7 +530,7 @@ extension OpenAIChatCompletionRequestBody {
 
 // MARK: -
 extension OpenAIChatCompletionRequestBody {
-    public enum Tool: Encodable {
+    public enum Tool: Encodable, Sendable {
 
         /// A function that chatGPT can instruct us to call when appropriate
         ///
@@ -574,7 +574,7 @@ extension OpenAIChatCompletionRequestBody {
             allowedTools: [String]? = nil
         )
 
-        public enum RequireApproval: String, Codable {
+        public enum RequireApproval: String, Codable, Sendable {
             case auto
             case manual
             case never
@@ -643,7 +643,7 @@ extension OpenAIChatCompletionRequestBody {
 // MARK: -
 extension OpenAIChatCompletionRequestBody {
     /// Controls which (if any) tool is called by the model.
-    public enum ToolChoice: Encodable {
+    public enum ToolChoice: Encodable, Sendable {
 
         /// The model will not call any tool and instead generates a message.
         /// This is the default when no tools are present in the request body
@@ -693,17 +693,17 @@ extension OpenAIChatCompletionRequestBody {
 }
 
 extension OpenAIChatCompletionRequestBody {
-    public struct WebSearchOptions: Encodable {
+    public struct WebSearchOptions: Encodable, Sendable {
 
-        public enum SearchContextSize: String, Encodable {
+        public enum SearchContextSize: String, Encodable, Sendable {
             case low
             case medium
             case high
         }
 
-        public struct UserLocation: Encodable {
+        public struct UserLocation: Encodable, Sendable {
 
-            public struct Approximate: Encodable {
+            public struct Approximate: Encodable, Sendable {
                 let city: String?
                 let country: String?
                 let region: String?

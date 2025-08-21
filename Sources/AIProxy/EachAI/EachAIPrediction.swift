@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct EachAIPrediction: Decodable {
+public struct EachAIPrediction: Decodable, Sendable {
     public let id: String?
     public let input: Input?
     public let logs: String?
@@ -39,11 +39,11 @@ public struct EachAIPrediction: Decodable {
 }
 
 extension EachAIPrediction {
-    public struct Input: Decodable {
+    public struct Input: Decodable, Sendable {
         public let prompt: String?
     }
 
-    public struct Metrics: Decodable {
+    public struct Metrics: Decodable, Sendable {
         public let predictTime: Double?
         public let cost: Double?
 
@@ -53,7 +53,7 @@ extension EachAIPrediction {
         }
     }
 
-    public struct ActionURLs: Decodable {
+    public struct ActionURLs: Decodable, Sendable {
         public let cancel: String?
         public let get: String?
     }

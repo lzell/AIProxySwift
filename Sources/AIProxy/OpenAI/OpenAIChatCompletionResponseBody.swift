@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://platform.openai.com/docs/api-reference/chat/object
-public struct OpenAIChatCompletionResponseBody: Decodable {
+public struct OpenAIChatCompletionResponseBody: Decodable, Sendable {
     /// A list of chat completion choices.
     /// Can be more than one if `n` on `OpenAIChatCompletionRequestBody` is greater than 1.
     public let choices: [Choice]
@@ -46,7 +46,7 @@ public struct OpenAIChatCompletionResponseBody: Decodable {
 
 // MARK: -
 extension OpenAIChatCompletionResponseBody {
-    public struct Choice: Decodable {
+    public struct Choice: Decodable, Sendable {
         /// The reason the model stopped generating tokens. This will be `stop` if the model hit a
         /// natural stop point or a provided stop sequence, `length` if the maximum number of
         /// tokens specified in the request was reached, `content_filter` if content was omitted
@@ -71,7 +71,7 @@ extension OpenAIChatCompletionResponseBody {
 
 // MARK: -
 extension OpenAIChatCompletionResponseBody.Choice {
-    public struct Message: Decodable {
+    public struct Message: Decodable, Sendable {
         /// The contents of the message.
         public let content: String?
 
@@ -97,7 +97,7 @@ extension OpenAIChatCompletionResponseBody.Choice {
 
 // MARK: -
 extension OpenAIChatCompletionResponseBody.Choice.Message {
-    public struct ToolCall: Decodable {
+    public struct ToolCall: Decodable, Sendable {
         /// The ID of the tool call.
         public let id: String
 
@@ -118,7 +118,7 @@ extension OpenAIChatCompletionResponseBody.Choice.Message {
 // MARK: -
 extension OpenAIChatCompletionResponseBody.Choice.Message.ToolCall {
 
-    public struct Function: Decodable {
+    public struct Function: Decodable, Sendable {
         /// The name of the function to call.
         public let name: String
 
@@ -130,12 +130,12 @@ extension OpenAIChatCompletionResponseBody.Choice.Message.ToolCall {
         /// Implementor's note: I no longer think the above warning is true, now that this launched:
         /// https://openai.com/index/introducing-structured-outputs-in-the-api/
         ///
-        /// The keys of the `[String: Any]` dictionary are the argument names, e.g. `location` in the guide below.
-        /// The values of the `[String: Any]` dictionary are the arguments values, e.g. `Bogotá, Colombia` in this guide:
+        /// The keys of the `[String: Sendable]` dictionary are the argument names, e.g. `location` in the guide below.
+        /// The values of the `[String: Sendable]` dictionary are the arguments values, e.g. `Bogotá, Colombia` in this guide:
         /// https://platform.openai.com/docs/guides/function-calling.
-        public let arguments: [String: Any]?
+        public let arguments: [String: Sendable]?
 
-        /// The raw arguments string, unmapped to a `[String: Any]`. The unmapped string is useful for
+        /// The raw arguments string, unmapped to a `[String: Sendable]`. The unmapped string is useful for
         /// continuing the converstation with the model. The model expects you to feed the raw argument string
         /// back to the model on susbsequent requests.
         public let argumentsRaw: String?

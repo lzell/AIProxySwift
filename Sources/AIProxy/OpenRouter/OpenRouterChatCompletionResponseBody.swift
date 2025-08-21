@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct OpenRouterChatCompletionResponseBody: Decodable {
+public struct OpenRouterChatCompletionResponseBody: Decodable, Sendable {
     /// A list of chat completion choices.
     /// Can be more than one if `n` on `OpenRouterChatCompletionRequestBody` is greater than 1.
     public let choices: [Choice]
@@ -47,7 +47,7 @@ public struct OpenRouterChatCompletionResponseBody: Decodable {
 
 // MARK: - ResponseBody.Usage
 extension OpenRouterChatCompletionResponseBody {
-    public struct Usage: Decodable {
+    public struct Usage: Decodable, Sendable {
         /// Number of tokens in the generated completion.
         public let completionTokens: Int?
 
@@ -73,7 +73,7 @@ extension OpenRouterChatCompletionResponseBody {
 
 // MARK: - ResponseBody.Choice
 extension OpenRouterChatCompletionResponseBody {
-    public struct Choice: Decodable {
+    public struct Choice: Decodable, Sendable {
         /// The reason the model stopped generating tokens. This will be `stop` if the model hit a
         /// natural stop point or a provided stop sequence, `length` if the maximum number of
         /// tokens specified in the request was reached, `content_filter` if content was omitted
@@ -101,7 +101,7 @@ extension OpenRouterChatCompletionResponseBody {
 }
 
 extension OpenRouterChatCompletionResponseBody.Choice {
-    public struct Message: Decodable {
+    public struct Message: Decodable, Sendable {
         /// Web search annotations when using online models (e.g., "model:online")
         public let annotations: [Annotation]?
 
@@ -144,7 +144,7 @@ extension OpenRouterChatCompletionResponseBody.Choice {
 // MARK: - ResponseBody.Choice.Message.Annotation
 extension OpenRouterChatCompletionResponseBody.Choice.Message {
     /// https://platform.openai.com/docs/api-reference/chat/object#chat/object-choices-message-annotations
-    public struct Annotation: Decodable {
+    public struct Annotation: Decodable, Sendable {
         /// URL citation information when type is "url_citation"
         public let urlCitation: URLCitation?
 
@@ -160,7 +160,7 @@ extension OpenRouterChatCompletionResponseBody.Choice.Message {
 
 // MARK: - ResponseBody.Choice.Message.URLCitation
 extension OpenRouterChatCompletionResponseBody.Choice.Message {
-    public struct URLCitation: Decodable {
+    public struct URLCitation: Decodable, Sendable {
         /// Content snippet from the web page
         public let content: String?
 
@@ -202,7 +202,7 @@ extension OpenRouterChatCompletionResponseBody.Choice.Message {
 
 // MARK: - ResponseBody.Choice.Message.ToolCall
 extension OpenRouterChatCompletionResponseBody.Choice.Message {
-    public struct ToolCall: Decodable {
+    public struct ToolCall: Decodable, Sendable {
         /// The function that the model instructs us to call
         public let function: Function?
 
@@ -224,14 +224,14 @@ extension OpenRouterChatCompletionResponseBody.Choice.Message {
 
 // MARK: - ResponseBody.Choice.Message.ToolCall.Function
 extension OpenRouterChatCompletionResponseBody.Choice.Message.ToolCall {
-    public struct Function: Decodable {
+    public struct Function: Decodable, Sendable {
         /// The name of the function to call.
         public let name: String
 
         /// The arguments to call the function with.
-        public let arguments: [String: Any]?
+        public let arguments: [String: Sendable]?
 
-        /// The raw arguments string, unmapped to a `[String: Any]`. The unmapped string is useful for
+        /// The raw arguments string, unmapped to a `[String: Sendable]`. The unmapped string is useful for
         /// continuing the converstation with the model. The model expects you to feed the raw argument string
         /// back to the model on susbsequent requests.
         public let argumentsRaw: String?

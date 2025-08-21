@@ -8,7 +8,7 @@
 import Foundation
 
 extension OpenAIResponse {
-    public enum Input: Codable {
+    public enum Input: Codable, Sendable {
 
         /// A text input to the model, equivalent to a text item with the user role.
         case text(String)
@@ -51,7 +51,7 @@ extension OpenAIResponse {
 }
 
 extension OpenAIResponse.Input {
-    public enum InputItem: Codable {
+    public enum InputItem: Codable, Sendable {
 
         /// A message input to the model with a role indicating instruction following hierarchy.
         /// Instructions given with the developer or system role take precedence over instructions given with the user role.
@@ -64,7 +64,7 @@ extension OpenAIResponse.Input {
         ///              Can also contain previous assistant responses.
         case message(role: Role, content: Content)
 
-        private struct _Message: Codable {
+        private struct _Message: Codable, Sendable {
             let role: Role
             let content: Content
 
@@ -127,14 +127,14 @@ extension OpenAIResponse.Input {
 }
 
 extension OpenAIResponse.Input.InputItem {
-    public enum Role: String, Codable {
+    public enum Role: String, Codable, Sendable {
         case user
         case assistant
         case system
         case developer
     }
 
-    public enum Content: Codable {
+    public enum Content: Codable, Sendable {
         case text(String)
         case list([ItemContent])
 
@@ -173,7 +173,7 @@ extension OpenAIResponse.Input.InputItem {
 }
 
 extension OpenAIResponse.Input.InputItem.Content {
-    public enum ItemContent: Codable {
+    public enum ItemContent: Codable, Sendable {
         case file(fileID: String)
         case imageURL(URL)
         case text(String)

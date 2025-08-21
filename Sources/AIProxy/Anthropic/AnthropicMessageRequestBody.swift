@@ -8,7 +8,7 @@
 import Foundation
 
 /// All docstrings in this file are from: https://docs.anthropic.com/en/api/messages
-public struct AnthropicMessageRequestBody: Encodable {
+public struct AnthropicMessageRequestBody: Encodable, Sendable {
     // Required
 
     /// The maximum number of tokens to generate before stopping.
@@ -255,7 +255,7 @@ public struct AnthropicMessageRequestBody: Encodable {
 }
 
 
-public enum AnthropicImageMediaType: String {
+public enum AnthropicImageMediaType: String, Sendable {
     case jpeg = "image/jpeg"
     case png = "image/png"
     case gif = "image/gif"
@@ -263,7 +263,7 @@ public enum AnthropicImageMediaType: String {
 }
 
 
-public enum AnthropicInputContent: Encodable {
+public enum AnthropicInputContent: Encodable, Sendable {
     case image(mediaType: AnthropicImageMediaType, data: String)
     case pdf(data: String)
     case text(String)
@@ -320,7 +320,7 @@ public enum AnthropicInputContent: Encodable {
 }
 
 
-public struct AnthropicInputMessage: Encodable {
+public struct AnthropicInputMessage: Encodable, Sendable {
     public init(
         content: [AnthropicInputContent],
         role: AnthropicInputMessageRole
@@ -340,13 +340,13 @@ public struct AnthropicInputMessage: Encodable {
 }
 
 
-public enum AnthropicInputMessageRole: String, Encodable {
+public enum AnthropicInputMessageRole: String, Encodable, Sendable {
     case assistant
     case user
 }
 
 
-public struct AnthropicRequestMetadata: Encodable {
+public struct AnthropicRequestMetadata: Encodable, Sendable {
     /// An external identifier for the user who is associated with the request.
     ///
     /// This should be a uuid, hash value, or other opaque identifier. Anthropic may use this id to
@@ -356,7 +356,7 @@ public struct AnthropicRequestMetadata: Encodable {
 }
 
 
-public enum AnthropicToolChoice: Encodable {
+public enum AnthropicToolChoice: Encodable, Sendable {
     case any
     case auto
     case tool(name: String)
@@ -382,7 +382,7 @@ public enum AnthropicToolChoice: Encodable {
 }
 
 
-public struct AnthropicTool: Encodable {
+public struct AnthropicTool: Encodable, Sendable {
     /// Description of what this tool does.
     /// Tool descriptions should be as detailed as possible. The more information that the
     /// model has about what the tool is and how to use it, the better it will perform. You can

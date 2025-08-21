@@ -34,7 +34,7 @@ import Foundation
 /// fields of the request body).
 ///
 /// For several examples of its use, with both Encodable and Decodable examples, see AIProxyJSONValueTests.swift
-public enum AIProxyJSONValue: Codable {
+public enum AIProxyJSONValue: Codable, Sendable {
     case null(NSNull)
     case bool(Bool)
     case int(Int)

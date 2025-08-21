@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 3/18/25.
 //
 
-public struct GeminiImagenResponseBody: Decodable {
+public struct GeminiImagenResponseBody: Decodable, Sendable {
     public let predictions: [Prediction]
     public init(predictions: [Prediction]) {
         self.predictions = predictions
@@ -13,7 +13,7 @@ public struct GeminiImagenResponseBody: Decodable {
 }
 
 extension GeminiImagenResponseBody {
-    public struct Prediction: Decodable {
+    public struct Prediction: Decodable, Sendable {
         public let mimeType: String?
         public let bytesBase64Encoded: String
         

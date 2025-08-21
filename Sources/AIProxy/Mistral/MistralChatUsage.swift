@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct MistralChatUsage: Decodable {
+public struct MistralChatUsage: Decodable, Sendable {
     /// Number of tokens in the generated completion.
     public let completionTokens: Int?
 

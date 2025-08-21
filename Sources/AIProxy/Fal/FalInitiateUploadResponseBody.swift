@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct FalInitiateUploadResponseBody: Decodable {
+public struct FalInitiateUploadResponseBody: Decodable, Sendable {
     let fileURL: URL
     let uploadURL: URL
     

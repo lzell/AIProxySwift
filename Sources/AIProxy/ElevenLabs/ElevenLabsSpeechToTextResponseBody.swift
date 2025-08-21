@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://elevenlabs.io/docs/api-reference/speech-to-text/convert#response
-public struct ElevenLabsSpeechToTextResponseBody: Decodable {
+public struct ElevenLabsSpeechToTextResponseBody: Decodable, Sendable {
 
     /// The detected language code (e.g. ‘eng’ for English).
     public let languageCode: String?
@@ -43,7 +43,7 @@ public struct ElevenLabsSpeechToTextResponseBody: Decodable {
 }
 
 extension ElevenLabsSpeechToTextResponseBody {
-    public struct Word: Decodable {
+    public struct Word: Decodable, Sendable {
         /// The word or sound that was transcribed.
         public let text: String
 
@@ -81,7 +81,7 @@ extension ElevenLabsSpeechToTextResponseBody {
         }
     }
 
-    public struct AdditionalFormat: Decodable {
+    public struct AdditionalFormat: Decodable, Sendable {
         /// The requested format.
         public let requestedFormat: String
 
@@ -116,7 +116,7 @@ extension ElevenLabsSpeechToTextResponseBody {
 }
 
 extension ElevenLabsSpeechToTextResponseBody.Word {
-    public struct Character: Decodable {
+    public struct Character: Decodable, Sendable {
         /// The character that was transcribed.
         public let text: String
 
@@ -133,7 +133,7 @@ extension ElevenLabsSpeechToTextResponseBody.Word {
         }
     }
 
-    public enum WordType: String, Decodable {
+    public enum WordType: String, Decodable, Sendable {
         case word
         case spacing
         case audioEvent = "audio_event"

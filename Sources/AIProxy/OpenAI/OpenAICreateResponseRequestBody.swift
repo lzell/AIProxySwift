@@ -14,7 +14,7 @@ import Foundation
 /// Allow the model access to external systems and data using function calling.
 /// https://platform.openai.com/docs/api-reference/responses/create
 /// Implementor's note: See ResponseCreateParamsBase in `src/openai/types/responses/response_create_params.py`
-public struct OpenAICreateResponseRequestBody: Encodable {
+public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
 
     /// Text, image, or file inputs to the model, used to generate a response.
     public let input: OpenAIResponse.Input?
@@ -133,7 +133,7 @@ public struct OpenAICreateResponseRequestBody: Encodable {
 extension OpenAICreateResponseRequestBody {
 
     /// The truncation strategy to use for the model response.
-    public enum Truncation: String, Encodable {
+    public enum Truncation: String, Encodable, Sendable {
         /// If the context of this response and previous ones exceeds the model's context window size, the model will truncate the response to fit the context window by dropping input items in the middle of the conversation.
         case auto
 
@@ -141,7 +141,7 @@ extension OpenAICreateResponseRequestBody {
         case disabled
     }
 
-    public struct Prompt: Encodable {
+    public struct Prompt: Encodable, Sendable {
         /// The unique identifier of the prompt template to use.
         public let id: String
 
@@ -162,7 +162,7 @@ extension OpenAICreateResponseRequestBody {
         }
     }
 
-    public enum Variable: Encodable {
+    public enum Variable: Encodable, Sendable {
         case text(String)
 
         public func encode(to encoder: any Encoder) throws {
@@ -179,7 +179,7 @@ extension OpenAICreateResponseRequestBody {
 extension OpenAICreateResponseRequestBody {
     /// A tool specification that models can use in responses.
     /// See https://platform.openai.com/docs/guides/tools
-    public enum Tool: Codable {
+    public enum Tool: Codable, Sendable {
 
         /// Build a computer-using agent that can perform tasks on your behalf.
         /// https://platform.openai.com/docs/guides/tools-computer-use
@@ -286,7 +286,7 @@ extension OpenAICreateResponseRequestBody {
     }
 
     // MARK: - File Search Tool
-    public struct FileSearchTool: Codable {
+    public struct FileSearchTool: Codable, Sendable {
 
         // Required
         /// The type of the file search tool. Always `file_search`.
@@ -326,7 +326,7 @@ extension OpenAICreateResponseRequestBody {
             self.rankingOptions = rankingOptions
         }
 
-        public struct RankingOptions: Codable {
+        public struct RankingOptions: Codable, Sendable {
             /// The ranker to use for the file search.
             public let ranker: String?
 
@@ -346,7 +346,7 @@ extension OpenAICreateResponseRequestBody {
         }
     }
 
-    public enum FileSearchFilter: Codable {
+    public enum FileSearchFilter: Codable, Sendable {
         case comparison(ComparisonFilter)
         case compound(CompoundFilter)
 
@@ -359,7 +359,7 @@ extension OpenAICreateResponseRequestBody {
         }
 
         /// A filter used to compare a specified attribute key to a given value using a defined comparison operation.
-        public struct ComparisonFilter: Codable {
+        public struct ComparisonFilter: Codable, Sendable {
             /// The key to compare against the value.
             public let key: String
 
@@ -376,7 +376,7 @@ extension OpenAICreateResponseRequestBody {
             }
         }
 
-        public enum ComparisonOperator: String, Codable {
+        public enum ComparisonOperator: String, Codable, Sendable {
             case eq
             case ne
             case gt
@@ -386,7 +386,7 @@ extension OpenAICreateResponseRequestBody {
         }
 
         /// Combine multiple filters using `and` or `or`.
-        public struct CompoundFilter: Codable {
+        public struct CompoundFilter: Codable, Sendable {
             /// Array of filters to combine. Items can be `ComparisonFilter` or `CompoundFilter`.
             public let filters: [FileSearchFilter]
 
@@ -399,14 +399,14 @@ extension OpenAICreateResponseRequestBody {
             }
         }
 
-        public enum CompoundOperator: String, Codable {
+        public enum CompoundOperator: String, Codable, Sendable {
             case and
             case or
         }
     }
 
     // MARK: - Web Search Tool
-    public struct WebSearchTool: Codable {
+    public struct WebSearchTool: Codable, Sendable {
         private enum CodingKeys: String, CodingKey {
             case type
             case searchContextSize = "search_context_size"
@@ -425,13 +425,13 @@ extension OpenAICreateResponseRequestBody {
             self.userLocation = userLocation
         }
 
-        public enum SearchContextSize: String, Codable {
+        public enum SearchContextSize: String, Codable, Sendable {
             case high
             case medium
             case low
         }
 
-        public struct UserLocation: Codable {
+        public struct UserLocation: Codable, Sendable {
             public var type = "approximate"
             public let city: String?
             public let country: String?
@@ -453,7 +453,7 @@ extension OpenAICreateResponseRequestBody {
     }
 
     // MARK: - Computer Use Tool
-    public struct ComputerUseTool: Codable {
+    public struct ComputerUseTool: Codable, Sendable {
         private enum CodingKeys: String, CodingKey {
             case type
             case displayWidth = "display_width"
@@ -476,7 +476,7 @@ extension OpenAICreateResponseRequestBody {
             self.environment = environment
         }
 
-        public enum Environment: String, Codable {
+        public enum Environment: String, Codable, Sendable {
             case browser
             case mac
             case windows
@@ -485,7 +485,7 @@ extension OpenAICreateResponseRequestBody {
     }
 
     // MARK: - Function Tool
-    public struct FunctionTool: Codable {
+    public struct FunctionTool: Codable, Sendable {
         // Required
 
         /// The name of the function to call.
@@ -530,7 +530,7 @@ extension OpenAICreateResponseRequestBody {
 // MARK: - Reasoning
 extension OpenAICreateResponseRequestBody {
     /// Configuration options for reasoning models
-    public struct Reasoning: Encodable {
+    public struct Reasoning: Encodable, Sendable {
         private enum CodingKeys: String, CodingKey {
             case effort
             case generateSummary = "generate_summary"
@@ -579,7 +579,7 @@ extension OpenAICreateResponseRequestBody {
 // MARK: - Reasoning Types
 extension OpenAICreateResponseRequestBody.Reasoning {
     /// Supported effort levels for reasoning models
-    public enum Effort: String, Encodable {
+    public enum Effort: String, Encodable, Sendable {
         case minimal
         case low
         case medium
@@ -587,7 +587,7 @@ extension OpenAICreateResponseRequestBody.Reasoning {
     }
 
     /// Summary types for reasoning models
-    public enum SummaryType: String, Encodable {
+    public enum SummaryType: String, Encodable, Sendable {
         case auto
         case concise
         case detailed
@@ -596,7 +596,7 @@ extension OpenAICreateResponseRequestBody.Reasoning {
 
 // MARK: - Tool Choice
 extension OpenAICreateResponseRequestBody {
-    public enum ToolChoice: Codable {
+    public enum ToolChoice: Codable, Sendable {
         case none
         case auto
         case required

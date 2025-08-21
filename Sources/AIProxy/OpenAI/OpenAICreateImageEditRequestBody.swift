@@ -9,7 +9,7 @@ import Foundation
 
 /// Creates an edited or extended image given one or more source images and a prompt.
 /// https://platform.openai.com/docs/api-reference/images/createEdit
-public struct OpenAICreateImageEditRequestBody: MultipartFormEncodable {
+public struct OpenAICreateImageEditRequestBody: MultipartFormEncodable, Sendable {
 
     /// The images to edit. Must be a supported image file or an array of images.
     /// For gpt-image-1, each image should be a png, webp, or jpg file less than 25MB.
@@ -121,12 +121,12 @@ public struct OpenAICreateImageEditRequestBody: MultipartFormEncodable {
 
 extension OpenAICreateImageEditRequestBody {
 
-    public enum InputFidelity: String {
+    public enum InputFidelity: String, Sendable {
         case low
         case high
     }
 
-    public enum InputImage {
+    public enum InputImage: Sendable {
         case png(Data)
         case jpeg(Data)
 
@@ -147,12 +147,12 @@ extension OpenAICreateImageEditRequestBody {
         }
     }
 
-    public enum Model: String, Encodable {
+    public enum Model: String, Encodable, Sendable {
         case dallE2 = "dall-e-2"
         case gptImage1 = "gpt-image-1"
     }
 
-    public enum Quality: String, Encodable {
+    public enum Quality: String, Encodable, Sendable {
         case auto
 
         /// Supported for gpt-image-1
@@ -162,7 +162,7 @@ extension OpenAICreateImageEditRequestBody {
         case standard
     }
 
-    public enum ResponseFormat: String, Encodable {
+    public enum ResponseFormat: String, Encodable, Sendable {
         case b64JSON = "b64_json"
         case url
     }

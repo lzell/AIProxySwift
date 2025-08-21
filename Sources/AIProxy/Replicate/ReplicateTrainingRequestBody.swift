@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ReplicateTrainingRequestBody<T: Encodable>: Encodable {
+public struct ReplicateTrainingRequestBody<T: Encodable & Sendable>: Encodable, Sendable {
 
     public let destination: String
     public let input: T

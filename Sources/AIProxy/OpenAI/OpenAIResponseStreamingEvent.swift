@@ -9,7 +9,7 @@ import Foundation
 
 /// Represents a streaming event from the OpenAI Responses API
 /// https://platform.openai.com/docs/api-reference/responses-streaming/response
-public enum OpenAIResponseStreamingEvent: Decodable {
+public enum OpenAIResponseStreamingEvent: Decodable, Sendable {
     case responseCreated(ResponseCreated)
     case responseInProgress(ResponseInProgress)
     case responseCompleted(ResponseCompleted)
@@ -242,7 +242,7 @@ public enum OpenAIResponseStreamingEvent: Decodable {
 
 // MARK: - Response Lifecycle Events
 extension OpenAIResponseStreamingEvent {
-    public struct ResponseCreated: Decodable {
+    public struct ResponseCreated: Decodable, Sendable {
         public let response: OpenAIResponse
         public let sequenceNumber: Int?
 
@@ -253,15 +253,15 @@ extension OpenAIResponseStreamingEvent {
     }
 
     // Dead code?
-//    public struct ReasoningData: Decodable {
+//    public struct ReasoningData: Decodable, Sendable {
 //        public let effort: String?
 //        public let summary: String?
 //    }
 
-//    public struct TextFormat: Decodable {
+//    public struct TextFormat: Decodable, Sendable {
 //        public let format: FormatType
 //
-//        public struct FormatType: Decodable {
+//        public struct FormatType: Decodable, Sendable {
 //            public let type: String
 //            public let description: String?
 //            public let name: String?
@@ -274,7 +274,7 @@ extension OpenAIResponseStreamingEvent {
 //        }
 //    }
 
-    public struct ResponseInProgress: Decodable {
+    public struct ResponseInProgress: Decodable, Sendable {
         public let response: OpenAIResponse
         public let sequenceNumber: Int?
 
@@ -284,7 +284,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ResponseCompleted: Decodable {
+    public struct ResponseCompleted: Decodable, Sendable {
         public let response: OpenAIResponse
         public let sequenceNumber: Int?
 
@@ -294,7 +294,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ResponseFailed: Decodable {
+    public struct ResponseFailed: Decodable, Sendable {
         public let response: OpenAIResponse
         public let sequenceNumber: Int?
 
@@ -304,7 +304,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ResponseIncomplete: Decodable {
+    public struct ResponseIncomplete: Decodable, Sendable {
         public let response: OpenAIResponse
         public let sequenceNumber: Int?
 
@@ -320,7 +320,7 @@ extension OpenAIResponseStreamingEvent {
 
     /// Represents `response.output_item.added`
     /// https://platform.openai.com/docs/api-reference/responses-streaming/response/output_item/added
-    public struct OutputItemAdded: Decodable {
+    public struct OutputItemAdded: Decodable, Sendable {
         public let sequenceNumber: Int?
         public let index: Int?
 
@@ -334,7 +334,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct OutputItemDone: Decodable {
+    public struct OutputItemDone: Decodable, Sendable {
         public let item: OpenAIResponse.ResponseOutputItem
         public let outputIndex: Int?
         public let sequenceNumber: Int?
@@ -351,7 +351,7 @@ extension OpenAIResponseStreamingEvent {
 extension OpenAIResponseStreamingEvent {
     /// Representation of `response.content_part.added`
     /// https://platform.openai.com/docs/api-reference/responses-streaming/response/content_part/added
-    public struct ContentPartAdded: Decodable {
+    public struct ContentPartAdded: Decodable, Sendable {
         /// The sequence number of this event.
         public let sequenceNumber: Int?
 
@@ -372,7 +372,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ContentPartDone: Decodable {
+    public struct ContentPartDone: Decodable, Sendable {
         public let contentIndex: Int?
         public let itemID: String?
         public let outputIndex: Int?
@@ -392,7 +392,7 @@ extension OpenAIResponseStreamingEvent {
 // MARK: - Text Events
 extension OpenAIResponseStreamingEvent {
     /// https://platform.openai.com/docs/api-reference/responses-streaming/response/output_text/delta
-    public struct OutputTextDelta: Decodable {
+    public struct OutputTextDelta: Decodable, Sendable {
         /// The index of the content part that the text delta was added to.
         public let contentIndex: Int?
 
@@ -418,7 +418,7 @@ extension OpenAIResponseStreamingEvent {
     }
 
     /// Represents `response.output_text.annotation.added`
-    public struct OutputTextAnnotationAdded: Decodable {
+    public struct OutputTextAnnotationAdded: Decodable, Sendable {
         public let sequenceNumber: Int?
         public let itemID: String?
         public let outputIndex: Int?
@@ -436,7 +436,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct OutputTextDone: Decodable {
+    public struct OutputTextDone: Decodable, Sendable {
         public let contentIndex: Int?
         public let itemID: String?
         public let outputIndex: Int?
@@ -455,7 +455,7 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Refusal Events
 extension OpenAIResponseStreamingEvent {
-    public struct RefusalDelta: Decodable {
+    public struct RefusalDelta: Decodable, Sendable {
         public let contentIndex: Int?
         public let delta: String
         public let itemID: String?
@@ -471,7 +471,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct RefusalDone: Decodable {
+    public struct RefusalDone: Decodable, Sendable {
         public let contentIndex: Int?
         public let itemID: String?
         public let outputIndex: Int?
@@ -491,7 +491,7 @@ extension OpenAIResponseStreamingEvent {
 // MARK: - Function Call Events
 extension OpenAIResponseStreamingEvent {
     /// https://platform.openai.com/docs/api-reference/responses-streaming/response/function_call_arguments/delta
-    public struct FunctionCallArgumentsDelta: Decodable {
+    public struct FunctionCallArgumentsDelta: Decodable, Sendable {
         ///  The function-call arguments delta that is added.
         public let delta: String
 
@@ -512,7 +512,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct FunctionCallArgumentsDone: Decodable {
+    public struct FunctionCallArgumentsDone: Decodable, Sendable {
         ///  The function-call arguments delta that is added.
         public let arguments: String
 
@@ -537,7 +537,7 @@ extension OpenAIResponseStreamingEvent {
 // MARK: - Search Call Events
 extension OpenAIResponseStreamingEvent {
     /// Represents `response.file_search_call.in_progress`
-    public struct FileSearchCallInProgress: Decodable {
+    public struct FileSearchCallInProgress: Decodable, Sendable {
         public let itemID: String?
         public let outputIndex: Int?
         public let sequenceNumber: Int?
@@ -550,7 +550,7 @@ extension OpenAIResponseStreamingEvent {
     }
 
     /// Represents `response.file_search_call.searching`
-    public struct FileSearchCallSearching: Decodable {
+    public struct FileSearchCallSearching: Decodable, Sendable {
         public let itemID: String?
         public let outputIndex: Int?
         public let sequenceNumber: Int?
@@ -563,7 +563,7 @@ extension OpenAIResponseStreamingEvent {
     }
 
     /// Represents `response.file_search_call.completed`
-    public struct FileSearchCallCompleted: Decodable {
+    public struct FileSearchCallCompleted: Decodable, Sendable {
         public let itemID: String?
         public let outputIndex: Int?
         public let sequenceNumber: Int?
@@ -576,7 +576,7 @@ extension OpenAIResponseStreamingEvent {
     }
 
     /// Represents `response.web_search_call.in_progress`
-    public struct WebSearchCallInProgress: Decodable {
+    public struct WebSearchCallInProgress: Decodable, Sendable {
         public let itemID: String?
         public let outputIndex: Int?
         public let sequenceNumber: Int?
@@ -589,7 +589,7 @@ extension OpenAIResponseStreamingEvent {
     }
 
     /// Represents `response.web_search_call.searching`
-    public struct WebSearchCallSearching: Decodable {
+    public struct WebSearchCallSearching: Decodable, Sendable {
         public let itemID: String?
         public let outputIndex: Int?
         public let sequenceNumber: Int?
@@ -602,7 +602,7 @@ extension OpenAIResponseStreamingEvent {
     }
 
     /// Represents `response.web_search_call.completed`
-    public struct WebSearchCallCompleted: Decodable {
+    public struct WebSearchCallCompleted: Decodable, Sendable {
         public let itemID: String?
         public let outputIndex: Int?
         public let sequenceNumber: Int?
@@ -617,7 +617,7 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Audio Events
 extension OpenAIResponseStreamingEvent {
-    public struct AudioDelta: Decodable {
+    public struct AudioDelta: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let contentPartIndex: Int
@@ -631,7 +631,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct AudioDone: Decodable {
+    public struct AudioDone: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let contentPartIndex: Int
@@ -643,7 +643,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct AudioTranscriptDelta: Decodable {
+    public struct AudioTranscriptDelta: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let contentPartIndex: Int
@@ -657,7 +657,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct AudioTranscriptDone: Decodable {
+    public struct AudioTranscriptDone: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let contentPartIndex: Int
@@ -674,7 +674,7 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Code Interpreter and Computer Call Events
 extension OpenAIResponseStreamingEvent {
-    public struct CodeInterpreterCallProgress: Decodable {
+    public struct CodeInterpreterCallProgress: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let id: String
@@ -688,7 +688,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ComputerCallProgress: Decodable {
+    public struct ComputerCallProgress: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let id: String
@@ -711,7 +711,7 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Reasoning Events
 extension OpenAIResponseStreamingEvent {
-    public struct ReasoningDelta: Decodable {
+    public struct ReasoningDelta: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let delta: String
@@ -723,7 +723,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ReasoningDone: Decodable {
+    public struct ReasoningDone: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputItemIndex: Int
         public let reasoning: String
@@ -738,12 +738,12 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Reasoning Summary Events
 extension OpenAIResponseStreamingEvent {
-    public struct ReasoningSummaryPart: Decodable {
+    public struct ReasoningSummaryPart: Decodable, Sendable {
         public let type: String
         public let text: String?
     }
 
-    public struct ReasoningSummaryPartAdded: Decodable {
+    public struct ReasoningSummaryPartAdded: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
@@ -757,7 +757,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ReasoningSummaryPartDone: Decodable {
+    public struct ReasoningSummaryPartDone: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
@@ -771,7 +771,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ReasoningSummaryTextDelta: Decodable {
+    public struct ReasoningSummaryTextDelta: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
@@ -785,7 +785,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ReasoningSummaryTextDone: Decodable {
+    public struct ReasoningSummaryTextDone: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
@@ -799,7 +799,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ReasoningSummaryDelta: Decodable {
+    public struct ReasoningSummaryDelta: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
@@ -813,7 +813,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ReasoningSummaryDone: Decodable {
+    public struct ReasoningSummaryDone: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputIndex: Int
         public let summaryIndex: Int
@@ -830,7 +830,7 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Image Generation Events
 extension OpenAIResponseStreamingEvent {
-    public struct ImageGenerationCallProgress: Decodable {
+    public struct ImageGenerationCallProgress: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputIndex: Int
         public let status: String
@@ -842,7 +842,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct ImageGenerationCallPartialImage: Decodable {
+    public struct ImageGenerationCallPartialImage: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputIndex: Int
         public let partialImageIndex: Int
@@ -859,7 +859,7 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - MCP Call Events
 extension OpenAIResponseStreamingEvent {
-    public struct McpCallArgumentsDelta: Decodable {
+    public struct McpCallArgumentsDelta: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputIndex: Int
         public let delta: AIProxyJSONValue
@@ -871,7 +871,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct McpCallArgumentsDone: Decodable {
+    public struct McpCallArgumentsDone: Decodable, Sendable {
         public let sequenceNumber: Int
         public let outputIndex: Int
         public let arguments: AIProxyJSONValue
@@ -883,7 +883,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct McpCallProgress: Decodable {
+    public struct McpCallProgress: Decodable, Sendable {
         public let sequenceNumber: Int
         public let status: String
 
@@ -893,7 +893,7 @@ extension OpenAIResponseStreamingEvent {
         }
     }
 
-    public struct McpListToolsProgress: Decodable {
+    public struct McpListToolsProgress: Decodable, Sendable {
         public let sequenceNumber: Int
         public let status: String
 
@@ -907,7 +907,7 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Response Queue Events
 extension OpenAIResponseStreamingEvent {
-    public struct ResponseQueued: Decodable {
+    public struct ResponseQueued: Decodable, Sendable {
         public let sequenceNumber: Int
         public let response: AIProxyJSONValue
 
@@ -920,7 +920,7 @@ extension OpenAIResponseStreamingEvent {
 
 // MARK: - Error Events
 extension OpenAIResponseStreamingEvent {
-    public struct ErrorEvent: Decodable {
+    public struct ErrorEvent: Decodable, Sendable {
         public let sequenceNumber: Int
         public let code: String
         public let message: String

@@ -6,7 +6,7 @@
 //
 
 
-public struct OpenAIFileUploadResponseBody: Decodable {
+public struct OpenAIFileUploadResponseBody: Decodable, Sendable {
     /// The size of the file, in bytes.
     public let bytes: Int?
 

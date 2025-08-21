@@ -6,7 +6,7 @@
 //
 
 /// https://platform.openai.com/docs/api-reference/vector-stores-files/createFile
-public struct OpenAICreateVectorStoreFileRequestBody: Encodable {
+public struct OpenAICreateVectorStoreFileRequestBody: Encodable, Sendable {
 
     // Required
 

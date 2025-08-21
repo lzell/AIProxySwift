@@ -6711,7 +6711,7 @@ Contributions are welcome! This library uses the MIT license.
   in the same namespace as the top level struct. For examples:
 
     ```swift
-    public struct ProviderResponseBody: Decodable {
+    public struct ProviderResponseBody: Decodable, Sendable {
 
         public let status: Status?
 
@@ -6720,7 +6720,7 @@ Contributions are welcome! This library uses the MIT license.
 
     // MARK: -
     extension ProviderResponseBody {
-        public enum Status: String, Decodable {
+        public enum Status: String, Decodable, Sendable {
             case succeeded
             case failed
             case canceled
@@ -6734,8 +6734,8 @@ Contributions are welcome! This library uses the MIT license.
   You may wonder why we don't nest all types within the original top level type definition:
 
   ```swift
-  public struct ProviderResponseBody: Decodable {
-      public enum Status: String, Decodable {
+  public struct ProviderResponseBody: Decodable, Sendable {
+      public enum Status: String, Decodable, Sendable {
           ...
       }
   }
@@ -6756,7 +6756,7 @@ Contributions are welcome! This library uses the MIT license.
 
     ```swift
     // ProviderResponseBody.swift
-    public struct ProviderResponseBody: Decodable {
+    public struct ProviderResponseBody: Decodable, Sendable {
 
         // An examples status
         public let status: ProviderStatus?
@@ -6765,7 +6765,7 @@ Contributions are welcome! This library uses the MIT license.
     }
 
     // ProviderStatus.swift
-    public enum ProviderStatus: String, Decodable {
+    public enum ProviderStatus: String, Decodable, Sendable {
         case succeeded
         case failed
         case canceled
@@ -6804,7 +6804,7 @@ built-in service, take the following steps to add a custom service to your app:
     You would define a request body that looks like this:
 
     ```swift
-        struct ChatRequestBody: Encodable {
+        struct ChatRequestBody: Encodable, Sendable {
             let greatPrompt: String
 
             enum CodingKeys: String, CodingKey {
@@ -6829,7 +6829,7 @@ built-in service, take the following steps to add a custom service to your app:
     You would define a response body that looks like this:
 
     ```swift
-        struct ChatResponseBody: Decodable {
+        struct ChatResponseBody: Decodable, Sendable {
             let generatedMessage: String?
 
             enum CodingKeys: String, CodingKey {
