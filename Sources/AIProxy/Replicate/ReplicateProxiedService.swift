@@ -51,7 +51,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
     ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
     ///
     /// - Returns: The prediction response body
-    public func createSynchronousPredictionUsingOfficialModel<Input: Encodable, Output: Decodable>(
+    public func createSynchronousPredictionUsingOfficialModel<Input: Encodable & Sendable, Output: Decodable>(
         modelOwner: String,
         modelName: String,
         input: Input,
@@ -99,7 +99,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
     ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
     ///
     /// - Returns: The prediction response body
-    public func createSynchronousPredictionUsingCommunityModel<Input: Encodable, Output: Decodable>(
+    public func createSynchronousPredictionUsingCommunityModel<Input: Encodable & Sendable, Output: Decodable>(
         modelVersion: String,
         input: Input,
         secondsToWait: UInt
@@ -145,7 +145,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
     ///
     /// - Returns: A prediction object specialized by the `Output`, e.g. `ReplicateFluxSchnellOutputSchema`.
     ///            The prediction object contains a `url` that can be queried using `getPrediction` or `pollForPredictionCompletion`.
-    public func createPredictionUsingOfficialModel<Input: Encodable, Output: Decodable>(
+    public func createPredictionUsingOfficialModel<Input: Encodable & Sendable, Output: Decodable>(
         modelOwner: String,
         modelName: String,
         input: Input
@@ -184,7 +184,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
     ///
     /// - Returns: A prediction object specialized by the `Output`, e.g. `ReplicateSDXLOutputSchema`.
     ///            The prediction object contains a `url` that can be queried using `getPrediction` or `pollForPredictionCompletion`.
-    public func createPredictionUsingCommunityModel<Input: Encodable, Output: Decodable>(
+    public func createPredictionUsingCommunityModel<Input: Encodable & Sendable, Output: Decodable>(
         version: String,
         input: Input
     ) async throws -> ReplicatePrediction<Output> {

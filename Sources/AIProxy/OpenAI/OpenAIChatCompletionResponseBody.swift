@@ -145,7 +145,7 @@ extension OpenAIChatCompletionResponseBody.Choice.Message.ToolCall {
             case arguments
         }
         
-        public init(name: String, arguments: [String : Any]?, argumentsRaw: String?) {
+        public init(name: String, arguments: [String : Sendable]?, argumentsRaw: String?) {
             self.name = name
             self.arguments = arguments
             self.argumentsRaw = argumentsRaw

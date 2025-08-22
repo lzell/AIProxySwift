@@ -25,7 +25,7 @@ public struct ReplicatePredictionRequestBody: Encodable, Sendable {
     public let version: String?
 
     public init(
-        input: any Encodable,
+        input: any Encodable & Sendable,
         version: String? = nil
     ) {
         self.input = input

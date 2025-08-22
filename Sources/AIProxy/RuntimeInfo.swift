@@ -19,8 +19,8 @@ struct RuntimeInfo {
     let deviceModel: String
     let osVersion: String
     let systemName: String
-
-    static var current: RuntimeInfo = {
+    
+    static let current: RuntimeInfo = {
         let bundle = Bundle.main
         let infoDict = bundle.infoDictionary ?? [:]
 

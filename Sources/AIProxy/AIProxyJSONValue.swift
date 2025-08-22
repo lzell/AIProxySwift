@@ -90,7 +90,7 @@ public enum AIProxyJSONValue: Codable, Sendable {
 }
 
 extension [String: AIProxyJSONValue] {
-    public var untypedDictionary: [String: Any] {
+    public var untypedDictionary: [String: Sendable] {
         return convertToUntypedDictionary(self)
     }
 }
@@ -145,7 +145,7 @@ extension AIProxyJSONValue: ExpressibleByDictionaryLiteral {
   }
 }
 
-private func convertToUntyped(_ input: AIProxyJSONValue) -> Any {
+private func convertToUntyped(_ input: AIProxyJSONValue) -> Sendable {
     switch input {
     case .null:
         return NSNull()
@@ -166,7 +166,7 @@ private func convertToUntyped(_ input: AIProxyJSONValue) -> Any {
 
 private func convertToUntypedDictionary(
     _ input: [String: AIProxyJSONValue]
-) -> [String: Any] {
+) -> [String: Sendable] {
     return input.mapValues { v in
         switch v {
         case .null:
