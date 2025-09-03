@@ -40,6 +40,11 @@ public struct OpenAICreateResponseRequestBody: Encodable {
     /// Configuration options for reasoning models.
     public let reasoning: Reasoning?
 
+    /// A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies.
+    /// The IDs should be a string that uniquely identifies each user.
+    /// We recommend hashing their username or email address, in order to avoid sending us any identifying information.
+    public let safetyIdentifier: String?
+
     /// If set, partial response deltas will be sent as server-sent events.
     /// Set this to true when using the streaming response method.
     public var stream: Bool?
@@ -80,6 +85,7 @@ public struct OpenAICreateResponseRequestBody: Encodable {
         case tools
         case toolChoice = "tool_choice"
         case reasoning
+        case safetyIdentifier = "safety_identifier"
         case parallelToolCalls = "parallel_tool_calls"
         case previousResponseId = "previous_response_id"
         case prompt
@@ -101,6 +107,7 @@ public struct OpenAICreateResponseRequestBody: Encodable {
         previousResponseId: String? = nil,
         prompt: OpenAICreateResponseRequestBody.Prompt? = nil,
         reasoning: OpenAICreateResponseRequestBody.Reasoning? = nil,
+        safetyIdentifier: String? = nil,
         stream: Bool? = nil,
         temperature: Double? = nil,
         text: OpenAIResponse.TextConfiguration? = nil,
@@ -116,6 +123,7 @@ public struct OpenAICreateResponseRequestBody: Encodable {
         self.previousResponseId = previousResponseId
         self.prompt = prompt
         self.reasoning = reasoning
+        self.safetyIdentifier = safetyIdentifier
         self.stream = stream
         self.temperature = temperature
         self.text = text
