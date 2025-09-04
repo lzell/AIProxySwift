@@ -2,7 +2,7 @@
 ///
 /// Docstrings from:
 /// https://platform.openai.com/docs/api-reference/realtime-client-events/session/update
-public struct OpenAIRealtimeSessionUpdate: Encodable {
+public struct OpenAIRealtimeSessionUpdate: Encodable, Sendable {
     /// Optional client-generated ID used to identify this event.
     public let eventId: String?
 

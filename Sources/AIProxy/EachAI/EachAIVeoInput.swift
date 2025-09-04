@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct EachAIVeoInput: Encodable {
+public struct EachAIVeoInput: Encodable, Sendable {
     // Required
     public let imageURL: URL
     public let prompt: String

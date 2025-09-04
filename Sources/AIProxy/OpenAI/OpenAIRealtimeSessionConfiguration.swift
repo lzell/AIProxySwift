@@ -7,9 +7,9 @@
 
 /// Realtime session configuration
 /// https://platform.openai.com/docs/api-reference/realtime-client-events/session/update#realtime-client-events/session/update-session
-public struct OpenAIRealtimeSessionConfiguration: Encodable {
+public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendable {
 
-    public enum ToolChoice: Encodable {
+    public enum ToolChoice: Encodable, Sendable {
 
         /// The model will not call any tool and instead generates a message.
         /// This is the default when no tools are present in the request body
@@ -148,7 +148,7 @@ public struct OpenAIRealtimeSessionConfiguration: Encodable {
 
 // MARK: -
 extension OpenAIRealtimeSessionConfiguration {
-    public struct InputAudioTranscription: Encodable {
+    public struct InputAudioTranscription: Encodable, Sendable {
         /// The model to use for transcription (e.g., "whisper-1").
         public let model: String
         public init(model: String) {
@@ -159,7 +159,7 @@ extension OpenAIRealtimeSessionConfiguration {
 
 // MARK: -
 extension OpenAIRealtimeSessionConfiguration {
-    public enum MaxResponseOutputTokens: Encodable {
+    public enum MaxResponseOutputTokens: Encodable, Sendable {
         case int(Int)
         case infinite
 
@@ -177,7 +177,7 @@ extension OpenAIRealtimeSessionConfiguration {
 
 // MARK: -
 extension OpenAIRealtimeSessionConfiguration {
-    public struct Tool: Encodable {
+    public struct Tool: Encodable, Sendable {
         /// The description of the function
         public let description: String
 
@@ -200,7 +200,7 @@ extension OpenAIRealtimeSessionConfiguration {
 
 // MARK: -
 extension OpenAIRealtimeSessionConfiguration {
-    public struct TurnDetection: Encodable {
+    public struct TurnDetection: Encodable, Sendable {
 
         let type: DetectionType
 
@@ -239,7 +239,7 @@ extension OpenAIRealtimeSessionConfiguration {
 // MARK: -
 /// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
 extension OpenAIRealtimeSessionConfiguration {
-    public enum AudioFormat: String, Encodable {
+    public enum AudioFormat: String, Encodable, Sendable {
         case pcm16
         case g711Ulaw = "g711_ulaw"
         case g711Alaw = "g711_alaw"
@@ -249,15 +249,15 @@ extension OpenAIRealtimeSessionConfiguration {
 // MARK: -
 /// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
 extension OpenAIRealtimeSessionConfiguration {
-    public enum Modality: String, Encodable {
+    public enum Modality: String, Encodable, Sendable {
         case audio
         case text
     }
 }
 
 extension OpenAIRealtimeSessionConfiguration.TurnDetection {
-    public enum DetectionType: Encodable {
-        public enum Eagerness: String, Encodable {
+    public enum DetectionType: Encodable, Sendable {
+        public enum Eagerness: String, Encodable, Sendable {
             case low
             case medium
             case high

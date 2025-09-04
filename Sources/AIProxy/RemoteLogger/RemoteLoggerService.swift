@@ -53,7 +53,7 @@ open class RemoteLoggerService: ProxiedService {
 }
 
 extension RemoteLoggerService {
-    fileprivate struct Payload: Encodable {
+    fileprivate struct Payload: Encodable, Sendable {
         let breadcrumbContext: String
         let errorMessage: String?
     }

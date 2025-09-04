@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from: https://platform.openai.com/docs/api-reference/chat/object
-public struct MistralChatCompletionResponseBody: Decodable {
+public struct MistralChatCompletionResponseBody: Decodable, Sendable {
     /// A list of chat completion choices.
     /// Can be more than one if `n` on `MistralChatCompletionRequestBody` is greater than 1.
     public let choices: [Choice]
@@ -32,7 +32,7 @@ public struct MistralChatCompletionResponseBody: Decodable {
 
 // MARK: - ResponseBody.Choice
 extension MistralChatCompletionResponseBody {
-    public struct Choice: Decodable {
+    public struct Choice: Decodable, Sendable {
         /// The reason the model stopped generating tokens. This will be `stop` if the model hit a
         /// natural stop point or a provided stop sequence, `length` if the maximum number of
         /// tokens specified in the request was reached, `content_filter` if content was omitted
@@ -57,7 +57,7 @@ extension MistralChatCompletionResponseBody {
 
 // MARK: - ResponseBody.Choice.Message
 extension MistralChatCompletionResponseBody.Choice {
-    public struct Message: Decodable {
+    public struct Message: Decodable, Sendable {
         /// The contents of the message.
         public let content: String
 

@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from https://platform.openai.com/docs/api-reference/moderations/object
-public struct OpenAIModerationResponseBody: Decodable {
+public struct OpenAIModerationResponseBody: Decodable, Sendable {
 
     /// The unique identifier for the moderation request.
     public let id: String?
@@ -30,7 +30,7 @@ public struct OpenAIModerationResponseBody: Decodable {
 extension OpenAIModerationResponseBody {
     /// A moderation object.
     /// Represents if a given text input is potentially harmful.
-    public struct ModerationResult: Decodable {
+    public struct ModerationResult: Decodable, Sendable {
         /// A list of the categories along with the input type(s) that the score applies to.
         public let categoryAppliedInputTypes: CategoryAppliedInputTypes?
 
@@ -63,7 +63,7 @@ extension OpenAIModerationResponseBody {
 // MARK: -
 extension OpenAIModerationResponseBody.ModerationResult {
     /// A list of the categories, and whether they are flagged or not.
-    public struct Categories: Decodable {
+    public struct Categories: Decodable, Sendable {
 
         /// Content that expresses, incites, or promotes hate based on race, gender, ethnicity,
         /// religion, nationality, sexual orientation, disability status, or caste. Hateful
@@ -153,7 +153,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
 // MARK: -
 extension OpenAIModerationResponseBody.ModerationResult {
     /// A list of the categories along with their scores as predicted by model.
-    public struct CategoryScores: Decodable {
+    public struct CategoryScores: Decodable, Sendable {
 
         /// The score for the category 'hate'.
         public let hate: Double?
@@ -231,7 +231,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
 // MARK: -
 extension OpenAIModerationResponseBody.ModerationResult {
     /// A list of the categories along with the input type(s) that the score applies to.
-    public struct CategoryAppliedInputTypes: Decodable {
+    public struct CategoryAppliedInputTypes: Decodable, Sendable {
 
         /// The applied input type(s) for the category 'hate'.
         public let hate: [InputType]?
@@ -308,7 +308,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
 
 // MARK: -
 extension OpenAIModerationResponseBody.ModerationResult.CategoryAppliedInputTypes {
-    public enum InputType: String, Decodable {
+    public enum InputType: String, Decodable, Sendable {
         case image
         case text
     }

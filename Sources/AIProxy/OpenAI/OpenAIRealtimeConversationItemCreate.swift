@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://platform.openai.com/docs/api-reference/realtime-client-events/conversation/item/create
-public struct OpenAIRealtimeConversationItemCreate: Encodable {
+public struct OpenAIRealtimeConversationItemCreate: Encodable, Sendable {
     public let type = "conversation.item.create"
     public let item: Item
 
@@ -19,7 +19,7 @@ public struct OpenAIRealtimeConversationItemCreate: Encodable {
 
 // MARK: -
 public extension OpenAIRealtimeConversationItemCreate {
-    struct Item: Encodable {
+    struct Item: Encodable, Sendable {
         public let type = "message"
         public let role: String
         public let content: [Content]
@@ -33,7 +33,7 @@ public extension OpenAIRealtimeConversationItemCreate {
 
 // MARK: -
 public extension OpenAIRealtimeConversationItemCreate.Item {
-    struct Content: Encodable {
+    struct Content: Encodable, Sendable {
         public let type = "input_text"
         public let text: String
 

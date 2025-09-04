@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 8/1/25.
 //
 
-public struct EachAIImagenInput: Encodable {
+public struct EachAIImagenInput: Encodable, Sendable {
     public let prompt: String
 
     public let aspectRatio: String?

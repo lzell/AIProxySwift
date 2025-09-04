@@ -52,7 +52,7 @@ extension EachAIService {
         )
     }
 
-    public func createPredictionAndPollForResult<Input: Encodable>(
+    public func createPredictionAndPollForResult<Input: Encodable & Sendable>(
         input: Input,
         model: String,
         version: String,

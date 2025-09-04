@@ -9,7 +9,7 @@ import Foundation
 
 /// Input schema for use with requests to Black Forest Lab's Pro model:
 /// https://replicate.com/black-forest-labs/flux-1.1-pro/api/schema
-public struct ReplicateFluxProInputSchema_v1_1: Encodable {
+public struct ReplicateFluxProInputSchema_v1_1: Encodable, Sendable {
     // Required
 
     /// Text prompt for image generation
@@ -105,7 +105,7 @@ public struct ReplicateFluxProInputSchema_v1_1: Encodable {
 
 // MARK: - InputSchema.OutputFormat
 extension ReplicateFluxProInputSchema_v1_1 {
-    public enum OutputFormat: String, Encodable {
+    public enum OutputFormat: String, Encodable, Sendable {
         case jpg
         case png
         case webp

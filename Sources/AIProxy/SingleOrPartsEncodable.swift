@@ -6,7 +6,7 @@
 //
 
 protocol SingleOrPartsEncodable {
-    var encodableItem: any Encodable { get }
+    var encodableItem: any Encodable & Sendable { get }
 }
 
 extension SingleOrPartsEncodable {

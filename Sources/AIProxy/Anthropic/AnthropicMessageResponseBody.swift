@@ -8,7 +8,7 @@
 import Foundation
 
 /// All docstrings in this file are from: https://docs.anthropic.com/en/api/messages
-public struct AnthropicMessageResponseBody: Decodable {
+public struct AnthropicMessageResponseBody: Decodable, Sendable {
     public var content: [AnthropicMessageResponseContent]
     public let id: String
     public let model: String
@@ -42,7 +42,7 @@ public struct AnthropicMessageResponseBody: Decodable {
 }
 
 
-public enum AnthropicMessageResponseContent: Decodable {
+public enum AnthropicMessageResponseContent: Decodable, Sendable {
     case text(String)
     case toolUse(id: String, name: String, input: [String: AIProxyJSONValue])
 
@@ -54,7 +54,7 @@ public enum AnthropicMessageResponseContent: Decodable {
         case input
     }
 
-    private enum ContentType: String, Decodable {
+    private enum ContentType: String, Decodable, Sendable {
         case text
         case toolUse = "tool_use"
     }
@@ -76,7 +76,7 @@ public enum AnthropicMessageResponseContent: Decodable {
 }
 
 
-public struct AnthropicMessageUsage: Decodable {
+public struct AnthropicMessageUsage: Decodable, Sendable {
     public let inputTokens: Int
     public let outputTokens: Int
 

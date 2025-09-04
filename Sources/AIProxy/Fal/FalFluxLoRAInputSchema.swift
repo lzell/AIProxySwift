@@ -9,7 +9,7 @@ import Foundation
 
 /// Use this type for inference after training a LoRA with `FalFluxLoRAFastTrainingInputSchema`.
 /// Docstrings taken from the tooltips here: https://fal.ai/models/fal-ai/flux-lora
-public struct FalFluxLoRAInputSchema: Encodable {
+public struct FalFluxLoRAInputSchema: Encodable, Sendable {
     // Required
 
     /// The prompt to generate an image from.
@@ -95,7 +95,7 @@ public struct FalFluxLoRAInputSchema: Encodable {
 
 // MARK: - InputSchema.ImageSize
 extension FalFluxLoRAInputSchema {
-    public enum ImageSize: String, Encodable {
+    public enum ImageSize: String, Encodable, Sendable {
         case landscape16x9 = "landscape_16_9"
         case landscape4x3 = "landscape_4_3"
         case portrait16x9 = "portrait_16_9"
@@ -107,7 +107,7 @@ extension FalFluxLoRAInputSchema {
 
 // MARK: - InputSchema.Lora
 extension FalFluxLoRAInputSchema {
-    public struct Lora: Encodable {
+    public struct Lora: Encodable, Sendable {
         // Required
         /// URL to the LoRA weights.
         public let path: URL
@@ -128,7 +128,7 @@ extension FalFluxLoRAInputSchema {
 
 // MARK: - InputSchema.OutputFormat
 extension FalFluxLoRAInputSchema {
-    public enum OutputFormat: String, Encodable {
+    public enum OutputFormat: String, Encodable, Sendable {
         case jpeg
         case png
     }

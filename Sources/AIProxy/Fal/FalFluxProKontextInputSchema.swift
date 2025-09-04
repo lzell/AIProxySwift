@@ -9,7 +9,7 @@ import Foundation
 /// Input schema for `fal-ai/flux-pro/kontext`.
 /// Generated from Fal's API documentation.
 /// https://fal.ai/models/fal-ai/flux-pro/kontext/api#schema-input
-public struct FalFluxProKontextInputSchema: Encodable {
+public struct FalFluxProKontextInputSchema: Encodable, Sendable {
     // Required
     /// Image prompt for the omni model.
     public let imageURL: URL
@@ -81,12 +81,12 @@ public struct FalFluxProKontextInputSchema: Encodable {
 
 // MARK: - Enumerations
 extension FalFluxProKontextInputSchema {
-    public enum OutputFormat: String, Encodable {
+    public enum OutputFormat: String, Encodable, Sendable {
         case jpeg
         case png
     }
 
-    public enum AspectRatio: String, Encodable {
+    public enum AspectRatio: String, Encodable, Sendable {
         case _21x9 = "21:9"
         case _16x9 = "16:9"
         case _4x3 = "4:3"

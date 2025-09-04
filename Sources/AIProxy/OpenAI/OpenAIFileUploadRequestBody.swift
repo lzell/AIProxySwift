@@ -7,7 +7,7 @@
 
 import Foundation
 
-internal struct OpenAIFileUploadRequestBody: MultipartFormEncodable {
+internal struct OpenAIFileUploadRequestBody: MultipartFormEncodable, Sendable {
 
     /// The binary contents of the file
     let contents: Data

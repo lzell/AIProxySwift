@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://platform.openai.com/docs/api-reference/responses/object
-public struct OpenAIResponse: Decodable {
+public struct OpenAIResponse: Decodable, Sendable {
     /// Unix timestamp (in seconds) of when this Response was created.
     public let createdAt: Double?
 
@@ -21,7 +21,7 @@ public struct OpenAIResponse: Decodable {
     /// Details about why the response is incomplete.
     public let incompleteDetails: IncompleteDetails?
 
-    public enum Instructions: Decodable {
+    public enum Instructions: Decodable, Sendable {
         case text(String)
         case inputs([OpenAIResponse.Input.InputItem])
         case unknown
@@ -221,12 +221,12 @@ public struct OpenAIResponse: Decodable {
 }
 
 extension OpenAIResponse {
-    public struct IncompleteDetails: Decodable {
+    public struct IncompleteDetails: Decodable, Sendable {
         /// The reason why the response is incomplete.
         let reason: String
     }
 
-    public struct ResponseError: Decodable {
+    public struct ResponseError: Decodable, Sendable {
         /// The error code for the response.
         let code: String
 
@@ -234,7 +234,7 @@ extension OpenAIResponse {
         let message: String
     }
 
-    public struct Reasoning: Decodable {
+    public struct Reasoning: Decodable, Sendable {
         /// Constrains effort on reasoning for [reasoning models](https://platform.openai.com/docs/guides/reasoning).
         /// Currently supported values are low, medium, and high. Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
         let effort: Effort?
@@ -248,7 +248,7 @@ extension OpenAIResponse {
         }
     }
 
-    public enum Status: String, Decodable {
+    public enum Status: String, Decodable, Sendable {
         case completed
         case failed
         case incomplete
@@ -256,13 +256,13 @@ extension OpenAIResponse {
     }
 
     /// Represents the literal options: "none", "auto", or "required".
-    public enum ToolChoiceOptions: String, Decodable {
+    public enum ToolChoiceOptions: String, Decodable, Sendable {
         case none = "none"
         case auto = "auto"
         case required = "required"
     }
 
-    public struct OutputTokensDetails: Decodable {
+    public struct OutputTokensDetails: Decodable, Sendable {
         public let reasoningTokens: Int
 
         private enum CodingKeys: String, CodingKey {
@@ -270,7 +270,7 @@ extension OpenAIResponse {
         }
     }
 
-    public struct ResponseUsage: Decodable {
+    public struct ResponseUsage: Decodable, Sendable {
         public let inputTokens: Int?
         public let outputTokens: Int?
         public let outputTokensDetails: OutputTokensDetails?
@@ -286,7 +286,7 @@ extension OpenAIResponse {
 }
 
 extension OpenAIResponse.Reasoning {
-    public enum Effort: String, Decodable {
+    public enum Effort: String, Decodable, Sendable {
         case low
         case medium
         case high
@@ -295,7 +295,7 @@ extension OpenAIResponse.Reasoning {
 
 extension OpenAIResponse {
     /// https://platform.openai.com/docs/api-reference/responses/object#responses/object-output
-    public enum ResponseOutputItem: Decodable {
+    public enum ResponseOutputItem: Decodable, Sendable {
         case message(ResponseOutputMessage)
         case webSearchCall(WebSearchCall)
         case fileSearchCall(FileSearchCall)
@@ -335,21 +335,21 @@ extension OpenAIResponse {
     }
     
     // MARK: - Web Search Call
-    public struct WebSearchCall: Decodable {
+    public struct WebSearchCall: Decodable, Sendable {
         public var type = "web_search_call"
         public let id: String
         public let status: String
     }
 
     // MARK: - File Search Call
-    public struct FileSearchCall: Decodable {
+    public struct FileSearchCall: Decodable, Sendable {
         public var type = "file_search_call"
         public let id: String
         public let status: String
         public let queries: [String]
         public let results: [FileSearchResult]?
 
-        public struct FileSearchResult: Decodable {
+        public struct FileSearchResult: Decodable, Sendable {
             public let content: String
             public let metadata: [String: String]?
             public let score: Double?
@@ -357,7 +357,7 @@ extension OpenAIResponse {
     }
 
     // MARK: - Function Call
-    public struct FunctionCall: Decodable {
+    public struct FunctionCall: Decodable, Sendable {
         public let type = "function_call"
         public let id: String
         public let callId: String
@@ -375,7 +375,7 @@ extension OpenAIResponse {
     }
 
     // MARK: - Computer Call
-    public struct ComputerCall: Decodable {
+    public struct ComputerCall: Decodable, Sendable {
         public let type = "computer_call"
         public let id: String
         public let callId: String
@@ -392,7 +392,7 @@ extension OpenAIResponse {
         }
     }
 
-    public struct ComputerAction: Decodable {
+    public struct ComputerAction: Decodable, Sendable {
         public let type: String
         public let button: String?
         public let x: Int?
@@ -403,7 +403,7 @@ extension OpenAIResponse {
         public let text: String?
     }
 
-    public struct SafetyCheck: Decodable {
+    public struct SafetyCheck: Decodable, Sendable {
         public let id: String
         public let code: String
         public let message: String
@@ -411,7 +411,7 @@ extension OpenAIResponse {
 }
 
 extension OpenAIResponse {
-    public struct ResponseOutputMessage: Decodable {
+    public struct ResponseOutputMessage: Decodable, Sendable {
         public let content: [Content]
         public let id: String?
         public let role: String?
@@ -425,7 +425,7 @@ extension OpenAIResponse {
         }
     }
 
-    public enum Content: Decodable {
+    public enum Content: Decodable, Sendable {
         /// A text output from the model.
         case outputText(OutputText)
 
@@ -456,12 +456,12 @@ extension OpenAIResponse {
         }
     }
 
-    public struct OutputText: Decodable {
+    public struct OutputText: Decodable, Sendable {
         public let text: String
         public let annotations: [Annotation]?
     }
 
-    public enum Annotation: Decodable {
+    public enum Annotation: Decodable, Sendable {
         case urlCitation(URLCitation)
         case fileCitation(FileCitation)
         case filePath(FilePath)
@@ -491,7 +491,7 @@ extension OpenAIResponse {
         }
     }
 
-    public struct URLCitation: Decodable {
+    public struct URLCitation: Decodable, Sendable {
         public let startIndex: Int
         public let endIndex: Int
         public let url: URL
@@ -505,7 +505,7 @@ extension OpenAIResponse {
         }
     }
 
-    public struct FileCitation: Decodable {
+    public struct FileCitation: Decodable, Sendable {
         public let index: Int
         public let fileId: String
         public let filename: String
@@ -517,7 +517,7 @@ extension OpenAIResponse {
         }
     }
 
-    public struct FilePath: Decodable {
+    public struct FilePath: Decodable, Sendable {
         public let index: Int
         public let fileId: String
 

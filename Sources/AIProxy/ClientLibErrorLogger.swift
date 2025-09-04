@@ -44,7 +44,7 @@ private func deliver(_ payload: Payload, clientID: String?) {
     }
 }
 
-private struct Payload: Encodable {
+private struct Payload: Encodable, Sendable {
     let appName: String
     let appVersion: String
     let buildNumber: String

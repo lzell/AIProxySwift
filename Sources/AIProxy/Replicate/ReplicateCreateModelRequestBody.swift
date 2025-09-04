@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ReplicateCreateModelRequestBody: Encodable {
+struct ReplicateCreateModelRequestBody: Encodable, Sendable {
     let description: String
     let hardware: String?
     let name: String

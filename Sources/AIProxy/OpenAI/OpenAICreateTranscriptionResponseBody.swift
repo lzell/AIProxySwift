@@ -15,7 +15,7 @@ import Foundation
 ///
 /// If you would like all properties to be populated, make sure to set the response format to `verbose_json` when you
 /// create the request body. See the docstring on `OpenAICreateTranscriptionRequestBody` for details.
-public struct OpenAICreateTranscriptionResponseBody: Decodable {
+public struct OpenAICreateTranscriptionResponseBody: Decodable, Sendable {
     public let text: String
 
     /// The language of the input audio.
@@ -50,7 +50,7 @@ public struct OpenAICreateTranscriptionResponseBody: Decodable {
 // MARK: -
 extension OpenAICreateTranscriptionResponseBody {
     /// See https://platform.openai.com/docs/api-reference/audio/verbose-json-object#audio/verbose-json-object-words
-    public struct Word: Decodable {
+    public struct Word: Decodable, Sendable {
         /// The text content of the word.
         public let word: String
 
@@ -77,7 +77,7 @@ extension OpenAICreateTranscriptionResponseBody {
 // MARK: -
 extension OpenAICreateTranscriptionResponseBody {
     /// See https://platform.openai.com/docs/api-reference/audio/verbose-json-object#audio/verbose-json-object-segments
-    public struct Segment: Decodable {
+    public struct Segment: Decodable, Sendable {
 
         /// Seek offset of the segment.
         public let seek: Int

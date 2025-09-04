@@ -517,7 +517,7 @@ extension ReplicateService {
     }
 
     @available(*, deprecated, message: "Please use runOfficialModel instead")
-    public func predictAndPollUsingOfficialModel<T: Encodable, U: Decodable>(
+    public func predictAndPollUsingOfficialModel<T: Encodable, U: Decodable & Sendable>(
         modelOwner: String,
         modelName: String,
         input: T,
@@ -541,7 +541,7 @@ extension ReplicateService {
     }
 
     @available(*, deprecated, message: "Please use runCommunityModel instead")
-    public func predictAndPollUsingVersion<T: Encodable, U: Decodable>(
+    public func predictAndPollUsingVersion<T: Encodable, U: Decodable & Sendable>(
         version: String,
         input: T,
         pollAttempts: UInt,
