@@ -102,6 +102,40 @@ class OpenAIResponseStreamingEventTests: XCTestCase {
         XCTAssertEqual(webSearchCall.status, "completed")
     }
 
+    func testWebSearchCallWithSourcesIsDecodable() throws {
+        let line = #"data: {"type":"response.output_item.done","sequence_number":8,"output_index":1,"item":{"id":"ws_68bf1fcb40ec819b815add7f2df9dcff0a2285864df44dd5","type":"web_search_call","status":"completed","action":{"type":"search","query":"Bills game score live Buffalo Bills score","sources":[{"type":"url","url":"https://www.wsj.com/sports/football/bills-ravens-josh-allen-lamar-jackson-derrick-henry-f8fc4d38"},{"type":"url","url":"https://timesofindia.indiatimes.com/sports/nfl/news/nfl-game-results-today-bills-vs-ravens-match-highlights-top-scorers-and-more/articleshow/123759411.cms"},{"type":"url","url":"https://www.bild.de/sport/mehr-sport/buffalo-bills-vs-baltimore-ravens-dieses-nfl-spiel-hatte-alles-68be463d72019652f128d780"},{"type":"url","url":"https://nypost.com/2025/09/08/sports/lamar-jackson-speaks-out-after-shoving-fan-in-snf-loss-to-bills/"},{"type":"url","url":"https://www.capstone-companies.com/summary/bills-game-today"}]}}}"#
+        let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
+
+        guard case .outputItemDone(let outputItemDone) = event else {
+            return XCTFail("Expected response.output_item.done")
+        }
+        XCTAssertEqual(outputItemDone.sequenceNumber, 8)
+
+        guard case .webSearchCall(let webSearchCall) = outputItemDone.item else {
+            return XCTFail("Expected web search call")
+        }
+
+        XCTAssertEqual(webSearchCall.id, "ws_68bf1fcb40ec819b815add7f2df9dcff0a2285864df44dd5")
+        XCTAssertEqual(webSearchCall.status, "completed")
+
+        // Verify the action is properly decoded
+        XCTAssertNotNil(webSearchCall.action)
+        XCTAssertEqual(webSearchCall.action?.type, "search")
+        XCTAssertEqual(webSearchCall.action?.query, "Bills game score live Buffalo Bills score")
+
+        // Verify the sources are properly decoded
+        XCTAssertNotNil(webSearchCall.action?.sources)
+        XCTAssertEqual(webSearchCall.action?.sources?.count, 5)
+
+        let firstSource = webSearchCall.action?.sources?.first
+        XCTAssertEqual(firstSource?.type, "url")
+        XCTAssertEqual(firstSource?.url, "https://www.wsj.com/sports/football/bills-ravens-josh-allen-lamar-jackson-derrick-henry-f8fc4d38")
+
+        let lastSource = webSearchCall.action?.sources?.last
+        XCTAssertEqual(lastSource?.type, "url")
+        XCTAssertEqual(lastSource?.url, "https://www.capstone-companies.com/summary/bills-game-today")
+    }
+
     func testOutputItemAddedForContentIsDecodable() throws {
         let line = #"data: {"type":"response.output_item.added","sequence_number":7,"output_index":1,"item":{"id":"msg_123","type":"message","status":"in_progress","content":[],"role":"assistant"}}"#
         let event = OpenAIResponseStreamingEvent.deserialize(fromLine: line)
