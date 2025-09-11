@@ -11,7 +11,7 @@ import Foundation
 public typealias ReplicateSynchronousAPIOutput = ReplicateSynchronousResponseBody
 
 @available(*, deprecated, message: "Use ReplicatePrediction as a replacement")
-public struct ReplicateSynchronousResponseBody<T: Decodable>: Decodable {
+nonisolated public struct ReplicateSynchronousResponseBody<T: Decodable & Sendable>: Decodable, Sendable {
     public let error: String?
 
     public let output: T?

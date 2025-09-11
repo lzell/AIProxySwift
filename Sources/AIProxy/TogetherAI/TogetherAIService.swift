@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol TogetherAIService {
+@AIProxyActor public protocol TogetherAIService: Sendable {
     /// Initiates a non-streaming chat completion request to /v1/chat/completions.
     ///
     /// - Parameters:

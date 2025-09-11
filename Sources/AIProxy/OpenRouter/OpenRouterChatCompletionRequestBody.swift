@@ -12,7 +12,7 @@ import Foundation
 ///
 /// Chat completion request body. See the OpenRouter reference for available fields.
 /// https://openrouter.ai/docs/api-reference/chat-completion
-public struct OpenRouterChatCompletionRequestBody: Encodable {
+nonisolated public struct OpenRouterChatCompletionRequestBody: Encodable, Sendable {
     // Required
 
     /// A list of messages comprising the conversation so far
@@ -267,14 +267,14 @@ public struct OpenRouterChatCompletionRequestBody: Encodable {
 
 // MARK: - RequestBody.Route
 extension OpenRouterChatCompletionRequestBody {
-    public enum Route: String, Encodable {
+    nonisolated public enum Route: String, Encodable, Sendable {
         case fallback
     }
 }
 
 // MARK: - RequestBody.Message
 extension OpenRouterChatCompletionRequestBody {
-    public enum Message: Encodable {
+    nonisolated public enum Message: Encodable, Sendable {
         /// Assistant message
         /// - Parameters:
         ///   - content: The contents of the assistant message
@@ -331,7 +331,7 @@ extension OpenRouterChatCompletionRequestBody {
 // MARK: - RequestBody.Message.AssistantContent
 extension OpenRouterChatCompletionRequestBody.Message {
     /// Assistant messages can consist of a single string or an array of strings
-    public enum AssistantContent: Encodable {
+    nonisolated public enum AssistantContent: Encodable, Sendable {
         case text(String)
 
         public func encode(to encoder: any Encoder) throws {
@@ -348,7 +348,7 @@ extension OpenRouterChatCompletionRequestBody.Message {
 // MARK: - RequestBody.Message.SystemContent
 extension OpenRouterChatCompletionRequestBody.Message {
     /// System messages can consist of a single string or an array of strings
-    public enum SystemContent: Encodable {
+    nonisolated public enum SystemContent: Encodable, Sendable {
         case text(String)
 
         public func encode(to encoder: any Encoder) throws {
@@ -366,7 +366,7 @@ extension OpenRouterChatCompletionRequestBody.Message {
 extension OpenRouterChatCompletionRequestBody.Message {
     /// User messages can consist of a single string or an array of parts, each part capable of containing a
     /// string or image
-    public enum UserContent: Encodable {
+    nonisolated public enum UserContent: Encodable, Sendable {
         /// The text contents of the message.
         case text(String)
 
@@ -388,7 +388,7 @@ extension OpenRouterChatCompletionRequestBody.Message {
 
 // MARK: - RequestBody.Message.UserContent.Part
 extension OpenRouterChatCompletionRequestBody.Message.UserContent {
-    public enum Part: Encodable {
+    nonisolated public enum Part: Encodable, Sendable {
         /// The text content.
         case text(String)
 
@@ -438,7 +438,7 @@ extension OpenRouterChatCompletionRequestBody.Message.UserContent {
 
 // MARK: - RequestBody.Message.UserContent.Part.ImageDetail
 extension OpenRouterChatCompletionRequestBody.Message.UserContent.Part {
-    public enum ImageDetail: String, Encodable {
+    nonisolated public enum ImageDetail: String, Encodable, Sendable {
         case auto
         case low
         case high
@@ -447,8 +447,8 @@ extension OpenRouterChatCompletionRequestBody.Message.UserContent.Part {
 
 // MARK: - RequestBody.Reasoning
 extension OpenRouterChatCompletionRequestBody {
-    public struct Reasoning: Encodable {
-        public enum Effort: String, Encodable {
+    nonisolated public struct Reasoning: Encodable, Sendable {
+        nonisolated public enum Effort: String, Encodable, Sendable {
             case low
             case medium
             case high
@@ -481,7 +481,7 @@ extension OpenRouterChatCompletionRequestBody {
 extension OpenRouterChatCompletionRequestBody {
     /// An object specifying the format that the model must output. Compatible with GPT-4o, GPT-4o mini, GPT-4
     /// Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.
-    public enum ResponseFormat: Encodable {
+    nonisolated public enum ResponseFormat: Encodable, Sendable {
 
         /// Enables JSON mode, which ensures the message the model generates is valid JSON. Note, if you want to
         /// supply your own schema use `jsonSchema` instead.
@@ -559,7 +559,7 @@ extension OpenRouterChatCompletionRequestBody {
 
 // MARK: - RequestBody.StreamOptions
 extension OpenRouterChatCompletionRequestBody {
-    public struct StreamOptions: Encodable {
+    nonisolated public struct StreamOptions: Encodable, Sendable {
        /// If set, an additional chunk will be streamed before the data: [DONE] message.
        /// The usage field on this chunk shows the token usage statistics for the entire request,
        /// and the choices field will always be an empty array. All other chunks will also include
@@ -574,7 +574,7 @@ extension OpenRouterChatCompletionRequestBody {
 
 // MARK: - RequestBody.Tool
 extension OpenRouterChatCompletionRequestBody {
-    public enum Tool: Encodable {
+    nonisolated public enum Tool: Encodable, Sendable {
 
         /// A function that chatGPT can instruct us to call when appropriate
         ///
@@ -638,7 +638,7 @@ extension OpenRouterChatCompletionRequestBody {
 // MARK: - RequestBody.ToolChoice
 extension OpenRouterChatCompletionRequestBody {
     /// Controls which (if any) tool is called by the model.
-    public enum ToolChoice: Encodable {
+    nonisolated public enum ToolChoice: Encodable, Sendable {
 
         /// The model will not call any tool and instead generates a message.
         /// This is the default when no tools are present in the request body
@@ -690,7 +690,7 @@ extension OpenRouterChatCompletionRequestBody {
 
 // MARK: - RequestBody.Prediction
 extension OpenRouterChatCompletionRequestBody {
-    public struct Prediction: Encodable {
+    nonisolated public struct Prediction: Encodable, Sendable {
         let content: String
 
         private enum CodingKeys: CodingKey {
@@ -709,8 +709,8 @@ extension OpenRouterChatCompletionRequestBody {
 // MARK: - RequestBody.ProviderPreferences
 extension OpenRouterChatCompletionRequestBody {
     /// https://openrouter.ai/docs/provider-routing
-    public struct ProviderPreferences: Encodable {
-        public enum Quantization: String, Encodable {
+    nonisolated public struct ProviderPreferences: Encodable, Sendable {
+        nonisolated public enum Quantization: String, Encodable, Sendable {
             case int4 = "int4"
             case int8 = "int8"
             case fp6 = "fp6"
@@ -719,7 +719,7 @@ extension OpenRouterChatCompletionRequestBody {
             case bf16 = "bf16"
             case unknown = "unknown"
         }
-        public enum DataCollection: String, Encodable {
+        nonisolated public enum DataCollection: String, Encodable, Sendable {
             case allow
             case deny
 

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol PerplexityService {
+@AIProxyActor public protocol PerplexityService: Sendable {
     /// Initiates a non-streaming chat completion request to Perplexity
     ///
     /// - Parameters:

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct EachAIPrediction: Decodable {
+nonisolated public struct EachAIPrediction: Decodable, Sendable {
     public let id: String?
     public let input: Input?
     public let logs: String?
@@ -39,11 +39,11 @@ public struct EachAIPrediction: Decodable {
 }
 
 extension EachAIPrediction {
-    public struct Input: Decodable {
+    nonisolated public struct Input: Decodable, Sendable {
         public let prompt: String?
     }
 
-    public struct Metrics: Decodable {
+    nonisolated public struct Metrics: Decodable, Sendable {
         public let predictTime: Double?
         public let cost: Double?
 
@@ -53,13 +53,13 @@ extension EachAIPrediction {
         }
     }
 
-    public struct ActionURLs: Decodable {
+    nonisolated public struct ActionURLs: Decodable, Sendable {
         public let cancel: String?
         public let get: String?
     }
 }
 
-private func decodeOutput(
+nonisolated private func decodeOutput(
     _ container: KeyedDecodingContainer<EachAIPrediction.CodingKeys>
 ) throws -> URL? {
     if let outputStr = try container.decodeIfPresent(String.self, forKey: .output) {

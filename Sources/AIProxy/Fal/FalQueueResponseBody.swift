@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://fal.ai/docs/model-endpoints/queue
-public struct FalQueueResponseBody: Decodable {
+nonisolated public struct FalQueueResponseBody: Decodable, Sendable {
     public let cancelURL: URL?
     public let logs: String?
     public let metrics: Metrics?
@@ -42,7 +42,7 @@ public struct FalQueueResponseBody: Decodable {
 }
 
 extension FalQueueResponseBody {
-    public enum Status: String, Decodable {
+    nonisolated public enum Status: String, Decodable, Sendable {
         case inQueue = "IN_QUEUE"
         case inProgress = "IN_PROGRESS"
         case completed = "COMPLETED"
@@ -50,7 +50,7 @@ extension FalQueueResponseBody {
 }
 
 extension FalQueueResponseBody {
-    public struct Metrics: Decodable {
+    nonisolated public struct Metrics: Decodable, Sendable {
         let inferenceTime: Double?
         
         public init(inferenceTime: Double?) {

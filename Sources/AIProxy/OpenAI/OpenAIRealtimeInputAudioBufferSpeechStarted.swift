@@ -9,7 +9,7 @@ import Foundation
 
 /// This is not actually used! I'm not using decodable for this event, just inspecting the 'type' string
 /// This is sent from server to client when vad detects that speech started.
-public struct OpenAIRealtimeInputAudioBufferSpeechStarted: Decodable {
+nonisolated public struct OpenAIRealtimeInputAudioBufferSpeechStarted: Decodable, Sendable {
     public let type = "input_audio_buffer.speech_started"
     public let audioStartMs: Int
     

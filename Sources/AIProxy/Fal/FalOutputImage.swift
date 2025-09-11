@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct FalOutputImage: Decodable {
+nonisolated public struct FalOutputImage: Decodable, Sendable {
     public let contentType: String?
     public let height: Int?
     public let url: URL?

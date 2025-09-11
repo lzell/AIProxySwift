@@ -18,7 +18,7 @@ import Foundation
 ///     let urls = try await replicateService.createSDXLFreshInkImageURLs(
 ///         input: input
 ///     )
-public struct ReplicateSDXLFreshInkInputSchema: Encodable {
+nonisolated public struct ReplicateSDXLFreshInkInputSchema: Encodable, Sendable {
 
     // Required
 
@@ -168,7 +168,7 @@ public struct ReplicateSDXLFreshInkInputSchema: Encodable {
 
 // MARK: - InputSchema.Refiner
 extension ReplicateSDXLFreshInkInputSchema {
-    public enum Refiner: String, Encodable {
+    nonisolated public enum Refiner: String, Encodable, Sendable {
         case baseImageRefiner = "base_image_refiner"
         case expertEnsembleRefiner = "expert_ensemble_refiner"
         case noRefiner = "no_refiner"
@@ -177,7 +177,7 @@ extension ReplicateSDXLFreshInkInputSchema {
 
 // MARK: - InputSchema.Scheduler
 extension ReplicateSDXLFreshInkInputSchema {
-    public enum Scheduler: String, Encodable {
+    nonisolated public enum Scheduler: String, Encodable, Sendable {
         case ddim = "DDIM"
         case dpmSolverMultistep = "DPMSolverMultistep"
         case heunDiscrete = "HeunDiscrete"

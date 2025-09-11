@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol DeepSeekService {
+@AIProxyActor public protocol DeepSeekService: Sendable {
 
     /// Initiates a non-streaming chat completion request to /chat/completions.
     ///

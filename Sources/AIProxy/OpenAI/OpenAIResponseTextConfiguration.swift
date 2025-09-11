@@ -6,7 +6,7 @@
 //
 
 extension OpenAIResponse {
-    public struct TextConfiguration: Codable {
+    nonisolated public struct TextConfiguration: Codable, Sendable {
         /// The format specification for the text output
         public let format: Format?
 
@@ -24,7 +24,7 @@ extension OpenAIResponse {
 extension OpenAIResponse.TextConfiguration {
     /// An object specifying the format that the model must output.
     /// The case `.jsonObject` is **not recommended for gpt-4o and newer models.**
-    public enum Format: Codable {
+    nonisolated public enum Format: Codable, Sendable {
 
         /// This case is no longer recommended.
         /// Using `.jsonSchema` is preferred for models that support it.
@@ -125,7 +125,7 @@ extension OpenAIResponse.TextConfiguration {
     }
 
     /// Supported verbosity levels for model responses
-    public enum Verbosity: String, Codable {
+    nonisolated public enum Verbosity: String, Codable, Sendable {
         case low
         case medium
         case high

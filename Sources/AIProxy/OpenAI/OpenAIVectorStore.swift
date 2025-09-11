@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://platform.openai.com/docs/api-reference/vector-stores/object
-public struct OpenAIVectorStore: Decodable {
+nonisolated public struct OpenAIVectorStore: Decodable, Sendable {
     /// The Unix timestamp (in seconds) for when the vector store was created.
     public let createdAt: Int?
 
@@ -57,7 +57,7 @@ public struct OpenAIVectorStore: Decodable {
 }
 
 extension OpenAIVectorStore {
-    public struct FileCounts: Decodable {
+    nonisolated public struct FileCounts: Decodable, Sendable {
         /// The number of files that were cancelled.
         public let cancelled: Int?
 
@@ -82,7 +82,7 @@ extension OpenAIVectorStore {
         }
     }
 
-    public enum Status: String, Decodable {
+    nonisolated public enum Status: String, Decodable, Sendable {
         case completed
         case expired
         case inProgress = "in_progress"

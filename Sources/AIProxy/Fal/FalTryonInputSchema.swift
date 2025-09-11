@@ -9,7 +9,7 @@ import Foundation
 
 /// Controls for generating try-on images. Docstrings from:
 /// https://fal.ai/models/fashn/tryon/api#schema-input
-public struct FalTryonInputSchema: Encodable {
+nonisolated public struct FalTryonInputSchema: Encodable, Sendable {
     // Required
 
     /// Category of the garment to try-on.
@@ -132,7 +132,7 @@ public struct FalTryonInputSchema: Encodable {
 
 // MARK: - InputSchema.Category
 extension FalTryonInputSchema {
-    public enum Category: String, Encodable {
+    nonisolated public enum Category: String, Encodable, Sendable {
         case tops
         case bottoms
         case onePieces = "one-pieces"
@@ -141,7 +141,7 @@ extension FalTryonInputSchema {
 
 // MARK: - InputSchema.GarmentPhotoType
 extension FalTryonInputSchema {
-    public enum GarmentPhotoType: String, Encodable {
+    nonisolated public enum GarmentPhotoType: String, Encodable, Sendable {
         case auto
         case model
         case flatLay = "flat-lay"

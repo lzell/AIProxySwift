@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://platform.openai.com/docs/api-reference/realtime-client-events/conversation/item/create
-public struct OpenAIRealtimeConversationItemCreate: Encodable {
+nonisolated public struct OpenAIRealtimeConversationItemCreate: Encodable {
     public let type = "conversation.item.create"
     public let item: Item
 

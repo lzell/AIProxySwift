@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 7/7/25.
 //
 
-public enum OpenAIFilePurpose: String {
+nonisolated public enum OpenAIFilePurpose: String, Sendable {
     /// Used in the Assistants API
     case assistants
 

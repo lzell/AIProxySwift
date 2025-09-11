@@ -7,12 +7,12 @@
 
 import Foundation
 
-open class BraveDirectService: BraveService, DirectService {
+@AIProxyActor final class BraveDirectService: BraveService, DirectService, Sendable {
     private let unprotectedAPIKey: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.braveDirectService` defined in AIProxy.swift
-    internal init(unprotectedAPIKey: String) {
+    nonisolated init(unprotectedAPIKey: String) {
         self.unprotectedAPIKey = unprotectedAPIKey
     }
 

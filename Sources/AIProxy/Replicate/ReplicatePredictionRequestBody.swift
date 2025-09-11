@@ -14,7 +14,7 @@ import Foundation
 ///
 /// Community model reference: https://replicate.com/docs/reference/http#predictions.create
 /// Official model reference: https://replicate.com/docs/reference/http#models.predictions.create
-public struct ReplicatePredictionRequestBody: Encodable {
+nonisolated public struct ReplicatePredictionRequestBody: Encodable {
 
     /// The replicate input schema, for example ReplicateSDXLInputSchema
     /// TThe input schema depends on what model you are running. To see the available inputs, click the "API" tab on the model you are running or get the model version and look at its `openapi_schema` property. For example, `stability-ai/sdxl` takes `prompt` as an input.

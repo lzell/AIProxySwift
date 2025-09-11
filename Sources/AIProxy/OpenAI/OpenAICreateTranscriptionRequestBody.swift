@@ -9,7 +9,7 @@ import Foundation
 
 /// Request body for the 'Create transcription' endpoint:
 /// https://platform.openai.com/docs/api-reference/audio/createTranscription
-public struct OpenAICreateTranscriptionRequestBody: MultipartFormEncodable {
+nonisolated public struct OpenAICreateTranscriptionRequestBody: MultipartFormEncodable {
     /// The audio file object (not file name) to transcribe, in one of these formats: flac, mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.
     public let file: Data
 
@@ -87,7 +87,7 @@ public struct OpenAICreateTranscriptionRequestBody: MultipartFormEncodable {
 // MARK: -
 /// https://platform.openai.com/docs/api-reference/audio/createTranscription#audio-createtranscription-timestamp_granularities
 extension OpenAICreateTranscriptionRequestBody {
-    public enum TimestampGranularity: String {
+    nonisolated public enum TimestampGranularity: String, Sendable {
         case word
         case segment
     }

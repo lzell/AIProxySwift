@@ -7,13 +7,13 @@
 
 import Foundation
 
-open class GroqDirectService: GroqService, DirectService {
+@AIProxyActor final class GroqDirectService: GroqService, DirectService, Sendable {
     private let unprotectedAPIKey: String
     private let baseURL: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.groqDirectService` defined in AIProxy.swift
-    internal init(
+    nonisolated init(
         unprotectedAPIKey: String,
         baseURL: String? = nil
     ) {

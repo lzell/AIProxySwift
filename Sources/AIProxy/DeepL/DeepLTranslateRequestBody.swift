@@ -9,7 +9,7 @@ import Foundation
 
 /// All docstrings on this model are from:
 /// https://developers.deepl.com/docs/api-reference/translate/openapi-spec-for-text-translation
-public struct DeepLTranslateRequestBody: Encodable {
+nonisolated public struct DeepLTranslateRequestBody: Encodable, Sendable {
     // MARK: Required
     /// The language into which the text should be translated.
     /// Example: "DE"
@@ -127,7 +127,7 @@ public struct DeepLTranslateRequestBody: Encodable {
     }
 }
 
-public enum DeepLFormality: String, Encodable {
+nonisolated public enum DeepLFormality: String, Encodable, Sendable {
     case `default` = "default"
 
     /// for a more formal language
@@ -144,13 +144,13 @@ public enum DeepLFormality: String, Encodable {
 }
 
 /// Sets whether the translation engine should first split the input into sentences.
-public enum DeepLSplitSentencesOption: String, Encodable {
+nonisolated public enum DeepLSplitSentencesOption: String, Encodable, Sendable {
     case none = "0"
     case punctuation = "nonewlines"
     case punctuationAndNewlines = "1"
 }
 
-public enum DeepLTagHandling: String, Encodable {
+nonisolated public enum DeepLTagHandling: String, Encodable, Sendable {
     case xml
     case xhtml
 }

@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 12/29/24.
 //  Update by harr-sudo 05/05/2025
 
-public enum OpenAIRealtimeMessage {
+nonisolated public enum OpenAIRealtimeMessage: Sendable {
     case error(String?)
     case sessionCreated // "session.created"
     case sessionUpdated // "session.updated"

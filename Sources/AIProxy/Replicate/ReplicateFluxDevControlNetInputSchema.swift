@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from https://replicate.com/xlabs-ai/flux-dev-controlnet/api/schema
-public struct ReplicateFluxDevControlNetInputSchema: Encodable {
+nonisolated public struct ReplicateFluxDevControlNetInputSchema: Encodable, Sendable {
     // Required
 
     /// Image to use with control net
@@ -158,7 +158,7 @@ public struct ReplicateFluxDevControlNetInputSchema: Encodable {
 
 // MARK: - InputSchema.ControlType
 extension ReplicateFluxDevControlNetInputSchema {
-    public enum ControlType: String, Encodable {
+    nonisolated public enum ControlType: String, Encodable, Sendable {
         case canny
         case depth
         case softEdge = "soft_edge"
@@ -167,7 +167,7 @@ extension ReplicateFluxDevControlNetInputSchema {
 
 // MARK: - InputSchema.DepthPreprocessor
 extension ReplicateFluxDevControlNetInputSchema {
-    public enum DepthPreprocessor: String, Encodable {
+    nonisolated public enum DepthPreprocessor: String, Encodable, Sendable {
         case midas = "Midas"
         case zoe = "Zoe"
         case depthAnything = "DepthAnything"
@@ -177,7 +177,7 @@ extension ReplicateFluxDevControlNetInputSchema {
 
 // MARK: - InputSchema.OutputFormat
 extension ReplicateFluxDevControlNetInputSchema {
-    public enum OutputFormat: String, Encodable {
+    nonisolated public enum OutputFormat: String, Encodable, Sendable {
         case webp
         case jpg
         case png
@@ -186,7 +186,7 @@ extension ReplicateFluxDevControlNetInputSchema {
 
 // MARK: - InputSchema.SoftEdgePreprocessor
 extension ReplicateFluxDevControlNetInputSchema {
-    public enum SoftEdgePreprocessor: String, Encodable {
+    nonisolated public enum SoftEdgePreprocessor: String, Encodable, Sendable {
         case hed = "HED"
         case teed = "TEED"
         case piDiNet = "PiDiNet"

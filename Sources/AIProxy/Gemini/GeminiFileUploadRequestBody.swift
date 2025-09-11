@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct GeminiFileUploadRequestBody {
+nonisolated public struct GeminiFileUploadRequestBody {
 
     let fileData: Data
     let mimeType: String

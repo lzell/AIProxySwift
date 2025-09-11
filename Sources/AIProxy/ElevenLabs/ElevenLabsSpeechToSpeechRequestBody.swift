@@ -10,7 +10,7 @@ import Foundation
 /// Request body for a text-to-speech request to ElevenLabs.
 /// https://elevenlabs.io/docs/api-reference/speech-to-speech/convert
 /// Note that `voiceID` is set on the path, not in the request body.
-public struct ElevenLabsSpeechToSpeechRequestBody: MultipartFormEncodable {
+nonisolated public struct ElevenLabsSpeechToSpeechRequestBody: MultipartFormEncodable {
 
     // Required
 

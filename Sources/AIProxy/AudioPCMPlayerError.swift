@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum AudioPCMPlayerError: LocalizedError {
+nonisolated public enum AudioPCMPlayerError: LocalizedError, Sendable {
     case couldNotConfigureAudioEngine(String)
 
     public var errorDescription: String? {

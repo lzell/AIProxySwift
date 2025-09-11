@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from https://platform.openai.com/docs/api-reference/moderations/object
-public struct OpenAIModerationResponseBody: Decodable {
+nonisolated public struct OpenAIModerationResponseBody: Decodable, Sendable {
 
     /// The unique identifier for the moderation request.
     public let id: String?
@@ -18,7 +18,7 @@ public struct OpenAIModerationResponseBody: Decodable {
 
     /// A list of moderation objects.
     public let results: [ModerationResult]
-    
+
     public init(id: String?, model: String?, results: [ModerationResult]) {
         self.id = id
         self.model = model
@@ -30,7 +30,7 @@ public struct OpenAIModerationResponseBody: Decodable {
 extension OpenAIModerationResponseBody {
     /// A moderation object.
     /// Represents if a given text input is potentially harmful.
-    public struct ModerationResult: Decodable {
+    nonisolated public struct ModerationResult: Decodable, Sendable {
         /// A list of the categories along with the input type(s) that the score applies to.
         public let categoryAppliedInputTypes: CategoryAppliedInputTypes?
 
@@ -42,7 +42,7 @@ extension OpenAIModerationResponseBody {
 
         /// Whether any of the below categories are flagged.
         public let flagged: Bool
-        
+
         public init(categoryAppliedInputTypes: CategoryAppliedInputTypes?, categoryScores: CategoryScores?, categories: Categories?, flagged: Bool) {
             self.categoryAppliedInputTypes = categoryAppliedInputTypes
             self.categoryScores = categoryScores
@@ -63,7 +63,7 @@ extension OpenAIModerationResponseBody {
 // MARK: -
 extension OpenAIModerationResponseBody.ModerationResult {
     /// A list of the categories, and whether they are flagged or not.
-    public struct Categories: Decodable {
+    nonisolated public struct Categories: Decodable, Sendable {
 
         /// Content that expresses, incites, or promotes hate based on race, gender, ethnicity,
         /// religion, nationality, sexual orientation, disability status, or caste. Hateful
@@ -115,7 +115,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
 
         /// Content that depicts death, violence, or physical injury in graphic detail.
         public let violenceGraphic: Bool?
-        
+
         public init(hate: Bool?, hateThreatening: Bool?, harassment: Bool?, harassmentThreatening: Bool?, illicit: Bool?, illicitViolent: Bool?, sexual: Bool?, sexualMinors: Bool?, selfHarm: Bool?, selfHarmIntent: Bool?, selfHarmInstructions: Bool?, violence: Bool?, violenceGraphic: Bool?) {
             self.hate = hate
             self.hateThreatening = hateThreatening
@@ -153,7 +153,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
 // MARK: -
 extension OpenAIModerationResponseBody.ModerationResult {
     /// A list of the categories along with their scores as predicted by model.
-    public struct CategoryScores: Decodable {
+    nonisolated public struct CategoryScores: Decodable, Sendable {
 
         /// The score for the category 'hate'.
         public let hate: Double?
@@ -193,7 +193,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
 
         /// The score for the category 'violence/graphic'.
         public let violenceGraphic: Double?
-        
+
         public init(hate: Double?, hateThreatening: Double?, harassment: Double?, harassmentThreatening: Double?, illicit: Double?, illicitViolent: Double?, sexual: Double?, sexualMinors: Double?, selfHarm: Double?, selfHarmIntent: Double?, selfHarmInstructions: Double?, violence: Double?, violenceGraphic: Double?) {
             self.hate = hate
             self.hateThreatening = hateThreatening
@@ -231,7 +231,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
 // MARK: -
 extension OpenAIModerationResponseBody.ModerationResult {
     /// A list of the categories along with the input type(s) that the score applies to.
-    public struct CategoryAppliedInputTypes: Decodable {
+    nonisolated public struct CategoryAppliedInputTypes: Decodable, Sendable {
 
         /// The applied input type(s) for the category 'hate'.
         public let hate: [InputType]?
@@ -271,7 +271,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
 
         /// The applied input type(s) for the category 'violence/graphic'.
         public let violenceGraphic: [InputType]?
-        
+
         public init(hate: [InputType]?, hateThreatening: [InputType]?, harassment: [InputType]?, harassmentThreatening: [InputType]?, illicit: [InputType]?, illicitViolent: [InputType]?, sexual: [InputType]?, sexualMinors: [InputType]?, selfHarm: [InputType]?, selfHarmIntent: [InputType]?, selfHarmInstructions: [InputType]?, violence: [InputType]?, violenceGraphic: [InputType]?) {
             self.hate = hate
             self.hateThreatening = hateThreatening
@@ -308,7 +308,7 @@ extension OpenAIModerationResponseBody.ModerationResult {
 
 // MARK: -
 extension OpenAIModerationResponseBody.ModerationResult.CategoryAppliedInputTypes {
-    public enum InputType: String, Decodable {
+    nonisolated public enum InputType: String, Decodable, Sendable {
         case image
         case text
     }

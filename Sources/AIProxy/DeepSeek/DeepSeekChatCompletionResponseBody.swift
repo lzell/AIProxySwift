@@ -6,7 +6,7 @@
 //
 
 /// https://api-docs.deepseek.com/api/create-chat-completion#responses
-public struct DeepSeekChatCompletionResponseBody: Decodable {
+nonisolated public struct DeepSeekChatCompletionResponseBody: Decodable, Sendable {
     /// A list of chat completion choices.
     public let choices: [Choice]
 
@@ -47,7 +47,7 @@ public struct DeepSeekChatCompletionResponseBody: Decodable {
 }
 
 extension DeepSeekChatCompletionResponseBody {
-    public struct Choice: Decodable {
+    nonisolated public struct Choice: Decodable, Sendable {
         /// The reason the model stopped generating tokens. This will be
         /// `stop` if the model hit a natural stop point or a provided stop sequence
         /// `length` if the maximum number of tokens specified in the request was reached,
@@ -77,7 +77,7 @@ extension DeepSeekChatCompletionResponseBody {
 }
 
 extension DeepSeekChatCompletionResponseBody.Choice {
-    public struct Message: Decodable {
+    nonisolated public struct Message: Decodable, Sendable {
         /// The contents of the message.
         public let content: String?
 
@@ -107,7 +107,7 @@ extension DeepSeekChatCompletionResponseBody.Choice {
 }
 
 extension DeepSeekChatCompletionResponseBody.Choice.Message {
-    public struct ToolCall: Decodable {
+    nonisolated public struct ToolCall: Decodable, Sendable {
         /// The ID of the tool call.
         public let id: String
 
@@ -126,7 +126,7 @@ extension DeepSeekChatCompletionResponseBody.Choice.Message {
 }
 
 extension DeepSeekChatCompletionResponseBody.Choice.Message.ToolCall {
-    public struct Function: Decodable {
+    nonisolated public struct Function: Decodable, Sendable {
         /// The name of the function to call.
         public let name: String
 
@@ -138,7 +138,7 @@ extension DeepSeekChatCompletionResponseBody.Choice.Message.ToolCall {
         /// The keys of the `[String: Any]` dictionary are the argument names, e.g. `location` in the guide below.
         /// The values of the `[String: Any]` dictionary are the arguments values, e.g. `Bogotá, Colombia` in this guide:
         /// https://platform.openai.com/docs/guides/function-calling.
-        public let arguments: [String: Any]?
+        public let arguments: [String: any Sendable]?
 
         /// The raw arguments string, unmapped to a `[String: Any]`. The unmapped string is useful for
         /// continuing the converstation with the model. The model expects you to feed the raw argument string
@@ -150,7 +150,7 @@ extension DeepSeekChatCompletionResponseBody.Choice.Message.ToolCall {
             case arguments
         }
         
-        public init(name: String, arguments: [String : Any]?, argumentsRaw: String?) {
+        public init(name: String, arguments: [String: any Sendable]?, argumentsRaw: String?) {
             self.name = name
             self.arguments = arguments
             self.argumentsRaw = argumentsRaw

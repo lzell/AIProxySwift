@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct GeminiFile: Decodable {
+nonisolated public struct GeminiFile: Decodable, Sendable {
     public let createTime: String?
     public let expirationTime: String?
     public let mimeType: String?
@@ -35,7 +35,7 @@ public struct GeminiFile: Decodable {
 
 // MARK: - GeminiFile.State
 extension GeminiFile {
-    public enum State: String, Decodable {
+    nonisolated public enum State: String, Decodable, Sendable {
         case processing = "PROCESSING"
         case active = "ACTIVE"
     }
@@ -43,7 +43,7 @@ extension GeminiFile {
 
 // MARK: - GeminiFile.VideoMetadata
 extension GeminiFile {
-    public struct VideoMetadata: Decodable {
+    nonisolated public struct VideoMetadata: Decodable, Sendable {
         public let videoDuration: String
         
         public init(videoDuration: String) {

@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://docs.eachlabs.ai/api-reference/execution/get-flow-execution
-public struct EachAIWorkflowExecutionResponseBody: Decodable {
+nonisolated public struct EachAIWorkflowExecutionResponseBody: Decodable, Sendable {
     public let averagePercent: Double?
     public let createdAt: String?
     public let deletedAt: String?
@@ -64,7 +64,7 @@ public struct EachAIWorkflowExecutionResponseBody: Decodable {
 
 // MARK: - ResponseBody.StepResult
 extension EachAIWorkflowExecutionResponseBody {
-    public struct StepResult: Decodable {
+    nonisolated public struct StepResult: Decodable, Sendable {
         public let endedAt: String?
         public let input: String?
         public let model: String?

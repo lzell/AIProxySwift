@@ -3,14 +3,14 @@
 
 import Foundation
 
-open class GeminiProxiedService: GeminiService, ProxiedService {
+@AIProxyActor final class GeminiProxiedService: GeminiService, ProxiedService, Sendable {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.geminiService` defined in AIProxy.swift
-    internal init(
+    nonisolated init(
         partialKey: String,
         serviceURL: String,
         clientID: String?

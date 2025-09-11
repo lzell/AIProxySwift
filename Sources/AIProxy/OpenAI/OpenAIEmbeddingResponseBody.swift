@@ -6,11 +6,11 @@
 //
 
 /// https://platform.openai.com/docs/api-reference/embeddings/object
-public struct OpenAIEmbeddingResponseBody: Decodable {
+nonisolated public struct OpenAIEmbeddingResponseBody: Decodable, Sendable {
     public let embeddings: [Embedding]
     public let model: String?
     public let usage: Usage?
-    
+
     public init(embeddings: [Embedding], model: String?, usage: Usage?) {
         self.embeddings = embeddings
         self.model = model
@@ -33,10 +33,10 @@ public struct OpenAIEmbeddingResponseBody: Decodable {
 
 // MARK: -
 extension OpenAIEmbeddingResponseBody {
-    public struct Embedding: Decodable {
+    nonisolated public struct Embedding: Decodable, Sendable {
         public let vector: [Double]
         public let index: Int?
-        
+
         public init(vector: [Double], index: Int?) {
             self.vector = vector
             self.index = index
@@ -57,10 +57,10 @@ extension OpenAIEmbeddingResponseBody {
 
 // MARK: -
 extension OpenAIEmbeddingResponseBody {
-    public struct Usage: Decodable {
+    nonisolated public struct Usage: Decodable, Sendable {
         public let promptTokens: Int
         public let totalTokens: Int
-        
+
         public init(promptTokens: Int, totalTokens: Int) {
             self.promptTokens = promptTokens
             self.totalTokens = totalTokens

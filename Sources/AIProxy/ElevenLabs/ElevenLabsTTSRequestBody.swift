@@ -10,7 +10,7 @@ import Foundation
 /// Request body for a text-to-speech request to ElevenLabs.
 /// https://elevenlabs.io/docs/api-reference/text-to-speech/convert
 /// Note that `voiceID` is set on the path, not in the request body.
-public struct ElevenLabsTTSRequestBody: Encodable {
+nonisolated public struct ElevenLabsTTSRequestBody: Encodable {
     // Required
     public let text: String
 
@@ -109,7 +109,7 @@ public struct ElevenLabsTTSRequestBody: Encodable {
 extension ElevenLabsTTSRequestBody {
     /// See this guide for details on pronunciation dictionaries:
     /// https://elevenlabs.io/docs/api-reference/how-to-use-pronunciation-dictionaries
-    public struct PronunciationDictionaryLocator: Encodable {
+    nonisolated public struct PronunciationDictionaryLocator: Encodable {
         public let pronunciationDictionaryID: String
         public let versionID: String
         
@@ -132,7 +132,7 @@ extension ElevenLabsTTSRequestBody {
 
     /// Docstrings copied from here:
     /// https://elevenlabs.io/docs/speech-synthesis/voice-settings
-    public struct VoiceSettings: Encodable {
+    nonisolated public struct VoiceSettings: Encodable {
 
         /// The similarity value dictates how closely the AI should adhere to the original
         /// voice when attempting to replicate it. If the original audio is of poor quality and

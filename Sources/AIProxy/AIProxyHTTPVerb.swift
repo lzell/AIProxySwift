@@ -9,7 +9,7 @@ import Foundation
 
 /// The HTTP verb to associate with a request.
 /// If you select 'automatic', a request with a body will default to 'POST' while a request without a body will default to 'GET'
-public enum AIProxyHTTPVerb: String {
+nonisolated public enum AIProxyHTTPVerb: String, Sendable {
     case automatic
     case get = "GET"
     case post = "POST"

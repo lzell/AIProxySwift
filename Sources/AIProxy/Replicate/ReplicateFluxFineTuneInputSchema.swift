@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ReplicateFluxFineTuneInputSchema: Encodable {
+nonisolated public struct ReplicateFluxFineTuneInputSchema: Encodable, Sendable {
 
     // Required
     public let prompt: String
@@ -134,14 +134,14 @@ public struct ReplicateFluxFineTuneInputSchema: Encodable {
 }
 
 extension ReplicateFluxFineTuneInputSchema {
-    public enum FluxModel: String, Encodable {
+    nonisolated public enum FluxModel: String, Encodable, Sendable {
         case dev
         case schnell
     }
 }
 
 extension ReplicateFluxFineTuneInputSchema {
-    public enum OutputFormat: String, Encodable {
+    nonisolated public enum OutputFormat: String, Encodable, Sendable {
         case jpeg
         case png
         case webp

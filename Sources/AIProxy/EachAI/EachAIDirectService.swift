@@ -7,10 +7,10 @@
 
 import Foundation
 
-open class EachAIDirectService: EachAIService, DirectService {
+@AIProxyActor public final class EachAIDirectService: EachAIService, DirectService, Sendable {
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.directEachAIService` defined in AIProxy.swift
-    internal init(
+    nonisolated init(
         unprotectedAPIKey: String
     ) {
         let requestBuilder = OpenAIDirectRequestBuilder(

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol GroqService {
+@AIProxyActor public protocol GroqService: Sendable {
     /// Initiates a non-streaming chat completion request to Groq
     ///
     /// - Parameters:

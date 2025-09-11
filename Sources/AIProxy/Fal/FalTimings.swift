@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct FalTimings: Decodable {
+nonisolated public struct FalTimings: Decodable, Sendable {
     public let inference: Double?
     
     public init(inference: Double?) {

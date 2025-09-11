@@ -7,14 +7,14 @@
 
 import Foundation
 
-open class FalProxiedService: FalService, ProxiedService {
+@AIProxyActor final class FalProxiedService: FalService, ProxiedService, Sendable {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.falService` defined in AIProxy.swift
-    internal init(partialKey: String, serviceURL: String, clientID: String?) {
+    nonisolated init(partialKey: String, serviceURL: String, clientID: String?) {
         self.partialKey = partialKey
         self.serviceURL = serviceURL
         self.clientID = clientID
@@ -60,7 +60,7 @@ open class FalProxiedService: FalService, ProxiedService {
     ///            output schema, navigate to the model on Fal, then tap on "API" and scroll down until
     ///            you find the "Output" section. Here is an example:
     ///            https://fal.ai/models/fal-ai/fast-sdxl/api#schema-output
-    public func getResponse<T: Decodable>(
+    public func getResponse<T: Decodable & Sendable>(
         url: URL
     ) async throws -> T {
         guard url.host == "queue.fal.run" else {

@@ -8,16 +8,16 @@
 import Foundation
 
 
-public protocol MultipartFormEncodable {
+nonisolated public protocol MultipartFormEncodable: Sendable {
     var formFields: [FormField] { get}
 }
 
-public enum FormField {
+nonisolated public enum FormField: Sendable {
     case fileField(name: String, content: Data, contentType: String, filename: String)
     case textField(name: String, content: String)
 }
 
-func formEncode(_ body: MultipartFormEncodable, _ boundary: String) -> Data {
+nonisolated func formEncode(_ body: MultipartFormEncodable, _ boundary: String) -> Data {
     var encoded = Data()
     let u: (String) -> Data = { $0.data(using: .utf8)! }
     for field in body.formFields {

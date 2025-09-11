@@ -7,12 +7,12 @@
 
 import Foundation
 
-open class FalDirectService: FalService, DirectService {
+@AIProxyActor final class FalDirectService: FalService, DirectService, Sendable {
     private let unprotectedAPIKey: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.falDirectService` defined in AIProxy.swift
-    internal init(unprotectedAPIKey: String) {
+    nonisolated init(unprotectedAPIKey: String) {
         self.unprotectedAPIKey = unprotectedAPIKey
     }
 
@@ -57,7 +57,7 @@ open class FalDirectService: FalService, DirectService {
     ///            output schema, navigate to the model on Fal, then tap on "API" and scroll down until
     ///            you find the "Output" section. Here is an example:
     ///            https://fal.ai/models/fal-ai/fast-sdxl/api#schema-output
-    public func getResponse<T: Decodable>(
+    public func getResponse<T: Decodable & Sendable>(
         url: URL
     ) async throws -> T {
         guard let scheme = url.scheme,

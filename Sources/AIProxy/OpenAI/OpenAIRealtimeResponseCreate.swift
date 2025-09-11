@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://platform.openai.com/docs/api-reference/realtime-client-events/response
-public struct OpenAIRealtimeResponseCreate: Encodable {
+nonisolated public struct OpenAIRealtimeResponseCreate: Encodable {
     public let type = "response.create"
     public let response: Response?
 
@@ -19,7 +19,7 @@ public struct OpenAIRealtimeResponseCreate: Encodable {
 
 // MARK: -
 extension OpenAIRealtimeResponseCreate {
-    public struct Response: Encodable {
+    nonisolated public struct Response: Encodable {
         public let instructions: String?
         public let modalities: [String]?
         public let tools: [Tool]?
@@ -38,7 +38,7 @@ extension OpenAIRealtimeResponseCreate {
 
 // MARK: -
 extension OpenAIRealtimeResponseCreate.Response {
-    public struct Tool: Encodable {
+    nonisolated public struct Tool: Encodable {
         public let name: String
         public let description: String
         public let parameters: [String: AIProxyJSONValue]

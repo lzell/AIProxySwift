@@ -9,7 +9,7 @@ import Foundation
 
 /// Response body for the 'Create image' endpoint:
 /// https://platform.openai.com/docs/api-reference/images/create
-public struct OpenAICreateImageResponseBody: Decodable {
+nonisolated public struct OpenAICreateImageResponseBody: Decodable, Sendable {
     /// A list of generated images returned from the 'Create Image' endpoint
     public let data: [ImageData]
     
@@ -21,7 +21,7 @@ public struct OpenAICreateImageResponseBody: Decodable {
 // MARK: -
 extension OpenAICreateImageResponseBody {
     /// https://platform.openai.com/docs/api-reference/images/object
-    public struct ImageData: Decodable {
+    nonisolated public struct ImageData: Decodable, Sendable {
         /// The base64-encoded JSON of the generated image, if `responseFormat` on OpenAICreateImageRequestBody is `b64_json`.
         public let b64JSON: String?
 

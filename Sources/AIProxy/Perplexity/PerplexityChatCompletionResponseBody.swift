@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from: https://docs.perplexity.ai/api-reference/chat-completions
-public struct PerplexityChatCompletionResponseBody: Decodable {
+nonisolated public struct PerplexityChatCompletionResponseBody: Decodable, Sendable {
     /// The list of completion choices the model generated for the input prompt.
     public let choices: [Choice]
 
@@ -43,7 +43,7 @@ public struct PerplexityChatCompletionResponseBody: Decodable {
 
 // MARK: - ResponseBody.Choice
 extension PerplexityChatCompletionResponseBody {
-    public struct Choice: Decodable {
+    nonisolated public struct Choice: Decodable, Sendable {
 
         /// The incrementally streamed next tokens. Only meaningful when stream = true
         public let delta: Delta?
@@ -76,7 +76,7 @@ extension PerplexityChatCompletionResponseBody {
 
 // MARK: - PerplexityChatCompletionResponseBody.Choice.Delta
 extension PerplexityChatCompletionResponseBody.Choice {
-    public struct Delta: Decodable {
+    nonisolated public struct Delta: Decodable, Sendable {
         public let content: String
         public let role: PerplexityRole
         
@@ -90,7 +90,7 @@ extension PerplexityChatCompletionResponseBody.Choice {
 
 // MARK: - ResponseBody.Choice.FinishReason
 extension PerplexityChatCompletionResponseBody.Choice {
-    public enum FinishReason: String, Decodable {
+    nonisolated public enum FinishReason: String, Decodable, Sendable {
         case stop
         case length
     }
@@ -100,7 +100,7 @@ extension PerplexityChatCompletionResponseBody.Choice {
 extension PerplexityChatCompletionResponseBody.Choice {
     /// After the (optional) system message, user and assistant roles should alternate with
     /// user then assistant, ending in user.
-    public struct Message: Decodable {
+    nonisolated public struct Message: Decodable, Sendable {
         public let content: String
         public let role: PerplexityRole
         
@@ -113,7 +113,7 @@ extension PerplexityChatCompletionResponseBody.Choice {
 
 // MARK: - ResponseBody.Usage
 extension PerplexityChatCompletionResponseBody {
-    public struct Usage: Decodable {
+    nonisolated public struct Usage: Decodable, Sendable {
         /// The number of tokens provided in the request prompt.
         public let promptTokens: Int?
 

@@ -12,7 +12,7 @@
 
 import Foundation
 
-struct AIProxyKeychain {
+@AIProxyActor struct AIProxyKeychain {
 
     enum Scope {
         case local(keychainAccount: String)
@@ -27,7 +27,6 @@ struct AIProxyKeychain {
     }
 
     let keychainServiceName = (Bundle.main.bundleIdentifier ?? "com.example") + ".aiproxy-keychain"
-    let serialQueue = DispatchQueue(label: "aiproxy-keychain")
 
     let secClass: NSCopying
     let secAttrGeneric: NSCopying
@@ -64,43 +63,20 @@ struct AIProxyKeychain {
         self.cfBooleanTrue = cfBooleanTrue
     }
 
-    func retrieve(scope: Scope) async -> Data? {
-        return await withCheckedContinuation { continuation in
-            self.serialQueue.async {
-                let data = self.searchKeychainCopyMatching(scope: scope)
-                DispatchQueue.main.async {
-                    continuation.resume(returning: data)
-                }
-            }
-        }
+    func retrieve(scope: Scope) -> Data? {
+        return self.searchKeychainCopyMatching(scope: scope)
     }
 
     func create(data: Data, scope: Scope) async -> OSStatus {
-        return await withCheckedContinuation { continuation in
-            self.serialQueue.async {
-                let res = self.createKeychainValue(data: data, scope: scope)
-                DispatchQueue.main.async {
-                    continuation.resume(returning: res)
-                }
-            }
-        }
+        return self.createKeychainValue(data: data, scope: scope)
     }
 
     func update(data: Data, scope: Scope) async -> OSStatus {
-        return await withCheckedContinuation { continuation in
-            self.serialQueue.async {
-                let res = self.updateKeychainValue(data: data, scope: scope)
-                DispatchQueue.main.async {
-                    continuation.resume(returning: res)
-                }
-            }
-        }
+        return self.updateKeychainValue(data: data, scope: scope)
     }
 
     func clear(scope: Scope) {
-        self.serialQueue.async {
-            self.deleteKeychainValue(scope: scope)
-        }
+        self.deleteKeychainValue(scope: scope)
     }
 
     // MARK: - Private

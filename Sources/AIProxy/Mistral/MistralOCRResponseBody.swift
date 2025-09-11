@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from: https://docs.mistral.ai/api/#tag/ocr/operation/ocr_v1_ocr_post
-public struct MistralOCRResponseBody: Decodable {
+nonisolated public struct MistralOCRResponseBody: Decodable, Sendable {
     public let model: String?
     public let pages: [Page]
     public let usageInfo: UsageInfo?
@@ -16,14 +16,14 @@ public struct MistralOCRResponseBody: Decodable {
 
 extension MistralOCRResponseBody {
 
-    public struct Page: Decodable {
+    nonisolated public struct Page: Decodable, Sendable {
         public let dimensions: Dimensions?
         public let images: [ExtractedImage]?
         public let index: Int?
         public let markdown: String?
     }
 
-    public struct UsageInfo: Decodable {
+    nonisolated public struct UsageInfo: Decodable, Sendable {
         public let docSizeBytes: Int?
         public let pagesProcessed: Int?
 
@@ -35,7 +35,7 @@ extension MistralOCRResponseBody {
 }
 
 extension MistralOCRResponseBody.Page {
-    public struct ExtractedImage: Decodable {
+    nonisolated public struct ExtractedImage: Decodable, Sendable {
         public let imageBase64: String?
 
         private enum CodingKeys: String, CodingKey {
@@ -43,7 +43,7 @@ extension MistralOCRResponseBody.Page {
         }
     }
 
-    public struct Dimensions: Decodable {
+    nonisolated public struct Dimensions: Decodable, Sendable {
         /// Dots per inch of the page-image
         public let dpi: Int?
 

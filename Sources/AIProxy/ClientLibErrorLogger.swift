@@ -4,13 +4,12 @@
 //
 //  Created by Lou Zell on 4/1/25.
 //
-
 import Foundation
 
-private let kLibError = "client-lib-error"
-private let kGlobal = "global"
+nonisolated private let kLibError = "client-lib-error"
+nonisolated private let kGlobal = "global"
 
-struct ClientLibErrorLogger {
+@AIProxyActor struct ClientLibErrorLogger {
     static func logClientIdentifierIsNil() {
         let payload = buildPayload(errorType: "error-client-id-nil", errorMessage: nil)
         deliver(payload, clientID: nil)
@@ -33,7 +32,7 @@ struct ClientLibErrorLogger {
 }
 
 // Fire and forget delivery
-private func deliver(_ payload: Payload, clientID: String?) {
+@AIProxyActor private func deliver(_ payload: Payload, clientID: String?) {
     let session = AIProxy.session()
     if let req = buildRequest(payload, clientID: clientID) {
         Task {
@@ -44,7 +43,7 @@ private func deliver(_ payload: Payload, clientID: String?) {
     }
 }
 
-private struct Payload: Encodable {
+@AIProxyActor private struct Payload: Encodable {
     let appName: String
     let appVersion: String
     let buildNumber: String
@@ -56,8 +55,7 @@ private struct Payload: Encodable {
     let timestamp: Double
 }
 
-
-private func buildPayload(errorType: String, errorMessage: String?) -> Payload {
+@AIProxyActor private func buildPayload(errorType: String, errorMessage: String?) -> Payload {
     let runtimeInfo = RuntimeInfo.current
 
     return Payload(
@@ -73,7 +71,7 @@ private func buildPayload(errorType: String, errorMessage: String?) -> Payload {
     )
 }
 
-private func buildRequest(_ payload: Payload, clientID: String?) -> URLRequest? {
+@AIProxyActor private func buildRequest(_ payload: Payload, clientID: String?) -> URLRequest? {
     guard let body: Data = try? payload.serialize(),
           let libErrorURL = URL(string: ["https://api.aiproxy.com", kGlobal, kLibError].joined(separator: "/")) else {
           // let libErrorURL = URL(string: ["http://Lous-MacBook-Air-3.local:4000", kGlobal, kLibError].joined(separator: "/")) else {

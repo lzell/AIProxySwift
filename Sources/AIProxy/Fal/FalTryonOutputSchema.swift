@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from https://fal.ai/models/fashn/tryon/api#schema-output
-public struct FalTryonOutputSchema: Decodable {
+nonisolated public struct FalTryonOutputSchema: Decodable, Sendable {
     public let images: [TryonImage]
     
     public init(images: [TryonImage]) {
@@ -18,7 +18,7 @@ public struct FalTryonOutputSchema: Decodable {
 
 // MARK: - OutputSchema.TryonImage
 extension FalTryonOutputSchema {
-    public struct TryonImage: Decodable {
+    nonisolated public struct TryonImage: Decodable, Sendable {
         /// The mime type of the file.
         public let contentType: String?
 

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol GeminiService {
+@AIProxyActor public protocol GeminiService: Sendable {
 
     /// Generate content using Gemini. Google puts chat completions, audio transcriptions, and
     /// video capabilities all under the term 'generate content':

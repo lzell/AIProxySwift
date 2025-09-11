@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 1/28/25.
 //
 
-public struct ReceiptValidationResponseBody: Decodable {
+nonisolated public struct ReceiptValidationResponseBody: Decodable, Sendable {
     public let isValid: Bool
     
     public init(isValid: Bool) {

@@ -10,7 +10,7 @@ import DeviceCheck
 import OSLog
 
 
-private let deviceCheckWarning = """
+nonisolated private let deviceCheckWarning = """
     AIProxy warning: DeviceCheck is not available on this device.
 
     To use AIProxy on an iOS simulator, set an AIPROXY_DEVICE_CHECK_BYPASS environment variable.
@@ -32,8 +32,7 @@ enum AIProxyDeviceCheck {
     /// to only be used by developers of your app, and is intended to only be included as a an environment variable.
     ///
     /// - Returns: A base 64 encoded DeviceCheck token, if possible
-    @MainActor
-    internal static func getToken(forClient clientID: String?) async -> String? {
+    @AIProxyActor static func getToken(forClient clientID: String?) async -> String? {
         // We have seen `EXC_BAD_ACCESS` on accessing `DCDevice.current.isSupported` in the wild.
         // My theory is that the `DCDevice.h` header uses `NS_ASSUME_NONNULL_BEGIN` when it should not.
         // This juggling is an attempt at preventing the bad access crashes.

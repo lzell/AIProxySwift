@@ -7,7 +7,7 @@
 
 import Foundation
 
-internal struct ReplicateFileUploadRequestBody: MultipartFormEncodable {
+struct ReplicateFileUploadRequestBody: MultipartFormEncodable {
 
     /// The binary contents of the file
     let contents: Data

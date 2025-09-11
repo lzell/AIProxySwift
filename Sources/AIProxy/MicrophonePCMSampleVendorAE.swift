@@ -5,7 +5,7 @@
 //  Created by Lou Zell
 //
 
-import AVFoundation
+@preconcurrency import AVFoundation
 import Foundation
 
 /// This is an AVAudioEngine-based implementation that vends PCM16 microphone samples.
@@ -33,8 +33,7 @@ import Foundation
 /// Apple sample code: https://developer.apple.com/documentation/avfaudio/using-voice-processing
 /// Apple technical note: https://developer.apple.com/documentation/technotes/tn3136-avaudioconverter-performing-sample-rate-conversions
 /// My apple forum question: https://developer.apple.com/forums/thread/771530
-@RealtimeActor
-internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor {
+@AIProxyActor class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor {
     private let audioEngine: AVAudioEngine
     private let inputNode: AVAudioInputNode
     private let microphonePCMSampleVendorCommon = MicrophonePCMSampleVendorCommon()
@@ -78,14 +77,17 @@ internal class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor {
         // There is a note on the installTap documentation that says AudioEngine may
         // adjust the bufferSize internally.
         let targetBufferSize = UInt32(desiredTapFormat.sampleRate / 20) // 50ms buffers
-        // print("Target buffer size is: \(targetBufferSize)")
+        logIf(.error)?.error("PCMSampleVendorAE target buffer size is: \(targetBufferSize)")
 
         return AsyncStream<AVAudioPCMBuffer> { [weak self] continuation in
             guard let this = self else { return }
             this.continuation = continuation
             this.inputNode.installTap(onBus: 0, bufferSize: targetBufferSize, format: desiredTapFormat) { [weak this] sampleBuffer, _ in
                 if let accumulatedBuffer = this?.microphonePCMSampleVendorCommon.resampleAndAccumulate(sampleBuffer) {
-                    this?.continuation?.yield(accumulatedBuffer)
+                    // If the buffer has accumulated to a sufficient level, give it back to the caller
+                    Task { @AIProxyActor in
+                        this?.continuation?.yield(accumulatedBuffer)
+                    }
                 }
             }
         }

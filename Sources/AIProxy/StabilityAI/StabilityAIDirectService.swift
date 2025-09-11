@@ -7,12 +7,12 @@
 
 import Foundation
 
-open class StabilityAIDirectService: StabilityAIService, DirectService {
+@AIProxyActor final class StabilityAIDirectService: StabilityAIService, DirectService, Sendable {
     private let unprotectedAPIKey: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.directStabilityAIService` defined in AIProxy.swift
-    internal init(
+    nonisolated init(
         unprotectedAPIKey: String
     ) {
         self.unprotectedAPIKey = unprotectedAPIKey

@@ -5,48 +5,15 @@
 //  Created by Lou Zell on 7/31/25.
 //
 
-internal enum AIProxyConfiguration {
+nonisolated struct AIProxyConfiguration {
 
-    static var resolveDNSOverTLS: Bool = true
-    static var printRequestBodies: Bool = false
-    static var printResponseBodies: Bool = false
+    let resolveDNSOverTLS: Bool
+    let printRequestBodies: Bool
+    let printResponseBodies: Bool
+    let useStableID: Bool
+    var stableID: String?
 
-    static var stableID: String? {
-        get {
-            ProtectedPropertyQueue.stableID.sync { AIProxyConfiguration._stableID }
-        }
-        set {
-            ProtectedPropertyQueue.stableID.async(flags: .barrier) { AIProxyConfiguration._stableID = newValue }
-        }
-    }
-    static var _stableID: String?
-
-    static var useStableID: Bool {
-        get {
-            ProtectedPropertyQueue.useStableID.sync { _useStableID }
-        }
-        set {
-            ProtectedPropertyQueue.useStableID.async(flags: .barrier) { _useStableID = newValue }
-        }
-    }
-    private static var _useStableID: Bool = false {
-        willSet {
-            guard newValue != self._useStableID else {
-                return
-            }
-            if newValue {
-                Task.detached {
-                    if let stableID = await self._getStableIdentifier() {
-                        self.stableID = stableID
-                    }
-                }
-            } else {
-                self.stableID = nil
-            }
-        }
-    }
-
-    internal static func _getStableIdentifier() async -> String? {
+    @AIProxyActor static internal func getStableIdentifier() async -> String? {
         #if !DEBUG
         if let appTransactionID = await AIProxyUtils.getAppTransactionID() {
             return appTransactionID

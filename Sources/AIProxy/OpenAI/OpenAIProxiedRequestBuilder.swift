@@ -7,9 +7,9 @@
 
 import Foundation
 
-private let legacyURL = "https://api.aiproxy.pro"
+nonisolated private let legacyURL = "https://api.aiproxy.pro"
 
-internal struct OpenAIProxiedRequestBuilder: OpenAIRequestBuilder {
+@AIProxyActor struct OpenAIProxiedRequestBuilder: OpenAIRequestBuilder {
     let partialKey: String
     let serviceURL: String?
     let clientID: String?

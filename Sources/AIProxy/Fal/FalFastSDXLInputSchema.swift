@@ -9,7 +9,7 @@ import Foundation
 
 /// Docstrings from:
 /// https://fal.ai/models/fal-ai/fast-sdxl/api?platform=http#schema
-public struct FalFastSDXLInputSchema: Encodable {
+nonisolated public struct FalFastSDXLInputSchema: Encodable, Sendable {
     // Required
 
     /// The prompt to use for generating the image. Be as descriptive as possible for best
@@ -128,7 +128,7 @@ public struct FalFastSDXLInputSchema: Encodable {
 }
 
 extension FalFastSDXLInputSchema {
-    public enum ImageSize: String, Encodable {
+    nonisolated public enum ImageSize: String, Encodable, Sendable {
         case landscape4x3 = "landscape_4_3"
         case landscape16x9 = "landscape_16_9"
         case portrait4x3 = "portrait_4_3"
@@ -139,7 +139,7 @@ extension FalFastSDXLInputSchema {
 }
 
 extension FalFastSDXLInputSchema {
-    public struct LoraWeight: Encodable {
+    nonisolated public struct LoraWeight: Encodable, Sendable {
         // Required
         /// URL or the path to the LoRA weights. Or HF model name.
         public let path: String
@@ -155,7 +155,7 @@ extension FalFastSDXLInputSchema {
 }
 
 extension FalFastSDXLInputSchema {
-    public struct Embedding: Encodable {
+    nonisolated public struct Embedding: Encodable, Sendable {
         // Required
         /// URL or the path to the embedding weights.
         public let path: String
@@ -167,14 +167,14 @@ extension FalFastSDXLInputSchema {
 }
 
 extension FalFastSDXLInputSchema {
-    public enum SafetyCheckerVersion: String, Encodable {
+    nonisolated public enum SafetyCheckerVersion: String, Encodable, Sendable {
         case v1
         case v2
     }
 }
 
 extension FalFastSDXLInputSchema {
-    public enum Format: String, Encodable {
+    nonisolated public enum Format: String, Encodable, Sendable {
         case jpeg
         case png
     }

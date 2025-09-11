@@ -10,7 +10,7 @@ import Foundation
 
 /// Request body for the 'Create Image' endpoint:
 /// https://platform.openai.com/docs/api-reference/images/create
-public struct OpenAICreateImageRequestBody: Encodable {
+nonisolated public struct OpenAICreateImageRequestBody: Encodable, Sendable {
 
     /// A text description of the desired image(s).
     /// The maximum length is 32000 characters for `gpt-image-1`, 1000 characters for `dall-e-2` and 4000 characters for `dall-e-3`.
@@ -125,30 +125,30 @@ public struct OpenAICreateImageRequestBody: Encodable {
 }
 
 extension OpenAICreateImageRequestBody {
-    public enum Background: String, Encodable {
+    nonisolated public enum Background: String, Encodable, Sendable {
         case auto
         case opaque
         case transparent
     }
 
-    public enum Model: String, Encodable {
+    nonisolated public enum Model: String, Encodable, Sendable {
         case dallE2 = "dall-e-2"
         case dallE3 = "dall-e-3"
         case gptImage1 = "gpt-image-1"
     }
 
-    public enum Moderation: String, Encodable {
+    nonisolated public enum Moderation: String, Encodable, Sendable {
         case auto
         case low
     }
 
-    public enum OutputFormat: String, Encodable {
+    nonisolated public enum OutputFormat: String, Encodable, Sendable {
         case jpeg
         case png
         case webp
     }
 
-    public enum Quality: String, Encodable {
+    nonisolated public enum Quality: String, Encodable, Sendable {
         /// Automatically select the best quality for the given model
         case auto
 
@@ -159,12 +159,12 @@ extension OpenAICreateImageRequestBody {
         case hd, standard
     }
 
-    public enum ResponseFormat: String, Encodable {
+    nonisolated public enum ResponseFormat: String, Encodable, Sendable {
         case b64JSON = "b64_json"
         case url
     }
 
-    public enum Style: String, Encodable {
+    nonisolated public enum Style: String, Encodable, Sendable {
         case vivid
         case natural
     }

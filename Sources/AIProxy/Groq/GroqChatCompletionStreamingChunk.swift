@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from: https://platform.openai.com/docs/api-reference/chat/streaming
-public struct GroqChatCompletionStreamingChunk: Decodable {
+nonisolated public struct GroqChatCompletionStreamingChunk: Decodable, Sendable {
     /// A list of chat completion choices. Can contain more than one elements if
     /// OpenAIChatCompletionRequestBody's `n` property is greater than 1. Can also be empty for
     /// the last chunk, which contains usage information only.
@@ -21,7 +21,7 @@ public struct GroqChatCompletionStreamingChunk: Decodable {
 
 // MARK: - Chunk.Choice
 extension GroqChatCompletionStreamingChunk {
-    public struct Choice: Codable {
+    nonisolated public struct Choice: Codable, Sendable {
         public let delta: Delta
         public let finishReason: String?
         
@@ -39,7 +39,7 @@ extension GroqChatCompletionStreamingChunk {
 
 // MARK: - Chunk.Choice.Delta
 extension GroqChatCompletionStreamingChunk.Choice {
-    public struct Delta: Codable {
+    nonisolated public struct Delta: Codable, Sendable {
         public let role: String?
         public let content: String?
         

@@ -7,15 +7,15 @@
 
 import Foundation
 
-private let kTimeoutBufferForSyncAPIInSeconds: UInt = 5
+nonisolated private let kTimeoutBufferForSyncAPIInSeconds: UInt = 5
 
-open class ReplicateDirectService: ReplicateService, DirectService {
+@AIProxyActor final class ReplicateDirectService: ReplicateService, DirectService, Sendable {
 
     private let unprotectedAPIKey: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.replicateDirectService` defined in AIProxy.swift
-    internal init(unprotectedAPIKey: String) {
+    nonisolated init(unprotectedAPIKey: String) {
         self.unprotectedAPIKey = unprotectedAPIKey
     }
 
@@ -49,7 +49,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
     ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
     ///
     /// - Returns: The prediction response body
-    public func createSynchronousPredictionUsingOfficialModel<Input: Encodable, Output: Decodable>(
+    public func createSynchronousPredictionUsingOfficialModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         modelOwner: String,
         modelName: String,
         input: Input,
@@ -98,7 +98,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
     ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
     ///
     /// - Returns: The prediction response body
-    public func createSynchronousPredictionUsingCommunityModel<Input: Encodable, Output: Decodable>(
+    public func createSynchronousPredictionUsingCommunityModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         modelVersion: String,
         input: Input,
         secondsToWait: UInt
@@ -145,7 +145,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
     ///
     /// - Returns: A prediction object specialized by the `Output`, e.g. `ReplicateFluxSchnellOutputSchema`.
     ///            The prediction object contains a `url` that can be queried using `getPrediction` or `pollForPredictionCompletion`.
-    public func createPredictionUsingOfficialModel<Input: Encodable, Output: Decodable>(
+    public func createPredictionUsingOfficialModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         modelOwner: String,
         modelName: String,
         input: Input
@@ -185,7 +185,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
     ///
     /// - Returns: A prediction object specialized by the `Output`, e.g. `ReplicateSDXLOutputSchema`.
     ///            The prediction object contains a `url` that can be queried using `getPrediction` or `pollForPredictionCompletion`.
-    public func createPredictionUsingCommunityModel<Input: Encodable, Output: Decodable>(
+    public func createPredictionUsingCommunityModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         version: String,
         input: Input
     ) async throws -> ReplicatePrediction<Output> {
@@ -218,7 +218,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
     ///   - url: The prediction URL returned as part of a `createPrediction` request
     ///
     /// - Returns: The prediction response body specialized by `Output`, which must be a decodable that matches the output schema of this model
-    public func getPrediction<Output: Decodable>(
+    public func getPrediction<Output: Decodable & Sendable>(
         url: URL
     ) async throws -> ReplicatePrediction<Output> {
         guard let scheme = url.scheme,
@@ -315,7 +315,7 @@ open class ReplicateDirectService: ReplicateService, DirectService {
     ///   - body: The training request body, parametrized by T where T is a decodable input that you define.
     ///
     /// - Returns: The training response, which contains a URL to poll for the training progress
-    public func createTraining<T>(
+    public func createTraining<T: Sendable>(
         modelOwner: String,
         modelName: String,
         versionID: String,

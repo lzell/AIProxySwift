@@ -7,7 +7,8 @@
 
 import Foundation
 
-protocol ProxiedService: ServiceMixin {}
+@AIProxyActor protocol ProxiedService: ServiceMixin {}
+
 extension ProxiedService {
     var urlSession: URLSession {
         return AIProxyUtils.proxiedURLSession()

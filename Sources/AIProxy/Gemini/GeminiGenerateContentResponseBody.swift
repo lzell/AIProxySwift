@@ -9,7 +9,7 @@ import Foundation
 
 /// Format taken from here:
 /// https://ai.google.dev/api/generate-content#generatecontentresponse
-public struct GeminiGenerateContentResponseBody: Decodable {
+nonisolated public struct GeminiGenerateContentResponseBody: Decodable, Sendable {
     /// Candidate responses from the mode
     public let candidates: [Candidate]?
 
@@ -26,7 +26,7 @@ public struct GeminiGenerateContentResponseBody: Decodable {
 extension GeminiGenerateContentResponseBody {
     /// A response candidate generated from the model.
     /// See: https://ai.google.dev/api/generate-content#candidate
-    public struct Candidate: Decodable {
+    nonisolated public struct Candidate: Decodable, Sendable {
         /// Generated content returned from the model.
         public let content: Content?
 
@@ -61,7 +61,7 @@ extension GeminiGenerateContentResponseBody.Candidate {
     ///
     /// A Content includes a role field designating the producer of the Content and a parts
     /// field containing multi-part data that contains the content of the message turn.
-    public struct Content: Decodable {
+    nonisolated public struct Content: Decodable, Sendable {
         /// Ordered Parts that constitute a single message. Parts may have different MIME types.
         public let parts: [Part]?
 
@@ -80,9 +80,9 @@ extension GeminiGenerateContentResponseBody.Candidate.Content {
     /// A datatype containing media that is part of a multi-part Content message.
     /// This field is a union type, but currently only `text` is supported.
     /// See: https://ai.google.dev/api/caching#Part
-    public enum Part: Decodable {
+    nonisolated public enum Part: Decodable, Sendable {
         case text(String)
-        case functionCall(name: String, args: [String: Any]?)
+        case functionCall(name: String, args: [String: any Sendable]?)
         case inlineData(mimeType: String, base64Data: String)
 
         private enum CodingKeys: String, CodingKey {
@@ -91,7 +91,7 @@ extension GeminiGenerateContentResponseBody.Candidate.Content {
             case inlineData
         }
 
-        private struct _FunctionCall: Decodable {
+        private struct _FunctionCall: Decodable, Sendable {
             let name: String
             let args: [String: AIProxyJSONValue]?
             
@@ -101,7 +101,7 @@ extension GeminiGenerateContentResponseBody.Candidate.Content {
             }
         }
 
-        private struct _InlineData: Decodable {
+        private struct _InlineData: Decodable, Sendable {
             let mimeType: String
             let data: String
             
@@ -130,7 +130,7 @@ extension GeminiGenerateContentResponseBody.Candidate.Content {
 extension GeminiGenerateContentResponseBody.Candidate {
     /// Ratings for safety of the prompt. There is at most one rating per category.
     /// See https://ai.google.dev/api/generate-content#v1beta.SafetyRating
-    public struct SafetyRating: Decodable {
+    nonisolated public struct SafetyRating: Decodable, Sendable {
         /// Was this content blocked because of this rating?
         public let blocked: Bool?
 
@@ -151,7 +151,7 @@ extension GeminiGenerateContentResponseBody.Candidate {
 // Extension to handle grounding metadata in the response
 extension GeminiGenerateContentResponseBody.Candidate {
     /// Grounding metadata containing information about search results used for the response
-    public struct GroundingMetadata: Decodable {
+    nonisolated public struct GroundingMetadata: Decodable, Sendable {
         public let searchEntryPoint: SearchEntryPoint?
         public let groundingChunks: [GroundingChunk]?
         public let groundingSupports: [GroundingSupport]?
@@ -172,7 +172,7 @@ extension GeminiGenerateContentResponseBody.Candidate {
         }
     }
     
-    public struct SearchEntryPoint: Decodable {
+    nonisolated public struct SearchEntryPoint: Decodable, Sendable {
         public let renderedContent: String?
         
         public init(renderedContent: String?) {
@@ -180,7 +180,7 @@ extension GeminiGenerateContentResponseBody.Candidate {
         }
     }
     
-    public struct GroundingChunk: Decodable {
+    nonisolated public struct GroundingChunk: Decodable, Sendable {
         public let web: WebInfo?
         
         public init(web: WebInfo?) {
@@ -188,7 +188,7 @@ extension GeminiGenerateContentResponseBody.Candidate {
         }
     }
     
-    public struct WebInfo: Decodable {
+    nonisolated public struct WebInfo: Decodable, Sendable {
         public let uri: String?
         public let title: String?
         public var url: URL? {
@@ -204,7 +204,7 @@ extension GeminiGenerateContentResponseBody.Candidate {
         }
     }
     
-    public struct GroundingSupport: Decodable {
+    nonisolated public struct GroundingSupport: Decodable, Sendable {
         public let segment: Segment?
         public let groundingChunkIndices: [Int]?
         public let confidenceScores: [Double]?
@@ -216,7 +216,7 @@ extension GeminiGenerateContentResponseBody.Candidate {
         }
     }
     
-    public struct Segment: Decodable {
+    nonisolated public struct Segment: Decodable, Sendable {
         public let startIndex: Int?
         public let endIndex: Int?
         public let text: String?
@@ -232,7 +232,7 @@ extension GeminiGenerateContentResponseBody.Candidate {
 // MARK: - ResponseBody.UsageMetadata
 extension GeminiGenerateContentResponseBody {
     /// Metadata on the generation request's token usage.
-    public struct UsageMetadata: Decodable {
+    nonisolated public struct UsageMetadata: Decodable, Sendable {
         /// Number of tokens in the cached part of the prompt (the cached content)
         public let cachedContentTokenCount: Int?
 

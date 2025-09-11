@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from: https://platform.openai.com/docs/api-reference/chat/streaming
-public struct MistralChatCompletionStreamingChunk: Decodable {
+nonisolated public struct MistralChatCompletionStreamingChunk: Decodable, Sendable {
     /// A list of chat completion capphoices. Can contain more than one elements if
     /// MistralChatCompletionRequestBody's `n` property is greater than 1. Can also be empty for
     /// the last chunk, which contains usage information only.
@@ -21,7 +21,7 @@ public struct MistralChatCompletionStreamingChunk: Decodable {
 
 // MARK: - Chunk.Choice
 extension MistralChatCompletionStreamingChunk {
-    public struct Choice: Codable {
+    nonisolated public struct Choice: Codable, Sendable {
         public let delta: Delta
         public let finishReason: String?
 
@@ -34,7 +34,7 @@ extension MistralChatCompletionStreamingChunk {
 
 // MARK: - Chunk.Choice.Delta
 extension MistralChatCompletionStreamingChunk.Choice {
-    public struct Delta: Codable {
+    nonisolated public struct Delta: Codable, Sendable {
         public let role: String?
         public let content: String?
     }

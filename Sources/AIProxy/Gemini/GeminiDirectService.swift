@@ -7,12 +7,12 @@
 
 import Foundation
 
-open class GeminiDirectService: GeminiService, DirectService {
+@AIProxyActor final class GeminiDirectService: GeminiService, DirectService, Sendable {
     private let unprotectedAPIKey: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.geminiDirectService` defined in AIProxy.swift
-    internal init(
+    nonisolated init(
         unprotectedAPIKey: String
     ) {
         self.unprotectedAPIKey = unprotectedAPIKey

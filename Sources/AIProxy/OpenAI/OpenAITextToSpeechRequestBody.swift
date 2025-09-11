@@ -10,7 +10,7 @@ import Foundation
 
 /// Docstrings from
 /// https://platform.openai.com/docs/api-reference/audio/createSpeech
-public struct OpenAITextToSpeechRequestBody: Encodable {
+nonisolated public struct OpenAITextToSpeechRequestBody: Encodable {
 
     /// The text to generate audio for. The maximum length is 4096 characters.
     public let input: String
@@ -64,7 +64,7 @@ public struct OpenAITextToSpeechRequestBody: Encodable {
 
 // MARK: -
 extension OpenAITextToSpeechRequestBody {
-    public enum Model: String, Encodable {
+    nonisolated public enum Model: String, Encodable, Sendable {
         case gpt4oMiniTTS = "gpt-4o-mini-tts"
         case tts1 = "tts-1"
         case tts1HD = "tts-1-hd"
@@ -73,7 +73,7 @@ extension OpenAITextToSpeechRequestBody {
 
 // MARK: -
 extension OpenAITextToSpeechRequestBody {
-    public enum ResponseFormat: String, Encodable {
+    nonisolated public enum ResponseFormat: String, Encodable, Sendable {
         case aac
         case flac
         case mp3
@@ -85,7 +85,7 @@ extension OpenAITextToSpeechRequestBody {
 
 // MARK: -
 extension OpenAITextToSpeechRequestBody {
-    public enum Voice: String, Encodable {
+    nonisolated public enum Voice: String, Encodable, Sendable {
         case alloy
         case ash
         case ballad

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum AIProxyURLRequest {
+@AIProxyActor enum AIProxyURLRequest {
 
     /// Creates a URLRequest that is configured for use with an AIProxy URLSession.
     /// Can raise `AIProxyError.deviceCheckIsUnavailable` or `AIProxyError.deviceCheckBypassIsMissing`

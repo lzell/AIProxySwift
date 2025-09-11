@@ -7,13 +7,13 @@
 
 import Foundation
 
-open class EachAIService {
+@AIProxyActor public class EachAIService: Sendable {
     private let requestBuilder: OpenAIRequestBuilder
     private let serviceNetworker: ServiceMixin
 
     /// This designated initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.eachAIService` or `AIProxy.directEachAIService` defined in AIProxy.swift.
-    init(
+    nonisolated init(
         requestBuilder: OpenAIRequestBuilder,
         serviceNetworker: ServiceMixin
     ) {

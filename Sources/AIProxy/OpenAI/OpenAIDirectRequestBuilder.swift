@@ -7,11 +7,11 @@
 
 import Foundation
 
-internal struct OpenAIDirectRequestBuilder: OpenAIRequestBuilder {
+@AIProxyActor struct OpenAIDirectRequestBuilder: OpenAIRequestBuilder {
     let baseURL: String
     let unprotectedAuthHeader: (key: String, value: String)
 
-    init(baseURL: String, unprotectedAuthHeader: (key: String, value: String)) {
+    nonisolated init(baseURL: String, unprotectedAuthHeader: (key: String, value: String)) {
         self.baseURL = baseURL
         self.unprotectedAuthHeader = unprotectedAuthHeader
     }

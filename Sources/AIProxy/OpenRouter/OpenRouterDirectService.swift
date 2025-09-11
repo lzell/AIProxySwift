@@ -7,13 +7,13 @@
 
 import Foundation
 
-open class OpenRouterDirectService: OpenRouterService, DirectService {
+@AIProxyActor final class OpenRouterDirectService: OpenRouterService, DirectService, Sendable {
     private let unprotectedAPIKey: String
     private let baseURL: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.openRouterDirectService` defined in AIProxy.swift
-    internal init(unprotectedAPIKey: String, baseURL: String? = nil) {
+    nonisolated init(unprotectedAPIKey: String, baseURL: String? = nil) {
         self.unprotectedAPIKey = unprotectedAPIKey
         self.baseURL = baseURL ?? "https://openrouter.ai"
     }

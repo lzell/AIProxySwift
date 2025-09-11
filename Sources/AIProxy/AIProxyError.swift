@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum AIProxyError: LocalizedError, Equatable {
+nonisolated public enum AIProxyError: LocalizedError, Equatable, Sendable {
 
     /// This error is thrown if any programmer assumptions are broken and the library can't continue.
     ///
@@ -30,7 +30,7 @@ public enum AIProxyError: LocalizedError, Equatable {
     /// caller to be similar for unwrapping the optional versus handling an error.
     ///
     /// Any AIProxyError.assertion that you encounter in the wild is a programmer error.
-    /// Please contact support@aiproxy.pro with a reproduction!
+    /// Please contact support@aiproxy.com with a reproduction!
     case assertion(String)
 
 
@@ -65,7 +65,7 @@ public enum AIProxyError: LocalizedError, Equatable {
         case .deviceCheckIsUnavailable:
             return "AIProxy - Apple's DeviceCheck is not available on this device. Please make sure you are connected to the internet and your system clock is accurately set."
         case .deviceCheckBypassIsMissing:
-            return "AIProxy - You are running on a simulator without setting the AIPROXY_DEVICE_CHECK_BYPASS env variable. Please see the integration guide for instructions on setting AIPROXY_DEVICE_CHECK_BYPASS: https://www.aiproxy.pro/docs/integration-guide.html"
+            return "AIProxy - You are running on a simulator without setting the AIPROXY_DEVICE_CHECK_BYPASS env variable. Please see the integration guide for instructions on setting AIPROXY_DEVICE_CHECK_BYPASS: https://www.aiproxy.com/docs/integration-guide.html"
         }
 
     }

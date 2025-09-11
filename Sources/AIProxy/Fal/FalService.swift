@@ -16,7 +16,7 @@ import Foundation
 //  inspiration to write your own implementation using the generic methods below
 // ---------------------------------------------------------------------------------
 
-public protocol FalService {
+@AIProxyActor public protocol FalService: Sendable {
 
     /// Creates an inference on Fal. The returned value contains a URL that you can check for
     /// the status of your inference..
@@ -40,7 +40,7 @@ public protocol FalService {
     ///            output schema, navigate to the model on Fal, then tap on "API" and scroll down until
     ///            you find the "Output" section. Here is an example:
     ///            https://fal.ai/models/fal-ai/fast-sdxl/api#schema-output
-    func getResponse<T: Decodable>(
+    func getResponse<T: Decodable & Sendable>(
         url: URL
     ) async throws -> T
 
@@ -71,7 +71,7 @@ extension FalService {
     ///                                 is the longest you'd like to wait for a result.
     /// - Returns: The output schema of your model.
     ///            Find this by browing to your model on Fal and tapping on "API" then "Schema > Output" in the left sidebar
-    public func createInferenceAndPollForResult<T: Encodable, U: Decodable>(
+    public func createInferenceAndPollForResult<T: Encodable & Sendable, U: Decodable & Sendable>(
         model: String,
         input: T,
         pollAttempts: Int,

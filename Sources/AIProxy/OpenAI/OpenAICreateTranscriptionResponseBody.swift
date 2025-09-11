@@ -15,7 +15,7 @@ import Foundation
 ///
 /// If you would like all properties to be populated, make sure to set the response format to `verbose_json` when you
 /// create the request body. See the docstring on `OpenAICreateTranscriptionRequestBody` for details.
-public struct OpenAICreateTranscriptionResponseBody: Decodable {
+nonisolated public struct OpenAICreateTranscriptionResponseBody: Decodable, Sendable {
     public let text: String
 
     /// The language of the input audio.
@@ -29,7 +29,7 @@ public struct OpenAICreateTranscriptionResponseBody: Decodable {
 
     /// Segments of the transcribed text and their corresponding details.
     public let segments: [Segment]?
-    
+
     public init(text: String, language: String?, duration: Double?, words: [Word]?, segments: [Segment]?) {
         self.text = text
         self.language = language
@@ -50,7 +50,7 @@ public struct OpenAICreateTranscriptionResponseBody: Decodable {
 // MARK: -
 extension OpenAICreateTranscriptionResponseBody {
     /// See https://platform.openai.com/docs/api-reference/audio/verbose-json-object#audio/verbose-json-object-words
-    public struct Word: Decodable {
+    nonisolated public struct Word: Decodable, Sendable {
         /// The text content of the word.
         public let word: String
 
@@ -59,7 +59,7 @@ extension OpenAICreateTranscriptionResponseBody {
 
         /// End time of the word in seconds.
         public let end: Double
-        
+
         public init(word: String, start: Double, end: Double) {
             self.word = word
             self.start = start
@@ -77,7 +77,7 @@ extension OpenAICreateTranscriptionResponseBody {
 // MARK: -
 extension OpenAICreateTranscriptionResponseBody {
     /// See https://platform.openai.com/docs/api-reference/audio/verbose-json-object#audio/verbose-json-object-segments
-    public struct Segment: Decodable {
+    nonisolated public struct Segment: Decodable, Sendable {
 
         /// Seek offset of the segment.
         public let seek: Int
@@ -105,7 +105,7 @@ extension OpenAICreateTranscriptionResponseBody {
 
         /// Probability of no speech in the segment. If the value is higher than 1.0 and the avg_logprob is below -1, consider this segment silent.
         public let noSpeechProb: Double
-        
+
         public init(seek: Int, start: Double, end: Double, text: String, tokens: [Int], temperature: Double, avgLogprob: Double, compressionRatio: Double, noSpeechProb: Double) {
             self.seek = seek
             self.start = start

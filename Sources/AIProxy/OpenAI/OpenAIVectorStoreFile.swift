@@ -6,7 +6,7 @@
 //
 
 /// https://platform.openai.com/docs/api-reference/vector-stores-files/file-object
-public struct OpenAIVectorStoreFile: Decodable {
+nonisolated public struct OpenAIVectorStoreFile: Decodable, Sendable {
     /// Set of 16 key-value pairs that can be attached to an object.
     /// This can be useful for storing additional information about the object in a structured format, and querying for objects via API or the dashboard.
     /// Keys are strings with a maximum length of 64 characters.
@@ -48,7 +48,7 @@ public struct OpenAIVectorStoreFile: Decodable {
 }
 
 extension OpenAIVectorStoreFile {
-    public struct LastError: Decodable {
+    nonisolated public struct LastError: Decodable, Sendable {
         /// One of `server_error` or `rate_limit_exceeded`.
         let code: Code?
 
@@ -56,7 +56,7 @@ extension OpenAIVectorStoreFile {
         let message: String?
     }
 
-    public enum Status: String, Decodable {
+    nonisolated public enum Status: String, Decodable, Sendable {
         case inProgress = "in_progress"
         case completed
         case cancelled
@@ -65,7 +65,7 @@ extension OpenAIVectorStoreFile {
 }
 
 extension OpenAIVectorStoreFile.LastError {
-    public enum Code: String, Decodable {
+    nonisolated public enum Code: String, Decodable, Sendable {
         case serverError = "server_error"
         case rateLimitExceeded = "rate_limit_exceeded"
     }

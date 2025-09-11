@@ -19,7 +19,7 @@ import Foundation
 ///             print("Claude wants to call tool \(toolName) with input \(toolInput)")
 ///         }
 ///     }
-public struct AnthropicAsyncChunks: AsyncSequence {
+nonisolated public struct AnthropicAsyncChunks: AsyncSequence, Sendable {
     public typealias Element = AnthropicMessageStreamingChunk
     private let asyncLines: AsyncLineSequence<URLSession.AsyncBytes>
 
@@ -27,7 +27,7 @@ public struct AnthropicAsyncChunks: AsyncSequence {
         self.asyncLines = asyncLines
     }
 
-    public struct AsyncIterator: AsyncIteratorProtocol {
+    nonisolated public struct AsyncIterator: AsyncIteratorProtocol {
         var asyncBytesIterator: AsyncLineSequence<URLSession.AsyncBytes>.AsyncIterator
 
         /// This buffers up any tool calls that are part of the streaming response before

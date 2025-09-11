@@ -8,7 +8,7 @@ import Foundation
 
 // The models below are derived from this reference:
 // https://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1sd3/post
-public struct StabilityAIStableDiffusionRequestBody: MultipartFormEncodable {
+nonisolated public struct StabilityAIStableDiffusionRequestBody: MultipartFormEncodable {
 
     // MARK: Required
 
@@ -111,17 +111,17 @@ public struct StabilityAIStableDiffusionRequestBody: MultipartFormEncodable {
     }
 }
 
-public enum StabilityAIStableDiffusionOutputFormat: String {
+nonisolated public enum StabilityAIStableDiffusionOutputFormat: String, Sendable {
     case jpeg
     case png
 }
 
-public enum StabilityAIGenerationMode: String {
+nonisolated public enum StabilityAIGenerationMode: String, Sendable {
     case textToImage = "text-to-image"
     case imageToImage = "image-to-image"
 }
 
-public enum StabilityAIStableDiffusionModel: String {
+nonisolated public enum StabilityAIStableDiffusionModel: String, Sendable {
     case sd3Medium = "sd3-medium"
     case sd3Large = "sd3-large"
     case sd3LargeTurbo = "sd3-large-turbo"

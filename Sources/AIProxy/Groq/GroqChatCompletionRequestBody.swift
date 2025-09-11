@@ -10,7 +10,7 @@ import Foundation
 
 /// Docstrings are from:
 /// https://console.groq.com/docs/api-reference#chat-create
-public struct GroqChatCompletionRequestBody: Encodable {
+nonisolated public struct GroqChatCompletionRequestBody: Encodable {
 
     // Required
 
@@ -160,7 +160,7 @@ public struct GroqChatCompletionRequestBody: Encodable {
 
 // MARK: - RequestBody.Message
 extension GroqChatCompletionRequestBody {
-    public enum Message: Encodable {
+    nonisolated public enum Message: Encodable, Sendable {
         /// Assistant message
         /// - Parameters:
         ///   - content: The contents of the assistant message
@@ -218,7 +218,7 @@ extension GroqChatCompletionRequestBody {
 extension GroqChatCompletionRequestBody.Message {
     /// User messages can consist of a single string or an array of parts, each part can contain a
     /// string or image
-    public enum UserContent: Encodable {
+    nonisolated public enum UserContent: Encodable, Sendable {
         /// The text contents of the message.
         case text(String)
 
@@ -240,7 +240,7 @@ extension GroqChatCompletionRequestBody.Message {
 
 // MARK: - RequestBody.Message.UserContent.ContentPart
 extension GroqChatCompletionRequestBody.Message.UserContent {
-    public enum ContentPart: Encodable {
+    nonisolated public enum ContentPart: Encodable, Sendable {
         /// The text content.
         case text(String)
 
@@ -279,7 +279,7 @@ extension GroqChatCompletionRequestBody.Message.UserContent {
 
 // MARK: - RequestBody.Message.UserContent.ContentPart.ImageDetail
 extension GroqChatCompletionRequestBody.Message.UserContent.ContentPart {
-    public enum ImageDetail: String, Encodable {
+    nonisolated public enum ImageDetail: String, Encodable, Sendable {
         case auto
         case low
         case high
@@ -292,7 +292,7 @@ extension GroqChatCompletionRequestBody {
     /// An object specifying the format that the model must output.
     /// Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the message the model generates is valid JSON.
     /// Important: when using JSON mode, you must also instruct the model to produce JSON yourself via a system or user message.
-    public enum ResponseFormat: Encodable {
+    nonisolated public enum ResponseFormat: Encodable, Sendable {
 
         /// Enables JSON mode, which ensures the message the model generates is valid JSON.
         /// Important: when using JSON mode, you must also instruct the model to produce JSON yourself via a

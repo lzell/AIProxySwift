@@ -34,7 +34,7 @@ import Foundation
 /// fields of the request body).
 ///
 /// For several examples of its use, with both Encodable and Decodable examples, see AIProxyJSONValueTests.swift
-public enum AIProxyJSONValue: Codable {
+nonisolated public enum AIProxyJSONValue: Codable, Sendable {
     case null(NSNull)
     case bool(Bool)
     case int(Int)
@@ -90,7 +90,7 @@ public enum AIProxyJSONValue: Codable {
 }
 
 extension [String: AIProxyJSONValue] {
-    public var untypedDictionary: [String: Any] {
+    nonisolated public var untypedDictionary: [String: any Sendable] {
         return convertToUntypedDictionary(self)
     }
 }
@@ -145,7 +145,7 @@ extension AIProxyJSONValue: ExpressibleByDictionaryLiteral {
   }
 }
 
-private func convertToUntyped(_ input: AIProxyJSONValue) -> Any {
+nonisolated private func convertToUntyped(_ input: AIProxyJSONValue) -> any Sendable {
     switch input {
     case .null:
         return NSNull()
@@ -164,9 +164,9 @@ private func convertToUntyped(_ input: AIProxyJSONValue) -> Any {
     }
 }
 
-private func convertToUntypedDictionary(
+nonisolated private func convertToUntypedDictionary(
     _ input: [String: AIProxyJSONValue]
-) -> [String: Any] {
+) -> [String: any Sendable] {
     return input.mapValues { v in
         switch v {
         case .null:

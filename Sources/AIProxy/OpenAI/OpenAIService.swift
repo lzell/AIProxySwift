@@ -7,14 +7,14 @@
 
 import Foundation
 
-open class OpenAIService {
+@AIProxyActor public class OpenAIService: Sendable {
     private let requestFormat: OpenAIRequestFormat
     private let requestBuilder: OpenAIRequestBuilder
     private let serviceNetworker: ServiceMixin
 
     /// This designated initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.openAIService` or `AIProxy.directOpenAIService` defined in AIProxy.swift.
-    init(
+    nonisolated init(
         requestFormat: OpenAIRequestFormat,
         requestBuilder: OpenAIRequestBuilder,
         serviceNetworker: ServiceMixin
@@ -136,7 +136,7 @@ open class OpenAIService {
         body: OpenAICreateTranscriptionRequestBody,
         secondsToWait: UInt,
         additionalHeaders: [String: String] = [:],
-        progressCallback: ((Double) -> Void)? = nil
+        progressCallback: (@Sendable (Double) -> Void)? = nil
     ) async throws -> OpenAICreateTranscriptionResponseBody {
         let request = try await self.requestBuilder.multipartPOST(
             path: self.resolvedPath("audio/transcriptions"),
@@ -251,7 +251,7 @@ open class OpenAIService {
         configuration: OpenAIRealtimeSessionConfiguration,
         logLevel: AIProxyLogLevel
     ) async throws -> OpenAIRealtimeSession {
-        aiproxyCallerDesiredLogLevel = logLevel
+        AIProxyLogLevel.callerDesiredLogLevel = logLevel
         let request = try await self.requestBuilder.plainGET(
             path: "/v1/realtime?model=\(model)",
             secondsToWait: 60,
@@ -259,7 +259,7 @@ open class OpenAIService {
                 "openai-beta": "realtime=v1"
             ]
         )
-        return await OpenAIRealtimeSession(
+        return OpenAIRealtimeSession(
             webSocketTask: self.serviceNetworker.urlSession.webSocketTask(with: request),
             sessionConfiguration: configuration
         )
@@ -445,7 +445,7 @@ extension OpenAIService {
     public func createTranscriptionRequest(
         body: OpenAICreateTranscriptionRequestBody,
         additionalHeaders: [String: String] = [:],
-        progressCallback: ((Double) -> Void)? = nil
+        progressCallback: (@Sendable (Double) -> Void)? = nil
     ) async throws -> OpenAICreateTranscriptionResponseBody {
         return try await self.createTranscriptionRequest(body: body, secondsToWait: 60, additionalHeaders: additionalHeaders, progressCallback: progressCallback)
     }

@@ -15,7 +15,7 @@
 /// References:
 /// - https://openai.com/blog/new-embedding-models-and-api-updates
 /// - https://platform.openai.com/docs/api-reference/embeddings/create
-public struct OpenAIEmbeddingRequestBody: Encodable {
+nonisolated public struct OpenAIEmbeddingRequestBody: Encodable {
 
     /// Input text to embed, encoded as a string or array of tokens. To embed multiple inputs
     /// in a single request, pass an array of strings or array of token arrays. The input must
@@ -85,7 +85,7 @@ public struct OpenAIEmbeddingRequestBody: Encodable {
 
 // MARK: -
 extension OpenAIEmbeddingRequestBody {
-    public enum EmbeddingInput: Encodable {
+    nonisolated public enum EmbeddingInput: Encodable, Sendable {
         case text(String)
         case textArray([String])
         case intArray([Int])
@@ -106,7 +106,7 @@ extension OpenAIEmbeddingRequestBody {
 
 // MARK: -
 extension OpenAIEmbeddingRequestBody {
-    public enum EncodingFormat: String, Encodable {
+    nonisolated public enum EncodingFormat: String, Encodable, Sendable {
         case float
         case base64
     }

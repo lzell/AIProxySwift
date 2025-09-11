@@ -7,13 +7,13 @@
 
 import Foundation
 
-open class ElevenLabsDirectService: ElevenLabsService, DirectService {
+@AIProxyActor final class ElevenLabsDirectService: ElevenLabsService, DirectService, Sendable {
 
     private let unprotectedAPIKey: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.elevenLabsDirectService` defined in AIProxy.swift
-    internal init(unprotectedAPIKey: String) {
+    nonisolated init(unprotectedAPIKey: String) {
         self.unprotectedAPIKey = unprotectedAPIKey
     }
 

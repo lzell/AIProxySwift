@@ -8,14 +8,14 @@ import Foundation
 
 private let kTimeoutBufferForSyncAPIInSeconds: UInt = 5
 
-open class ReplicateProxiedService: ReplicateService, ProxiedService {
+@AIProxyActor final class ReplicateProxiedService: ReplicateService, ProxiedService, Sendable {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.replicateService` defined in AIProxy.swift
-    internal init(partialKey: String, serviceURL: String, clientID: String?) {
+    nonisolated init(partialKey: String, serviceURL: String, clientID: String?) {
         self.partialKey = partialKey
         self.serviceURL = serviceURL
         self.clientID = clientID
@@ -51,7 +51,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
     ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
     ///
     /// - Returns: The prediction response body
-    public func createSynchronousPredictionUsingOfficialModel<Input: Encodable, Output: Decodable>(
+    public func createSynchronousPredictionUsingOfficialModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         modelOwner: String,
         modelName: String,
         input: Input,
@@ -99,7 +99,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
     ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
     ///
     /// - Returns: The prediction response body
-    public func createSynchronousPredictionUsingCommunityModel<Input: Encodable, Output: Decodable>(
+    public func createSynchronousPredictionUsingCommunityModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         modelVersion: String,
         input: Input,
         secondsToWait: UInt
@@ -145,7 +145,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
     ///
     /// - Returns: A prediction object specialized by the `Output`, e.g. `ReplicateFluxSchnellOutputSchema`.
     ///            The prediction object contains a `url` that can be queried using `getPrediction` or `pollForPredictionCompletion`.
-    public func createPredictionUsingOfficialModel<Input: Encodable, Output: Decodable>(
+    public func createPredictionUsingOfficialModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         modelOwner: String,
         modelName: String,
         input: Input
@@ -184,7 +184,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
     ///
     /// - Returns: A prediction object specialized by the `Output`, e.g. `ReplicateSDXLOutputSchema`.
     ///            The prediction object contains a `url` that can be queried using `getPrediction` or `pollForPredictionCompletion`.
-    public func createPredictionUsingCommunityModel<Input: Encodable, Output: Decodable>(
+    public func createPredictionUsingCommunityModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         version: String,
         input: Input
     ) async throws -> ReplicatePrediction<Output> {
@@ -216,7 +216,7 @@ open class ReplicateProxiedService: ReplicateService, ProxiedService {
     ///   - url: The prediction URL returned as part of a `createPrediction` request
     ///
     /// - Returns: The prediction response body specialized by `Output`, which must be a decodable that matches the output schema of this model
-    public func getPrediction<Output: Decodable>(
+    public func getPrediction<Output: Decodable & Sendable>(
         url: URL
     ) async throws -> ReplicatePrediction<Output> {
         guard url.host == "api.replicate.com" else {

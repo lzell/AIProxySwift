@@ -7,14 +7,14 @@
 
 import Foundation
 
-open class MistralProxiedService: MistralService, ProxiedService {
+@AIProxyActor final class MistralProxiedService: MistralService, ProxiedService, Sendable {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.mistralService` defined in AIProxy.swift
-    internal init(
+    nonisolated init(
         partialKey: String,
         serviceURL: String,
         clientID: String?

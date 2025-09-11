@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from https://platform.openai.com/docs/api-reference/moderations/create
-public struct OpenAIModerationRequestBody: Encodable {
+nonisolated public struct OpenAIModerationRequestBody: Encodable {
     /// An array of multi-modal inputs to classify.
     public let input: [ModerationInput]
 
@@ -30,7 +30,7 @@ public struct OpenAIModerationRequestBody: Encodable {
 // MARK: -
 extension OpenAIModerationRequestBody {
     /// Represents a single multi-modal input, which can be either text or an image.
-    public enum ModerationInput: Encodable {
+    nonisolated public enum ModerationInput: Encodable, Sendable {
         /// The input text to classify
         case text(String)
 

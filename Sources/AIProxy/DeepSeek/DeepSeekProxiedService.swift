@@ -7,14 +7,14 @@
 
 import Foundation
 
-open class DeepSeekProxiedService: DeepSeekService, ProxiedService {
+@AIProxyActor final class DeepSeekProxiedService: DeepSeekService, ProxiedService, Sendable {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.deepSeekService` defined in AIProxy.swift
-    internal init(
+    nonisolated init(
         partialKey: String,
         serviceURL: String,
         clientID: String?

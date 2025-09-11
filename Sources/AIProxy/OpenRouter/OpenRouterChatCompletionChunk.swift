@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 12/30/24.
 //
 
-public struct OpenRouterChatCompletionChunk: Decodable {
+nonisolated public struct OpenRouterChatCompletionChunk: Decodable, Sendable {
     /// A list of chat completion choices. Can contain more than one elements if
     /// OpenRouterChatCompletionRequestBody's `n` property is greater than 1. Can also be empty for
     /// the last chunk, which contains usage information only.
@@ -31,7 +31,7 @@ public struct OpenRouterChatCompletionChunk: Decodable {
 
 // MARK: Chunk.Choice
 extension OpenRouterChatCompletionChunk {
-    public struct Choice: Decodable {
+    nonisolated public struct Choice: Decodable, Sendable {
         public let delta: Delta
         public let finishReason: String?
 
@@ -49,7 +49,7 @@ extension OpenRouterChatCompletionChunk {
 
 // MARK: Chunk.Choice.Delta
 extension OpenRouterChatCompletionChunk.Choice {
-    public struct Delta: Codable {
+    nonisolated public struct Delta: Codable, Sendable {
         public let role: String
 
         /// Output content. For reasoning models, these chunks arrive after `reasoning` has finished.
@@ -82,7 +82,7 @@ extension OpenRouterChatCompletionChunk.Choice {
 }
 
 extension OpenRouterChatCompletionChunk.Choice.Delta {
-    public struct ToolCall: Codable {
+    nonisolated public struct ToolCall: Codable, Sendable {
         public let index: Int?
         /// The function that the model instructs us to call
         public let function: Function?
@@ -90,7 +90,7 @@ extension OpenRouterChatCompletionChunk.Choice.Delta {
 }
 
 extension OpenRouterChatCompletionChunk.Choice.Delta.ToolCall {
-    public struct Function: Codable {
+    nonisolated public struct Function: Codable, Sendable {
         /// The name of the function to call.
         public let name: String?
 

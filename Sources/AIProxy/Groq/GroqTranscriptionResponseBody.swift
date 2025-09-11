@@ -15,7 +15,7 @@ import Foundation
 ///
 /// If you would like all properties to be populated, make sure to set the response format to `verbose_json` when you
 /// create the request body. See the docstring on `GroqTranscriptionRequestBody` for details.
-public struct GroqTranscriptionResponseBody: Decodable {
+nonisolated public struct GroqTranscriptionResponseBody: Decodable, Sendable {
     /// The duration of the input audio.
     public let duration: Double?
 
@@ -35,7 +35,7 @@ public struct GroqTranscriptionResponseBody: Decodable {
 // MARK: - ResponseBody.Word
 extension GroqTranscriptionResponseBody {
     /// See https://platform.openai.com/docs/api-reference/audio/verbose-json-object#audio/verbose-json-object-words
-    public struct Word: Decodable {
+    nonisolated public struct Word: Decodable, Sendable {
         /// End time of the word in seconds.
         public let end: Double?
 
@@ -51,7 +51,7 @@ extension GroqTranscriptionResponseBody {
 extension GroqTranscriptionResponseBody {
 
     /// See https://platform.openai.com/docs/api-reference/audio/verbose-json-object#audio/verbose-json-object-segments
-    public struct Segment: Decodable {
+    nonisolated public struct Segment: Decodable, Sendable {
 
         /// Average logprob of the segment. If the value is lower than -1, consider the
         /// logprobs failed.

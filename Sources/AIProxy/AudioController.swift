@@ -29,8 +29,7 @@ import AVFoundation
 ///     | watchOS  | No            | AudioEngine      |
 ///     +----------+---------------+------------------+
 ///
-@RealtimeActor
-open class AudioController {
+@AIProxyActor public final class AudioController {
     public enum Mode {
         case record
         case playback
@@ -40,7 +39,6 @@ open class AudioController {
     private var microphonePCMSampleVendor: MicrophonePCMSampleVendor? = nil
     private var audioPCMPlayer: AudioPCMPlayer? = nil
 
-    @RealtimeActor
     public init(modes: [Mode]) async throws {
         self.modes = modes
         #if os(iOS)

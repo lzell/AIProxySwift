@@ -9,7 +9,7 @@ import Foundation
 
 /// All docstrings on this model are from:
 /// https://developers.deepl.com/docs/api-reference/translate/openapi-spec-for-text-translation
-public struct DeepLTranslateResponseBody: Decodable {
+nonisolated public struct DeepLTranslateResponseBody: Decodable, Sendable {
     public let translations: [DeepLTranslation]
     
     public init(translations: [DeepLTranslation]) {
@@ -17,7 +17,7 @@ public struct DeepLTranslateResponseBody: Decodable {
     }
 }
 
-public struct DeepLTranslation: Decodable {
+nonisolated public struct DeepLTranslation: Decodable, Sendable {
     /// The language detected in the source text. It reflects the value of the `source_lang` parameter, when specified.
     /// Example: "EN"
     public let detectedSourceLanguage: String

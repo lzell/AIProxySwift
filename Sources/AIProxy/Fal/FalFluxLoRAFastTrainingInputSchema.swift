@@ -9,7 +9,7 @@ import Foundation
 
 
 /// Docstrings taken from: https://fal.ai/models/fal-ai/flux-lora-fast-training/api#schema-input
-public struct FalFluxLoRAFastTrainingInputSchema: Encodable {
+nonisolated public struct FalFluxLoRAFastTrainingInputSchema: Encodable, Sendable {
 
     // Required
 

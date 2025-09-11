@@ -6,7 +6,7 @@
 //
 import Foundation
 
-public protocol DeepLService {
+@AIProxyActor public protocol DeepLService: Sendable {
 
     /// Initiates a request to /v2/translate
     ///

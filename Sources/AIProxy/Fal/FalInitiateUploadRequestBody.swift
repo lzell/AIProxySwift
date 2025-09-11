@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct FalInitiateUploadRequestBody: Encodable {
+nonisolated struct FalInitiateUploadRequestBody: Encodable {
     let contentType: String
     let fileName: String
 

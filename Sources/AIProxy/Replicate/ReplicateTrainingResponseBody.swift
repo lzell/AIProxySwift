@@ -8,7 +8,7 @@
 import Foundation
 
 extension ReplicateTrainingResponseBody {
-    public struct Metrics: Decodable {
+    nonisolated public struct Metrics: Decodable, Sendable {
         let predictTime: Double?
 
         private enum CodingKeys: String, CodingKey {
@@ -18,7 +18,7 @@ extension ReplicateTrainingResponseBody {
 }
 
 extension ReplicateTrainingResponseBody {
-    public struct TrainingOutput: Decodable {
+    nonisolated public struct TrainingOutput: Decodable, Sendable {
         public let version: String?
         public let weights: String?
     }
@@ -29,7 +29,7 @@ extension ReplicateTrainingResponseBody {
 /// This format is used for both the "create a training" and "get a training" endpoints:
 ///     https://replicate.com/docs/reference/http#get-a-training
 ///     https://replicate.com/docs/reference/http#create-a-training
-public struct ReplicateTrainingResponseBody: Decodable {
+nonisolated public struct ReplicateTrainingResponseBody: Decodable, Sendable {
 
     /// ISO8601 date stamp of when the training completed
     public let completedAt: String?
@@ -82,14 +82,14 @@ public struct ReplicateTrainingResponseBody: Decodable {
 
 
 extension ReplicateTrainingResponseBody {
-    public struct ActionURLs: Decodable {
+    nonisolated public struct ActionURLs: Decodable, Sendable {
         public let cancel: URL?
         public let get: URL?
     }
 }
 
 extension ReplicateTrainingResponseBody {
-    public enum Status: String, Decodable {
+    nonisolated public enum Status: String, Decodable, Sendable {
         case starting
         case processing
         case succeeded

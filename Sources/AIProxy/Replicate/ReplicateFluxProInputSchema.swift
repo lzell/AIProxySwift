@@ -8,7 +8,7 @@ import Foundation
 
 /// Input schema for use with requests to Black Forest Lab's Pro model:
 /// https://replicate.com/black-forest-labs/flux-pro/api/schema#input-schema
-public struct ReplicateFluxProInputSchema: Encodable {
+nonisolated public struct ReplicateFluxProInputSchema: Encodable, Sendable {
 
     /// Text prompt for image generation.
     public let prompt: String
@@ -99,7 +99,7 @@ public struct ReplicateFluxProInputSchema: Encodable {
 }
 
 extension ReplicateFluxProInputSchema {
-    public enum OutputFormat: String, Encodable {
+    nonisolated public enum OutputFormat: String, Encodable, Sendable {
         case jpg
         case png
         case webp

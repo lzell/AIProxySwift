@@ -9,7 +9,7 @@ import Foundation
 
 /// Creates an edited or extended image given one or more source images and a prompt.
 /// https://platform.openai.com/docs/api-reference/images/createEdit
-public struct OpenAICreateImageEditRequestBody: MultipartFormEncodable {
+nonisolated public struct OpenAICreateImageEditRequestBody: MultipartFormEncodable {
 
     /// The images to edit. Must be a supported image file or an array of images.
     /// For gpt-image-1, each image should be a png, webp, or jpg file less than 25MB.
@@ -141,18 +141,18 @@ public struct OpenAICreateImageEditRequestBody: MultipartFormEncodable {
 
 extension OpenAICreateImageEditRequestBody {
 
-    public enum Background: String {
+    nonisolated public enum Background: String, Sendable {
         case auto
         case opaque
         case transparent
     }
 
-    public enum InputFidelity: String {
+    nonisolated public enum InputFidelity: String, Sendable {
         case low
         case high
     }
 
-    public enum InputImage {
+    nonisolated public enum InputImage: Sendable {
         case png(Data)
         case jpeg(Data)
 
@@ -173,18 +173,18 @@ extension OpenAICreateImageEditRequestBody {
         }
     }
 
-    public enum Model: String, Encodable {
+    nonisolated public enum Model: String, Encodable, Sendable {
         case dallE2 = "dall-e-2"
         case gptImage1 = "gpt-image-1"
     }
 
-    public enum OutputFormat: String {
+    nonisolated public enum OutputFormat: String, Sendable {
         case jpeg
         case png
         case webp
     }
 
-    public enum Quality: String, Encodable {
+    nonisolated public enum Quality: String, Encodable, Sendable {
         case auto
 
         /// Supported for gpt-image-1
@@ -194,7 +194,7 @@ extension OpenAICreateImageEditRequestBody {
         case standard
     }
 
-    public enum ResponseFormat: String, Encodable {
+    nonisolated public enum ResponseFormat: String, Encodable, Sendable {
         case b64JSON = "b64_json"
         case url
     }
