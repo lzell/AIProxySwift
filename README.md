@@ -1249,7 +1249,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
 ```
 
 
-### How use realtime audio with OpenAI 
+### How to use realtime audio with OpenAI
 
 Use this example to have a conversation with OpenAI's realtime models.
 
