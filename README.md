@@ -962,8 +962,52 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     }
 ```
 
+### How to transcribe audio with OpenAI
+1. Record an audio file in quicktime and save it as "helloworld.m4a"
+2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
+3. Run this snippet:
 
-### How to get Whisper word-level timestamps in an audio transcription
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a"),
+          let fileContents = try? Data(contentsOf: url)
+    else {
+        print("Could not read file contents of helloworld.m4a")
+        return
+    }
+
+    do {
+        let requestBody = OpenAICreateTranscriptionRequestBody(
+            file: fileContents,
+            model: "gpt-4o-mini-transcribe",
+            responseFormat: "text"
+        )
+        let response = try await openAIService.createTranscriptionRequest(
+            body: requestBody,
+            secondsToWait: 120
+        )
+        print(response.text)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not transcribe audio with OpenAI: \(error.localizedDescription)")
+    }
+```
+
+
+### How to get Whisper word-level timestamps in an audio transcription with OpenAI
 
 1. Record an audio file in quicktime and save it as "helloworld.m4a"
 2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
@@ -983,10 +1027,16 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
+    guard let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a"),
+          let fileContents = try? Data(contentsOf: url)
+    else {
+        print("Could not read file contents of helloworld.m4a")
+        return
+    }
+
     do {
-        let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a")!
         let requestBody = OpenAICreateTranscriptionRequestBody(
-            file: try Data(contentsOf: url),
+            file: fileContents,
             model: "whisper-1",
             responseFormat: "verbose_json",
             timestampGranularities: [.word, .segment]
