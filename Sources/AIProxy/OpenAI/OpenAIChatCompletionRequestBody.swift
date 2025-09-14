@@ -470,6 +470,13 @@ extension OpenAIChatCompletionRequestBody {
             schema: [String: AIProxyJSONValue]? = nil,
             strict: Bool? = nil
         )
+        
+        case encodableJSONSchema(
+            name: String,
+            description: String? = nil,
+            schema: Encodable,
+            strict: Bool? = nil
+        )
 
         /// Instructs the model to produce text only.
         case text
@@ -492,6 +499,21 @@ extension OpenAIChatCompletionRequestBody {
             case .jsonObject:
                 try container.encode("json_object", forKey: .type)
             case .jsonSchema(
+                name: let name,
+                description: let description,
+                schema: let schema,
+                strict: let strict
+            ):
+                try container.encode("json_schema", forKey: .type)
+                var nestedContainer = container.nestedContainer(
+                    keyedBy: SchemaKey.self,
+                    forKey: .jsonSchema
+                )
+                try nestedContainer.encode(name, forKey: .name)
+                try nestedContainer.encodeIfPresent(description, forKey: .description)
+                try nestedContainer.encodeIfPresent(schema, forKey: .schema)
+                try nestedContainer.encodeIfPresent(strict, forKey: .strict)
+            case .encodableJSONSchema(
                 name: let name,
                 description: let description,
                 schema: let schema,
