@@ -19,8 +19,10 @@ final class OpenAIEditImageRequestTests: XCTestCase {
         let requestBody = OpenAICreateImageEditRequestBody(
             images: [.jpeg(jpegData)],
             prompt: "Change the boat mast to red",
+            background: .transparent,
             inputFidelity: .high,
-            model: .gptImage1
+            model: .gptImage1,
+            outputFormat: .png
         )
         var expectedEncoding = Data()
 
@@ -42,6 +44,10 @@ final class OpenAIEditImageRequestTests: XCTestCase {
 
         Change the boat mast to red
         --\(boundary)
+        Content-Disposition: form-data; name="background"
+
+        transparent
+        --\(boundary)
         Content-Disposition: form-data; name="input_fidelity"
 
         high
@@ -49,6 +55,10 @@ final class OpenAIEditImageRequestTests: XCTestCase {
         Content-Disposition: form-data; name="model"
 
         gpt-image-1
+        --\(boundary)
+        Content-Disposition: form-data; name="output_format"
+
+        png
         --\(boundary)--
         """.replacingOccurrences(of: "\n", with: crlf)
         expectedEncoding.append(Data(remainingArguments.utf8))
