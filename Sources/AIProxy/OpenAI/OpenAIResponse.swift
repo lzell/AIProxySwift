@@ -339,6 +339,18 @@ extension OpenAIResponse {
         public var type = "web_search_call"
         public let id: String
         public let status: String
+        public let action: WebSearchAction?
+
+        public struct WebSearchAction: Decodable {
+            public let type: String
+            public let query: String?
+            public let sources: [WebSearchSource]?
+        }
+
+        public struct WebSearchSource: Decodable {
+            public let type: String
+            public let url: String
+        }
     }
 
     // MARK: - File Search Call

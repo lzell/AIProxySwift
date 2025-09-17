@@ -19,6 +19,9 @@ public struct OpenAICreateResponseRequestBody: Encodable {
     /// Text, image, or file inputs to the model, used to generate a response.
     public let input: OpenAIResponse.Input?
 
+    /// Specify additional output data to include in the model response.
+    public let include: [Include]?
+
     /// Model ID used to generate the response, like gpt-4o or o1.
     /// OpenAI offers a wide range of models with different capabilities, performance characteristics, and price points.
     /// Refer to the model guide to browse and compare available models: https://platform.openai.com/docs/models
@@ -81,6 +84,7 @@ public struct OpenAICreateResponseRequestBody: Encodable {
 
     private enum CodingKeys: String, CodingKey {
         case input
+        case include
         case model
         case tools
         case toolChoice = "tool_choice"
@@ -102,6 +106,7 @@ public struct OpenAICreateResponseRequestBody: Encodable {
     // To format, place the cursor in the initializer's parameter list and use `ctrl-m`
     public init(
         input: OpenAIResponse.Input? = nil,
+        include: [Include]? = nil,
         model: String? = nil,
         parallelToolCalls: Bool? = nil,
         previousResponseId: String? = nil,
@@ -118,6 +123,7 @@ public struct OpenAICreateResponseRequestBody: Encodable {
         user: String? = nil
     ) {
         self.input = input
+        self.include = include
         self.model = model
         self.parallelToolCalls = parallelToolCalls
         self.previousResponseId = previousResponseId
@@ -139,6 +145,30 @@ public struct OpenAICreateResponseRequestBody: Encodable {
 }
 
 extension OpenAICreateResponseRequestBody {
+
+    /// Specify additional output data to include in the model response.
+    public enum Include: String, Codable {
+        /// Include the outputs of python code execution in code interpreter tool call items.
+        case codeInterpreterCallOutputs = "code_interpreter_call.outputs"
+        
+        /// Include image urls from the computer call output.
+        case computerCallOutputImageUrl = "computer_call_output.output.image_url"
+        
+        /// Include the search results of the file search tool call.
+        case fileSearchCallResults = "file_search_call.results"
+        
+        /// Include image urls from the input message.
+        case messageInputImageImageUrl = "message.input_image.image_url"
+        
+        /// Include logprobs with assistant messages.
+        case messageOutputTextLogprobs = "message.output_text.logprobs"
+        
+        /// Includes an encrypted version of reasoning tokens in reasoning item outputs.
+        case reasoningEncryptedContent = "reasoning.encrypted_content"
+        
+        /// Include the sources of the web search tool call.
+        case webSearchCallActionSources = "web_search_call.action.sources"
+    }
 
     /// The truncation strategy to use for the model response.
     public enum Truncation: String, Encodable {
@@ -205,6 +235,11 @@ extension OpenAICreateResponseRequestBody {
         /// https://platform.openai.com/docs/guides/tools-web-search?api-mode=responses
         case webSearch(WebSearchTool)
 
+        /// Allow models to search the web for the latest information before generating a response (preview version).
+        /// https://platform.openai.com/docs/guides/tools-web-search?api-mode=responses
+        @available(*, deprecated, message: "Use webSearch if using a modern GTP model. webSearchPreview will be removed in a future version.")
+        case webSearchPreview(WebSearchPreviewTool)
+
         private enum CodingKeys: String, CodingKey {
             case description
             case displayHeight = "display_height"
@@ -234,6 +269,11 @@ extension OpenAICreateResponseRequestBody {
                 try container.encodeIfPresent(tool.rankingOptions, forKey: .rankingOptions)
 
             case .webSearch(let tool):
+                try container.encode("web_search", forKey: .type)
+                try container.encodeIfPresent(tool.searchContextSize, forKey: .searchContextSize)
+                try container.encodeIfPresent(tool.userLocation, forKey: .userLocation)
+
+            case .webSearchPreview(let tool):
                 try container.encode("web_search_preview", forKey: .type)
                 try container.encodeIfPresent(tool.searchContextSize, forKey: .searchContextSize)
                 try container.encodeIfPresent(tool.userLocation, forKey: .userLocation)
@@ -265,10 +305,15 @@ extension OpenAICreateResponseRequestBody {
                 let rankingOptions = try container.decodeIfPresent(FileSearchTool.RankingOptions.self, forKey: .rankingOptions)
                 self = .fileSearch(FileSearchTool(vectorStoreIDs: vectorStoreIDs, filters: filters, maxNumResults: maxNumResults, rankingOptions: rankingOptions))
 
-            case "web_search_preview":
+            case "web_search":
                 let searchContextSize = try container.decodeIfPresent(WebSearchTool.SearchContextSize.self, forKey: .searchContextSize)
                 let userLocation = try container.decodeIfPresent(WebSearchTool.UserLocation.self, forKey: .userLocation)
                 self = .webSearch(WebSearchTool(searchContextSize: searchContextSize, userLocation: userLocation))
+
+            case "web_search_preview":
+                let searchContextSize = try container.decodeIfPresent(WebSearchTool.SearchContextSize.self, forKey: .searchContextSize)
+                let userLocation = try container.decodeIfPresent(WebSearchTool.UserLocation.self, forKey: .userLocation)
+                self = .webSearchPreview(WebSearchTool(searchContextSize: searchContextSize, userLocation: userLocation))
 
             case "computer_use_preview":
                 let displayWidth = try container.decode(Int.self, forKey: .displayWidth)
@@ -421,7 +466,7 @@ extension OpenAICreateResponseRequestBody {
             case userLocation = "user_location"
         }
 
-        public let type = "web_search_preview"
+        public let type = "web_search"
         public let searchContextSize: SearchContextSize?
         public let userLocation: UserLocation?
 
@@ -459,6 +504,10 @@ extension OpenAICreateResponseRequestBody {
             }
         }
     }
+
+    // MARK: - Web Search Tool (Preview)
+    @available(*, deprecated, message: "Use WebSearchTool instead. WebSearchPreviewTool will be removed in a future version.")
+    public typealias WebSearchPreviewTool = WebSearchTool
 
     // MARK: - Computer Use Tool
     public struct ComputerUseTool: Codable {
