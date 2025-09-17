@@ -16,11 +16,11 @@ import Foundation
 /// Implementor's note: See ResponseCreateParamsBase in `src/openai/types/responses/response_create_params.py`
 public struct OpenAICreateResponseRequestBody: Encodable {
 
-    /// Text, image, or file inputs to the model, used to generate a response.
-    public let input: OpenAIResponse.Input?
-
     /// Specify additional output data to include in the model response.
     public let include: [Include]?
+
+    /// Text, image, or file inputs to the model, used to generate a response.
+    public let input: OpenAIResponse.Input?
 
     /// Model ID used to generate the response, like gpt-4o or o1.
     /// OpenAI offers a wide range of models with different capabilities, performance characteristics, and price points.
@@ -83,8 +83,8 @@ public struct OpenAICreateResponseRequestBody: Encodable {
     public let user: String?
 
     private enum CodingKeys: String, CodingKey {
-        case input
         case include
+        case input
         case model
         case tools
         case toolChoice = "tool_choice"
@@ -105,8 +105,8 @@ public struct OpenAICreateResponseRequestBody: Encodable {
     // To regenerate, use `cmd-shift-a` > Generate Memberwise Initializer
     // To format, place the cursor in the initializer's parameter list and use `ctrl-m`
     public init(
-        input: OpenAIResponse.Input? = nil,
         include: [Include]? = nil,
+        input: OpenAIResponse.Input? = nil,
         model: String? = nil,
         parallelToolCalls: Bool? = nil,
         previousResponseId: String? = nil,
@@ -122,8 +122,8 @@ public struct OpenAICreateResponseRequestBody: Encodable {
         truncation: OpenAICreateResponseRequestBody.Truncation? = nil,
         user: String? = nil
     ) {
-        self.input = input
         self.include = include
+        self.input = input
         self.model = model
         self.parallelToolCalls = parallelToolCalls
         self.previousResponseId = previousResponseId
@@ -236,8 +236,9 @@ extension OpenAICreateResponseRequestBody {
         case webSearch(WebSearchTool)
 
         /// Allow models to search the web for the latest information before generating a response (preview version).
-        /// https://platform.openai.com/docs/guides/tools-web-search?api-mode=responses
-        @available(*, deprecated, message: "Use webSearch if using a modern GTP model. webSearchPreview will be removed in a future version.")
+        /// https://platform.openai.com/docs/guides/tools-web-search?api-mode=respons
+        /// Not including the deprecated message as it causes a compiler warning in our own decoder conformance on OpenAIResponseTool.
+        // @available(*, deprecated, message: "Use webSearch if using a modern GPT model. webSearchPreview will be removed in a future version.")
         case webSearchPreview(WebSearchPreviewTool)
 
         private enum CodingKeys: String, CodingKey {
@@ -506,7 +507,8 @@ extension OpenAICreateResponseRequestBody {
     }
 
     // MARK: - Web Search Tool (Preview)
-    @available(*, deprecated, message: "Use WebSearchTool instead. WebSearchPreviewTool will be removed in a future version.")
+    // Not including the deprecated message as it causes a compiler warning in our own decoder conformance on OpenAIResponseTool.
+    // @available(*, deprecated, message: "Use WebSearchTool instead. WebSearchPreviewTool will be removed in a future version.")
     public typealias WebSearchPreviewTool = WebSearchTool
 
     // MARK: - Computer Use Tool
