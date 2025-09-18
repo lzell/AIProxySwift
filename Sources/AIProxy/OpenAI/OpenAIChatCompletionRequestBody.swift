@@ -513,7 +513,7 @@ extension OpenAIChatCompletionRequestBody {
                 try nestedContainer.encodeIfPresent(description, forKey: .description)
                 try nestedContainer.encodeIfPresent(schema, forKey: .schema)
                 try nestedContainer.encodeIfPresent(strict, forKey: .strict)
-            case .encodableJSONSchema(
+            case .generableJSONSchema(
                 name: let name,
                 description: let description,
                 schema: let schema,
