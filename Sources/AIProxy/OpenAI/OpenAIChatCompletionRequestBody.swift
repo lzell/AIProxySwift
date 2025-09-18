@@ -463,15 +463,15 @@ extension OpenAIChatCompletionRequestBody {
         ///
         ///   - strict: Whether to enable strict schema adherence when generating the output. If set to true, the
         ///             model will always follow the exact schema defined in the schema field. Only a subset of JSON Schema
-        ///             is supported when strict is true. To learn more, read the Structured Outputs guide.
+        ///             is supported when strict is true. To learn more, read the Structured Outputs guide linked above.
         case jsonSchema(
             name: String,
             description: String? = nil,
             schema: [String: AIProxyJSONValue]? = nil,
             strict: Bool? = nil
         )
-        
-        case encodableJSONSchema(
+
+        case generableJSONSchema(
             name: String,
             description: String? = nil,
             schema: Encodable,
