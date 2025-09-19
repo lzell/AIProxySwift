@@ -8,7 +8,7 @@ import UIKit
 public enum AIProxy {
 
     /// The current sdk version
-    nonisolated public static let sdkVersion = "0.129.0"
+    nonisolated public static let sdkVersion = "0.130.0"
 
     /// Configures the AIProxy SDK. Call this during app launch by adding an `init` to your SwiftUI MyApp.swift file, e.g.
     ///
