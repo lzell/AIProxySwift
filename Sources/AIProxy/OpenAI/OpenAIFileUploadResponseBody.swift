@@ -6,7 +6,7 @@
 //
 
 
-public struct OpenAIFileUploadResponseBody: Decodable {
+nonisolated public struct OpenAIFileUploadResponseBody: Decodable, Sendable {
     /// The size of the file, in bytes.
     public let bytes: Int?
 
@@ -24,7 +24,7 @@ public struct OpenAIFileUploadResponseBody: Decodable {
 
     /// The intended purpose of the file.
     public let purpose: String?
-    
+
     public init(bytes: Int?, createdAt: Int?, expiresAt: Int?, filename: String?, id: String, purpose: String?) {
         self.bytes = bytes
         self.createdAt = createdAt

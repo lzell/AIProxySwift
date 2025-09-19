@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum OpenAIRequestFormat {
+nonisolated public enum OpenAIRequestFormat: Sendable {
     /// Requests are formatted for use with OpenAI
     /// Automatically adds /v1/ prefix to all paths
     case standard

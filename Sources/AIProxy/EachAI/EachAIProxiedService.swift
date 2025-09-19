@@ -7,10 +7,10 @@
 
 import Foundation
 
-open class EachAIProxiedService: EachAIService, ProxiedService {
+@AIProxyActor public final class EachAIProxiedService: EachAIService, ProxiedService, Sendable {
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.eachAIService` defined in AIProxy.swift
-    internal init(
+    nonisolated init(
         partialKey: String,
         serviceURL: String,
         clientID: String?

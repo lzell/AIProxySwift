@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from: https://docs.mistral.ai/api/#tag/ocr/operation/ocr_v1_ocr_post
-public struct MistralOCRRequestBody: Encodable {
+nonisolated public struct MistralOCRRequestBody: Encodable {
     // Required
 
     /// Document to run OCR on
@@ -56,11 +56,11 @@ public struct MistralOCRRequestBody: Encodable {
 }
 
 extension MistralOCRRequestBody {
-    public enum Model: String, Encodable {
+    nonisolated public enum Model: String, Encodable, Sendable {
         case mistralOCRLatest = "mistral-ocr-latest"
     }
 
-    public enum Document: Encodable {
+    nonisolated public enum Document: Encodable, Sendable {
         case imageURLChunk(URL)
 
         private enum RootKey: String, CodingKey {

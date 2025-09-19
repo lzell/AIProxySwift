@@ -1,4 +1,4 @@
-public struct PerplexityChatCompletionRequestBody: Encodable {
+nonisolated public struct PerplexityChatCompletionRequestBody: Encodable, Sendable {
     // Required
 
     /// A list of messages comprising the conversation so far.
@@ -141,7 +141,7 @@ public struct PerplexityChatCompletionRequestBody: Encodable {
 
 // MARK: - RequestBody.Message
 extension PerplexityChatCompletionRequestBody {
-    public enum Message: Encodable {
+    nonisolated public enum Message: Encodable, Sendable {
         case assistant(content: String)
         case system(content: String)
         case user(content: String)
@@ -170,7 +170,7 @@ extension PerplexityChatCompletionRequestBody {
 
 // MARK: - RequestBody.SearchRecencyFilter
 extension PerplexityChatCompletionRequestBody {
-    public enum SearchRecencyFilter: String, Encodable {
+    nonisolated public enum SearchRecencyFilter: String, Encodable, Sendable {
         case hour
         case day
         case week
@@ -180,7 +180,7 @@ extension PerplexityChatCompletionRequestBody {
 
 // MARK: - RequestBody.WebSearchOptions
 extension PerplexityChatCompletionRequestBody {
-    public struct WebSearchOptions: Encodable {
+    nonisolated public struct WebSearchOptions: Encodable, Sendable {
         public let searchContextSize: SearchContextSize
 
         private enum CodingKeys: String, CodingKey {
@@ -192,7 +192,7 @@ extension PerplexityChatCompletionRequestBody {
         }
     }
 
-    public enum SearchContextSize: String, Encodable {
+    nonisolated public enum SearchContextSize: String, Encodable, Sendable {
         case high
         case medium
         case low

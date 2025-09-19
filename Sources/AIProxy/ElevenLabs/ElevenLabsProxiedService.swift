@@ -7,14 +7,14 @@
 
 import Foundation
 
-open class ElevenLabsProxiedService: ElevenLabsService, ProxiedService {
+@AIProxyActor final class ElevenLabsProxiedService: ElevenLabsService, ProxiedService, Sendable {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.elevenLabsService` defined in AIProxy.swift
-    internal init(partialKey: String, serviceURL: String, clientID: String?) {
+    nonisolated init(partialKey: String, serviceURL: String, clientID: String?) {
         self.partialKey = partialKey
         self.serviceURL = serviceURL
         self.clientID = clientID

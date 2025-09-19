@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://platform.openai.com/docs/api-reference/vector-stores/create
-public struct OpenAICreateVectorStoreRequestBody: Encodable {
+nonisolated public struct OpenAICreateVectorStoreRequestBody: Encodable, Sendable {
     /// The chunking strategy used to chunk the file(s). If not set, will use the `auto` strategy.
     /// Only applicable if `file_ids` is non-empty.
     public let chunkingStrategy: ChunkingStrategy?
@@ -56,7 +56,7 @@ public struct OpenAICreateVectorStoreRequestBody: Encodable {
 
 extension OpenAICreateVectorStoreRequestBody {
     /// Strategy for chunking files when adding them to a vector store.
-    public enum ChunkingStrategy: Encodable {
+    nonisolated public enum ChunkingStrategy: Encodable, Sendable {
         /// The default strategy.
         /// This strategy currently uses a `max_chunk_size_tokens` of 800 and `chunk_overlap_tokens` of 400.
         case auto

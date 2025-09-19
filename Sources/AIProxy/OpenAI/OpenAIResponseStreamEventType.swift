@@ -7,7 +7,7 @@
 
 /// Represents all possible event types in the OpenAI Streaming Responses API
 /// https://platform.openai.com/docs/api-reference/responses/streaming
-public enum OpenAIResponseStreamEventType: String {
+nonisolated public enum OpenAIResponseStreamEventType: String, Sendable {
     // MARK: - Response Lifecycle Events
     case responseCreated = "response.created"
     case responseInProgress = "response.in_progress"

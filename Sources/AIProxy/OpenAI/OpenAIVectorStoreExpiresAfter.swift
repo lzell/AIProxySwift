@@ -6,7 +6,7 @@
 //
 
 /// The expiration policy for a vector store.
-public struct OpenAIVectorStoreExpiresAfter: Codable {
+nonisolated public struct OpenAIVectorStoreExpiresAfter: Codable, Sendable {
     /// Anchor timestamp after which the expiration policy applies
     public let anchor: Anchor
 
@@ -20,7 +20,7 @@ public struct OpenAIVectorStoreExpiresAfter: Codable {
 }
 
 extension OpenAIVectorStoreExpiresAfter {
-    public enum Anchor: String, Codable {
+    nonisolated public enum Anchor: String, Codable, Sendable {
         case lastActiveAt = "last_active_at"
     }
 }

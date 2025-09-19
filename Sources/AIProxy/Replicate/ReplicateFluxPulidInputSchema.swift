@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings are from: https://replicate.com/zsxkib/flux-pulid/api/schema
-public struct ReplicateFluxPulidInputSchema: Encodable {
+nonisolated public struct ReplicateFluxPulidInputSchema: Encodable, Sendable {
     /// Upload an ID image for face generation
     public let mainFaceImage: URL
 

@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct TogetherAIChatCompletionStreamingChunk: Decodable {
+nonisolated public struct TogetherAIChatCompletionStreamingChunk: Decodable, Sendable {
     /// Generated choices
     public let choices: [TogetherAIStreamingChunkChoice]
 
@@ -21,7 +21,7 @@ public struct TogetherAIChatCompletionStreamingChunk: Decodable {
     public let usage: TogetherAIChatUsage?
 }
 
-public struct TogetherAIStreamingChunkChoice: Decodable {
+nonisolated public struct TogetherAIStreamingChunkChoice: Decodable, Sendable {
     /// The text for this generation is within the 'delta' property
     public let delta: TogetherAIStreamingChunkDelta
 
@@ -29,7 +29,7 @@ public struct TogetherAIStreamingChunkChoice: Decodable {
     public let finishReason: TogetherAIFinishReason?
 }
 
-public struct TogetherAIStreamingChunkDelta: Decodable {
+nonisolated public struct TogetherAIStreamingChunkDelta: Decodable, Sendable {
     /// The text of the generation
     public let content: String
 

@@ -9,7 +9,7 @@
 
  /// Docstrings are taken from here:
  /// https://docs.together.ai/reference/chat-completions-1
-public struct TogetherAIChatCompletionRequestBody: Encodable {
+nonisolated public struct TogetherAIChatCompletionRequestBody: Encodable, Sendable {
 
     // MARK: Required
 
@@ -154,7 +154,7 @@ public struct TogetherAIChatCompletionRequestBody: Encodable {
     }
  }
 
-public struct TogetherAIMessage: Codable {
+nonisolated public struct TogetherAIMessage: Codable, Sendable {
     /// The contents of the message.
     public let content: String?
 
@@ -167,14 +167,14 @@ public struct TogetherAIMessage: Codable {
     }
 }
 
- public enum TogetherAIRole: String, Codable {
+nonisolated public enum TogetherAIRole: String, Codable, Sendable {
      case assistant
      case system
      case user
  }
 
 /// Use this type to indicate that you want Together.AI to return JSON
-public enum TogetherAIResponseFormat: Encodable {
+nonisolated public enum TogetherAIResponseFormat: Encodable, Sendable {
     /// An example schema looks like this:
     ///
     ///     let schema: [String: AIProxyJSONValue] = [
@@ -216,7 +216,7 @@ public enum TogetherAIResponseFormat: Encodable {
     }
 }
 
-public struct TogetherAITool: Encodable {
+nonisolated public struct TogetherAITool: Encodable, Sendable {
     public let type = "tool_type"
     public let function: TogetherAIFunction
 
@@ -245,7 +245,7 @@ public struct TogetherAITool: Encodable {
 ///             "required": ["location", "num_days"],
 ///         ]
 ///     )
-public struct TogetherAIFunction: Encodable {
+nonisolated public struct TogetherAIFunction: Encodable, Sendable {
     /// A description of the function
     public let description: String
 

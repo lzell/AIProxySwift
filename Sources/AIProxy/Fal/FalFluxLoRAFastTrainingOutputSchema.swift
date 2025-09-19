@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from https://fal.ai/models/fal-ai/flux-lora-fast-training/api#schema-output
-public struct FalFluxLoRAFastTrainingOutputSchema: Decodable {
+nonisolated public struct FalFluxLoRAFastTrainingOutputSchema: Decodable, Sendable {
 
     /// Remote training configuration file.
     public let configFile: File?
@@ -29,7 +29,7 @@ public struct FalFluxLoRAFastTrainingOutputSchema: Decodable {
 
 // MARK: - OutputSchema.File
 extension FalFluxLoRAFastTrainingOutputSchema {
-    public struct File: Decodable {
+    nonisolated public struct File: Decodable, Sendable {
         /// The mime type of the file.
         public let contentType: String?
 

@@ -5,4 +5,4 @@
 //  Created by Lou Zell on 7/12/25.
 //
 
-struct OpenAIDirectServiceNetworker: DirectService {}
+@AIProxyActor struct OpenAIDirectServiceNetworker: DirectService {}

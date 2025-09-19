@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ReplicateFluxTrainingInput: Encodable {
+nonisolated public struct ReplicateFluxTrainingInput: Encodable, Sendable {
 
     // Required
 

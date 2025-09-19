@@ -7,11 +7,11 @@
 
 #if os(macOS) || os(iOS)
 
-import AVFoundation
+@preconcurrency import AVFoundation
 import AudioToolbox
 import Foundation
 
-private let kVoiceProcessingInputSampleRate: Double = 44100
+nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
 
 /// This is an AudioToolbox-based implementation that vends PCM16 microphone samples at a
 /// sample rate that OpenAI's realtime models expect.
@@ -53,8 +53,7 @@ private let kVoiceProcessingInputSampleRate: Double = 44100
 ///
 /// Apple sample code (Do not use this): https://developer.apple.com/documentation/avfaudio/using-voice-processing
 /// My apple forum question (Do not use this): https://developer.apple.com/forums/thread/771530
-@RealtimeActor
-internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
+@AIProxyActor class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
 
     private var audioUnit: AudioUnit?
     private let microphonePCMSampleVendorCommon = MicrophonePCMSampleVendorCommon()
@@ -331,13 +330,16 @@ internal class MicrophonePCMSampleVendorAT: MicrophonePCMSampleVendor {
 
         if let sampleBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, bufferListNoCopy: &bufferList),
            let accumulatedBuffer = self.microphonePCMSampleVendorCommon.resampleAndAccumulate(sampleBuffer) {
-            self.continuation?.yield(accumulatedBuffer)
+            // If the buffer has accumulated to a sufficient level, give it back to the caller
+            Task { @AIProxyActor in
+                self.continuation?.yield(accumulatedBuffer)
+            }
         }
     }
 }
 
-@RealtimeActor
-private let audioRenderCallback: AURenderCallback = {
+// This @AIProxyActor annotation is a lie.
+@AIProxyActor private let audioRenderCallback: AURenderCallback = {
     inRefCon,
     ioActionFlags,
     inTimeStamp,

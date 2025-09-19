@@ -7,12 +7,12 @@
 
 import Foundation
 
-open class MistralDirectService: MistralService, DirectService {
+@AIProxyActor final class MistralDirectService: MistralService, DirectService, Sendable {
     private let unprotectedAPIKey: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.mistralDirectService` defined in AIProxy.swift
-    internal init(
+    nonisolated init(
         unprotectedAPIKey: String
     ) {
         self.unprotectedAPIKey = unprotectedAPIKey

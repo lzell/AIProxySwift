@@ -5,11 +5,11 @@
 //  Created by Lou Zell on 5/30/25.
 //
 
-import AVFoundation
+@preconcurrency import AVFoundation
 
 // This protocol is used as a mixin.
 // Please see MicrophonePCMSampleVendor.swift for the protocol that defines a user interface.
-internal final class MicrophonePCMSampleVendorCommon {
+nonisolated internal final class MicrophonePCMSampleVendorCommon {
     var bufferAccumulator: AVAudioPCMBuffer?
     var audioConverter: AVAudioConverter?
 
@@ -59,7 +59,7 @@ internal final class MicrophonePCMSampleVendorCommon {
         // The block will keep getting invoked until either the frame capacity is
         // reached or outStatus.pointee is set to `.noDataNow` or `.endStream`.
         var error: NSError?
-        var ptr: UInt32 = 0
+        nonisolated(unsafe) var ptr: UInt32 = 0
         let targetFrameLength = pcm16Buffer.frameLength
         let _ = converter.convert(to: outputBuffer, error: &error) { numberOfFrames, outStatus in
             guard ptr < targetFrameLength,
@@ -110,9 +110,7 @@ internal final class MicrophonePCMSampleVendorCommon {
     }
 }
 
-
-
-private func advancedPCMBuffer_noCopy(_ originalBuffer: AVAudioPCMBuffer, offset: UInt32) -> AVAudioPCMBuffer? {
+nonisolated private func advancedPCMBuffer_noCopy(_ originalBuffer: AVAudioPCMBuffer, offset: UInt32) -> AVAudioPCMBuffer? {
     let audioBufferList = originalBuffer.mutableAudioBufferList
     guard audioBufferList.pointee.mNumberBuffers == 1,
           audioBufferList.pointee.mBuffers.mNumberChannels == 1
@@ -135,7 +133,7 @@ private func advancedPCMBuffer_noCopy(_ originalBuffer: AVAudioPCMBuffer, offset
 }
 
 // For debugging purposes only.
-private func writePCM16IntValuesToFile(from buffer: AVAudioPCMBuffer, location: String) {
+nonisolated private func writePCM16IntValuesToFile(from buffer: AVAudioPCMBuffer, location: String) {
     guard let audioBufferList = buffer.audioBufferList.pointee.mBuffers.mData else {
         print("No audio data available to write to disk")
         return

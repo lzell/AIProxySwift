@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct GeminiFileUploadResponseBody: Decodable {
+nonisolated public struct GeminiFileUploadResponseBody: Decodable, Sendable {
     public let file: GeminiFile
     
     public init(file: GeminiFile) {

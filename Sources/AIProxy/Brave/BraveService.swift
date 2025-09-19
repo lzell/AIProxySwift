@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol BraveService {
+@AIProxyActor public protocol BraveService: Sendable {
 
     /// Makes a web search through Brave. See this reference:
     /// https://api-dashboard.search.brave.com/app/documentation/web-search/get-started

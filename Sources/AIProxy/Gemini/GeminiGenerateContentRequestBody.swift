@@ -11,7 +11,7 @@ import Foundation
 /// Contributions are welcome if you need something beyond the simple fields I've added so far.
 /// Docstrings are taken from this reference:
 /// https://ai.google.dev/api/generate-content#request-body
-public struct GeminiGenerateContentRequestBody: Encodable {
+nonisolated public struct GeminiGenerateContentRequestBody: Encodable, Sendable {
 
     // Required
 
@@ -65,7 +65,7 @@ public struct GeminiGenerateContentRequestBody: Encodable {
 /// Struct representing the content of the conversation with the model.
 /// A Content includes a role field (e.g., "user" or "model") and ordered parts that constitute a message.
 extension GeminiGenerateContentRequestBody {
-    public struct Content: Encodable {
+    nonisolated public struct Content: Encodable, Sendable {
         // Required
         public let parts: [Part]
 
@@ -91,7 +91,7 @@ extension GeminiGenerateContentRequestBody.Content {
     /// Struct representing a part of the content.
     /// A Part can contain text, inline data, function calls, or other forms of media or content.
     /// https://ai.google.dev/api/caching#Part
-    public enum Part: Encodable {
+    nonisolated public enum Part: Encodable, Sendable {
         /// Inline text.
         case text(String)
 
@@ -146,7 +146,7 @@ extension GeminiGenerateContentRequestBody {
     /// Tool details that the model may use to generate response.
     /// A Tool enables the system to interact with external systems to perform an action, or set of actions, outside of knowledge and scope of the model.
     /// https://ai.google.dev/api/caching#Tool
-    public enum Tool: Encodable {
+    nonisolated public enum Tool: Encodable, Sendable {
         /// A list of FunctionDeclarations available to the model that can be used for function calling.
         /// The model or system does not execute the function. Instead the defined function may be returned as a FunctionCall with arguments to the client side for execution. The model may decide to call a subset of these functions by populating FunctionCall in the response. The next conversation turn may contain a FunctionResponse with the Content.role "function" generation context for the next model turn.
         case functionDeclarations([FunctionDeclaration])
@@ -180,7 +180,7 @@ extension GeminiGenerateContentRequestBody {
 extension GeminiGenerateContentRequestBody {
     /// A simple struct that represents the Google Search tool for Gemini 2.0
     /// No configuration options are needed for the basic implementation
-    public struct GoogleSearch: Encodable {
+    nonisolated public struct GoogleSearch: Encodable, Sendable {
         // Add a public initializer
         public init() {
             // No initialization needed
@@ -192,7 +192,7 @@ extension GeminiGenerateContentRequestBody {
 extension GeminiGenerateContentRequestBody.Tool {
     /// Describes the options to customize dynamic retrieval.
     /// https://ai.google.dev/api/caching#DynamicRetrievalConfig
-    public struct DynamicRetrievalConfig: Encodable {
+    nonisolated public struct DynamicRetrievalConfig: Encodable, Sendable {
         /// The threshold to be used in dynamic retrieval. If not set, a system default value is used.
         public let dynamicThreshold: Double?
 
@@ -228,7 +228,7 @@ extension GeminiGenerateContentRequestBody.Tool {
 // MARK: - RequestBody.Tool.DynamicRetrievalConfig.Mode
 extension GeminiGenerateContentRequestBody.Tool.DynamicRetrievalConfig {
     /// https://ai.google.dev/api/caching#Mode
-    public enum Mode: String, Encodable {
+    nonisolated public enum Mode: String, Encodable, Sendable {
         /// Always trigger retrieval.
         case always = "MODE_UNSPECIFIED"
 
@@ -242,7 +242,7 @@ extension GeminiGenerateContentRequestBody.Tool {
     /// https://ai.google.dev/api/caching#FunctionDeclaration
     /// Structured representation of a function declaration as defined by the OpenAPI 3.03 specification. Included in this declaration are the function name and parameters. This FunctionDeclaration is a representation of a block of code that can be used as a Tool by the model and executed by the client.
     /// OpenAPI 3.03 spec: https://spec.openapis.org/oas/v3.0.3
-    public struct FunctionDeclaration: Encodable {
+    nonisolated public struct FunctionDeclaration: Encodable, Sendable {
         // Required
 
         // The name of the function. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
@@ -276,7 +276,7 @@ extension GeminiGenerateContentRequestBody.Tool {
 extension GeminiGenerateContentRequestBody {
     /// The Tool configuration containing parameters for specifying Tool use in the request.
     /// https://ai.google.dev/api/caching#ToolConfig
-    public struct ToolConfig: Encodable {
+    nonisolated public struct ToolConfig: Encodable, Sendable {
         public let functionCallingConfig: FunctionCallingConfig?
 
         public init(functionCallingConfig: FunctionCallingConfig? = nil) {
@@ -294,7 +294,7 @@ extension GeminiGenerateContentRequestBody.ToolConfig {
 
     /// Configuration for specifying function calling behavior.
     /// https://ai.google.dev/api/caching#FunctionCallingConfig
-    public struct FunctionCallingConfig: Encodable {
+    nonisolated public struct FunctionCallingConfig: Encodable, Sendable {
         // Optional
 
         /// A set of function names that, when provided, limits the functions the model will call.
@@ -326,7 +326,7 @@ extension GeminiGenerateContentRequestBody.ToolConfig {
 // MARK: - RequestBody.ToolConfig.FunctionCallingConfig.Mode
 extension GeminiGenerateContentRequestBody.ToolConfig.FunctionCallingConfig {
     /// https://ai.google.dev/api/caching#Mode_1
-    public enum Mode: String, Encodable {
+    nonisolated public enum Mode: String, Encodable, Sendable {
         /// Model is constrained to always predicting a function call only. If "allowedFunctionNames" are set, the predicted function call will be limited to any one of "allowedFunctionNames", else the predicted function call will be any one of the provided "functionDeclarations"
         case anyFunction = "ANY"
 
@@ -341,8 +341,8 @@ extension GeminiGenerateContentRequestBody.ToolConfig.FunctionCallingConfig {
 // MARK: - RequestBody.SafetySetting
 extension GeminiGenerateContentRequestBody {
     /// A list of unique SafetySetting instances for blocking unsafe content.
-    public struct SafetySetting: Encodable {
-        public enum SafetyCategory: String, Encodable {
+    nonisolated public struct SafetySetting: Encodable, Sendable {
+        nonisolated public enum SafetyCategory: String, Encodable, Sendable {
             case harassment = "HARM_CATEGORY_HARASSMENT"
             case hateSpeech = "HARM_CATEGORY_HATE_SPEECH"
             case sexuallyExplicit = "HARM_CATEGORY_SEXUALLY_EXPLICIT"
@@ -350,7 +350,7 @@ extension GeminiGenerateContentRequestBody {
             case civicIntegrity = "HARM_CATEGORY_CIVIC_INTEGRITY"
         }
 
-        public enum HarmBlockThreshold: String, Encodable {
+        nonisolated public enum HarmBlockThreshold: String, Encodable, Sendable {
             case none = "BLOCK_NONE"
             case high = "BLOCK_ONLY_HIGH"
             case mediumAndAbove = "BLOCK_MEDIUM_AND_ABOVE"
@@ -371,7 +371,7 @@ extension GeminiGenerateContentRequestBody {
 // MARK: - RequestBody.SystemInstruction
 extension GeminiGenerateContentRequestBody {
     /// Developer set system instruction(s). Currently, text only.
-    public struct SystemInstruction: Encodable {
+    nonisolated public struct SystemInstruction: Encodable, Sendable {
         public let role = "system"
         public let parts: [GeminiGenerateContentRequestBody.Content.Part]
 
@@ -384,7 +384,7 @@ extension GeminiGenerateContentRequestBody {
 // MARK: - RequestBody.GenerationConfig
 extension GeminiGenerateContentRequestBody {
     /// Configuration options for model generation and outputs.
-    public struct GenerationConfig: Encodable {
+    nonisolated public struct GenerationConfig: Encodable, Sendable {
         public let maxOutputTokens: Int?
         public let temperature: Double?
         public let topP: Double?
@@ -440,7 +440,7 @@ extension GeminiGenerateContentRequestBody {
 }
 
 extension GeminiGenerateContentRequestBody.GenerationConfig {
-    public struct ThinkingConfig: Encodable {
+    nonisolated public struct ThinkingConfig: Encodable, Sendable {
         public let thinkingBudget: Int
 
         public init(thinkingBudget: Int) {
@@ -448,7 +448,7 @@ extension GeminiGenerateContentRequestBody.GenerationConfig {
         }
     }
 
-    public struct SpeechConfig: Encodable {
+    nonisolated public struct SpeechConfig: Encodable, Sendable {
         public let multiSpeakerVoiceConfig: MultiSpeakerVoiceConfig?
         public let voiceConfig: VoiceConfig?
 
@@ -463,7 +463,7 @@ extension GeminiGenerateContentRequestBody.GenerationConfig {
 }
 
 extension GeminiGenerateContentRequestBody.GenerationConfig.SpeechConfig {
-    public struct VoiceConfig: Encodable {
+    nonisolated public struct VoiceConfig: Encodable, Sendable {
         public let prebuiltVoiceConfig: PrebuiltVoiceConfig
 
         public init(prebuiltVoiceConfig: PrebuiltVoiceConfig) {
@@ -471,7 +471,7 @@ extension GeminiGenerateContentRequestBody.GenerationConfig.SpeechConfig {
         }
     }
 
-    public struct MultiSpeakerVoiceConfig: Encodable {
+    nonisolated public struct MultiSpeakerVoiceConfig: Encodable, Sendable {
         public let speakerVoiceConfigs: [SpeakerVoiceConfig]
 
         public init(speakerVoiceConfigs: [SpeakerVoiceConfig]) {
@@ -479,7 +479,7 @@ extension GeminiGenerateContentRequestBody.GenerationConfig.SpeechConfig {
         }
     }
 
-    public struct PrebuiltVoiceConfig: Encodable {
+    nonisolated public struct PrebuiltVoiceConfig: Encodable, Sendable {
         public let voiceName: VoiceName
 
         public init(voiceName: VoiceName) {
@@ -487,7 +487,7 @@ extension GeminiGenerateContentRequestBody.GenerationConfig.SpeechConfig {
         }
     }
 
-    public struct SpeakerVoiceConfig: Encodable {
+    nonisolated public struct SpeakerVoiceConfig: Encodable, Sendable {
         public let speaker: String
         public let voiceConfig: VoiceConfig
 
@@ -502,7 +502,7 @@ extension GeminiGenerateContentRequestBody.GenerationConfig.SpeechConfig {
 
     /// See this list for voice options:
     /// https://ai.google.dev/gemini-api/docs/speech-generation#voices
-    public enum VoiceName: String, Encodable {
+    nonisolated public enum VoiceName: String, Encodable, Sendable {
         case zephyr = "Zephyr"
         case puck = "Puck"
         case charon = "Charon"

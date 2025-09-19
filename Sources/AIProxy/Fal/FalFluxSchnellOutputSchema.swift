@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct FalFluxSchnellOutputSchema: Decodable {
+nonisolated public struct FalFluxSchnellOutputSchema: Decodable, Sendable {
     public let hasNSFWConcepts: [Bool]?
     public let images: [FalOutputImage]?
     public let prompt: String?

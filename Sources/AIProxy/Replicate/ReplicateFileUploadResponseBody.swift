@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ReplicateFileUploadResponseBody: Decodable {
+nonisolated public struct ReplicateFileUploadResponseBody: Decodable, Sendable {
     public let contentType: String?
     public let checksums: Checksums?
     public let createdAt: String?
@@ -44,7 +44,7 @@ public struct ReplicateFileUploadResponseBody: Decodable {
 }
 
 extension ReplicateFileUploadResponseBody {
-    public struct Checksums: Decodable {
+    nonisolated public struct Checksums: Decodable, Sendable {
         public let md5: String
         public let sha256: String
         
@@ -56,7 +56,7 @@ extension ReplicateFileUploadResponseBody {
 }
 
 extension ReplicateFileUploadResponseBody {
-    public struct ActionURLs: Decodable {
+    nonisolated public struct ActionURLs: Decodable, Sendable {
         public let get: URL
         
         public init(get: URL) {

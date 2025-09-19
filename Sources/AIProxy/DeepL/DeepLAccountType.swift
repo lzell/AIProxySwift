@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum DeepLAccountType {
+nonisolated public enum DeepLAccountType: Sendable {
     case free
     case paid
 }

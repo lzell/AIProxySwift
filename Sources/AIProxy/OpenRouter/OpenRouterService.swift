@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol OpenRouterService {
+@AIProxyActor public protocol OpenRouterService: Sendable {
 
     /// Initiates a non-streaming chat completion request to /api/v1/chat/completions.
     ///

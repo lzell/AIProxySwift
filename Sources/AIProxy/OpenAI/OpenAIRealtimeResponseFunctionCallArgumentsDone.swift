@@ -10,7 +10,7 @@ import Foundation
 /// Returned when the model-generated function call arguments are done streaming.
 /// Also emitted when a Response is interrupted, incomplete, or cancelled.
 /// https://platform.openai.com/docs/api-reference/realtime-server-events/response/function_call_arguments/done
-public struct OpenAIRealtimeResponseFunctionCallArgumentsDone: Encodable {
+nonisolated public struct OpenAIRealtimeResponseFunctionCallArgumentsDone: Encodable {
     public let type = "response.function_call_arguments.done"
     public let name: String?
     public let arguments: String?

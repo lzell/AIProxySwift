@@ -18,7 +18,7 @@ public typealias ReplicatePredictionResponseBody = ReplicatePrediction
 /// And it is used for both the sync and polling API:
 ///     https://replicate.com/docs/topics/predictions/create-a-prediction#sync-mode
 ///     https://replicate.com/docs/topics/predictions/create-a-prediction#polling
-public struct ReplicatePrediction<Output: Decodable>: Decodable {
+nonisolated public struct ReplicatePrediction<Output: Decodable & Sendable>: Decodable, Sendable {
 
     /// ISO8601 date stamp of when the prediction completed
     public let completedAt: String?
@@ -104,7 +104,7 @@ public struct ReplicatePrediction<Output: Decodable>: Decodable {
 }
 
 extension ReplicatePrediction {
-    public struct ActionURLs: Decodable {
+    nonisolated public struct ActionURLs: Decodable, Sendable {
         public let cancel: URL?
         public let get: URL?
         
@@ -116,7 +116,7 @@ extension ReplicatePrediction {
 }
 
 extension ReplicatePrediction {
-    public struct Metrics: Decodable {
+    nonisolated public struct Metrics: Decodable, Sendable {
         public let predictTime: Double
 
         enum CodingKeys: String, CodingKey {
@@ -130,7 +130,7 @@ extension ReplicatePrediction {
 }
 
 extension ReplicatePrediction {
-    public enum Status: String, Decodable {
+    nonisolated public enum Status: String, Decodable, Sendable {
         /// The prediction is starting up. If this status lasts longer than a few seconds, then it's typically because a new worker is being started to run the prediction.
         case starting
 

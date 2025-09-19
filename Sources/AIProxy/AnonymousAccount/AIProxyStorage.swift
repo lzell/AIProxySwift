@@ -7,12 +7,11 @@
 
 import Foundation
 
-private let kAIProxyLocalAccount = "aiproxy-local"
-private let kAIProxyRemoteAccount = "aiproxy-remote"
-internal let kAIProxyUKVSAccount = "aiproxy-ukvs"
+nonisolated private let kAIProxyLocalAccount = "aiproxy-local"
+nonisolated private let kAIProxyRemoteAccount = "aiproxy-remote"
+nonisolated internal let kAIProxyUKVSAccount = "aiproxy-ukvs"
 
-
-final class AIProxyStorage {
+@AIProxyActor final class AIProxyStorage: Sendable {
 
     static private let keychain = AIProxyKeychain()
     static private let ukvs = NSUbiquitousKeyValueStore.default
@@ -21,7 +20,8 @@ final class AIProxyStorage {
         guard let keychain = self.keychain else {
             throw AIProxyError.assertion("Keychain is not available")
         }
-        if let data = await keychain.retrieve(scope: .local(keychainAccount: kAIProxyLocalAccount)) {
+        async let retrieve = keychain.retrieve(scope: .local(keychainAccount: kAIProxyLocalAccount))
+        if let data = await retrieve {
             return try [AnonymousAccount].deserialize(from: data)
         }
         return nil
@@ -31,20 +31,28 @@ final class AIProxyStorage {
         guard let keychain = self.keychain else {
             throw AIProxyError.assertion("Keychain is not available")
         }
-        return await keychain.update(
-            data: try localAccountChain.serialize(),
+        guard let serializedLocalChain: Data = try? localAccountChain.serialize() else {
+            throw AIProxyError.assertion("Could not serialize the local account chain")
+        }
+        async let update = keychain.update(
+            data: serializedLocalChain,
             scope: .local(keychainAccount: kAIProxyLocalAccount)
         )
+        return await update
     }
 
     static func updateRemoteAccountInKeychain(_ newAccount: AnonymousAccount) async throws -> OSStatus {
         guard let keychain = self.keychain else {
             throw AIProxyError.assertion("Keychain is not available")
         }
-        return await keychain.update(
-            data: try newAccount.serialize(),
+        guard let serializedNewAccount: Data = try? newAccount.serialize() else {
+            throw AIProxyError.assertion("Could not serialize the new account")
+        }
+        async let update = keychain.update(
+            data: serializedNewAccount,
             scope: .remote(keychainAccount: kAIProxyRemoteAccount)
         )
+        return await update
     }
 
 
@@ -57,7 +65,8 @@ final class AIProxyStorage {
             timestamp: Date().timeIntervalSince1970
         )]
         let data: Data = try accountChain.serialize()
-        let createStatus = await keychain.create(data: data, scope: .local(keychainAccount: kAIProxyLocalAccount))
+        async let create = keychain.create(data: data, scope: .local(keychainAccount: kAIProxyLocalAccount))
+        let createStatus = await create
         if createStatus != noErr {
             throw AIProxyError.assertion("Could not write a local account to keychain")
         }
@@ -68,7 +77,8 @@ final class AIProxyStorage {
         guard let keychain = self.keychain else {
             throw AIProxyError.assertion("Keychain is not available")
         }
-        if let data = await keychain.retrieve(scope: .remote(keychainAccount: kAIProxyRemoteAccount)) {
+        async let retrieve = keychain.retrieve(scope: .remote(keychainAccount: kAIProxyRemoteAccount))
+        if let data = await retrieve {
             return try AnonymousAccount.deserialize(from: data)
         }
         return nil
@@ -80,7 +90,8 @@ final class AIProxyStorage {
             throw AIProxyError.assertion("Keychain is not available")
         }
         let data: Data = try account.serialize()
-        return await keychain.create(data: data, scope: .remote(keychainAccount: kAIProxyRemoteAccount))
+        async let create = keychain.create(data: data, scope: .remote(keychainAccount: kAIProxyRemoteAccount))
+        return await create
     }
 
     static func clear() async throws {

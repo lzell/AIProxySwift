@@ -1,6 +1,6 @@
 import OSLog
 
-public enum AIProxyLogLevel: Int {
+nonisolated public enum AIProxyLogLevel: Int, Sendable {
     case debug
     case info
     case warning
@@ -10,10 +10,20 @@ public enum AIProxyLogLevel: Int {
     func isAtOrAboveThresholdLevel(_ threshold: AIProxyLogLevel) -> Bool {
         return self.rawValue >= threshold.rawValue
     }
+
+    /// This must only be accessed through `ProtectedPropertyQueue.callerDesiredLogLevel`.
+    nonisolated(unsafe) static var _callerDesiredLogLevel = AIProxyLogLevel.warning
+    nonisolated static var callerDesiredLogLevel: AIProxyLogLevel {
+        get {
+            ProtectedPropertyQueue.callerDesiredLogLevel.sync { self._callerDesiredLogLevel }
+        }
+        set {
+            ProtectedPropertyQueue.callerDesiredLogLevel.async(flags: .barrier) { self._callerDesiredLogLevel = newValue }
+        }
+    }
 }
 
-internal var aiproxyCallerDesiredLogLevel = AIProxyLogLevel.warning
-internal let aiproxyLogger = Logger(
+nonisolated internal let aiproxyLogger = Logger(
     subsystem: Bundle.main.bundleIdentifier ?? "UnknownApp",
     category: "AIProxy"
 )
@@ -25,6 +35,6 @@ internal let aiproxyLogger = Logger(
 // H/T Quinn the Eskimo!
 // https://developer.apple.com/forums/thread/774931
 @inline(__always)
-internal func logIf(_ logLevel: AIProxyLogLevel) -> Logger? {
-    return logLevel.isAtOrAboveThresholdLevel(aiproxyCallerDesiredLogLevel) ? aiproxyLogger : nil
+nonisolated internal func logIf(_ logLevel: AIProxyLogLevel) -> Logger? {
+    return logLevel.isAtOrAboveThresholdLevel(AIProxyLogLevel.callerDesiredLogLevel) ? aiproxyLogger : nil
 }

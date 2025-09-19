@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct EachAITriggerWorkflowResponseBody: Decodable {
+nonisolated public struct EachAITriggerWorkflowResponseBody: Decodable, Sendable {
     public let triggerID: String
     public let message: String?
     public let status: String?

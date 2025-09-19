@@ -7,7 +7,7 @@
 
 import Foundation
 
-internal struct AnthropicMessageStreamingDeltaBlock: Decodable {
+nonisolated struct AnthropicMessageStreamingDeltaBlock: Decodable, Sendable {
     /// We do not vend this type. See AnthropicMessageStreamingChunk for the final product that
     /// we vend to the client.
     let delta: Delta
@@ -27,7 +27,7 @@ internal struct AnthropicMessageStreamingDeltaBlock: Decodable {
 }
 
 extension AnthropicMessageStreamingDeltaBlock {
-    enum Delta: Decodable {
+    nonisolated enum Delta: Decodable, Sendable {
         case text(String)
         case toolUse(String)
 

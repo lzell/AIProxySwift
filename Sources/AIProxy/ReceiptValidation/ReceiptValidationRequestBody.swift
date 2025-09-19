@@ -6,7 +6,7 @@
 //
 
 /// Encapsulates the data from StoreKit's AppTransaction
-public struct ReceiptValidationRequestBody: Encodable {
+nonisolated public struct ReceiptValidationRequestBody: Encodable, Sendable {
     /// The JSON representation of the transaction.
     public let jsonRepresentationBase64: String
 

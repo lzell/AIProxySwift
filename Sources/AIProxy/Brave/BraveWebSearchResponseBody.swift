@@ -9,7 +9,7 @@ import Foundation
 
 /// See this reference:
 /// https://api-dashboard.search.brave.com/app/documentation/web-search/responses
-public struct BraveWebSearchResponseBody: Decodable {
+nonisolated public struct BraveWebSearchResponseBody: Decodable, Sendable {
     public let mixed: Mixed?
     public let query: Query?
     public let type: String?
@@ -24,7 +24,7 @@ public struct BraveWebSearchResponseBody: Decodable {
 }
 
 extension BraveWebSearchResponseBody {
-    public struct Query: Decodable {
+    nonisolated public struct Query: Decodable, Sendable {
         public let badResults: Bool?
         public let city: String?
         public let country: String?
@@ -74,7 +74,7 @@ extension BraveWebSearchResponseBody {
 }
 
 extension BraveWebSearchResponseBody {
-    public struct Mixed: Decodable {
+    nonisolated public struct Mixed: Decodable, Sendable {
         public let main: [MixedItem]?
         public let side: [MixedItem]?
         public let top: [MixedItem]?
@@ -87,7 +87,7 @@ extension BraveWebSearchResponseBody {
             self.type = type
         }
 
-        public struct MixedItem: Decodable {
+        nonisolated public struct MixedItem: Decodable, Sendable {
             public let all: Bool
             public let index: Int?
             public let type: String
@@ -96,7 +96,7 @@ extension BraveWebSearchResponseBody {
 }
 
 extension BraveWebSearchResponseBody {
-    public struct Web: Decodable {
+    nonisolated public struct Web: Decodable, Sendable {
         public let familyFriendly: Bool?
         public let results: [SearchResult]?
         public let type: String?
@@ -116,7 +116,7 @@ extension BraveWebSearchResponseBody {
 }
 
 extension BraveWebSearchResponseBody.Web {
-    public struct SearchResult: Decodable {
+    nonisolated public struct SearchResult: Decodable, Sendable {
         public let age: String?
         public let description: String?
         public let familyFriendly: Bool?
@@ -172,7 +172,7 @@ extension BraveWebSearchResponseBody.Web {
 }
 
 extension BraveWebSearchResponseBody.Web.SearchResult {
-    public struct Profile: Decodable {
+    nonisolated public struct Profile: Decodable, Sendable {
         public let img: String?
         public let longName: String?
         public let name: String?
@@ -195,7 +195,7 @@ extension BraveWebSearchResponseBody.Web.SearchResult {
 }
 
 extension BraveWebSearchResponseBody.Web.SearchResult {
-    public struct MetaURL: Decodable {
+    nonisolated public struct MetaURL: Decodable, Sendable {
         public let favicon: String?
         public let hostname: String?
         public let netloc: String?
@@ -221,7 +221,7 @@ extension BraveWebSearchResponseBody.Web.SearchResult {
 }
 
 extension BraveWebSearchResponseBody.Web.SearchResult {
-    public struct Thumbnail: Decodable {
+    nonisolated public struct Thumbnail: Decodable, Sendable {
         public let logo: Bool?
         public let original: String?
         public let src: String?

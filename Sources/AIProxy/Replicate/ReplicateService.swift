@@ -16,7 +16,7 @@ import Foundation
 //  inspiration to write your own implementation using the generic methods below
 // ---------------------------------------------------------------------------------
 
-public protocol ReplicateService {
+@AIProxyActor public protocol ReplicateService: Sendable {
 
     /// You likely do not want to start with this method unless you have specific reasons for doing so.
     /// Please see `runOfficialModel`, which automatically handles waiting for the prediction to complete.
@@ -48,7 +48,7 @@ public protocol ReplicateService {
     ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
     ///
     /// - Returns: The prediction response body
-    func createSynchronousPredictionUsingOfficialModel<Input: Encodable, Output: Decodable>(
+    func createSynchronousPredictionUsingOfficialModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         modelOwner: String,
         modelName: String,
         input: Input,
@@ -81,7 +81,7 @@ public protocol ReplicateService {
     ///   - input: The input schema, for example `ReplicateFluxSchnellInputSchema`
     ///
     /// - Returns: The prediction response body
-    func createSynchronousPredictionUsingCommunityModel<Input: Encodable, Output: Decodable>(
+    func createSynchronousPredictionUsingCommunityModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         modelVersion: String,
         input: Input,
         secondsToWait: UInt
@@ -110,7 +110,7 @@ public protocol ReplicateService {
     ///
     /// - Returns: A prediction object specialized by the `Output`, e.g. `ReplicateFluxSchnellOutputSchema`.
     ///            The prediction object contains a `url` that can be queried using `getPrediction` or `pollForPredictionCompletion`.
-    func createPredictionUsingOfficialModel<Input: Encodable, Output: Decodable>(
+    func createPredictionUsingOfficialModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         modelOwner: String,
         modelName: String,
         input: Input
@@ -136,7 +136,7 @@ public protocol ReplicateService {
     ///
     /// - Returns: A prediction object specialized by the `Output`, e.g. `ReplicateSDXLOutputSchema`.
     ///            The prediction object contains a `url` that can be queried using `getPrediction` or `pollForPredictionCompletion`.
-    func createPredictionUsingCommunityModel<Input: Encodable, Output: Decodable>(
+    func createPredictionUsingCommunityModel<Input: Encodable & Sendable, Output: Decodable & Sendable>(
         version: String,
         input: Input
     ) async throws -> ReplicatePrediction<Output>
@@ -152,7 +152,7 @@ public protocol ReplicateService {
     ///   - url: The prediction URL returned as part of a `createPrediction` request
     ///
     /// - Returns: The prediction response body specialized by `Output`, which must be a decodable that matches the output schema of this model
-    func getPrediction<Output: Decodable>(
+    func getPrediction<Output: Decodable & Sendable>(
         url: URL
     ) async throws -> ReplicatePrediction<Output>
 
@@ -206,7 +206,7 @@ public protocol ReplicateService {
     ///   - body: The training request body, parametrized by T where T is a decodable input that you define.
     ///
     /// - Returns: The training response, which contains a URL to poll for the training progress
-    func createTraining<T>(
+    func createTraining<T: Sendable>(
         modelOwner: String,
         modelName: String,
         versionID: String,
@@ -242,7 +242,6 @@ public protocol ReplicateService {
     ) async throws -> ReplicateFileUploadResponseBody
 }
 
-
 extension ReplicateService {
 
     /// Runs an official replicate model and waits for the prediction to reach a terminal state.
@@ -264,7 +263,7 @@ extension ReplicateService {
     ///     let urls = try await replicateService.getPredictionOutput(prediction)
     ///
     /// - Returns the ReplicatePrediction in a terminal state
-    public func runOfficialModel<T: Encodable, Output: Decodable>(
+    public func runOfficialModel<T: Encodable & Sendable, Output: Decodable & Sendable>(
         modelOwner: String,
         modelName: String,
         input: T,
@@ -298,7 +297,7 @@ extension ReplicateService {
     ///     let urls = try await replicateService.getPredictionOutput(prediction)
     ///
     /// - Returns the ReplicatePrediction in a terminal status
-    public func runCommunityModel<T: Encodable, Output: Decodable>(
+    public func runCommunityModel<T: Encodable & Sendable, Output: Decodable & Sendable>(
         version: String,
         input: T,
         secondsToWait: UInt
@@ -325,7 +324,7 @@ extension ReplicateService {
     ///   - secondsBetweenPollAttempts: The number of seconds between polls
     ///
     /// - Returns: The completed prediction response body
-    public func pollForPredictionCompletion<Output: Decodable>(
+    public func pollForPredictionCompletion<Output: Decodable & Sendable>(
         url: URL,
         pollAttempts: UInt,
         secondsBetweenPollAttempts: UInt
@@ -395,7 +394,7 @@ extension ReplicateService {
     }
 
     /// See the usage examples in ReplicateService+Convenience.
-    public func getPredictionOutput<Output: Decodable>(
+    public func getPredictionOutput<Output: Decodable & Sendable>(
         _ responseBody: ReplicatePrediction<Output>
     ) async throws -> Output {
         if let error = responseBody.error {
@@ -429,7 +428,7 @@ extension ReplicateService {
         return predictionOutput
     }
 
-    private func transitionFromSyncToPollingAPIIfNecessary<Output: Decodable>(
+    private func transitionFromSyncToPollingAPIIfNecessary<Output: Decodable & Sendable>(
         _ prediction: ReplicatePrediction<Output>,
         _ secondsToWait: UInt,
         _ secondsElapsed: UInt
@@ -480,7 +479,7 @@ extension ReplicateService {
 extension ReplicateService {
 
     @available(*, deprecated, message: "Use createSynchronousPredictionUsingCommunityModel")
-    func createSynchronousPredictionUsingVersion<T: Encodable, U: Decodable>(
+    func createSynchronousPredictionUsingVersion<T: Encodable & Sendable, U: Decodable & Sendable>(
         modelVersion: String,
         input: T,
         secondsToWait: UInt
@@ -493,7 +492,7 @@ extension ReplicateService {
     }
 
     @available(*, deprecated, message: "Use createPredictionUsingCommunityModel")
-    public func createPrediction<T: Encodable, Output: Decodable>(
+    public func createPrediction<T: Encodable & Sendable, Output: Decodable & Sendable>(
         version: String,
         input: T
     ) async throws -> ReplicatePrediction<Output> {
@@ -501,7 +500,7 @@ extension ReplicateService {
     }
 
     @available(*, deprecated, message: "Use createPredictionUsingCommunityModel")
-    public func createPrediction<T: Encodable, Output: Decodable>(
+    public func createPrediction<T: Encodable & Sendable, Output: Decodable & Sendable>(
         version: String,
         input: T,
         output: ReplicatePredictionResponseBody<Output>.Type
@@ -510,14 +509,14 @@ extension ReplicateService {
     }
 
     @available(*, deprecated, message: "Use getPrediction")
-    public func getPredictionResult<Output: Decodable>(
+    public func getPredictionResult<Output: Decodable & Sendable>(
         url: URL
     ) async throws -> ReplicatePrediction<Output> {
         return try await self.getPrediction(url: url)
     }
 
     @available(*, deprecated, message: "Please use runOfficialModel instead")
-    public func predictAndPollUsingOfficialModel<T: Encodable, U: Decodable>(
+    public func predictAndPollUsingOfficialModel<T: Encodable & Sendable, U: Decodable & Sendable>(
         modelOwner: String,
         modelName: String,
         input: T,
@@ -541,7 +540,7 @@ extension ReplicateService {
     }
 
     @available(*, deprecated, message: "Please use runCommunityModel instead")
-    public func predictAndPollUsingVersion<T: Encodable, U: Decodable>(
+    public func predictAndPollUsingVersion<T: Encodable & Sendable, U: Decodable & Sendable>(
         version: String,
         input: T,
         pollAttempts: UInt,
@@ -559,14 +558,14 @@ extension ReplicateService {
     }
 
     @available(*, deprecated, message: "Use getPredictionOutput")
-    public func synchronousResponseBodyToOutput<Output: Decodable>(
+    public func synchronousResponseBodyToOutput<Output: Decodable & Sendable>(
         _ responseBody: ReplicatePrediction<Output>
     ) async throws -> Output {
         return try await self.getPredictionOutput(responseBody)
     }
 
     @available(*, deprecated, message: "Use pollForPredictionCompletion instead")
-    public func pollForPredictionResult<U: Decodable>(
+    public func pollForPredictionResult<U: Decodable & Sendable>(
         url: URL,
         numTries: UInt,
         nsBetweenPollAttempts: UInt

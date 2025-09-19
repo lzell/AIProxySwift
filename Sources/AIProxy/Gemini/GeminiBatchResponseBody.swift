@@ -8,7 +8,7 @@
 import Foundation
 
 /// Response body for a Gemini batch job
-public struct GeminiBatchResponseBody: Decodable {
+nonisolated public struct GeminiBatchResponseBody: Decodable, Sendable {
     /// The unique name/identifier for the batch job
     public let name: String
     
@@ -34,7 +34,7 @@ public struct GeminiBatchResponseBody: Decodable {
     }
 }
 
-extension GeminiBatchResponseBody {
+nonisolated extension GeminiBatchResponseBody {
     /// Convenience property to get the state from metadata
     public var state: BatchMetadata.State? {
         return metadata?.state
@@ -67,7 +67,7 @@ extension GeminiBatchResponseBody {
 }
 
 extension GeminiBatchResponseBody {
-    public struct BatchMetadata: Decodable {
+    nonisolated public struct BatchMetadata: Decodable, Sendable {
         public let type: String?
         public let model: String?
         public let displayName: String?
@@ -120,8 +120,8 @@ extension GeminiBatchResponseBody {
             self.name = name
         }
     }
-    
-    public struct BatchResponse: Decodable {
+
+    nonisolated public struct BatchResponse: Decodable, Sendable {
         public let type: String?
         public let responsesFile: String?
         
@@ -138,7 +138,7 @@ extension GeminiBatchResponseBody {
 }
 
 extension GeminiBatchResponseBody.BatchMetadata {
-    public enum State: String, Decodable {
+    nonisolated public enum State: String, Decodable, Sendable {
         case unspecified = "BATCH_STATE_UNSPECIFIED"
         case pending = "BATCH_STATE_PENDING"
         case running = "BATCH_STATE_RUNNING"
@@ -147,24 +147,24 @@ extension GeminiBatchResponseBody.BatchMetadata {
         case cancelled = "BATCH_STATE_CANCELLED"
         case expired = "BATCH_STATE_EXPIRED"
     }
-    
-    public struct InputConfig: Decodable {
+
+    nonisolated public struct InputConfig: Decodable, Sendable {
         public let fileName: String?
         
         public init(fileName: String?) {
             self.fileName = fileName
         }
     }
-    
-    public struct OutputConfig: Decodable {
+
+    nonisolated public struct OutputConfig: Decodable, Sendable {
         public let responsesFile: String?
         
         public init(responsesFile: String?) {
             self.responsesFile = responsesFile
         }
     }
-    
-    public struct BatchStats: Decodable {
+
+    nonisolated public struct BatchStats: Decodable, Sendable {
         public let requestCount: String?
         public let successfulRequestCount: String?
         

@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from https://console.groq.com/docs/api-reference#audio-transcription
-public struct GroqTranscriptionRequestBody: MultipartFormEncodable {
+nonisolated public struct GroqTranscriptionRequestBody: MultipartFormEncodable {
     // Required
 
     /// The audio file object (not file name) to transcribe, in one of these formats: flac,

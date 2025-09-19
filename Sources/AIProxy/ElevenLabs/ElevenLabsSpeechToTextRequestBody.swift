@@ -9,7 +9,7 @@ import Foundation
 
 /// Request body for a speech-to-test request to ElevenLabs.
 /// https://elevenlabs.io/docs/api-reference/speech-to-text/convert#request
-public struct ElevenLabsSpeechToTextRequestBody: MultipartFormEncodable {
+nonisolated public struct ElevenLabsSpeechToTextRequestBody: MultipartFormEncodable {
     // Required
 
     /// The ID of the model to use for transcription, currently only `scribe_v1` and
@@ -82,12 +82,12 @@ public struct ElevenLabsSpeechToTextRequestBody: MultipartFormEncodable {
 }
 
 extension ElevenLabsSpeechToTextRequestBody {
-    public enum ModelID: String, Encodable {
+    nonisolated public enum ModelID: String, Encodable, Sendable {
         case scribeV1 = "scribe_v1"
         case scribeV1Experimental = "scribe_v1_experimental"
     }
 
-    public enum TimestampGranularity: String, Encodable {
+    nonisolated public enum TimestampGranularity: String, Encodable, Sendable {
         case none
         case word
         case character

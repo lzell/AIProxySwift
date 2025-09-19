@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 1/28/25.
 //
 
-open class ReceiptValidationService: ProxiedService {
+@AIProxyActor final class ReceiptValidationService: ProxiedService, Sendable {
 
     public let publishableKey: String
     public let serviceURL: String

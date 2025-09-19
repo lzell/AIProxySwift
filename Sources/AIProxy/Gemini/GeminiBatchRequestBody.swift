@@ -8,7 +8,7 @@
 import Foundation
 
 /// Request body for creating a Gemini batch job
-public struct GeminiBatchRequestBody: Encodable {
+nonisolated public struct GeminiBatchRequestBody: Encodable, Sendable {
     /// The uploaded file name/ID
     public let fileName: String
     /// A human-readable name for the batch job

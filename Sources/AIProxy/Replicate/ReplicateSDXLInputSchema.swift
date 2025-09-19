@@ -9,7 +9,7 @@ import Foundation
 
 /// Input schema for use with requests to Stability AI's SDXL model:
 /// https://replicate.com/stability-ai/sdxl/api/schema#input-schema
-public struct ReplicateSDXLInputSchema: Encodable {
+nonisolated public struct ReplicateSDXLInputSchema: Encodable, Sendable {
 
     /// Prompt for generated image
     let prompt: String
@@ -137,7 +137,7 @@ public struct ReplicateSDXLInputSchema: Encodable {
 }
 
 extension ReplicateSDXLInputSchema {
-    public enum Refiner: String, Encodable {
+    nonisolated public enum Refiner: String, Encodable, Sendable {
         case baseImageRefiner = "base_image_refiner"
         case expertEnsembleRefiner = "expert_ensemble_refiner"
         case noRefiner = "no_refiner"
@@ -145,7 +145,7 @@ extension ReplicateSDXLInputSchema {
 }
 
 extension ReplicateSDXLInputSchema {
-    public enum Scheduler: String, Encodable {
+    nonisolated public enum Scheduler: String, Encodable, Sendable {
         case ddim = "DDIM"
         case dpmSolverMultistep = "DPMSolverMultistep"
         case heunDiscrete = "HeunDiscrete"

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ReplicateModelResponseBody: Decodable {
+nonisolated struct ReplicateModelResponseBody: Decodable, Sendable {
     let description: String?
     let name: String?
     let owner: String?

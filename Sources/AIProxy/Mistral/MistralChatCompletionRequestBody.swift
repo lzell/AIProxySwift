@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from: https://docs.mistral.ai/api/#tag/chat
-public struct MistralChatCompletionRequestBody: Encodable {
+nonisolated public struct MistralChatCompletionRequestBody: Encodable, Sendable {
 
     // Required
 
@@ -149,7 +149,7 @@ public struct MistralChatCompletionRequestBody: Encodable {
 
 // MARK: - RequestBody.Message
 extension MistralChatCompletionRequestBody {
-    public enum Message: Encodable {
+    nonisolated public enum Message: Encodable, Sendable {
         case assistant(content: String)
         case system(content: String)
         case user(content: String)
@@ -180,7 +180,7 @@ extension MistralChatCompletionRequestBody {
     /// An object specifying the format that the model must output.
     /// Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the message the model generates is valid JSON.
     /// Important: when using JSON mode, you must also instruct the model to produce JSON yourself via a system or user message.
-    public enum ResponseFormat: Encodable {
+    nonisolated public enum ResponseFormat: Encodable, Sendable {
 
         /// Enables JSON mode, which ensures the message the model generates is valid JSON.
         /// Important: when using JSON mode, you must also instruct the model to produce JSON yourself via a

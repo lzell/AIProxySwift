@@ -9,7 +9,7 @@ import Foundation
 
 /// See this reference: https://docs.eachlabs.ai/api-reference/flows/trigger-ai-workflow
 /// Note that the workflowID is not contained in the body. Rather, it is supplied as part of the path.
-public struct EachAITriggerWorkflowRequestBody: Encodable {
+nonisolated public struct EachAITriggerWorkflowRequestBody: Encodable, Sendable {
     // Required
     let parameters: [String: AIProxyJSONValue]
 

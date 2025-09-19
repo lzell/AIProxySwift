@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum PerplexityRole: String, Codable {
+nonisolated public enum PerplexityRole: String, Codable, Sendable {
     case system
     case user
     case assistant

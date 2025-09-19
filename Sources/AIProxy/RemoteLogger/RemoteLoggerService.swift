@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 1/31/25.
 //
 
-open class RemoteLoggerService: ProxiedService {
+@AIProxyActor final class RemoteLoggerService: ProxiedService, Sendable {
 
     public let publishableKey: String
     public let serviceURL: String
@@ -53,7 +53,7 @@ open class RemoteLoggerService: ProxiedService {
 }
 
 extension RemoteLoggerService {
-    fileprivate struct Payload: Encodable {
+    nonisolated fileprivate struct Payload: Encodable {
         let breadcrumbContext: String
         let errorMessage: String?
     }

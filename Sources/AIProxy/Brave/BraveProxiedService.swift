@@ -7,7 +7,7 @@
 
 import Foundation
 
-open class BraveProxiedService: BraveService, ProxiedService {
+@AIProxyActor final class BraveProxiedService: BraveService, ProxiedService, Sendable {
 
     private let partialKey: String
     private let serviceURL: String
@@ -15,7 +15,7 @@ open class BraveProxiedService: BraveService, ProxiedService {
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.braveService` defined in AIProxy.swift
-    internal init(
+    nonisolated init(
         partialKey: String,
         serviceURL: String,
         clientID: String?

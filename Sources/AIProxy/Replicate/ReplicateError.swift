@@ -1,6 +1,6 @@
 import Foundation
 
-public enum ReplicateError: LocalizedError {
+nonisolated public enum ReplicateError: LocalizedError, Sendable {
     case predictionCanceled
     case predictionDidNotIncludeOutput
     case predictionDidNotIncludeURL

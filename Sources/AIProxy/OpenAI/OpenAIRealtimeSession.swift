@@ -8,11 +8,10 @@
 import Foundation
 import AVFoundation
 
-private let kWebsocketDisconnectedErrorCode = 57
-private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
+nonisolated private let kWebsocketDisconnectedErrorCode = 57
+nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
 
-@RealtimeActor
-open class OpenAIRealtimeSession {
+@AIProxyActor open class OpenAIRealtimeSession {
     private var isTearingDown = false
     private let webSocketTask: URLSessionWebSocketTask
     private var continuation: AsyncStream<OpenAIRealtimeMessage>.Continuation?

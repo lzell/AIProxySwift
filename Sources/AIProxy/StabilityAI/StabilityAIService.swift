@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol StabilityAIService {
+@AIProxyActor public protocol StabilityAIService: Sendable {
 
     /// Initiates a request to /v2beta/stable-image/generate/ultra
     ///

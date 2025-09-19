@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol MistralService {
+@AIProxyActor public protocol MistralService: Sendable {
     /// Initiates a non-streaming chat completion request to Mistral
     ///
     /// - Parameters:

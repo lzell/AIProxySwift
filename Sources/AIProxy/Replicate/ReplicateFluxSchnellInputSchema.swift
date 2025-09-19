@@ -9,7 +9,7 @@ import Foundation
 
 /// Input schema for use with requests to Black Forest Lab's Flux Schnell model:
 /// https://replicate.com/black-forest-labs/flux-schnell/api/schema#input-schema
-public struct ReplicateFluxSchnellInputSchema: Encodable {
+nonisolated public struct ReplicateFluxSchnellInputSchema: Encodable, Sendable {
     // Required
 
     /// Prompt for generated image
@@ -78,7 +78,7 @@ public struct ReplicateFluxSchnellInputSchema: Encodable {
 
 // MARK: - InputSchema.OutputFormat
 extension ReplicateFluxSchnellInputSchema {
-    public enum OutputFormat: String, Encodable {
+    nonisolated public enum OutputFormat: String, Encodable, Sendable {
         case jpg
         case png
         case webp

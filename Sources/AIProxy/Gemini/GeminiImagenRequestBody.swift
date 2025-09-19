@@ -18,7 +18,7 @@ import Foundation
 /// https://cloud.google.com/vertex-ai/generative-ai/docs/image/overview?authuser=1
 ///   - Request access: Imagen 3 Customization and Editing
 ///   - Request access: Person and face generation
-public struct GeminiImagenRequestBody: Encodable {
+nonisolated public struct GeminiImagenRequestBody: Encodable, Sendable {
     public let instances: [Instance]
     public let parameters: Parameters
 
@@ -32,7 +32,7 @@ public struct GeminiImagenRequestBody: Encodable {
 }
 
 extension GeminiImagenRequestBody {
-    public struct Instance: Encodable {
+    nonisolated public struct Instance: Encodable, Sendable {
         public let prompt: String
         public let image: InputImage?
 
@@ -42,7 +42,7 @@ extension GeminiImagenRequestBody {
         }
     }
 
-    public struct Parameters: Encodable {
+    nonisolated public struct Parameters: Encodable, Sendable {
         public init(
             aspectRatio: String? = nil,
             mode: String? = nil,
@@ -91,7 +91,7 @@ extension GeminiImagenRequestBody {
 
 extension GeminiImagenRequestBody.Parameters {
     /// Represents the safety filtering level for content moderation.
-    public enum SafetyLevel: String, Encodable {
+    nonisolated public enum SafetyLevel: String, Encodable, Sendable {
         /// Strongest filtering level, most strict blocking. Deprecated value: "block_most".
         case blockLowAndAbove = "block_low_and_above"
 
@@ -110,7 +110,7 @@ extension GeminiImagenRequestBody.Parameters {
 
 extension GeminiImagenRequestBody.Parameters {
     /// Controls the generation of people or faces in images.
-    public enum PersonGeneration: String, Encodable {
+    nonisolated public enum PersonGeneration: String, Encodable, Sendable {
         /// Disallow the inclusion of people or faces in images.
         case dontAllow = "dont_allow"
 
@@ -123,7 +123,7 @@ extension GeminiImagenRequestBody.Parameters {
 }
 
 extension GeminiImagenRequestBody.Instance {
-    public struct InputImage: Encodable {
+    nonisolated public struct InputImage: Encodable, Sendable {
         public let data: Data
 
         private enum CodingKeys: String, CodingKey {
@@ -142,8 +142,8 @@ extension GeminiImagenRequestBody.Instance {
 }
 
 extension GeminiImagenRequestBody.Parameters {
-    public struct UpscaleConfig: Encodable {
-        public enum UpscaleFactor: String, Encodable {
+    nonisolated public struct UpscaleConfig: Encodable, Sendable {
+        nonisolated public enum UpscaleFactor: String, Encodable, Sendable {
             case x2
             case x4
         }

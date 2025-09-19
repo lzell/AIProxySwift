@@ -9,7 +9,7 @@ import Foundation
 
 /// Format taken from here:
 /// https://docs.together.ai/reference/chat-completions-1
-public struct TogetherAIChatCompletionResponseBody: Decodable {
+nonisolated public struct TogetherAIChatCompletionResponseBody: Decodable, Sendable {
 
     /// Generation choices
     public let choices: [TogetherAIChatCompletionChoice]
@@ -34,7 +34,7 @@ public struct TogetherAIChatCompletionResponseBody: Decodable {
     }
 }
 
-public struct TogetherAIChatCompletionChoice: Decodable {
+nonisolated public struct TogetherAIChatCompletionChoice: Decodable, Sendable {
 
     public let message: TogetherAIMessage
 
@@ -56,14 +56,14 @@ public struct TogetherAIChatCompletionChoice: Decodable {
     }
 }
 
-public enum TogetherAIFinishReason: String, Decodable {
+nonisolated public enum TogetherAIFinishReason: String, Decodable, Sendable {
     case eos
     case stop
     case length
     case toolCalls = "tool_calls"
 }
 
-public struct TogetherAILogprobs: Decodable {
+nonisolated public struct TogetherAILogprobs: Decodable, Sendable {
     /// List of token strings
     public let tokens: [String]
 
@@ -81,7 +81,7 @@ public struct TogetherAILogprobs: Decodable {
     }
 }
 
-public struct TogetherAIChatUsage: Decodable {
+nonisolated public struct TogetherAIChatUsage: Decodable, Sendable {
     public let promptTokens: Int
     public let completionTokens: Int
     public let totalTokens: Int

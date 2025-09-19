@@ -5,4 +5,4 @@
 //  Created by Lou Zell on 7/12/25.
 //
 
-struct OpenAIProxiedServiceNetworker: ProxiedService {}
+@AIProxyActor struct OpenAIProxiedServiceNetworker: ProxiedService {}

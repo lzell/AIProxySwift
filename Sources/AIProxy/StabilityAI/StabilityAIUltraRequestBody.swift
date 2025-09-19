@@ -7,7 +7,7 @@
 
 // The models below are derived from this reference:
 // https://platform.stability.ai/docs/api-reference#tag/Generate/paths/~1v2beta~1stable-image~1generate~1ultra/post
-public struct StabilityAIUltraRequestBody: MultipartFormEncodable {
+nonisolated public struct StabilityAIUltraRequestBody: MultipartFormEncodable, Sendable {
 
     // Required
 
@@ -69,7 +69,7 @@ public struct StabilityAIUltraRequestBody: MultipartFormEncodable {
     }
 }
 
-public enum StabilityAIUltraOutputFormat: String {
+nonisolated public enum StabilityAIUltraOutputFormat: String, Sendable {
     case jpeg
     case png
     case webp

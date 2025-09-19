@@ -6,7 +6,7 @@
 //
 
 /// A best-effort anonymous ID that is stable across multiple devices of an iCloud account
-struct AnonymousAccount: Codable, Equatable {
+nonisolated struct AnonymousAccount: Codable, Sendable, Equatable {
     /// UUID of the anonymous account
     let uuid: String
 

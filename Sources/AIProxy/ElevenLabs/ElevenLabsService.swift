@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol ElevenLabsService {
+@AIProxyActor public protocol ElevenLabsService: Sendable {
     /// Converts text to speech with a request to `/v1/text-to-speech/<voice-id>`
     ///
     /// - Parameters:

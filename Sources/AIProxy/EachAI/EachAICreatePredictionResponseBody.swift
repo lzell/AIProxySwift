@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 7/26/25.
 //
 
-public struct EachAICreatePredictionResponseBody: Decodable {
+nonisolated public struct EachAICreatePredictionResponseBody: Decodable, Sendable {
     public let predictionID: String
     public let message: String?
     public let status: String?

@@ -8,7 +8,7 @@
 import Foundation
 
 /// https://replicate.com/deepseek-ai/deepseek-vl-7b-base?output=json
-public struct ReplicateDeepSeekVL7BInputSchema: Encodable {
+nonisolated public struct ReplicateDeepSeekVL7BInputSchema: Encodable, Sendable {
     // Required
 
     /// Input image

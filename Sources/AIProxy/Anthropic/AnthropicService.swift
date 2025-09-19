@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol AnthropicService {
+@AIProxyActor public protocol AnthropicService: Sendable {
     
     /// Initiates a non-streaming request to /v1/messages.
     ///

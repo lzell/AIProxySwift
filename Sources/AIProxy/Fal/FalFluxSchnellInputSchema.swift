@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings taken from the tooltips here: https://fal.ai/models/fal-ai/flux/schnell
-public struct FalFluxSchnellInputSchema: Encodable {
+nonisolated public struct FalFluxSchnellInputSchema: Encodable, Sendable {
     // Required
 
     /// The prompt to generate an image from.
@@ -74,7 +74,7 @@ public struct FalFluxSchnellInputSchema: Encodable {
 
 // MARK: - InputSchema.ImageSize
 extension FalFluxSchnellInputSchema {
-    public enum ImageSize: String, Encodable {
+    nonisolated public enum ImageSize: String, Encodable, Sendable {
         case landscape16x9 = "landscape_16_9"
         case landscape4x3 = "landscape_4_3"
         case portrait16x9 = "portrait_16_9"

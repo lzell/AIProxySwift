@@ -7,7 +7,7 @@
 
 import Foundation
 
-internal struct AnthropicMessageStreamingContentBlockStart: Decodable {
+nonisolated struct AnthropicMessageStreamingContentBlockStart: Decodable, Sendable {
     let contentBlock: ContentBlock
 
     static func from(line: String) -> Self? {
@@ -29,7 +29,7 @@ internal struct AnthropicMessageStreamingContentBlockStart: Decodable {
 }
 
 extension AnthropicMessageStreamingContentBlockStart {
-    enum ContentBlock: Decodable {
+    nonisolated enum ContentBlock: Decodable, Sendable {
         case text(String)
         case toolUse(name: String)
 

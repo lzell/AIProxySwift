@@ -7,17 +7,20 @@
 
 import Foundation
 
-internal enum ProtectedPropertyQueue {
-    static let resolvedAccount = DispatchQueue(
-        label: "aiproxy-protected-resolved-account",
+nonisolated enum ProtectedPropertyQueue {
+
+    static let configuration = DispatchQueue(
+        label: "aiproxy-protected-configuration",
         attributes: .concurrent
     )
-    static let stableID = DispatchQueue(
-        label: "aiproxy-protected-stable-id",
+
+    static let callerDesiredLogLevel = DispatchQueue(
+        label: "aiproxy-protected-caller-desired-log-level",
         attributes: .concurrent
     )
-    static let useStableID = DispatchQueue(
-        label: "aiproxy-protected-use-stable-id",
+
+    static let progressCallback = DispatchQueue(
+        label: "aiproxy-protected-progress-callback",
         attributes: .concurrent
     )
 }

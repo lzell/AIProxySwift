@@ -7,13 +7,13 @@
 
 import Foundation
 
-open class DeepLDirectService: DeepLService, DirectService {
+@AIProxyActor final class DeepLDirectService: DeepLService, DirectService, Sendable {
     private let unprotectedAPIKey: String
     private let accountType: DeepLAccountType
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.directDeepLService` defined in AIProxy.swift
-    internal init(unprotectedAPIKey: String, accountType: DeepLAccountType) {
+    nonisolated init(unprotectedAPIKey: String, accountType: DeepLAccountType) {
         self.unprotectedAPIKey = unprotectedAPIKey
         self.accountType = accountType
     }

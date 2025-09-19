@@ -7,13 +7,13 @@
 
 import Foundation
 
-open class FireworksAIDirectService: FireworksAIService, DirectService {
+@AIProxyActor final class FireworksAIDirectService: FireworksAIService, DirectService, Sendable {
 
     private let unprotectedAPIKey: String
 
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.directFireworksAIService` defined in AIProxy.swift
-    internal init(
+    nonisolated init(
         unprotectedAPIKey: String
     ) {
         self.unprotectedAPIKey = unprotectedAPIKey

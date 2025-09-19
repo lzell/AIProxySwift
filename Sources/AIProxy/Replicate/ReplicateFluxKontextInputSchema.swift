@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ReplicateFluxKontextInputSchema: Encodable {
+nonisolated public struct ReplicateFluxKontextInputSchema: Encodable, Sendable {
     // Required
 
     /// Image to use as reference. Must be a URI (jpeg, png, gif, or webp).

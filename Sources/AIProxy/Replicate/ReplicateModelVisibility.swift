@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum ReplicateModelVisibility: String, Codable {
+nonisolated public enum ReplicateModelVisibility: String, Codable, Sendable {
     case `public`
     case `private`
 }
