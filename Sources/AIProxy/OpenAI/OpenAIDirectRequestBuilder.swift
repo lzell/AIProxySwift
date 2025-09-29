@@ -7,7 +7,7 @@
 
 import Foundation
 
-@AIProxyActor struct OpenAIDirectRequestBuilder: OpenAIRequestBuilder {
+@AIProxyActor struct OpenAIDirectRequestBuilder: AIProxyRequestBuilder {
     let baseURL: String
     let unprotectedAuthHeader: (key: String, value: String)
 
