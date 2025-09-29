@@ -84,6 +84,7 @@ public enum AIProxy {
         resolveDNSOverTLS: Bool,
         useStableID: Bool
     ) {
+        print("Calling configure")
         let previouslyUsingStableID = self.configuration?.useStableID ?? false
         AIProxyLogLevel.callerDesiredLogLevel = logLevel
         self.configuration = AIProxyConfiguration(
@@ -970,6 +971,53 @@ public enum AIProxy {
             unprotectedAPIKey: unprotectedAPIKey
         )
     }
+
+    /// AIProxy's WaveSpeedAI service
+    ///
+    /// - Parameters:
+    ///   - partialKey: Your partial key is displayed in the AIProxy dashboard when you submit your WaveSpeed key.
+    ///     AIProxy takes your WaveSpeed key, encrypts it, and stores part of the result on our servers. The part that you include
+    ///     here is the other part. Both pieces are needed to decrypt your key and fulfill the request to WaveSpeed.
+    ///
+    ///   - serviceURL: The service URL is displayed in the AIProxy dashboard when you submit your WaveSpeed key.
+    ///
+    ///   - clientID: An optional clientID to attribute requests to specific users or devices. It is OK to leave this blank for
+    ///     most applications. You would set this if you already have an analytics system, and you'd like to annotate AIProxy
+    ///     requests with IDs that are known to other parts of your system.
+    ///
+    ///     If you do not supply your own clientID, the internals of this lib will generate UUIDs for you. The default UUIDs are
+    ///     persistent on macOS and can be accurately used to attribute all requests to the same device. The default UUIDs
+    ///     on iOS are pesistent until the end user chooses to rotate their vendor identification number.
+    ///
+    /// - Returns: An instance of WaveSpeedService configured and ready to make requests
+    nonisolated public static func waveSpeedAIService(
+        partialKey: String,
+        serviceURL: String,
+        clientID: String? = nil
+    ) -> WaveSpeedAIService {
+        return WaveSpeedAIProxiedService(
+            partialKey: partialKey,
+            serviceURL: serviceURL,
+            clientID: clientID
+        )
+    }
+
+    /// Service that makes request directly to WaveSpeed. No protections are built-in for this service.
+    /// Please only use this for BYOK use cases.
+    ///
+    /// - Parameters:
+    ///   - unprotectedAPIKey: Your WaveSpeed API key
+    /// - Returns: An instance of  WaveSpeed configured and ready to make requests
+    nonisolated public static func waveSpeedAIDirectService(
+        unprotectedAPIKey: String
+    ) -> WaveSpeedAIService {
+        return WaveSpeedAIDirectService(
+            unprotectedAPIKey: unprotectedAPIKey
+        )
+    }
+
+
+
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
     nonisolated public static func encodeImageAsJpeg(

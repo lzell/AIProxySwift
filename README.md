@@ -20,6 +20,7 @@ included:
 - DeepSeek
 - Fireworks AI
 - Brave
+- WaveSpeedAI
 
 Your initialization code determines whether requests go straight to the provider or are
 protected through the [AIProxy](https://www.aiproxy.com) backend.
@@ -162,6 +163,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
 * [DeepSeek](#deepseek)
 * [Fireworks AI](#fireworks-ai)
 * [Brave](#brave)
+* [WaveSpeedAI](#wavespeedai)
 * [Advanced Settings](#advanced-settings)
 
 
@@ -6476,6 +6478,30 @@ proxy base URL.
         // https://www.aiproxy.com/docs/integration-options.html
         print("Could not make brave search: \(error.localizedDescription)")
     }
+```
+
+***
+
+## WaveSpeedAI
+
+### How to make a Wan 2.5 text to image request
+
+Configure the service in AIProxy's dashboard to use the base URL `https://api.wavespeed.ai`
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let waveSpeedAIService = AIProxy.waveSpeedAIDirectService(
+    //     unprotectedAPIKey: "your-waveSpeedAI-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let waveSpeedAIService = AIProxy.waveSpeedAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
 ```
 
 ***
