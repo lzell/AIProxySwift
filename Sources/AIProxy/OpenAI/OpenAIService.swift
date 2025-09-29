@@ -9,14 +9,14 @@ import Foundation
 
 @AIProxyActor public class OpenAIService: Sendable {
     private let requestFormat: OpenAIRequestFormat
-    private let requestBuilder: OpenAIRequestBuilder
+    private let requestBuilder: AIProxyRequestBuilder
     private let serviceNetworker: ServiceMixin
 
     /// This designated initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.openAIService` or `AIProxy.directOpenAIService` defined in AIProxy.swift.
     nonisolated init(
         requestFormat: OpenAIRequestFormat,
-        requestBuilder: OpenAIRequestBuilder,
+        requestBuilder: AIProxyRequestBuilder,
         serviceNetworker: ServiceMixin
     ) {
         self.requestFormat = requestFormat

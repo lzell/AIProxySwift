@@ -7,9 +7,7 @@
 
 import Foundation
 
-// TODO: Rename this to AIProxyRequestBuilder.
-//       It's generic enough for other services
-@AIProxyActor internal protocol OpenAIRequestBuilder: Sendable {
+@AIProxyActor internal protocol AIProxyRequestBuilder: Sendable {
 
     func jsonPOST(
         path: String,
@@ -35,7 +33,7 @@ import Foundation
     ) async throws -> URLRequest
 }
 
-extension OpenAIRequestBuilder {
+extension AIProxyRequestBuilder {
     func jsonPOST(
         path: String,
         body: Encodable,
