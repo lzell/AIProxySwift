@@ -13,7 +13,7 @@ import Foundation
     nonisolated init(
         unprotectedAPIKey: String
     ) {
-        let requestBuilder = OpenAIDirectRequestBuilder(
+        let requestBuilder = AIProxyDirectRequestBuilder(
             baseURL: "https://flows.eachlabs.ai", // EachAI has different baseURLs depending on which functionality you want to use.
             unprotectedAuthHeader: (key: "X-API-Key", value: unprotectedAPIKey)
         )

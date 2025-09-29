@@ -14,7 +14,7 @@
         baseURL: String? = nil
     ) {
         let baseURL = baseURL ?? "https://api.openai.com"
-        let requestBuilder = OpenAIDirectRequestBuilder(
+        let requestBuilder = AIProxyDirectRequestBuilder(
             baseURL: baseURL,
             unprotectedAuthHeader: (key: "Authorization", value: "Bearer \(unprotectedAPIKey)")
         )

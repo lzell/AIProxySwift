@@ -15,7 +15,7 @@ import Foundation
         serviceURL: String,
         clientID: String?
     ) {
-        let requestBuilder = OpenAIProxiedRequestBuilder(
+        let requestBuilder = AIProxyProxiedRequestBuilder(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID

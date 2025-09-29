@@ -1,5 +1,5 @@
 //
-//  OpenAIDirectRequestBuilder.swift
+//  AIProxyDirectRequestBuilder.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 7/12/25.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-@AIProxyActor struct OpenAIDirectRequestBuilder: AIProxyRequestBuilder {
+@AIProxyActor struct AIProxyDirectRequestBuilder: AIProxyRequestBuilder {
     let baseURL: String
     let unprotectedAuthHeader: (key: String, value: String)
 
