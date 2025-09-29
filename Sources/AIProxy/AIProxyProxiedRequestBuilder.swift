@@ -1,5 +1,5 @@
 //
-//  OpenAIProxiedRequestBuilder.swift
+//  AIProxyProxiedRequestBuilder.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 7/12/25.
@@ -9,7 +9,7 @@ import Foundation
 
 nonisolated private let legacyURL = "https://api.aiproxy.pro"
 
-@AIProxyActor struct OpenAIProxiedRequestBuilder: AIProxyRequestBuilder {
+@AIProxyActor struct AIProxyProxiedRequestBuilder: AIProxyRequestBuilder {
     let partialKey: String
     let serviceURL: String?
     let clientID: String?

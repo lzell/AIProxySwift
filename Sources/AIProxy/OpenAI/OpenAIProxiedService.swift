@@ -13,7 +13,7 @@
         clientID: String?,
         requestFormat: OpenAIRequestFormat = .standard
     ) {
-        let requestBuilder = OpenAIProxiedRequestBuilder(
+        let requestBuilder = AIProxyProxiedRequestBuilder(
             partialKey: partialKey,
             serviceURL: serviceURL,
             clientID: clientID
