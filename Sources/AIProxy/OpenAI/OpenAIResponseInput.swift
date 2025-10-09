@@ -63,6 +63,12 @@ extension OpenAIResponse.Input {
         ///   - Content: Text, image, or audio input to the model, used to generate a response.
         ///              Can also contain previous assistant responses.
         case message(role: Role, content: Content)
+        
+        case functionCall(_FunctionCall)
+        
+        case functionCallOutput(callID: String, output: String)
+        
+        case reasoning(id: String)
 
         private struct _Message: Codable, Sendable {
             let role: Role
@@ -103,12 +109,102 @@ extension OpenAIResponse.Input {
                 }
             }
         }
+        
+        public struct _FunctionCall: Codable, Sendable {
+            public let type = "function_call"
+            public let id: String
+            public let callID: String
+            public let name: String
+            public let arguments: String
+            public let status: String
+
+            private enum CodingKeys: String, CodingKey {
+                case type
+                case id
+                case callID = "call_id"
+                case name
+                case arguments
+                case status
+            }
+            
+            public init(id: String, callID: String, name: String, arguments: String, status: String) {
+                self.id = id
+                self.callID = callID
+                self.name = name
+                self.arguments = arguments
+                self.status = status
+            }
+        }
+        
+        private struct _FunctionCallOutput: Codable, Sendable {
+            let callID: String
+            let output: String
+
+            private enum CodingKeys: String, CodingKey {
+                case callID = "call_id"
+                case output
+                case type
+            }
+
+            init(callID: String, output: String) {
+                self.callID = callID
+                self.output = output
+            }
+
+            func encode(to encoder: any Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                try container.encode("function_call_output", forKey: .type)
+                try container.encode(callID, forKey: .callID)
+                try container.encode(output, forKey: .output)
+            }
+
+            init(from decoder: any Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let type = try container.decode(String.self, forKey: .type)
+                if type == "function_call_output" {
+                    self.callID = try container.decode(String.self, forKey: .callID)
+                    self.output = try container.decode(String.self, forKey: .output)
+                } else {
+                    throw DecodingError.typeMismatch(
+                        _Message.self,
+                        DecodingError.Context(
+                            codingPath: decoder.codingPath,
+                            debugDescription: "Content of type \(type) could not be decoded as _Message"
+                        )
+                    )
+                }
+            }
+        }
+        
+        public struct _Reasoning: Codable, Sendable {
+            
+            let id: String
+            
+//            /// Constrains effort on reasoning for [reasoning models](https://platform.openai.com/docs/guides/reasoning).
+//            /// Currently supported values are low, medium, and high. Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
+//            let effort: Effort?
+//
+//            /// A summary of the reasoning performed by the model. This can be useful for debugging and understanding the model's reasoning process.
+//            let generateSummary: String?
+
+//            private enum CodingKeys: String, CodingKey {
+//                case id
+//                case effort
+//                case generateSummary = "generate_summary"
+//            }
+        }
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.singleValueContainer()
             switch self {
             case .message(role: let role, content: let content):
                 try container.encode(_Message(role: role, content: content))
+            case .functionCall(let call):
+                try container.encode(call)
+            case .functionCallOutput(callID: let callID, output: let output):
+                try container.encode(_FunctionCallOutput(callID: callID, output: output))
+            case .reasoning(let id):
+                try container.encode(_Reasoning(id: id))
             }
         }
 
@@ -116,6 +212,16 @@ extension OpenAIResponse.Input {
             let container = try decoder.singleValueContainer()
             if let message = try? container.decode(_Message.self) {
                 self = .message(role: message.role, content: message.content)
+            } else if let functionCall = try? container.decode(_FunctionCall.self) {
+                self = .functionCall(_FunctionCall(
+                    id: functionCall.id,
+                    callID: functionCall.callID,
+                    name: functionCall.name,
+                    arguments: functionCall.arguments,
+                    status: functionCall.status
+                ))
+            } else if let functionCallOutput = try? container.decode(_FunctionCallOutput.self) {
+                self = .functionCallOutput(callID: functionCallOutput.callID, output: functionCallOutput.output)
             } else {
                 throw DecodingError.dataCorruptedError(
                     in: container,

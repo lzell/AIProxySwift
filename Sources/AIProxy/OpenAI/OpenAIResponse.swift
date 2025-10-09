@@ -235,6 +235,9 @@ extension OpenAIResponse {
     }
 
     nonisolated public struct Reasoning: Decodable, Sendable {
+        
+        public let id: String?
+        
         /// Constrains effort on reasoning for [reasoning models](https://platform.openai.com/docs/guides/reasoning).
         /// Currently supported values are low, medium, and high. Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
         let effort: Effort?
@@ -243,9 +246,10 @@ extension OpenAIResponse {
         let generateSummary: String?
 
         private enum CodingKeys: String, CodingKey {
+            case id
             case effort
             case generateSummary = "generate_summary"
-        }
+        }        
     }
 
     nonisolated public enum Status: String, Decodable, Sendable {
@@ -369,7 +373,7 @@ extension OpenAIResponse {
     }
 
     // MARK: - Function Call
-    nonisolated public struct FunctionCall: Decodable, Sendable {
+    nonisolated public struct FunctionCall: Codable, Sendable {
         public let type = "function_call"
         public let id: String
         public let callId: String
