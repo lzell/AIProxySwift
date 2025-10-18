@@ -1444,6 +1444,65 @@ Note: there is also a streaming version of this snippet below.
     }
 ```
 
+### How to make a tool call request with OpenAI's Responses API
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let schema: [String: AIProxyJSONValue] = [
+        "type": "object",
+        "properties": [
+            "location": [
+                "type": "string",
+                "description": "City and country e.g. Bogotá, Colombia"
+            ]
+        ],
+        "required": ["location"],
+        "additionalProperties": false
+    ]
+
+    let requestBody = OpenAICreateResponseRequestBody(
+        input: .text("What is the weather like in Paris today?"),
+        model: "gpt-4o",
+        tools: [
+            .function(
+                .init(
+                    name: "get_weather",
+                    parameters: schema
+                )
+            )
+        ]
+    )
+
+    do {
+        let response = try await openAIService.createResponse(
+            requestBody: requestBody,
+            secondsToWait: 60
+        )
+        if case .functionCall(let functionCall) = response.output.first {
+            print("""
+                  The model wants to call function: \(functionCall.name)
+                  with arguments: \(functionCall.arguments)")
+                  """)
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create a tool call response from OpenAI: \(error.localizedDescription)")
+    }
+```
+
 ### How to make a Structured Outputs request with OpenAI's Responses API
 
 ```swift
