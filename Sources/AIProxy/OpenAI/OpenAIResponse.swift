@@ -249,7 +249,7 @@ extension OpenAIResponse {
             case id
             case effort
             case generateSummary = "generate_summary"
-        }        
+        }
     }
 
     nonisolated public enum Status: String, Decodable, Sendable {
