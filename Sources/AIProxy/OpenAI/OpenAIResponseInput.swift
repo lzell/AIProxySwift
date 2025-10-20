@@ -64,7 +64,7 @@ extension OpenAIResponse.Input {
         ///              Can also contain previous assistant responses.
         case message(role: Role, content: Content)
         
-        case functionCall(_FunctionCall)
+        case functionCall(OpenAIResponse.FunctionCall)
         
         case functionCallOutput(callID: String, output: String)
         
@@ -107,32 +107,6 @@ extension OpenAIResponse.Input {
                         )
                     )
                 }
-            }
-        }
-        
-        public struct _FunctionCall: Codable, Sendable {
-            public let type = "function_call"
-            public let id: String
-            public let callID: String
-            public let name: String
-            public let arguments: String
-            public let status: String
-
-            private enum CodingKeys: String, CodingKey {
-                case type
-                case id
-                case callID = "call_id"
-                case name
-                case arguments
-                case status
-            }
-            
-            public init(id: String, callID: String, name: String, arguments: String, status: String) {
-                self.id = id
-                self.callID = callID
-                self.name = name
-                self.arguments = arguments
-                self.status = status
             }
         }
         
@@ -200,10 +174,10 @@ extension OpenAIResponse.Input {
             let container = try decoder.singleValueContainer()
             if let message = try? container.decode(_Message.self) {
                 self = .message(role: message.role, content: message.content)
-            } else if let functionCall = try? container.decode(_FunctionCall.self) {
-                self = .functionCall(_FunctionCall(
+            } else if let functionCall = try? container.decode(OpenAIResponse.FunctionCall.self) {
+                self = .functionCall(OpenAIResponse.FunctionCall(
                     id: functionCall.id,
-                    callID: functionCall.callID,
+                    callId: functionCall.callId,
                     name: functionCall.name,
                     arguments: functionCall.arguments,
                     status: functionCall.status

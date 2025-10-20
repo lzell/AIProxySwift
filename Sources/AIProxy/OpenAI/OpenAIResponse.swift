@@ -380,6 +380,14 @@ extension OpenAIResponse {
         public let name: String
         public let arguments: String
         public let status: String
+        
+        public init(id: String, callId: String, name: String, arguments: String, status: String) {
+            self.id = id
+            self.callId = callId
+            self.name = name
+            self.arguments = arguments
+            self.status = status
+        }
 
         private enum CodingKeys: String, CodingKey {
             case id
