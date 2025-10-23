@@ -390,6 +390,7 @@ extension OpenAIResponse {
         }
 
         private enum CodingKeys: String, CodingKey {
+            case type
             case id
             case callId = "call_id"
             case name
