@@ -90,6 +90,10 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
     /// The format of output audio.
     public let outputAudioFormat: AudioFormat?
 
+    /// The speed of the generated audio. Select a value from 0.25 to 4.0.
+    /// Default to `1.0`
+    public let speed: Float?
+
     /// Sampling temperature for the model.
     public let temperature: Double?
 
@@ -113,6 +117,7 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
         case maxResponseOutputTokens = "max_response_output_tokens"
         case modalities
         case outputAudioFormat = "output_audio_format"
+        case speed
         case temperature
         case tools
         case toolChoice = "tool_choice"
@@ -127,6 +132,7 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
         maxResponseOutputTokens: OpenAIRealtimeSessionConfiguration.MaxResponseOutputTokens? = nil,
         modalities: [OpenAIRealtimeSessionConfiguration.Modality]? = nil,
         outputAudioFormat: OpenAIRealtimeSessionConfiguration.AudioFormat? = nil,
+        speed: Float? = 1.0,
         temperature: Double? = nil,
         tools: [OpenAIRealtimeSessionConfiguration.Tool]? = nil,
         toolChoice: OpenAIRealtimeSessionConfiguration.ToolChoice? = nil,
@@ -139,6 +145,7 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
         self.maxResponseOutputTokens = maxResponseOutputTokens
         self.modalities = modalities
         self.outputAudioFormat = outputAudioFormat
+        self.speed = speed
         self.temperature = temperature
         self.tools = tools
         self.toolChoice = toolChoice
