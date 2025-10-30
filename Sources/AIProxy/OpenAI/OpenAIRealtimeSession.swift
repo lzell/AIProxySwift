@@ -153,8 +153,9 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
             self.continuation?.yield(.inputAudioBufferSpeechStarted)
         case "response.function_call_arguments.done":
             if let name = json["name"] as? String,
-               let arguments = json["arguments"] as? String {
-                self.continuation?.yield(.responseFunctionCallArgumentsDone(name, arguments))
+               let arguments = json["arguments"] as? String,
+               let callId = json["call_id"] as? String {
+                self.continuation?.yield(.responseFunctionCallArgumentsDone(name, arguments, callId))
             }
         
         // New cases for handling transcription messages
