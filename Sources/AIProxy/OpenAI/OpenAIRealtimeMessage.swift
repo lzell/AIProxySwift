@@ -12,7 +12,7 @@ nonisolated public enum OpenAIRealtimeMessage: Sendable {
     case responseCreated // "response.created"
     case responseAudioDelta(String) // "response.audio.delta"
     case inputAudioBufferSpeechStarted // "input_audio_buffer.speech_started"
-    case responseFunctionCallArgumentsDone(String, String) // "response.function_call_arguments.done"
+    case responseFunctionCallArgumentsDone(String, String, String) // "response.function_call_arguments.done"
     
     // Add new cases for transcription
     case responseTranscriptDelta(String) // "response.audio_transcript.delta"
