@@ -150,8 +150,8 @@ import Foundation
     public func deleteFile(
         fileURL: URL
     ) async throws {
-        guard fileURL.host == "generativelanguage.googleapis.com" else {
-            throw AIProxyError.assertion("Gemini has changed the file storage domain")
+        guard let host = fileURL.host else {
+            throw AIProxyError.assertion("Could not get base host for Gemini media endpoint")
         }
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
@@ -160,7 +160,10 @@ import Foundation
             proxyPath: fileURL.path,
             body: nil,
             verb: .delete,
-            secondsToWait: 60
+            secondsToWait: 60,
+            additionalHeaders: [
+                "aiproxy-base-url": "https://" + host,
+            ]
         )
         let (_, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
             self.urlSession,
@@ -172,8 +175,8 @@ import Foundation
     public func getStatus(
         fileURL: URL
     ) async throws -> GeminiFile {
-        guard fileURL.host == "generativelanguage.googleapis.com" else {
-            throw AIProxyError.assertion("Gemini has changed the upload polling domain")
+        guard let host = fileURL.host else {
+            throw AIProxyError.assertion("Could not get base host for Gemini media endpoint")
         }
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
@@ -182,7 +185,10 @@ import Foundation
             proxyPath: fileURL.path,
             body: nil,
             verb: .get,
-            secondsToWait: 60
+            secondsToWait: 60,
+            additionalHeaders: [
+                "aiproxy-base-url": "https://" + host,
+            ]
         )
         let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
             AIProxyUtils.proxiedURLSession(),

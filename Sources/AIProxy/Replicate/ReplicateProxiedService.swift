@@ -348,6 +348,7 @@ private let kTimeoutBufferForSyncAPIInSeconds: UInt = 5
     public func getTraining(
         url: URL
     ) async throws -> ReplicateTrainingResponseBody {
+        // TODO: Use header override here!!
         guard url.host == "api.replicate.com" else {
             throw AIProxyError.assertion("Replicate has changed the poll domain")
         }

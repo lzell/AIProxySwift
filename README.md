@@ -2478,7 +2478,7 @@ Add a file called `helloworld.m4a` to your Xcode assets before running this samp
         )
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-1.5-flash",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for part in response.candidates?.first?.content?.parts ?? [] {
@@ -2558,7 +2558,7 @@ Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
         )
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-1.5-flash",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for part in response.candidates?.first?.content?.parts ?? [] {
@@ -2653,7 +2653,7 @@ Use the file URL returned from the snippet above.
     // )
 
     let requestBody = GeminiGenerateContentRequestBody(
-        model: "gemini-1.5-flash",
+        model: "gemini-2.5-flash",
         contents: [
             .init(
                 parts: [
@@ -2677,7 +2677,7 @@ Use the file URL returned from the snippet above.
     do {
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-1.5-flash",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for part in response.candidates?.first?.content?.parts ?? [] {

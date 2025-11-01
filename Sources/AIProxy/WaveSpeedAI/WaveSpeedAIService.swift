@@ -21,6 +21,83 @@ import Foundation
         self.serviceNetworker = serviceNetworker
     }
 
+    #if false
+    public func callPredictAndPoll(
+        path: String,
+        body: any Encodable,
+        pollAttempts: UInt,
+        secondsBetweenPollAttempts: UInt
+    ) async throws {
+        let request = try await self.requestBuilder.jsonPOST(
+            path: path,
+            body: body,
+            secondsToWait: 60,
+        )
+        let pred: WaveSpeedAICreatePredictionResponseBody = try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+        if pred.data?.status == "completed" {
+            // Return it right here! Don't go into poll loop.
+        }
+        guard let getURL = pred.data?.urls?.get else {
+            throw WaveSpeedAIError.predictionDidNotIncludeURL
+        }
+
+        try await Task.sleep(nanoseconds: UInt64(secondsBetweenPollAttempts) * 1_000_000_000)
+        for _ in 0..<pollAttempts {
+            let response: WaveSpeedAICreatePredictionResponseBody = try await self.getPrediction(
+                url: url
+            )
+            if response.status?.isTerminal == true {
+                return response
+            }
+            try await Task.sleep(nanoseconds: UInt64(secondsBetweenPollAttempts) * 1_000_000_000)
+        }
+        throw WaveSpeedAIError.reachedRetryLimit
+    }
+
+    public func getPrediction(url: URL) {
+
+        guard url.host == "api.wavespeed.ai" else {
+            // 
+            throw AIProxyError.assertion("Replicate has changed the poll domain")
+
+        }
+
+        guard url.host == "api.replicate.com" else {
+            throw AIProxyError.assertion("Replicate has changed the poll domain")
+        }
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: url.path,
+            body: nil,
+            verb: .get,
+            secondsToWait: 60
+        )
+        return try await self.makeRequestAndDeserializeResponse(request)
+
+
+    }
+
+    public func pollForPredictionCompletion<Output: Decodable & Sendable>(
+        url: URL,
+        pollAttempts: UInt,
+        secondsBetweenPollAttempts: UInt
+    ) async throws -> ReplicatePrediction<Output> {
+        try await Task.sleep(nanoseconds: UInt64(secondsBetweenPollAttempts) * 1_000_000_000)
+        for _ in 0..<pollAttempts {
+            let response: ReplicatePrediction<Output> = try await self.getPrediction(
+                url: url
+            )
+            if response.status?.isTerminal == true {
+                return response
+            }
+            try await Task.sleep(nanoseconds: UInt64(secondsBetweenPollAttempts) * 1_000_000_000)
+        }
+        throw ReplicateError.reachedRetryLimit
+    }
+
+
     /// Initiates a request to /api/v3/alibaba/wan-2.5/text-to-image
     ///
     /// - Parameters:
@@ -32,13 +109,12 @@ import Foundation
     public func runWan25TextToImage(
         body: WaveSpeedAIWan25TextToImageRequestBody,
         secondsToWait: UInt,
-        additionalHeaders: [String: String] = [:]
-    ) async throws -> OpenAIChatCompletionResponseBody {
+    ) async throws -> WaveSpeedAICreatePredictionResponseBody {
+        self.callPredictAndPoll(path: "/api/v3/alibaba/wan-2.5/text-to-image", body: body)
         let request = try await self.requestBuilder.jsonPOST(
-            path: "/api/v3/alibaba/wan-2.5/text-to-image",
+            path: "foo",
             body: body,
-            secondsToWait: secondsToWait,
-            additionalHeaders: additionalHeaders
+            secondsToWait: secondsToWait
         )
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
@@ -67,4 +143,5 @@ import Foundation
 //        )
 //        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
 //    }
+    #endif
 }
