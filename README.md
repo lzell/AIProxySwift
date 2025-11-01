@@ -2247,13 +2247,12 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
                 parts: [.text("How do I use product xyz?")]
             )
         ],
-        generationConfig: .init(maxOutputTokens: 1024),
         systemInstruction: .init(parts: [.text("Introduce yourself as a customer support person")])
     )
     do {
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-2.0-flash-exp",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for part in response.candidates?.first?.content?.parts ?? [] {
@@ -2304,7 +2303,6 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
                 parts: [.text("How do I use product xyz?")]
             )
         ],
-        generationConfig: .init(maxOutputTokens: 1024),
         safetySettings: [
             .init(category: .dangerousContent, threshold: .none),
             .init(category: .civicIntegrity, threshold: .none),
@@ -2317,7 +2315,7 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     do {
         let stream = try await geminiService.generateStreamingContentRequest(
             body: requestBody,
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for try await chunk in stream {
@@ -2399,7 +2397,7 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     do {
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-2.0-flash-exp",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for part in response.candidates?.first?.content?.parts ?? [] {
@@ -2471,7 +2469,7 @@ credits that you can put towards Gemini.
     do {
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for candidate in response.candidates ?? [] {
@@ -2535,7 +2533,7 @@ Add a file called `helloworld.m4a` to your Xcode assets before running this samp
         )
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-1.5-flash",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for part in response.candidates?.first?.content?.parts ?? [] {
@@ -2615,7 +2613,7 @@ Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
         )
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-1.5-flash",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for part in response.candidates?.first?.content?.parts ?? [] {
@@ -2710,7 +2708,6 @@ Use the file URL returned from the snippet above.
     // )
 
     let requestBody = GeminiGenerateContentRequestBody(
-        model: "gemini-1.5-flash",
         contents: [
             .init(
                 parts: [
@@ -2734,7 +2731,7 @@ Use the file URL returned from the snippet above.
     do {
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-1.5-flash",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for part in response.candidates?.first?.content?.parts ?? [] {
@@ -2838,7 +2835,7 @@ Use the file URL returned from the snippet above.
         )
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for part in response.candidates?.first?.content?.parts ?? [] {
@@ -2934,7 +2931,7 @@ Use the file URL returned from the snippet above.
     do {
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
             secondsToWait: 60
         )
         for part in response.candidates?.first?.content?.parts ?? [] {
