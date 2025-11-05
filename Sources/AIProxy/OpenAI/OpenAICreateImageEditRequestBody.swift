@@ -79,18 +79,7 @@ nonisolated public struct OpenAICreateImageEditRequestBody: MultipartFormEncodab
 
     public var formFields: [FormField] {
         var builder: [FormField] = []
-        for i in 0..<self.images.count {
-            let img = self.images[i]
-            builder.append(
-                .fileField(
-                    name: "image[]",
-                    content: img.content,
-                    contentType: img.contentType,
-                    filename: "tmpfile\(i)"
-                )
-            )
-        }
-
+        self.setImageFormField(builder: &builder)
         return builder + [
             .textField(name: "prompt", content: self.prompt),
             self.background.flatMap { .textField(name: "background", content: $0.rawValue) },
@@ -135,6 +124,33 @@ nonisolated public struct OpenAICreateImageEditRequestBody: MultipartFormEncodab
         self.responseFormat = responseFormat
         self.size = size
         self.user = user
+    }
+
+    private func setImageFormField(builder: inout [FormField]) {
+        // If the user wants a dalle-2 edit, we can only allow a single image.
+        // Also, OpenAI expects that dalle-2 sends an `image` not `image[]` part:
+        if self.model == .dallE2, let img = self.images.first {
+            builder.append(
+                .fileField(
+                    name: "image",
+                    content: img.content,
+                    contentType: img.contentType,
+                    filename: "tmpfile"
+                )
+            )
+        } else {
+            for i in 0..<self.images.count {
+                let img = self.images[i]
+                builder.append(
+                    .fileField(
+                        name: "image[]",
+                        content: img.content,
+                        contentType: img.contentType,
+                        filename: "tmpfile\(i)"
+                    )
+                )
+            }
+        }
     }
 }
 
