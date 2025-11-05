@@ -266,6 +266,14 @@ extension OpenAIResponse {
         case required = "required"
     }
 
+    nonisolated public struct InputTokensDetails: Decodable, Sendable {
+        public let cachedTokens: Int
+
+        private enum CodingKeys: String, CodingKey {
+            case cachedTokens = "cached_tokens"
+        }
+    }
+
     nonisolated public struct OutputTokensDetails: Decodable, Sendable {
         public let reasoningTokens: Int
 
@@ -276,12 +284,14 @@ extension OpenAIResponse {
 
     nonisolated public struct ResponseUsage: Decodable, Sendable {
         public let inputTokens: Int?
+        public let inputTokensDetails: InputTokensDetails?
         public let outputTokens: Int?
         public let outputTokensDetails: OutputTokensDetails?
         public let totalTokens: Int?
 
         private enum CodingKeys: String, CodingKey {
             case inputTokens = "input_tokens"
+            case inputTokensDetails = "input_tokens_details"
             case outputTokens = "output_tokens"
             case outputTokensDetails = "output_tokens_details"
             case totalTokens = "total_tokens"
