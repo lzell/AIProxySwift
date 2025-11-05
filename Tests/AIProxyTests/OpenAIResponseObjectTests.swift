@@ -130,6 +130,7 @@ final class OpenAIResponseObjectTests: XCTestCase {
         XCTAssertEqual(1.0, res.topP)
         XCTAssertEqual("disabled", res.truncation)
         XCTAssertEqual(26, res.usage?.inputTokens)
+        XCTAssertEqual(0, res.usage?.inputTokensDetails?.cachedTokens)
         XCTAssertEqual(10, res.usage?.outputTokens)
         XCTAssertEqual(0, res.usage?.outputTokensDetails?.reasoningTokens)
         XCTAssertEqual(36, res.usage?.totalTokens)
