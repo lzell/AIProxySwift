@@ -42,7 +42,7 @@ import AVFoundation
 
     public init(modes: [Mode]) async throws {
         self.modes = modes
-        #if os(iOS)
+#if os(iOS)
         // This is not respected if `setVoiceProcessingEnabled(true)` is used :/
         // Instead, I've added my own accumulator.
         // try? AVAudioSession.sharedInstance().setPreferredIOBufferDuration(0.1)
@@ -54,21 +54,21 @@ import AVFoundation
         )
         try? AVAudioSession.sharedInstance().setActive(true, options: [])
 
-        #elseif os(watchOS)
+#elseif os(watchOS)
         try? AVAudioSession.sharedInstance().setCategory(.playAndRecord)
         try? await AVAudioSession.sharedInstance().activate(options: [])
-        #endif
+#endif
 
         self.audioEngine = AVAudioEngine()
 
         if modes.contains(.record) {
-            #if os(macOS) || os(iOS)
+#if os(macOS) || os(iOS)
             self.microphonePCMSampleVendor = AIProxyUtils.headphonesConnected
-                                               ? try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
-                                               : MicrophonePCMSampleVendorAT()
-            #else
+            ? try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
+            : MicrophonePCMSampleVendorAT()
+#else
             self.microphonePCMSampleVendor = try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
-            #endif
+#endif
         }
 
 

@@ -53,6 +53,15 @@ import Foundation
         return data
     }
 
+    func streamingTTSRequest(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> Void {
+        fatalError()
+    }
+
+
     /// Converts speech to speech with a request to `/v1/speech-to-speech/<voice-id>`
     ///
     /// - Parameters:

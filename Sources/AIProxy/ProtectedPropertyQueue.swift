@@ -23,4 +23,9 @@ nonisolated enum ProtectedPropertyQueue {
         label: "aiproxy-protected-progress-callback",
         attributes: .concurrent
     )
+
+    static let legacyBridgeCallback = DispatchQueue(
+        label: "aiproxy-protected-legacy-bridge-callback",
+        attributes: .concurrent
+    )
 }
