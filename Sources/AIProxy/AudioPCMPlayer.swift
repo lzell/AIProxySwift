@@ -64,7 +64,7 @@ import AVFoundation
     }
 
     deinit {
-        logIf(.debug)?.debug("AudioPCMPlayer is being freed")
+        logIf(.debug)?.debug("AIProxy: AudioPCMPlayer is being freed")
     }
 
     public func playPCM16Audio(from base64String: String) {
@@ -76,6 +76,12 @@ import AVFoundation
     }
 
     public func playPCM16Audio(data audioData: Data) {
+        logIf(.debug)?.debug("AIProxy: playing \(audioData.count / 2) samples of PCM16 data")
+
+#if false
+        writeRawAudioToFile(audioData, location: "inputRaw.txt")
+#endif
+
         var bufferList = AudioBufferList(
             mNumberBuffers: 1,
             mBuffers: (
@@ -94,6 +100,10 @@ import AVFoundation
             logIf(.error)?.error("Could not create input buffer for audio playback")
             return
         }
+
+#if false
+        writePCM16IntValuesToFile(from: inPCMBuf, location: "input.txt")
+#endif
 
         guard let outPCMBuf = AVAudioPCMBuffer(
             pcmFormat: self.playableFormat,
@@ -115,12 +125,11 @@ import AVFoundation
             return
         }
 
+#if false
+        writePCM16IntValuesToFile(from: outPCMBuf, location: "output.txt")
+#endif
+
         if self.audioEngine.isRunning {
-            // #if os(macOS)
-            // if AIProxyUtils.headphonesConnected {
-            //    addGain(to: outPCMBuf, gain: 2.0)
-            // }
-            // #endif
             self.playerNode.scheduleBuffer(outPCMBuf, at: nil, options: [], completionHandler: {})
             self.playerNode.play()
         }

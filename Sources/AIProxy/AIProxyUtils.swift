@@ -27,7 +27,11 @@ import Network
 enum AIProxyUtils {
 
     nonisolated static func directURLSession() -> URLSession {
-        return URLSession(configuration: .ephemeral)
+        return URLSession(
+            configuration: .ephemeral,
+            delegate: DirectURLSessionDataDelegate(),
+            delegateQueue: nil
+        )
     }
 
     nonisolated static func proxiedURLSession() -> URLSession {
