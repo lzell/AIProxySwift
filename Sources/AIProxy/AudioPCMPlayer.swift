@@ -72,7 +72,10 @@ import AVFoundation
             logIf(.error)?.error("Could not decode base64 string for audio playback")
             return
         }
+        playPCM16Audio(data: audioData)
+    }
 
+    public func playPCM16Audio(data audioData: Data) {
         var bufferList = AudioBufferList(
             mNumberBuffers: 1,
             mBuffers: (

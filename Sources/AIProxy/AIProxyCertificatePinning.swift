@@ -7,6 +7,12 @@
 
 import Foundation
 
+enum LegacyBridge {
+    case didReceiveResponse(URLSessionDataTask, URLResponse)
+    case didReceiveData(URLSessionDataTask, Data)
+    case didComplete(URLSessionTask, Error?)
+}
+
 /// ## About
 /// Use this class in conjunction with a URLSession to adopt certificate pinning in your app.
 /// Cert pinning greatly reduces the ability for an attacker to snoop on your traffic.
@@ -49,7 +55,7 @@ import Foundation
 ///
 /// If you encounter other calls in the wild that do not invoke `urlSession:didReceiveChallenge:` on this class,
 /// please report them to me.
-nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate {
 
     nonisolated(unsafe) private var _progressCallback: (@Sendable (Double) -> Void)?
     public var progressCallback: (@Sendable (Double) -> Void)? {
@@ -58,6 +64,18 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
         }
         set {
             ProtectedPropertyQueue.progressCallback.async(flags: .barrier) { self._progressCallback = newValue }
+        }
+    }
+
+    /// Why is this needed?
+    /// For streaming use case, I don't want to always consume one byte or textual lines. In some cases I want the data as it arrives off the wire.
+    nonisolated(unsafe) private var _legacyBridgeCallback: (@Sendable (LegacyBridge) -> Void)?
+    internal var legacyBridgeCallback: (@Sendable (LegacyBridge) -> Void)? {
+        get {
+            ProtectedPropertyQueue.legacyBridgeCallback.sync { self._legacyBridgeCallback }
+        }
+        set {
+            ProtectedPropertyQueue.legacyBridgeCallback.async(flags: .barrier) { self._legacyBridgeCallback = newValue }
         }
     }
 
@@ -113,6 +131,46 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
       }
       return (.cancelAuthenticationChallenge, nil)
    }
+
+    // MARK: - Legacy API conformance
+    /// See: Why?
+    public func urlSession(
+        _ session: URLSession,
+        dataTask: URLSessionDataTask,
+        didReceive response: URLResponse,
+        completionHandler: @Sendable @escaping (URLSession.ResponseDisposition) -> Void
+    ) {
+        self.legacyBridgeCallback?(.didReceiveResponse(dataTask, response))
+//        // You can inspect headers or status code here
+//        if let http = response as? HTTPURLResponse {
+//            print("Status:", http.statusCode)
+//        }
+
+//        // TODO: verify that this doesn't work around cert pinning. Try removing one of the keys from below and see if comm succeeds.
+        completionHandler(.allow)
+    }
+
+    public func urlSession(
+        _ session: URLSession,
+        dataTask: URLSessionDataTask,
+        didReceive data: Data
+    ) {
+        print("Got \(data.count) bytes")
+        self.legacyBridgeCallback?(.didReceiveData(dataTask, data))
+//        self.dataCallback?(data)
+        NSLog("LZELL task data: %@", data as NSData)
+
+    }
+
+    public func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        didCompleteWithError error: Error?
+    ) {
+        // TODO: Test this by hanging up the proxy early and see what happens.
+        self.legacyBridgeCallback?(.didComplete(task, error))
+        print("Completed with:", error ?? "success")
+    }
 
     // MARK: - Deprecated
     @available(*, deprecated, message: "Please use the progressCallback setter directly, e.g. myDelegate.progressCallback = ...")

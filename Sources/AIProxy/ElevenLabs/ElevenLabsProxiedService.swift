@@ -55,6 +55,43 @@ import Foundation
         return data
     }
 
+    func streamingTTSRequest(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> Void {
+        let request = try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL,
+            clientID: self.clientID,
+            proxyPath: "/v1/text-to-speech/\(voiceID)/stream?output_format=pcm_24000",
+            body: try body.serialize(),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "application/json"
+        )
+        Task {
+            let audioController = try await AudioController(modes: [.playback])
+            let stream = try await BackgroundNetworker.makeRequestAndVendChunks(self.urlSession, request)
+
+            for await chunk in stream {
+                audioController.playPCM16Audio(data: chunk)
+                print(chunk.count)
+            }
+        }
+
+
+//        let (asyncBytes, _) = try await BackgroundNetworker.makeRequestAndVendChunks(
+//            self.urlSession,
+//            request
+//        )
+//        for try await chunk in asyncBytes {
+//            print("Received \(chunk.count) bytes")
+//        }
+//        return asyncBytes
+    }
+
+
     /// Converts speech to speech with a request to `/v1/speech-to-speech/<voice-id>`
     ///
     /// - Parameters:
