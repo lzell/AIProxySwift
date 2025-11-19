@@ -32,7 +32,7 @@ import AVFoundation
     init(audioEngine: AVAudioEngine) async throws {
         self.audioEngine = audioEngine
         guard let inputFormat = AVAudioFormat(
-            commonFormat: .pcmFormatInt32,
+            commonFormat: .pcmFormatInt16,
             sampleRate: 24000,
             channels: 1,
             interleaved: true

@@ -71,7 +71,6 @@ import AVFoundation
 #endif
         }
 
-
         if modes.contains(.playback) {
             self.audioPCMPlayer = try await AudioPCMPlayer(audioEngine: self.audioEngine)
         }
