@@ -133,7 +133,8 @@ nonisolated private func advancedPCMBuffer_noCopy(_ originalBuffer: AVAudioPCMBu
 }
 
 // For debugging purposes only.
-nonisolated private func writePCM16IntValuesToFile(from buffer: AVAudioPCMBuffer, location: String) {
+// Don't forget to enable Signing & Capabilities > File Access > Downloads Folder > Read and Write
+nonisolated public func writePCM16IntValuesToFile(from buffer: AVAudioPCMBuffer, location: String) {
     guard let audioBufferList = buffer.audioBufferList.pointee.mBuffers.mData else {
         print("No audio data available to write to disk")
         return
@@ -148,7 +149,7 @@ nonisolated private func writePCM16IntValuesToFile(from buffer: AVAudioPCMBuffer
     let fileURL = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Downloads/\(location)")
     let content = samples.map { String($0) }.joined(separator: "\n") + "\n"
     if !FileManager.default.fileExists(atPath: fileURL.path) {
-        try? content.write(to: fileURL, atomically: true, encoding: .utf8)
+        try! content.write(to: fileURL, atomically: true, encoding: .utf8)
     } else {
         let fileHandle = try! FileHandle(forWritingTo: fileURL)
         defer { fileHandle.closeFile() }
@@ -158,3 +159,53 @@ nonisolated private func writePCM16IntValuesToFile(from buffer: AVAudioPCMBuffer
         }
     }
 }
+
+nonisolated public func writeRawAudioToFile(_ data: Data, location: String) {
+    let fileURL = URL(fileURLWithPath: NSHomeDirectory())
+        .appendingPathComponent("Downloads/\(location)")
+
+    print("lzell incoming data of size: \(data.count)")
+    print(data.map { String(format: "%02X", $0) })
+
+    var samples: [Int16] = []
+
+    // Ensure length is a multiple of 4
+    let count = data.count - (data.count % 2)
+    print("lzell writing count of \(count)")
+
+    var i = 0
+    while i + 1 < count {
+        let s = Int16(bitPattern:
+            UInt16(data[i]) |
+            (UInt16(data[i+1]) << 8)
+        )
+
+        samples.append(s)
+        i += 2
+    }
+
+//    var i = 0
+//    while i < count {
+//        // little-endian: low byte then high byte
+//        let lo = UInt16(data[i])
+//        let hi = UInt16(data[i + 1]) << 8
+//        let value = Int16(bitPattern: lo | hi)
+//        result.append(value)
+//        i += 2
+//    }
+
+    // Convert to text, one UInt per line
+    let content = samples.map { String($0) }.joined(separator: "\n") + "\n"
+
+    if !FileManager.default.fileExists(atPath: fileURL.path) {
+        try! content.write(to: fileURL, atomically: true, encoding: .utf8)
+    } else {
+        let fileHandle = try! FileHandle(forWritingTo: fileURL)
+        defer { fileHandle.closeFile() }
+        fileHandle.seekToEndOfFile()
+        if let data = content.data(using: .utf8) {
+            fileHandle.write(data)
+        }
+    }
+}
+

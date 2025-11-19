@@ -75,6 +75,8 @@ import Foundation
             let stream = try await BackgroundNetworker.makeRequestAndVendChunks(self.urlSession, request)
 
             for await chunk in stream {
+                print("GOT A CHUNK...")
+                myGlobal3 += 1
                 audioController.playPCM16Audio(data: chunk)
                 print(chunk.count)
             }

@@ -140,6 +140,7 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
         didReceive response: URLResponse,
         completionHandler: @Sendable @escaping (URLSession.ResponseDisposition) -> Void
     ) {
+        myGlobal1 += 1
         self.legacyBridgeCallback?(.didReceiveResponse(dataTask, response))
 //        // You can inspect headers or status code here
 //        if let http = response as? HTTPURLResponse {
@@ -157,6 +158,7 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
     ) {
         print("Got \(data.count) bytes")
         self.legacyBridgeCallback?(.didReceiveData(dataTask, data))
+        writeRawAudioToFile(data, location: "reallyRaw.txt")
 //        self.dataCallback?(data)
         NSLog("LZELL task data: %@", data as NSData)
 

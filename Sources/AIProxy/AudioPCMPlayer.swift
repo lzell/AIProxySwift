@@ -32,7 +32,7 @@ import AVFoundation
     init(audioEngine: AVAudioEngine) async throws {
         self.audioEngine = audioEngine
         guard let inputFormat = AVAudioFormat(
-            commonFormat: .pcmFormatInt16,
+            commonFormat: .pcmFormatInt32,
             sampleRate: 24000,
             channels: 1,
             interleaved: true
@@ -76,6 +76,7 @@ import AVFoundation
     }
 
     public func playPCM16Audio(data audioData: Data) {
+        writeRawAudioToFile(audioData, location: "inputRaw.txt")
         var bufferList = AudioBufferList(
             mNumberBuffers: 1,
             mBuffers: (
@@ -94,6 +95,7 @@ import AVFoundation
             logIf(.error)?.error("Could not create input buffer for audio playback")
             return
         }
+        writePCM16IntValuesToFile(from: inPCMBuf, location: "input.txt")
 
         guard let outPCMBuf = AVAudioPCMBuffer(
             pcmFormat: self.playableFormat,
@@ -114,6 +116,9 @@ import AVFoundation
             logIf(.error)?.error("Could not map from pcm16int to pcm32float: \(error.localizedDescription)")
             return
         }
+
+        writePCM16IntValuesToFile(from: outPCMBuf, location: "output.txt")
+
 
         if self.audioEngine.isRunning {
             // #if os(macOS)

@@ -6,6 +6,10 @@
 
 import Foundation
 
+nonisolated(unsafe) var myGlobal1 = 0
+nonisolated(unsafe) var myGlobal2 = 0
+nonisolated(unsafe) var myGlobal3 = 0
+
 struct BackgroundNetworker {
 
     /// Throws AIProxyError.unsuccessfulRequest if the returned status code is non-200
@@ -91,12 +95,14 @@ struct BackgroundNetworker {
                             }
                         }
                     case .didReceiveData(let dataTask, let data):
-                        if accumulateErrorBodyBox.value {
-
-                        } else {
+                        myGlobal2 += 1
+//                        if accumulateErrorBodyBox.value {
+//
+//                        } else {
                             continuation.yield(data)
-                        }
+//                        }
                     case .didComplete(let task):
+                        print("my globals are: \(myGlobal1), \(myGlobal2), \(myGlobal3)")
                         break
                     }
                 }
