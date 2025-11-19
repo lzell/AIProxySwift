@@ -82,8 +82,9 @@ import Foundation
         return AsyncStream<AVAudioPCMBuffer> { [weak self] continuation in
             guard let this = self else { return }
             this.continuation = continuation
-            
-            // This ensures the closure created is NOT actor-isolated
+
+            // This ensures the closure created is NOT actor-isolated.
+            // See PR https://github.com/lzell/AIProxySwift/pull/238 for more.
             this.installTapNonIsolated(
                 inputNode: this.inputNode,
                 bufferSize: targetBufferSize,
@@ -91,7 +92,7 @@ import Foundation
             )
         }
     }
-    
+
     nonisolated private func installTapNonIsolated(
         inputNode: AVAudioInputNode,
         bufferSize: AVAudioFrameCount,
