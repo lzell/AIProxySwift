@@ -33,8 +33,6 @@ import Foundation
 /// Apple sample code: https://developer.apple.com/documentation/avfaudio/using-voice-processing
 /// Apple technical note: https://developer.apple.com/documentation/technotes/tn3136-avaudioconverter-performing-sample-rate-conversions
 /// My apple forum question: https://developer.apple.com/forums/thread/771530
-
-
 @AIProxyActor class MicrophonePCMSampleVendorAE: MicrophonePCMSampleVendor {
     private let audioEngine: AVAudioEngine
     private let inputNode: AVAudioInputNode
