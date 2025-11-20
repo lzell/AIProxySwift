@@ -68,7 +68,10 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
     }
 
     /// Why is this needed?
-    /// For streaming use case, I don't want to always consume one byte or textual lines. In some cases I want the data as it arrives off the wire.
+    /// For some streaming use cases, we don't want to always consume textual lines through the modern `asyncBytes.lines` helper.
+    /// Some use cases require vending data as it arrives off the wire, such as streaming audio.
+    /// Unfortunately, modern async/await URLSession APIs don't provide this functionality out of the box.
+    /// This closure acts as a bridge to the legacy delegate-based URLSession partial data vendor.
     nonisolated(unsafe) private var _legacyBridgeCallback: (@Sendable (LegacyBridge) -> Void)?
     internal var legacyBridgeCallback: (@Sendable (LegacyBridge) -> Void)? {
         get {
@@ -133,21 +136,14 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
    }
 
     // MARK: - Legacy API conformance
-    /// See: Why?
     public func urlSession(
         _ session: URLSession,
         dataTask: URLSessionDataTask,
         didReceive response: URLResponse,
         completionHandler: @Sendable @escaping (URLSession.ResponseDisposition) -> Void
     ) {
-        myGlobal1 += 1
         self.legacyBridgeCallback?(.didReceiveResponse(dataTask, response))
-//        // You can inspect headers or status code here
-//        if let http = response as? HTTPURLResponse {
-//            print("Status:", http.statusCode)
-//        }
-
-//        // TODO: verify that this doesn't work around cert pinning. Try removing one of the keys from below and see if comm succeeds.
+        // TODO: verify that this doesn't work around cert pinning. Try removing one of the keys from below and see if comm succeeds.
         completionHandler(.allow)
     }
 
@@ -156,12 +152,7 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
         dataTask: URLSessionDataTask,
         didReceive data: Data
     ) {
-        print("Got \(data.count) bytes")
         self.legacyBridgeCallback?(.didReceiveData(dataTask, data))
-        writeRawAudioToFile(data, location: "reallyRaw.txt")
-//        self.dataCallback?(data)
-        NSLog("LZELL task data: %@", data as NSData)
-
     }
 
     public func urlSession(
@@ -171,7 +162,6 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
     ) {
         // TODO: Test this by hanging up the proxy early and see what happens.
         self.legacyBridgeCallback?(.didComplete(task, error))
-        print("Completed with:", error ?? "success")
     }
 
     // MARK: - Deprecated

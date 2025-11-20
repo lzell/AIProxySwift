@@ -74,6 +74,7 @@ import Foundation
             let audioController = try await AudioController(modes: [.playback])
             let stream = try await BackgroundNetworker.makeRequestAndVendChunks(self.urlSession, request)
 
+
             for await chunk in stream {
                 print("GOT A CHUNK...")
                 myGlobal3 += 1
