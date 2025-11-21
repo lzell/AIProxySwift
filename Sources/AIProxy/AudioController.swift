@@ -29,6 +29,7 @@ import AVFoundation
 ///     | watchOS  | No            | AudioEngine      |
 ///     +----------+---------------+------------------+
 ///
+// TODO: Make this nonisolated so that the client can choose where to run it
 @AIProxyActor public final class AudioController {
     public enum Mode {
         case record

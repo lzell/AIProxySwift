@@ -31,7 +31,7 @@ import Foundation
         voiceID: String,
         body: ElevenLabsTTSRequestBody,
         secondsToWait: UInt
-    ) async throws -> Void
+    ) async throws -> AsyncStream<Data>
 
 
     /// Converts speech to speech with a request to `/v1/speech-to-speech/<voice-id>`

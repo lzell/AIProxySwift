@@ -57,7 +57,7 @@ import Foundation
         voiceID: String,
         body: ElevenLabsTTSRequestBody,
         secondsToWait: UInt
-    ) async throws -> Void {
+    ) async throws -> AsyncStream<Data> {
         fatalError()
     }
 

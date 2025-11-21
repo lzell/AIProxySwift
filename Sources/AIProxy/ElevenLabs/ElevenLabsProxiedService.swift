@@ -59,7 +59,7 @@ import Foundation
         voiceID: String,
         body: ElevenLabsTTSRequestBody,
         secondsToWait: UInt
-    ) async throws -> Void {
+    ) async throws -> AsyncStream<Data> {
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
@@ -70,18 +70,10 @@ import Foundation
             secondsToWait: secondsToWait,
             contentType: "application/json"
         )
-        Task {
-            let audioController = try await AudioController(modes: [.playback])
-            let stream = try await BackgroundNetworker.makeRequestAndVendChunks(self.urlSession, request)
+        let stream = try await BackgroundNetworker.makeRequestAndVendChunks(self.urlSession, request)
+        return stream
 
 
-            for await chunk in stream {
-                print("GOT A CHUNK...")
-                myGlobal3 += 1
-                audioController.playPCM16Audio(data: chunk)
-                print(chunk.count)
-            }
-        }
 
 
 //        let (asyncBytes, _) = try await BackgroundNetworker.makeRequestAndVendChunks(

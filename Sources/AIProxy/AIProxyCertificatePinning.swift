@@ -7,12 +7,6 @@
 
 import Foundation
 
-enum LegacyBridge {
-    case didReceiveResponse(URLSessionDataTask, URLResponse)
-    case didReceiveData(URLSessionDataTask, Data)
-    case didComplete(URLSessionTask, Error?)
-}
-
 /// ## About
 /// Use this class in conjunction with a URLSession to adopt certificate pinning in your app.
 /// Cert pinning greatly reduces the ability for an attacker to snoop on your traffic.
@@ -72,13 +66,22 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
     /// Some use cases require vending data as it arrives off the wire, such as streaming audio.
     /// Unfortunately, modern async/await URLSession APIs don't provide this functionality out of the box.
     /// This closure acts as a bridge to the legacy delegate-based URLSession partial data vendor.
-    nonisolated(unsafe) private var _legacyBridgeCallback: (@Sendable (LegacyBridge) -> Void)?
-    internal var legacyBridgeCallback: (@Sendable (LegacyBridge) -> Void)? {
+    nonisolated(unsafe) private var _legacyBridgeCallbacks: [URLSessionDataTask: (LegacyURLSessionBridge) -> Void] = [:]
+    internal var legacyBridgeCallbacks: [URLSessionDataTask: (LegacyURLSessionBridge) -> Void] {
         get {
-            ProtectedPropertyQueue.legacyBridgeCallback.sync { self._legacyBridgeCallback }
+            ProtectedPropertyQueue.legacyBridgeCallback.sync { self._legacyBridgeCallbacks }
         }
-        set {
-            ProtectedPropertyQueue.legacyBridgeCallback.async(flags: .barrier) { self._legacyBridgeCallback = newValue }
+    }
+
+    internal func addLegacyBridgeCallback(for dataTask: URLSessionDataTask, callback: @escaping (LegacyURLSessionBridge) -> Void) {
+        ProtectedPropertyQueue.legacyBridgeCallback.async(flags: .barrier) {
+            self._legacyBridgeCallbacks[dataTask] = callback
+        }
+    }
+
+    internal func removeLegacyBridgeCallback(for dataTask: URLSessionDataTask) {
+        ProtectedPropertyQueue.legacyBridgeCallback.async(flags: .barrier) {
+            self._legacyBridgeCallbacks.removeValue(forKey: dataTask)
         }
     }
 
@@ -142,7 +145,7 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
         didReceive response: URLResponse,
         completionHandler: @Sendable @escaping (URLSession.ResponseDisposition) -> Void
     ) {
-        self.legacyBridgeCallback?(.didReceiveResponse(dataTask, response))
+        self.legacyBridgeCallbacks[dataTask]?(.didReceiveResponse(response))
         // TODO: verify that this doesn't work around cert pinning. Try removing one of the keys from below and see if comm succeeds.
         completionHandler(.allow)
     }
@@ -152,7 +155,7 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
         dataTask: URLSessionDataTask,
         didReceive data: Data
     ) {
-        self.legacyBridgeCallback?(.didReceiveData(dataTask, data))
+        self.legacyBridgeCallbacks[dataTask]?(.didReceiveData(data))
     }
 
     public func urlSession(
@@ -160,8 +163,9 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
         task: URLSessionTask,
         didCompleteWithError error: Error?
     ) {
+        // TODO: DANGER!
+        self.legacyBridgeCallbacks[task as! URLSessionDataTask]?(.didComplete(error))
         // TODO: Test this by hanging up the proxy early and see what happens.
-        self.legacyBridgeCallback?(.didComplete(task, error))
     }
 
     // MARK: - Deprecated
@@ -267,4 +271,10 @@ nonisolated private func getServerCert(secTrust: SecTrust) -> SecCertificate? {
     } else {
         return SecTrustGetCertificateAtIndex(secTrust, 0);
     }
+}
+
+nonisolated internal enum LegacyURLSessionBridge {
+    case didReceiveResponse(URLResponse)
+    case didReceiveData(Data)
+    case didComplete(Error?)
 }
