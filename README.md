@@ -4800,7 +4800,7 @@ model owner and model name in the string.
         // Use file scope or set the player as a member of a reference type with long life.
         // For example, at the top of this file you may define:
         //
-        //   nonisolated fileprivate var audioController: AudioController? = nil
+        //   fileprivate var audioController: AudioController? = nil
         //
         // and then use the code below to stream the TTS result.
         //
