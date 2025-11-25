@@ -4775,6 +4775,59 @@ model owner and model name in the string.
 - See https://api.elevenlabs.io/v1/voices for the IDs that you can pass to `voiceID`.
 
 
+### How to use ElevenLabs for streaming text-to-speech
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let elevenLabsService = AIProxy.elevenLabsDirectService(
+    //     unprotectedAPIKey: "your-elevenLabs-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let elevenLabsService = AIProxy.elevenLabsService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let body = ElevenLabsTTSRequestBody(text: "Hello world")
+
+    do {
+        // Do not use a local `let` or `var` for AudioController.
+        // You need the lifecycle of the player to live beyond the scope of this function.
+        //
+        // Use file scope or set the player as a member of a reference type with long life.
+        // For example, at the top of this file you may define:
+        //
+        //   nonisolated fileprivate var audioController: AudioController? = nil
+        //
+        // and then use the code below to stream the TTS result.
+        //
+        // For an improved user experience, try to opportunistically create the AudioController
+        // before the user needs it (for example, when the user starts a flow that may use audio).
+        // That way the player is warmed by the time ElevenLabs streams the first bit of audio for playback.
+        audioController = try await AudioController(modes: [.playback])
+
+        let stream = try await elevenLabsService.streamingTTSRequest(
+            voiceID: "EXAVITQu4vr4xnSDxMaL",
+            body: body,
+            secondsToWait: 60
+        )
+
+        for await chunk in stream {
+            await audioController?.playPCM16Audio(data: chunk)
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create ElevenLabs TTS streaming audio: \(error.localizedDescription)")
+    }
+```
+
+- See the full range of TTS controls by viewing `ElevenLabsTTSRequestBody.swift`.
+- See https://api.elevenlabs.io/v1/voices for the IDs that you can pass to `voiceID`.
+
 ### How to use ElevenLabs for speech-to-speech
 
 1. Record an audio file in quicktime and save it as "helloworld.m4a"

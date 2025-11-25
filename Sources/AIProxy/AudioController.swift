@@ -86,6 +86,10 @@ import AVFoundation
         }
     }
 
+    deinit {
+        logIf(.debug)?.debug("AIProxy: AudioPlayer is being freed")
+    }
+
     public func micStream() throws -> AsyncStream<AVAudioPCMBuffer> {
         guard self.modes.contains(.record),
               let microphonePCMSampleVendor = self.microphonePCMSampleVendor else {
@@ -127,7 +131,7 @@ import AVFoundation
 
         var sampleBuffer: Data
         if let p = self.pendingUTF8Byte {
-            sampleBuffer = Data(bytes: [p]) + audioData
+            sampleBuffer = Data([p]) + audioData
             self.pendingUTF8Byte = nil
         } else {
             sampleBuffer = audioData

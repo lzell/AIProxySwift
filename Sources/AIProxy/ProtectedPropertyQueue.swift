@@ -23,4 +23,9 @@ nonisolated enum ProtectedPropertyQueue {
         label: "aiproxy-protected-progress-callback",
         attributes: .concurrent
     )
+
+    static let urlSessionBridges = DispatchQueue(
+        label: "aiproxy-protected-url-session-bridges",
+        attributes: .concurrent
+    )
 }
