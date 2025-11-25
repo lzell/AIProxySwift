@@ -58,7 +58,7 @@ import Foundation
         body: ElevenLabsTTSRequestBody,
         secondsToWait: UInt
     ) async throws -> AsyncStream<Data> {
-        let request = try await AIProxyURLRequest.createDirect(
+        let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://api.elevenlabs.io",
             path: "/v1/text-to-speech/\(voiceID)/stream?output_format=pcm_24000",
             body: try body.serialize(),
