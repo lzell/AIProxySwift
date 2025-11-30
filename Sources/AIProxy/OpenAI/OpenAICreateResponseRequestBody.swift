@@ -646,7 +646,7 @@ extension OpenAICreateResponseRequestBody.Reasoning {
     /// All models before gpt-5.1 default to `medium` reasoning effort, and do not support `none`.
     /// The gpt-5-pro model defaults to (and only supports) `high` reasoning effort.
     nonisolated public enum Effort: String, Encodable, Sendable {
-        case none
+        case noReasoning = "none"
         case minimal
         case low
         case medium

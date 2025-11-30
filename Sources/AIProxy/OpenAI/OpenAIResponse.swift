@@ -300,10 +300,31 @@ extension OpenAIResponse {
 }
 
 extension OpenAIResponse.Reasoning {
-    nonisolated public enum Effort: String, Decodable, Sendable {
+    nonisolated public enum Effort: Decodable, Sendable {
+        case noReasoning
+        case minimal
         case low
         case medium
         case high
+        case futureProof
+
+        public init(from decoder: Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            switch raw {
+            case "none":
+                self = .noReasoning
+            case "minimal":
+                self = .minimal
+            case "low":
+                self = .low
+            case "medium":
+                self = .medium
+            case "high":
+                self = .high
+            default:
+                self = .futureProof
+            }
+        }
     }
 }
 
