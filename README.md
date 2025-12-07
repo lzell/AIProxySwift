@@ -3330,7 +3330,7 @@ Use the file URL returned from the snippet above.
             messages: [
                 AnthropicInputMessage(content: [.text("hello world")], role: .user)
             ],
-            model: "claude-3-5-sonnet-20240620"
+            model: "claude-sonnet-4-5-20250929"
         ))
         for content in response.content {
             switch content {
@@ -3373,7 +3373,7 @@ Use the file URL returned from the snippet above.
                     role: .user
                 )
             ],
-            model: "claude-3-5-sonnet-20240620"
+            model: "claude-sonnet-4-5-20250929"
         )
 
         let stream = try await anthropicService.streamingMessageRequest(body: requestBody)
@@ -3418,7 +3418,7 @@ Use the file URL returned from the snippet above.
                     role: .user
                 )
             ],
-            model: "claude-3-5-sonnet-20240620",
+            model: "claude-sonnet-4-5-20250929",
             tools: [
                 .init(
                     description: "Call this function when the user wants a stock symbol",
@@ -3492,7 +3492,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
                     .image(mediaType: .jpeg, data: jpegData.base64EncodedString())
                 ], role: .user)
             ],
-            model: "claude-3-5-sonnet-20240620"
+            model: "claude-sonnet-4-5-20250929"
         ))
         for content in response.content {
             switch content {
@@ -3535,7 +3535,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
                     role: .user
                 )
             ],
-            model: "claude-3-5-sonnet-20240620",
+            model: "claude-sonnet-4-5-20250929",
             tools: [
                 .init(
                     description: "Call this function when the user wants a stock symbol",
@@ -3605,7 +3605,7 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
                 AnthropicInputMessage(content: [.pdf(data: pdfData.base64EncodedString())], role: .user),
                 AnthropicInputMessage(content: [.text("Summarize this")], role: .user)
             ],
-            model: "claude-3-5-sonnet-20241022"
+            model: "claude-sonnet-4-5-20250929"
         ))
         for content in response.content {
             switch content {
@@ -3658,7 +3658,7 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
                 AnthropicInputMessage(content: [.pdf(data: pdfData.base64EncodedString())], role: .user),
                 AnthropicInputMessage(content: [.text("Summarize this")], role: .user)
             ],
-            model: "claude-3-5-sonnet-20241022"
+            model: "claude-sonnet-4-5-20250929"
         ))
         for try await chunk in stream {
             switch chunk {
