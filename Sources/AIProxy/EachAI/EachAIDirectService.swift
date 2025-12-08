@@ -19,7 +19,7 @@ import Foundation
         )
         super.init(
             requestBuilder: requestBuilder,
-            serviceNetworker: OpenAIDirectServiceNetworker()
+            serviceNetworker: DirectServiceNetworker()
         )
     }
 }
