@@ -1,8 +1,8 @@
 //
-//  OpenAIProxiedServiceNetworker.swift
+//  ProxiedServiceNetworker.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 7/12/25.
 //
 
-@AIProxyActor struct OpenAIProxiedServiceNetworker: ProxiedService {}
+@AIProxyActor struct ProxiedServiceNetworker: ProxiedService {}

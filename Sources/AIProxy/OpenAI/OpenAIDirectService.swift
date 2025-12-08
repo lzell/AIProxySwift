@@ -21,7 +21,7 @@
         super.init(
             requestFormat: requestFormat,
             requestBuilder: requestBuilder,
-            serviceNetworker: OpenAIDirectServiceNetworker()
+            serviceNetworker: DirectServiceNetworker()
         )
     }
 }

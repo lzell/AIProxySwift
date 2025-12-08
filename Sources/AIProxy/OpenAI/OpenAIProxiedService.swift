@@ -21,7 +21,7 @@
         super.init(
             requestFormat: requestFormat,
             requestBuilder: requestBuilder,
-            serviceNetworker: OpenAIProxiedServiceNetworker()
+            serviceNetworker: ProxiedServiceNetworker()
         )
     }
 }
