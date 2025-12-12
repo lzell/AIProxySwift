@@ -192,7 +192,7 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create OpenAI chat completion: \(error.localizedDescription)")
+        print("Could not create OpenAI chat completion: \(error)")
     }
 ```
 
@@ -235,7 +235,7 @@ This is useful for `o1` and `o3` models.
     } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
         print("Could not complete OpenAI reasoning request. Please check your internet connection")
     } catch {
-        print("Could not complete OpenAI reasoning request: \(error.localizedDescription)")
+        print("Could not complete OpenAI reasoning request: \(error)")
     }
 ```
 
@@ -272,7 +272,7 @@ This is useful for `o1` and `o3` models.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create OpenAI streaming chat completion: \(error.localizedDescription)")
+        print("Could not create OpenAI streaming chat completion: \(error)")
     }
 ```
 
@@ -318,7 +318,7 @@ As an alternative, you can use the new ChatGPT Responses API to hold the entire 
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get first chat completion: \(error.localizedDescription)")
+        print("Could not get first chat completion: \(error)")
     }
 
     // Get the contents of the model's first response:
@@ -350,7 +350,7 @@ As an alternative, you can use the new ChatGPT Responses API to hold the entire 
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get second chat completion: \(error.localizedDescription)")
+        print("Could not get second chat completion: \(error)")
     }
 
     // Get the contents of the model's second response:
@@ -411,7 +411,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create OpenAI multi-modal chat completion: \(error.localizedDescription)")
+        print("Could not create OpenAI multi-modal chat completion: \(error)")
     }
 ```
 
@@ -445,7 +445,7 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create an image with DALLE 3: \(error.localizedDescription)")
+        print("Could not create an image with DALLE 3: \(error)")
     }
 ```
 
@@ -485,7 +485,7 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create OpenAI image generation: \(error.localizedDescription)")
+        print("Could not create OpenAI image generation: \(error)")
     }
 ```
 
@@ -540,7 +540,7 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create OpenAI edit image generation: \(error.localizedDescription)")
+        print("Could not create OpenAI edit image generation: \(error)")
     }
 ```
 
@@ -609,7 +609,7 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create OpenAI edit image generation: \(error.localizedDescription)")
+        print("Could not create OpenAI edit image generation: \(error)")
     }
 ```
 
@@ -648,7 +648,7 @@ This snippet will print out the URL of an image generated with `dall-e-3`:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not make a web search completion call with OpenAI: \(error.localizedDescription)")
+        print("Could not make a web search completion call with OpenAI: \(error)")
     }
 ```
 
@@ -693,7 +693,7 @@ return JSON only:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create OpenAI chat completion in JSON mode: \(error.localizedDescription)")
+        print("Could not create OpenAI chat completion in JSON mode: \(error)")
     }
 ```
 
@@ -760,7 +760,7 @@ in its response:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create OpenAI chat completion with structured outputs: \(error.localizedDescription)")
+        print("Could not create OpenAI chat completion with structured outputs: \(error)")
     }
 ```
 
@@ -828,7 +828,7 @@ For more examples, see the [original structured outputs announcement](https://op
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get first chat completion: \(error.localizedDescription)")
+        print("Could not get first chat completion: \(error)")
     }
 
     // Get the contents of the model's first response:
@@ -880,7 +880,7 @@ For more examples, see the [original structured outputs announcement](https://op
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get second chat completion: \(error.localizedDescription)")
+        print("Could not get second chat completion: \(error)")
     }
 
     // Get the contents of the model's second response:
@@ -958,7 +958,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not make a streaming tool call to OpenAI: \(error.localizedDescription)")
+        print("Could not make a streaming tool call to OpenAI: \(error)")
     }
 ```
 
@@ -1002,7 +1002,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not transcribe audio with OpenAI: \(error.localizedDescription)")
+        print("Could not transcribe audio with OpenAI: \(error)")
     }
 ```
 
@@ -1050,7 +1050,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not get word-level timestamps from OpenAI: \(error.localizedDescription)")
+        print("Could not get word-level timestamps from OpenAI: \(error)")
     }
 ```
 
@@ -1092,7 +1092,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create OpenAI TTS audio: \(error.localizedDescription)")
+        print("Could not create OpenAI TTS audio: \(error)")
     }
 ```
 
@@ -1244,7 +1244,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not perform embedding request to OpenAI: \(error.localizedDescription)")
+        print("Could not perform embedding request to OpenAI: \(error)")
     }
 ```
 
@@ -1293,7 +1293,7 @@ struct ContentView: View {
             do {
                 try await realtimeManager.startConversation()
             } catch {
-                print("Could not start OpenAI realtime: \(error.localizedDescription)")
+                print("Could not start OpenAI realtime: \(error)")
             }
         }
     }
@@ -1440,7 +1440,7 @@ Note: there is also a streaming version of this snippet below.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not get a text response from OpenAI: \(error.localizedDescription)")
+        print("Could not get a text response from OpenAI: \(error)")
     }
 ```
 
@@ -1499,7 +1499,7 @@ Note: there is also a streaming version of this snippet below.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create a tool call response from OpenAI: \(error.localizedDescription)")
+        print("Could not create a tool call response from OpenAI: \(error)")
     }
 ```
 
@@ -1569,7 +1569,7 @@ Note: there is also a streaming version of this snippet below.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not get a structured output response from OpenAI: \(error.localizedDescription)")
+        print("Could not get a structured output response from OpenAI: \(error)")
     }
 ```
 
@@ -1609,7 +1609,7 @@ Please also see the Structured Outputs snippet above, which is a more modern way
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not get a JSON mode response from OpenAI: \(error.localizedDescription)")
+        print("Could not get a JSON mode response from OpenAI: \(error)")
     }
 ```
 
@@ -1667,7 +1667,7 @@ Please also see the Structured Outputs snippet above, which is a more modern way
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create a multi-modal OpenAI Response: \(error.localizedDescription)")
+        print("Could not create a multi-modal OpenAI Response: \(error)")
     }
 ```
 
@@ -1702,7 +1702,7 @@ Note: there is also a streaming version of this snippet below.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not get web search result from OpenAI: \(error.localizedDescription)")
+        print("Could not get web search result from OpenAI: \(error)")
     }
 ```
 
@@ -1745,7 +1745,7 @@ Replace the `fileID` with the ID returned from the snippet `How to upload a file
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not prompt with file contents: \(error.localizedDescription)")
+        print("Could not prompt with file contents: \(error)")
     }
 ```
 
@@ -1798,7 +1798,7 @@ Replace the `fileID` with the ID returned from the snippet `How to upload a file
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not prompt with image inputs: \(error.localizedDescription)")
+        print("Could not prompt with image inputs: \(error)")
     }
 ```
 
@@ -1832,7 +1832,7 @@ Replace the `fileID` with the ID returned from the snippet `How to upload a file
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create an OpenAI vector store: \(error.localizedDescription)")
+        print("Could not create an OpenAI vector store: \(error)")
     }
 ```
 
@@ -1866,7 +1866,7 @@ Replace the `fileID` with the ID returned from the snippet `How to upload a file
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create an OpenAI vector store: \(error.localizedDescription)")
+        print("Could not create an OpenAI vector store: \(error)")
     }
 ```
 
@@ -1910,7 +1910,7 @@ This will upload the pdf to OpenAI for use in a future vector store request:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not upload file to OpenAI: \(error.localizedDescription)")
+        print("Could not upload file to OpenAI: \(error)")
     }
 ```
 
@@ -1950,7 +1950,7 @@ You'll need two IDs for this snippet:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create an OpenAI vector store file: \(error.localizedDescription)")
+        print("Could not create an OpenAI vector store file: \(error)")
     }
 ```
 
@@ -1987,7 +1987,7 @@ You'll need two IDs for this snippet:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not get a streaming response from OpenAI: \(error.localizedDescription)")
+        print("Could not get a streaming response from OpenAI: \(error)")
     }
 ```
 
@@ -2045,7 +2045,7 @@ You'll need two IDs for this snippet:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not get a streaming response from OpenAI: \(error.localizedDescription)")
+        print("Could not get a streaming response from OpenAI: \(error)")
     }
 ```
 
@@ -2086,7 +2086,7 @@ You'll need two IDs for this snippet:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not get a text response from OpenAI: \(error.localizedDescription)")
+        print("Could not get a text response from OpenAI: \(error)")
     }
 ```
 
@@ -2141,7 +2141,7 @@ Once your files are added and processed, you can run this snippet on your `vecto
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not get a text response from OpenAI: \(error.localizedDescription)")
+        print("Could not get a text response from OpenAI: \(error)")
     }
 ```
 
@@ -2201,7 +2201,7 @@ Once your files are added and processed, you can run this snippet on your `vecto
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not get a text response from OpenAI: \(error.localizedDescription)")
+        print("Could not get a text response from OpenAI: \(error)")
     }
 }
 ```
@@ -2277,7 +2277,7 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Gemini generate content request: \(error.localizedDescription)")
+        print("Could not create Gemini generate content request: \(error)")
     }
 ```
 
@@ -2329,7 +2329,7 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not generate Gemini streaming content: \(error.localizedDescription)")
+        print("Could not generate Gemini streaming content: \(error)")
     }
 ```
 
@@ -2422,7 +2422,7 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Gemini tool (function) call: \(error.localizedDescription)")
+        print("Could not create Gemini tool (function) call: \(error)")
     }
 ```
 
@@ -2490,7 +2490,7 @@ credits that you can put towards Gemini.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Gemini google search grounding request: \(error.localizedDescription)")
+        print("Could not create Gemini google search grounding request: \(error)")
     }
 ```
 
@@ -2558,7 +2558,7 @@ Add a file called `helloworld.m4a` to your Xcode assets before running this samp
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create transcript with Gemini: \(error.localizedDescription)")
+        print("Could not create transcript with Gemini: \(error)")
     }
 ```
 
@@ -2638,7 +2638,7 @@ Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Gemini generate content request: \(error.localizedDescription)")
+        print("Could not create Gemini generate content request: \(error)")
     }
 ```
 
@@ -2683,7 +2683,7 @@ If you use a file like `my-movie.mp4`, change the mime type from `video/quicktim
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not upload file to Gemini: \(error.localizedDescription)")
+        print("Could not upload file to Gemini: \(error)")
     }
 ```
 
@@ -2756,7 +2756,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Gemini vision request: \(error.localizedDescription)")
+        print("Could not create Gemini vision request: \(error)")
     }
 ```
 
@@ -2784,7 +2784,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not delete file from Gemini temporary storage: \(error.localizedDescription)")
+        print("Could not delete file from Gemini temporary storage: \(error)")
     }
 ```
 
@@ -2857,7 +2857,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Gemini generate content request: \(error.localizedDescription)")
+        print("Could not create Gemini generate content request: \(error)")
     }
 ```
 
@@ -2942,7 +2942,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Gemini generate content request: \(error.localizedDescription)")
+        print("Could not create Gemini generate content request: \(error)")
     }
 ```
 
@@ -3005,7 +3005,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create image using gemini: \(error.localizedDescription)")
+        print("Could not create image using gemini: \(error)")
     }
 ```
 
@@ -3052,7 +3052,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Imagen image: \(error.localizedDescription)")
+        print("Could not create Imagen image: \(error)")
     }
 ```
 
@@ -3129,7 +3129,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Gemini image edit request: \(error.localizedDescription)")
+        print("Could not create Gemini image edit request: \(error)")
     }
 ```
 
@@ -3204,7 +3204,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create speech using Gemini: \(error.localizedDescription)")
+        print("Could not create speech using Gemini: \(error)")
     }
 ```
 
@@ -3298,7 +3298,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create multi-speaker speech using Gemini: \(error.localizedDescription)")
+        print("Could not create multi-speaker speech using Gemini: \(error)")
     }
 ```
 
@@ -3343,7 +3343,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create an Anthropic message: \(error.localizedDescription)")
+        print("Could not create an Anthropic message: \(error)")
     }
 ```
 
@@ -3388,7 +3388,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not use Anthropic's message stream: \(error.localizedDescription)")
+        print("Could not use Anthropic's message stream: \(error)")
     }
 ```
 
@@ -3450,7 +3450,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print(error)
     }
 ```
 
@@ -3505,7 +3505,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not send a multi-modal message to Anthropic: \(error.localizedDescription)")
+        print("Could not send a multi-modal message to Anthropic: \(error)")
     }
 ```
 
@@ -3565,7 +3565,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create Anthropic message with tool call: \(error.localizedDescription)")
+        print("Could not create Anthropic message with tool call: \(error)")
     }
 ```
 
@@ -3618,7 +3618,7 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not use Anthropic's buffered pdf support: \(error.localizedDescription)")
+        print("Could not use Anthropic's buffered pdf support: \(error)")
     }
 ```
 
@@ -3672,7 +3672,7 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not use Anthropic's streaming pdf support: \(error.localizedDescription)")
+        print("Could not use Anthropic's streaming pdf support: \(error)")
     }
 ```
 
@@ -3709,7 +3709,7 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not generate an image with StabilityAI: \(error.localizedDescription)")
+        print("Could not generate an image with StabilityAI: \(error)")
     }
 ```
 
@@ -3740,7 +3740,7 @@ For a SwiftUI example, see [this gist](https://gist.github.com/lzell/a878b787f24
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create DeepL translation: \(error.localizedDescription)")
+        print("Could not create DeepL translation: \(error)")
     }
 
 ***
@@ -3775,7 +3775,7 @@ options to pass as the `model` argument:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create TogetherAI chat completion: \(error.localizedDescription)")
+        print("Could not create TogetherAI chat completion: \(error)")
     }
 
 
@@ -3809,7 +3809,7 @@ options to pass as the `model` argument:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create TogetherAI streaming chat completion: \(error.localizedDescription)")
+        print("Could not create TogetherAI streaming chat completion: \(error)")
     }
 
 
@@ -3877,7 +3877,7 @@ support JSON mode. See [this guide](https://docs.together.ai/docs/json-mode) for
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create TogetherAI JSON chat completion: \(error.localizedDescription)")
+        print("Could not create TogetherAI JSON chat completion: \(error)")
     }
 
 
@@ -3962,7 +3962,7 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create TogetherAI llama 3.1 tool completion: \(error.localizedDescription)")
+        print("Could not create TogetherAI llama 3.1 tool completion: \(error)")
     }
 
 
@@ -4002,7 +4002,7 @@ This example is a Swift port of [this guide](https://docs.together.ai/docs/llama
         // You may want to catch additional Foundation errors and pop the appropriate UI
         // to the user. See "How to catch Foundation errors for specific conditions" here:
         // https://www.aiproxy.com/docs/integration-options.html
-        print("Could not create Flux-Schnell image: \(error.localizedDescription)")
+        print("Could not create Flux-Schnell image: \(error)")
     }
 ```
 
@@ -4042,7 +4042,7 @@ See the full range of controls for generating an image by viewing `ReplicateFlux
         // You may want to catch additional Foundation errors and pop the appropriate UI
         // to the user. See "How to catch Foundation errors for specific conditions" here:
         // https://www.aiproxy.com/docs/integration-options.html
-        print("Could not create Flux-Dev image: \(error.localizedDescription)")
+        print("Could not create Flux-Dev image: \(error)")
     }
 ```
 
@@ -4088,7 +4088,7 @@ following substitutions:
         // You may want to catch additional Foundation errors and pop the appropriate UI
         // to the user. See "How to catch Foundation errors for specific conditions" here:
         // https://www.aiproxy.com/docs/integration-options.html
-        print("Could not create Flux-Pro 1.1 image: \(error.localizedDescription)")
+        print("Could not create Flux-Pro 1.1 image: \(error)")
     }
 ```
 
@@ -4144,7 +4144,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
         // You may want to catch additional Foundation errors and pop the appropriate UI
         // to the user. See "How to catch Foundation errors for specific conditions" here:
         // https://www.aiproxy.com/docs/integration-options.html
-        print("Could not create Flux-Pulid images: \(error.localizedDescription)")
+        print("Could not create Flux-Pulid images: \(error)")
     }
 ```
 
@@ -4188,7 +4188,7 @@ There are many controls to play with for this use case. Please see
         // You may want to catch additional Foundation errors and pop the appropriate UI
         // to the user. See "How to catch Foundation errors for specific conditions" here:
         // https://www.aiproxy.com/docs/integration-options.html
-        print("Could not create Flux-ControlNet image: \(error.localizedDescription)")
+        print("Could not create Flux-ControlNet image: \(error)")
     }
 ```
 
@@ -4224,7 +4224,7 @@ There are many controls to play with for this use case. Please see
         // You may want to catch additional Foundation errors and pop the appropriate UI
         // to the user. See "How to catch Foundation errors for specific conditions" here:
         // https://www.aiproxy.com/docs/integration-options.html
-        print("Could not create SDXL image: \(error.localizedDescription)")
+        print("Could not create SDXL image: \(error)")
     }
 ```
 
@@ -4263,7 +4263,7 @@ See the full range of controls for generating an image by viewing `ReplicateSDXL
         // You may want to catch additional Foundation errors and pop the appropriate UI
         // to the user. See "How to catch Foundation errors for specific conditions" here:
         // https://www.aiproxy.com/docs/integration-options.html
-        print("Could not create SDXL Fresh Ink images: \(error.localizedDescription)")
+        print("Could not create SDXL Fresh Ink images: \(error)")
     }
 ```
 
@@ -4310,7 +4310,7 @@ Add a file called 'my-image.jpg' to Xcode app assets. Then run this snippet:
         // You may want to catch additional Foundation errors and pop the appropriate UI
         // to the user. See "How to catch Foundation errors for specific conditions" here:
         // https://www.aiproxy.com/docs/integration-options.html
-        print("Could not use deepseek vision on replicate: \(error.localizedDescription)")
+        print("Could not use deepseek vision on replicate: \(error)")
     }
 ```
 
@@ -4373,7 +4373,7 @@ snippet:
         // You may want to catch additional Foundation errors and pop the appropriate UI
         // to the user. See "How to catch Foundation errors for specific conditions" here:
         // https://www.aiproxy.com/docs/integration-options.html
-        print("Could not run replicate model: \(error.localizedDescription)")
+        print("Could not run replicate model: \(error)")
     }
 ```
 
@@ -4420,7 +4420,7 @@ snippet:
         // You may want to catch additional Foundation errors and pop the appropriate UI
         // to the user. See "How to catch Foundation errors for specific conditions" here:
         // https://www.aiproxy.com/docs/integration-options.html
-        print("Could not upload file to replicate: \(error.localizedDescription)")
+        print("Could not upload file to replicate: \(error)")
     }
 ```
 
@@ -4454,7 +4454,7 @@ Replace `<your-account>`:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create replicate model: \(error.localizedDescription)")
+        print("Could not create replicate model: \(error)")
     }
 ```
 
@@ -4500,7 +4500,7 @@ for tips on what to include in the zip file. Then run:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not upload file to replicate: \(error.localizedDescription)")
+        print("Could not upload file to replicate: \(error)")
     }
 ```
 
@@ -4550,7 +4550,7 @@ Use the `<model-name>` that you used from the snippet above that.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create replicate training: \(error.localizedDescription)")
+        print("Could not create replicate training: \(error)")
     }
 ```
 
@@ -4588,7 +4588,7 @@ Use the `<url>` that is returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not poll for the replicate training: \(error.localizedDescription)")
+        print("Could not poll for the replicate training: \(error)")
     }
 ```
 
@@ -4633,7 +4633,7 @@ model owner and model name in the string.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create replicate prediction: \(error.localizedDescription)")
+        print("Could not create replicate prediction: \(error)")
     }
 ```
 
@@ -4676,7 +4676,7 @@ model owner and model name in the string.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create Flux Kontext Max image: \(error.localizedDescription)")
+        print("Could not create Flux Kontext Max image: \(error)")
     }
 ```
 
@@ -4719,7 +4719,7 @@ model owner and model name in the string.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create Flux Kontext Pro image: \(error.localizedDescription)")
+        print("Could not create Flux Kontext Pro image: \(error)")
     }
 ```
 
@@ -4767,7 +4767,7 @@ model owner and model name in the string.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print("Could not create ElevenLabs TTS audio: \(error.localizedDescription)")
+        print("Could not create ElevenLabs TTS audio: \(error)")
     }
 ```
 
@@ -4821,7 +4821,7 @@ model owner and model name in the string.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create ElevenLabs TTS streaming audio: \(error.localizedDescription)")
+        print("Could not create ElevenLabs TTS streaming audio: \(error)")
     }
 ```
 
@@ -4878,7 +4878,7 @@ model owner and model name in the string.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create ElevenLabs STS audio: \(error.localizedDescription)")
+        print("Could not create ElevenLabs STS audio: \(error)")
     }
 ```
 
@@ -4920,7 +4920,7 @@ model owner and model name in the string.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create ElevenLabs STT audio: \(error.localizedDescription)")
+        print("Could not create ElevenLabs STT audio: \(error)")
     }
 ```
 
@@ -4958,7 +4958,7 @@ model owner and model name in the string.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create Fal SDXL image: \(error.localizedDescription)")
+        print("Could not create Fal SDXL image: \(error)")
     }
 ```
 
@@ -5011,7 +5011,7 @@ The `garmentImage` and `modelImage` arguments may be:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create fashn/tryon image on Fal: \(error.localizedDescription)")
+        print("Could not create fashn/tryon image on Fal: \(error)")
     }
     ```
 
@@ -5052,7 +5052,7 @@ I do here), or construct the zip in memory:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not upload file to Fal: \(error.localizedDescription)")
+        print("Could not upload file to Fal: \(error)")
     }
 ```
 
@@ -5074,7 +5074,7 @@ Using the URL returned in the step above:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create Fal Flux training: \(error.localizedDescription)")
+        print("Could not create Fal Flux training: \(error)")
     }
 ```
 
@@ -5105,7 +5105,7 @@ Using the LoRA URL returned in the step above:
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create Fal LoRA image: \(error.localizedDescription)")
+        print("Could not create Fal LoRA image: \(error)")
     }
 ```
 
@@ -5156,7 +5156,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create Flux Kontext Pro image: \(error.localizedDescription)")
+        print("Could not create Flux Kontext Pro image: \(error)")
     }
 ```
 
@@ -5191,7 +5191,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print(error)
     }
 ```
 
@@ -5224,7 +5224,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
     } catch {
-        print(error.localizedDescription)
+        print(error)
     }
 ```
 
@@ -5262,7 +5262,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get audio transcription from Groq: \(error.localizedDescription)")
+        print("Could not get audio transcription from Groq: \(error)")
     }
 ```
 
@@ -5310,7 +5310,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create perplexity chat completion: \(error.localizedDescription)")
+        print("Could not create perplexity chat completion: \(error)")
     }
 ```
 
@@ -5358,7 +5358,7 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create perplexity streaming chat completion: \(error.localizedDescription)")
+        print("Could not create perplexity streaming chat completion: \(error)")
     }
 ```
 
@@ -5407,7 +5407,7 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create mistral chat completion: \(error.localizedDescription)")
+        print("Could not create mistral chat completion: \(error)")
     }
 ```
 
@@ -5455,7 +5455,7 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create mistral streaming chat completion: \(error.localizedDescription)")
+        print("Could not create mistral streaming chat completion: \(error)")
     }
 ```
 
@@ -5500,7 +5500,7 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not perform OCR request with Mistral: \(error.localizedDescription)")
+        print("Could not perform OCR request with Mistral: \(error)")
     }
 ```
 
@@ -5547,7 +5547,7 @@ Use `flows.eachlabs.ai` as the proxy domain when creating your AIProxy service i
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not execute EachAI workflow: \(error.localizedDescription)")
+        print("Could not execute EachAI workflow: \(error)")
     }
 ```
 
@@ -5579,7 +5579,7 @@ Use `flows.eachlabs.ai` as the proxy domain when creating your AIProxy service i
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not run Imagen 4 on EachAI: \(error.localizedDescription)")
+        print("Could not run Imagen 4 on EachAI: \(error)")
     }
 ```
 
@@ -5639,7 +5639,7 @@ This way you ensure that your EachAI + AIProxy integration is working correctly 
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not run Veo3 on EachAI: \(error.localizedDescription)")
+        print("Could not run Veo3 on EachAI: \(error)")
     }
 ```
 
@@ -5708,7 +5708,7 @@ This way you ensure that your EachAI + AIProxy integration is working correctly 
     } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
         print("Could not make OpenRouter streaming R1 chat request. Please check your internet connection")
     } catch {
-        print("Could not get OpenRouter streaming R1 chat completion: \(error.localizedDescription)")
+        print("Could not get OpenRouter streaming R1 chat completion: \(error)")
     }
 ```
 
@@ -5788,7 +5788,7 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
     } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
         print("Could not make OpenRouter buffered R1 chat request. Please check your internet connection")
     } catch {
-        print("Could not get OpenRouter buffered R1 chat completion: \(error.localizedDescription)")
+        print("Could not get OpenRouter buffered R1 chat completion: \(error)")
     }
 ```
 
@@ -5855,7 +5855,7 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get OpenRouter buffered chat completion: \(error.localizedDescription)")
+        print("Could not get OpenRouter buffered chat completion: \(error)")
     }
 ```
 
@@ -5906,7 +5906,7 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get OpenRouter streaming chat completion: \(error.localizedDescription)")
+        print("Could not get OpenRouter streaming chat completion: \(error)")
     }
 ```
 
@@ -5971,7 +5971,7 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get OpenRouter streaming tool call: \(error.localizedDescription)")
+        print("Could not get OpenRouter streaming tool call: \(error)")
     }
 }
 
@@ -6058,7 +6058,7 @@ And then use the corresponding enum from this list: https://openrouter.ai/docs/f
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get structured outputs response from OpenRouter: \(error.localizedDescription)")
+        print("Could not get structured outputs response from OpenRouter: \(error)")
     }
 ```
 
@@ -6129,7 +6129,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not make a vision request to OpenRouter: \(error.localizedDescription)")
+        print("Could not make a vision request to OpenRouter: \(error)")
     }
 ```
 
@@ -6203,7 +6203,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get first chat completion: \(error.localizedDescription)")
+        print("Could not get first chat completion: \(error)")
     }
 ```
 
@@ -6255,7 +6255,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get DeepSeek buffered chat completion: \(error.localizedDescription)")
+        print("Could not get DeepSeek buffered chat completion: \(error)")
     }
 ```
 
@@ -6315,7 +6315,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
         print("Could not make buffered chat request. Please check your internet connection")
     } catch {
-        print("Could not get DeepSeek buffered chat completion: \(error.localizedDescription)")
+        print("Could not get DeepSeek buffered chat completion: \(error)")
     }
 ```
 
@@ -6424,7 +6424,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
         print("Could not make DeepSeek R1 streaming chat request. Please check your internet connection")
     } catch {
-        print("Could not get DeepSeek R1 streaming chat completion: \(error.localizedDescription)")
+        print("Could not get DeepSeek R1 streaming chat completion: \(error)")
     }
 ```
 
@@ -6487,7 +6487,7 @@ not on the messages's `reasoningContent` property. Instead, the reasoning conten
     } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
         print("Could not complete R1 request to FireworksAI. Please check your internet connection")
     } catch {
-        print("Could not complete R1 request to FireworksAI: \(error.localizedDescription)")
+        print("Could not complete R1 request to FireworksAI: \(error)")
     }
 ```
 
@@ -6542,7 +6542,7 @@ not on the messages's `reasoningContent` property. Instead, the reasoning conten
     } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
         print("Could not complete R1 request to FireworksAI. Please check your internet connection")
     } catch {
-        print("Could not complete R1 request to FireworksAI: \(error.localizedDescription)")
+        print("Could not complete R1 request to FireworksAI: \(error)")
     }
 ```
 
@@ -6583,7 +6583,7 @@ proxy base URL.
         // You may want to catch additional Foundation errors and pop the appropriate UI
         // to the user. See "How to catch Foundation errors for specific conditions" here:
         // https://www.aiproxy.com/docs/integration-options.html
-        print("Could not make brave search: \(error.localizedDescription)")
+        print("Could not make brave search: \(error)")
     }
 ```
 
@@ -6624,7 +6624,7 @@ into the OpenMeteoSDK:
         // 4. Scroll to 'Usage'
         print(responses)
     } catch {
-        print("Could not fetch the weather: \(error.localizedDescription)")
+        print("Could not fetch the weather: \(error)")
     }
 ```
 
@@ -6681,7 +6681,7 @@ In such a case, you can pop UI to the end user by catching AIProxyError.deviceCh
         //     Please make sure you are connected to the internet and your system clock is accurately set.
         //
     } catch {
-        print("Could not create an OpenAI chat completion: \(error.localizedDescription)")
+        print("Could not create an OpenAI chat completion: \(error)")
     }
 ```
 
@@ -6717,7 +6717,7 @@ your user. For example, to catch `NSURLErrorTimedOut`, `NSURLErrorNetworkConnect
     } catch let err as URLError where [.notConnectedToInternet, .networkConnectionLost].contains(err.code) {
         print("Could not make buffered chat request. Please check your internet connection")
     } catch {
-        print("Could not get buffered chat completion: \(error.localizedDescription)")
+        print("Could not get buffered chat completion: \(error)")
     }
 ```
 
