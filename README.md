@@ -3356,7 +3356,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not get anthropic buffered chat: \(error)")
+        print("Could not create an Anthropic message: \(error)")
     }
 ```
 
@@ -3401,7 +3401,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not use Anthropic's message stream: \(error)")
+        print("Could not create a streaming Anthropic message: \(error)")
     }
 ```
 
@@ -3468,7 +3468,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error)
+        print("Could not create an Anthropic message with tool calls: \(error)")
     }
 ```
 
@@ -3537,7 +3537,7 @@ Use the file URL returned from the snippet above.
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error)
+        print("Could not create a streaming Anthropic message with tool calls: \(error)")
     }
 ```
 
@@ -3615,7 +3615,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error)
+        print("Could not create an Anthropic message with image input: \(error)")
     }
 ```
 
@@ -3675,7 +3675,7 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not use Anthropic's buffered pdf support: \(error)")
+        print("Could not create an Anthropic message with pdf input: \(error)")
     }
 ```
 
@@ -3737,7 +3737,7 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not use Anthropic's streaming pdf support: \(error)")
+        print("Could not create a streaming Anthropic message with pdf input: \(error)")
     }
 ```
 
