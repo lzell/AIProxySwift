@@ -5,7 +5,7 @@ import Foundation
 
 final class AnthropicMessageResponseTests: XCTestCase {
 
-    func testMessageResponseIsDecodable() {
+    func testMessageResponseIsDecodable() throws {
         let sampleResponse = """
         {
           "id": "msg_01XVo4dCtcbBTds8pG1BC6Xf",
@@ -26,21 +26,17 @@ final class AnthropicMessageResponseTests: XCTestCase {
           }
         }
         """
-        let decoder = JSONDecoder()
 
-        let res = try! decoder.decode(
-            AnthropicMessageResponseBody.self,
-            from: sampleResponse.data(using: .utf8)!
-        )
+        let res = try AnthropicMessage.deserialize(from: sampleResponse)
         switch res.content.first! {
-        case .text(let string):
-            XCTAssertEqual("Hello!", string)
+        case .textBlock(let textBlock):
+            XCTAssertEqual("Hello!", textBlock.text)
         default:
             XCTFail()
         }
     }
 
-    func testMessageResponseWithToolUseIsDecodable() {
+    func testMessageResponseWithToolUseIsDecodable() throws {
         let sampleResponse = """
         {
           "id": "msg_011UvQXaEMMwmN4kapqwUpN2",
@@ -70,13 +66,13 @@ final class AnthropicMessageResponseTests: XCTestCase {
         }
         """
 
-        let res = try! AnthropicMessageResponseBody.deserialize(from: sampleResponse.data(using: .utf8)!)
+        let res = try AnthropicMessage.deserialize(from: sampleResponse)
 
         switch res.content.last! {
-        case .toolUse(id: let id, name: let toolName, input: let input):
-            XCTAssertEqual("get_stock_symbol", toolName)
-            XCTAssertEqual("toolu_01GZovj2vHs5AKsNAshWFgUT", id)
-            if case .string(let ticker) = input["ticker"] {
+        case .toolUseBlock(let toolUseBlock):
+            XCTAssertEqual("get_stock_symbol", toolUseBlock.name)
+            XCTAssertEqual("toolu_01GZovj2vHs5AKsNAshWFgUT", toolUseBlock.id)
+            if let ticker = toolUseBlock.input["ticker"] as? String {
                 XCTAssertEqual("NVDA", ticker)
             } else {
                 XCTFail()

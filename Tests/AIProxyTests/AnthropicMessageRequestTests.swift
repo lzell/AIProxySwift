@@ -18,7 +18,7 @@ final class AnthropicMessageRequestTests: XCTestCase {
         let request = AnthropicMessageRequestBody(
             maxTokens: 1024,
             messages: [
-                AnthropicInputMessage(content: [.text("hello world")], role: .user)
+                AnthropicMessageParam(content: [.textBlock(AnthropicTextBlockParam(text: "hello world"))], role: .user)
             ],
             model: "claude-3-5-sonnet-20240620"
         )
@@ -33,14 +33,14 @@ final class AnthropicMessageRequestTests: XCTestCase {
         let request = AnthropicMessageRequestBody(
             maxTokens: 1024,
             messages: [
-                .init(
-                    content: [.text("What's the temp in San Francisco?")],
+                AnthropicMessageParam(
+                    content: [.textBlock(AnthropicTextBlockParam(text: "What's the temp in San Francisco?"))],
                     role: .user
                 )
             ],
             model: "claude-3-5-sonnet-20240620",
             tools: [
-                .init(
+                .customTool(AnthropicTool(
                     description: "Call this function when the user wants the weather",
                     inputSchema: [
                         "type": "object",
@@ -59,11 +59,11 @@ final class AnthropicMessageRequestTests: XCTestCase {
                         "required": ["location", "unit"]
                     ],
                     name: "get_weather"
-                )
+                ))
             ]
         )
         XCTAssertEqual(
-            #"{"max_tokens":1024,"messages":[{"content":[{"text":"What's the temp in San Francisco?","type":"text"}],"role":"user"}],"model":"claude-3-5-sonnet-20240620","tools":[{"description":"Call this function when the user wants the weather","input_schema":{"properties":{"location":{"description":"The city and state, e.g. San Francisco, CA","type":"string"},"unit":{"default":"fahrenheit","description":"The unit of temperature. Default to fahrenheit","enum":["celsius","fahrenheit"],"type":"string"}},"required":["location","unit"],"type":"object"},"name":"get_weather"}]}"#
+            #"{"max_tokens":1024,"messages":[{"content":[{"text":"What's the temp in San Francisco?","type":"text"}],"role":"user"}],"model":"claude-3-5-sonnet-20240620","tools":[{"description":"Call this function when the user wants the weather","input_schema":{"properties":{"location":{"description":"The city and state, e.g. San Francisco, CA","type":"string"},"unit":{"default":"fahrenheit","description":"The unit of temperature. Default to fahrenheit","enum":["celsius","fahrenheit"],"type":"string"}},"required":["location","unit"],"type":"object"},"name":"get_weather","type":"custom"}]}"#
             ,
             try request.serialize()
         )
@@ -73,10 +73,9 @@ final class AnthropicMessageRequestTests: XCTestCase {
         let request = AnthropicMessageRequestBody(
             maxTokens: 1024,
             messages: [
-                AnthropicInputMessage(content: [.image(
-                    mediaType: .jpeg,
-                    data: "encoded-image"
-                )], role: .user)
+                AnthropicMessageParam(content: [.imageBlock(AnthropicImageBlockParam(
+                    source: .base64(data: "encoded-image", mediaType: .jpeg)
+                ))], role: .user)
             ],
             model: "claude-3-5-sonnet-20240620"
         )
