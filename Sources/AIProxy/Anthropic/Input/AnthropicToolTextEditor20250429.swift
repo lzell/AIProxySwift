@@ -1,0 +1,30 @@
+//
+//  AnthropicToolTextEditor20250429.swift
+//  AIProxy
+//
+//  Created by Lou Zell on 12/10/25.
+//
+
+/// Text editor tool for string replacement operations (version 2025-04-29).
+/// https://console.anthropic.com/docs/en/api/messages#tool_text_editor_20250429
+nonisolated public struct AnthropicToolTextEditor20250429: Encodable, Sendable {
+    /// Cache control configuration.
+    public let cacheControl: AnthropicCacheControlEphemeral?
+
+    private enum CodingKeys: String, CodingKey {
+        case name
+        case type
+        case cacheControl = "cache_control"
+    }
+
+    public init(cacheControl: AnthropicCacheControlEphemeral? = nil) {
+        self.cacheControl = cacheControl
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode("str_replace_based_edit_tool", forKey: .name)
+        try container.encode("text_editor_20250429", forKey: .type)
+        try container.encodeIfPresent(cacheControl, forKey: .cacheControl)
+    }
+}

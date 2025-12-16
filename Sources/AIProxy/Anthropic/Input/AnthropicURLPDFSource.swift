@@ -1,0 +1,18 @@
+//
+//  AnthropicURLPDFSource.swift
+//  AIProxy
+//
+//  Created by Lou Zell on 12/10/25.
+//
+
+/// Represents Anthropic's `URLPDFSource` type.
+/// https://console.anthropic.com/docs/en/api/messages#url_pdf_source
+nonisolated public struct AnthropicURLPDFSource: Codable, Sendable {
+    public let type: String
+    public let url: String
+    
+    public init(url: String) {
+        self.type = "url"
+        self.url = url
+    }
+}

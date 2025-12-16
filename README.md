@@ -3308,7 +3308,7 @@ Use the file URL returned from the snippet above.
 
 ## Anthropic
 
-### How to send an Anthropic message request
+### How to make an Anthropic message request
 
 ```swift
     import AIProxy
@@ -3324,31 +3324,44 @@ Use the file URL returned from the snippet above.
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
+    let requestBody = AnthropicMessageRequestBody(
+        maxTokens: 8192,
+        messages: [
+            // You can choose your level of sugar here. The most concise option is:
+            AnthropicMessageParam(content: "hello world", role: .user)
+            //
+            // Or, for more flexibility (e.g. adding images, tools, etc.):
+            // AnthropicInputMessage(content: [.textBlock("hello world")], role: .user)
+            //
+            // Or, to fully spell out the call (this helps with Xcode's cmd-click to jump to source):
+            // AnthropicInputMessage(
+            //     content: .blocks([
+            //         .textBlock(AnthropicTextBlockParam(text: "hello world"))
+            //     ]),
+            //     role: .user
+            // )
+        ],
+        model: "claude-haiku-4-5-20251001",
+        system: "You are a friendly assistant"
+    )
+
     do {
-        let response = try await anthropicService.messageRequest(body: AnthropicMessageRequestBody(
-            maxTokens: 1024,
-            messages: [
-                AnthropicInputMessage(content: [.text("hello world")], role: .user)
-            ],
-            model: "claude-sonnet-4-5-20250929"
-        ))
-        for content in response.content {
-            switch content {
-            case .text(let message):
-                print("Claude sent a message: \(message)")
-            case .toolUse(id: _, name: let toolName, input: let toolInput):
-                print("Claude used a tool \(toolName) with input: \(toolInput)")
-            }
+        let response = try await anthropicService.messageRequest(
+            body: requestBody,
+            secondsToWait: 120
+        )
+        for case let .textBlock(textBlock) in response.content {
+            print("Received text from Claude: \(textBlock.text)")
         }
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received \(statusCode) status code with response body: \(responseBody)")
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
         print("Could not create an Anthropic message: \(error)")
     }
 ```
 
 
-### How to use streaming text messages with Anthropic
+### How to make an Anthropic streaming message request
 
 ```swift
     import AIProxy
@@ -3364,36 +3377,35 @@ Use the file URL returned from the snippet above.
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
-    do {
-        let requestBody = AnthropicMessageRequestBody(
-            maxTokens: 1024,
-            messages: [
-                .init(
-                    content: [.text("hello world")],
-                    role: .user
-                )
-            ],
-            model: "claude-sonnet-4-5-20250929"
-        )
+    let requestBody = AnthropicMessageRequestBody(
+        maxTokens: 1024,
+        messages: [
+            AnthropicMessageParam(
+                content: "Hello world",
+                role: .user
+            )
+        ],
+        model: "claude-haiku-4-5-20251001"
+    )
 
-        let stream = try await anthropicService.streamingMessageRequest(body: requestBody)
-        for try await chunk in stream {
-            switch chunk {
-            case .text(let text):
-                print(text)
-            case .toolUse(name: let toolName, input: let toolInput):
-                print("Claude wants to call tool \(toolName) with input \(toolInput)")
+    do {
+        let stream = try await anthropicService.streamingMessageRequest(
+            body: requestBody,
+            secondsToWait: 120
+        )
+        for try await case .contentBlockDelta(let contentBlockDelta) in stream {
+            if case .textDelta(let textDelta) = contentBlockDelta.delta {
+                print("Received a text delta from Claude: \(textDelta.text)")
             }
         }
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not use Anthropic's message stream: \(error)")
+        print("Could not create a streaming Anthropic message: \(error)")
     }
 ```
 
-
-### How to use streaming tool calls with Anthropic
+### How to make an Anthropic message request with tool calls
 
 ```swift
     import AIProxy
@@ -3409,18 +3421,18 @@ Use the file URL returned from the snippet above.
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
-    do {
-        let requestBody = AnthropicMessageRequestBody(
-            maxTokens: 1024,
-            messages: [
-                .init(
-                    content: [.text("What is nvidia's stock price?")],
-                    role: .user
-                )
-            ],
-            model: "claude-sonnet-4-5-20250929",
-            tools: [
-                .init(
+    let requestBody = AnthropicMessageRequestBody(
+        maxTokens: 8192,
+        messages: [
+            AnthropicMessageParam(
+                content: "What is Apple's stock price?",
+                role: .user
+            )
+        ],
+        model: "claude-haiku-4-5-20251001",
+        tools: [
+            .customTool(
+                AnthropicTool(
                     description: "Call this function when the user wants a stock symbol",
                     inputSchema: [
                         "type": "object",
@@ -3434,143 +3446,181 @@ Use the file URL returned from the snippet above.
                     ],
                     name: "get_stock_symbol"
                 )
-            ]
-        )
+            )
+        ]
+    )
 
-        let stream = try await anthropicService.streamingMessageRequest(body: requestBody)
-        for try await chunk in stream {
-            switch chunk {
-            case .text(let text):
-                print(text)
-            case .toolUse(name: let toolName, input: let toolInput):
-                print("Claude wants to call tool \(toolName) with input \(toolInput)")
+    do {
+        let response = try await anthropicService.messageRequest(
+            body: requestBody,
+            secondsToWait: 120
+        )
+        for content in response.content {
+            switch content {
+            case .textBlock(let textBlock):
+                print("Received text from Claude: \(textBlock.text)")
+            case .toolUseBlock(let toolUseBlock):
+                print("Claude wants to call \(toolUseBlock.name) with input: \(toolUseBlock.input)")
+            default:
+                continue
             }
         }
-        print("Done with stream")
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print(error)
+        print("Could not create an Anthropic message with tool calls: \(error)")
     }
 ```
 
+### How to make an Anthropic streaming message request with tool calls
 
-### How to send an image to Anthropic
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let anthropicService = AIProxy.anthropicDirectService(
+    //     unprotectedAPIKey: "your-anthropic-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let anthropicService = AIProxy.anthropicService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = AnthropicMessageRequestBody(
+        maxTokens: 8192,
+        messages: [
+            AnthropicMessageParam(
+                content: "What is Apple's stock symbol?",
+                role: .user
+            )
+        ],
+        model: "claude-haiku-4-5-20251001",
+        tools: [
+            .customTool(
+                AnthropicTool(
+                    description: "Call this function when the user wants a stock symbol",
+                    inputSchema: [
+                        "type": "object",
+                        "properties": [
+                            "ticker": [
+                                "type": "string",
+                                "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+                            ]
+                        ],
+                        "required": ["ticker"]
+                    ],
+                    name: "get_stock_symbol"
+                )
+            )
+        ]
+    )
+
+    do {
+        let stream = try await anthropicService.streamingMessageRequest(
+            body: requestBody,
+            secondsToWait: 120
+        )
+        var toolCallAccumulator = AnthropicToolCallAccumulator()
+        for try await event in stream {
+            if let (toolName, toolInput) = try toolCallAccumulator.append(event) {
+                print("Claude wants to call tool \(toolName) with input \(toolInput)")
+            }
+
+            if case .contentBlockDelta(let contentBlockDelta) = event {
+                if case .textDelta(let textDelta) = contentBlockDelta.delta {
+                    print("Received a text delta from Anthropic: \(textDelta.text)")
+                }
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create a streaming Anthropic message with tool calls: \(error)")
+    }
+```
+
+### How to make an Anthropic streaming message request with fine-grained tool streaming
+Fine-grained streaming can improve tool arrival time.
+For details, see https://platform.claude.com/docs/en/agents-and-tools/tool-use/fine-grained-tool-streaming
+
+Start with the snippet above, but set `maxTokens` to a large value (e.g. `65536`) and include the following header:
+
+```swift
+let stream = try await anthropicService.streamingMessageRequest(
+    body: requestBody,
+    secondsToWait: 120,
+    additionalHeaders: [
+        "anthropic-beta": "fine-grained-tool-streaming-2025-05-14"
+    ]
+)
+```
+
+### How to make an Anthropic message request with an image
 
 On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
 ```swift
     import AIProxy
 
-    guard let image = UIImage(named: "myImage") else {
-        print("Could not find an image named 'myImage' in your app assets")
+    /* Uncomment for BYOK use cases */
+    // let anthropicService = AIProxy.anthropicDirectService(
+    //     unprotectedAPIKey: "your-anthropic-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let anthropicService = AIProxy.anthropicService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    guard let image = NSImage(named: "my-image") else {
+        print("Could not find an image named 'my-image' in your app assets")
         return
     }
 
-    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.6) else {
+    guard let jpegData = AIProxy.encodeImageAsJpeg(image: image, compressionQuality: 0.8) else {
         print("Could not convert image to jpeg")
         return
     }
 
-    /* Uncomment for BYOK use cases */
-    // let anthropicService = AIProxy.anthropicDirectService(
-    //     unprotectedAPIKey: "your-anthropic-key"
-    // )
+    let imageBlockParam = AnthropicImageBlockParam(
+        source: .base64(data: jpegData.base64EncodedString(), mediaType: .jpeg),
+        cacheControl: nil
+    )
 
-    /* Uncomment for all other production use cases */
-    // let anthropicService = AIProxy.anthropicService(
-    //     partialKey: "partial-key-from-your-developer-dashboard",
-    //     serviceURL: "service-url-from-your-developer-dashboard"
-    // )
-
-    do {
-        let response = try await anthropicService.messageRequest(body: AnthropicMessageRequestBody(
-            maxTokens: 1024,
-            messages: [
-                AnthropicInputMessage(content: [
-                    .text("Provide a very short description of this image"),
-                    .image(mediaType: .jpeg, data: jpegData.base64EncodedString())
-                ], role: .user)
-            ],
-            model: "claude-sonnet-4-5-20250929"
-        ))
-        for content in response.content {
-            switch content {
-            case .text(let message):
-                print("Claude sent a message: \(message)")
-            case .toolUse(id: _, name: let toolName, input: let toolInput):
-                print("Claude used a tool \(toolName) with input: \(toolInput)")
-            }
-        }
-    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received \(statusCode) status code with response body: \(responseBody)")
-    } catch {
-        print("Could not send a multi-modal message to Anthropic: \(error)")
-    }
-```
-
-
-### How to use the tools API with Anthropic
-
-```swift
-    import AIProxy
-
-    /* Uncomment for BYOK use cases */
-    // let anthropicService = AIProxy.anthropicDirectService(
-    //     unprotectedAPIKey: "your-anthropic-key"
-    // )
-
-    /* Uncomment for all other production use cases */
-    // let anthropicService = AIProxy.anthropicService(
-    //     partialKey: "partial-key-from-your-developer-dashboard",
-    //     serviceURL: "service-url-from-your-developer-dashboard"
-    // )
+    let requestBody = AnthropicMessageRequestBody(
+        maxTokens: 8192,
+        messages: [
+            AnthropicMessageParam(
+                content: [
+                    .textBlock("Provide a very short description of this image"),
+                    .imageBlock(imageBlockParam),
+                ],
+                role: .user
+            )
+        ],
+        model: "claude-haiku-4-5-20251001",
+    )
 
     do {
-        let requestBody = AnthropicMessageRequestBody(
-            maxTokens: 1024,
-            messages: [
-                .init(
-                    content: [.text("What is nvidia's stock price?")],
-                    role: .user
-                )
-            ],
-            model: "claude-sonnet-4-5-20250929",
-            tools: [
-                .init(
-                    description: "Call this function when the user wants a stock symbol",
-                    inputSchema: [
-                        "type": "object",
-                        "properties": [
-                            "ticker": [
-                                "type": "string",
-                                "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
-                            ]
-                        ],
-                        "required": ["ticker"]
-                    ],
-                    name: "get_stock_symbol"
-                )
-            ]
+        let response = try await anthropicService.messageRequest(
+            body: requestBody,
+            secondsToWait: 120
         )
-        let response = try await anthropicService.messageRequest(body: requestBody)
-        for content in response.content {
-            switch content {
-            case .text(let message):
-                print("Claude sent a message: \(message)")
-            case .toolUse(id: _, name: let toolName, input: let toolInput):
-                print("Claude used a tool \(toolName) with input: \(toolInput)")
-            }
+        for case let .textBlock(textBlock) in response.content {
+            print("Received text from Claude: \(textBlock.text)")
         }
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
-        print("Received \(statusCode) status code with response body: \(responseBody)")
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not create Anthropic message with tool call: \(error)")
+        print("Could not create an Anthropic message with image input: \(error)")
     }
 ```
 
 
-## How to use Anthropic's pdf support in a buffered chat completion
+### How to make an Anthropic message request with a PDF
 
 This snippet includes a pdf `mydocument.pdf` in the Anthropic request. Adjust the filename to
 match the pdf included in your Xcode project. The snippet expects the pdf in the app bundle.
@@ -3592,38 +3642,45 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
     guard let pdfFileURL = Bundle.main.url(forResource: "mydocument", withExtension: "pdf"),
           let pdfData = try? Data(contentsOf: pdfFileURL)
     else {
-        print("""
-              Drop mydocument.pdf file into your Xcode project first.
-              """)
+        print("Drop mydocument.pdf into your Xcode project first.")
         return
     }
 
+    let documentBlockParam = AnthropicDocumentBlockParam(
+        source: .base64PDF(AnthropicBase64PDFSource(data: pdfData.base64EncodedString()))
+    )
+
+    let requestBody = AnthropicMessageRequestBody(
+        maxTokens: 8192,
+        messages: [
+            AnthropicMessageParam(
+                content: [
+                    .textBlock("Provide a very short description of this pdf"),
+                    .documentBlock(documentBlockParam),
+                ],
+                role: .user
+            )
+        ],
+        model: "claude-haiku-4-5-20251001"
+    )
+
     do {
-        let response = try await anthropicService.messageRequest(body: AnthropicMessageRequestBody(
-            maxTokens: 1024,
-            messages: [
-                AnthropicInputMessage(content: [.pdf(data: pdfData.base64EncodedString())], role: .user),
-                AnthropicInputMessage(content: [.text("Summarize this")], role: .user)
-            ],
-            model: "claude-sonnet-4-5-20250929"
-        ))
-        for content in response.content {
-            switch content {
-            case .text(let message):
-                print("Claude sent a message: \(message)")
-            case .toolUse(id: _, name: let toolName, input: let toolInput):
-                print("Claude used a tool \(toolName) with input: \(toolInput)")
-            }
+        let response = try await anthropicService.messageRequest(
+            body: requestBody,
+            secondsToWait: 120
+        )
+        for case let .textBlock(textBlock) in response.content {
+            print("Received text from Claude: \(textBlock.text)")
         }
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not use Anthropic's buffered pdf support: \(error)")
+        print("Could not create an Anthropic message with pdf input: \(error)")
     }
 ```
 
 
-## How to use Anthropic's pdf support in a streaming chat completion
+### How to make an Anthropic streaming message request with a PDF
 
 This snippet includes a pdf `mydocument.pdf` in the Anthropic request. Adjust the filename to
 match the pdf included in your Xcode project. The snippet expects the pdf in the app bundle.
@@ -3645,36 +3702,74 @@ match the pdf included in your Xcode project. The snippet expects the pdf in the
     guard let pdfFileURL = Bundle.main.url(forResource: "mydocument", withExtension: "pdf"),
           let pdfData = try? Data(contentsOf: pdfFileURL)
     else {
-        print("""
-              Drop mydocument.pdf file into your Xcode project first.
-              """)
+        print("Drop mydocument.pdf into your Xcode project first.")
         return
     }
 
+    let documentBlockParam = AnthropicDocumentBlockParam(
+        source: .base64PDF(AnthropicBase64PDFSource(data: pdfData.base64EncodedString()))
+    )
+
+    let requestBody = AnthropicMessageRequestBody(
+        maxTokens: 8192,
+        messages: [
+            AnthropicMessageParam(
+                content: [
+                    .textBlock("Provide a very short description of this pdf"),
+                    .documentBlock(documentBlockParam),
+                ],
+                role: .user
+            )
+        ],
+        model: "claude-haiku-4-5-20251001"
+    )
+
     do {
-        let stream = try await anthropicService.streamingMessageRequest(body: AnthropicMessageRequestBody(
-            maxTokens: 1024,
-            messages: [
-                AnthropicInputMessage(content: [.pdf(data: pdfData.base64EncodedString())], role: .user),
-                AnthropicInputMessage(content: [.text("Summarize this")], role: .user)
-            ],
-            model: "claude-sonnet-4-5-20250929"
-        ))
-        for try await chunk in stream {
-            switch chunk {
-            case .text(let text):
-                print(text)
-            case .toolUse(name: let toolName, input: let toolInput):
-                print("Claude wants to call tool \(toolName) with input \(toolInput)")
+        let stream = try await anthropicService.streamingMessageRequest(
+            body: requestBody,
+            secondsToWait: 120
+        )
+        for try await case .contentBlockDelta(let contentBlockDelta) in stream {
+            if case .textDelta(let textDelta) = contentBlockDelta.delta {
+                print("Received a text delta from Anthropic: \(textDelta.text)")
             }
         }
-        print("Done with stream")
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
     } catch {
-        print("Could not use Anthropic's streaming pdf support: \(error)")
+        print("Could not create a streaming Anthropic message with pdf input: \(error)")
     }
 ```
+
+### How to create an Anthropic request with a cached system prompt
+
+For pricing, see: https://platform.claude.com/docs/en/build-with-claude/prompt-caching#pricing 
+
+```swift
+    let requestBody = AnthropicMessageRequestBody(
+        maxTokens: 1024,
+        messages: [ /* snip */ ],
+        model: "claude-haiku-4-5-20251001",
+        system: .blocks([
+            AnthropicSystemTextBlockParam(
+                text: "This is a very long prompt",
+                cacheControl: AnthropicCacheControlEphemeral(ttl: .oneHour)
+            )
+        ])
+    )
+```
+
+### How to make requests to Anthropic on Azure
+
+1. Use the same snippets as above, but add the following to your `messageRequest` or `streamingMessageRequest` args:
+
+```swift
+additionalHeaders: [
+    "aiproxy-key-format": "x-api-key: {{key}}"
+]
+```
+
+2. In the AIProxy dashboard, configure your service to use the base URL of your Azure deployment *up to* the `/v1/messages` path component.
 
 
 ***

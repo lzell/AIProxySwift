@@ -12,12 +12,12 @@ import Foundation
 
 final class AnthropicMessageStreamingChunkTests: XCTestCase {
 
-    func testDeltaBlockStartIsDecodable() {
-        let serializedChunk = #"data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hello! How"}   }"#
-        let deltaBlock = AnthropicMessageStreamingDeltaBlock.from(line: serializedChunk)
-        switch deltaBlock?.delta {
-        case .text(let txt):
-            XCTAssertEqual("Hello! How", txt)
+    func testContentBlockDeltaIsDecodable() {
+        let serializedChunk = #"data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hello! How"}}"#
+        let contentBlockDelta = AnthropicContentBlockDelta.deserialize(fromLine: serializedChunk)
+        switch contentBlockDelta?.delta {
+        case .textDelta(let textDelta):
+            XCTAssertEqual("Hello! How", textDelta.text)
         default:
             XCTFail()
         }
@@ -25,13 +25,13 @@ final class AnthropicMessageStreamingChunkTests: XCTestCase {
 
     func testContentBlockStartIsDecodable() {
         let serializedChunk = #"data: {"type":"content_block_start","index":1,"content_block":{"type":"tool_use","id":"toolu_01T1x1fJ34qAmk2tNTrN7Up6","name":"get_weather","input":{}}}"#
-        let contentBlockStart = AnthropicMessageStreamingContentBlockStart.from(line: serializedChunk)
+        let contentBlockStart = AnthropicContentBlockStart.deserialize(fromLine: serializedChunk)
         switch contentBlockStart?.contentBlock {
-        case .toolUse(name: let name):
-            XCTAssertEqual("get_weather", name)
+        case .toolUseBlock(let toolUseBlock):
+            XCTAssertEqual("get_weather", toolUseBlock.name)
+            XCTAssertEqual("toolu_01T1x1fJ34qAmk2tNTrN7Up6", toolUseBlock.id)
         default:
             XCTFail()
         }
     }
 }
-
