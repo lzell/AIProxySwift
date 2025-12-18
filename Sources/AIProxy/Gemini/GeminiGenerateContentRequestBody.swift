@@ -385,6 +385,7 @@ extension GeminiGenerateContentRequestBody {
 extension GeminiGenerateContentRequestBody {
     /// Configuration options for model generation and outputs.
     nonisolated public struct GenerationConfig: Encodable, Sendable {
+        public let imageConfig: ImageConfig?
         public let maxOutputTokens: Int?
         public let temperature: Double?
         public let topP: Double?
@@ -398,6 +399,7 @@ extension GeminiGenerateContentRequestBody {
         public let thinkingConfig: ThinkingConfig?
 
         public init(
+            imageConfig: ImageConfig? = nil,
             maxOutputTokens: Int? = nil,
             temperature: Double? = nil,
             topP: Double? = nil,
@@ -410,6 +412,7 @@ extension GeminiGenerateContentRequestBody {
             speechConfig: SpeechConfig? = nil,
             thinkingConfig: ThinkingConfig? = nil
         ) {
+            self.imageConfig = imageConfig
             self.maxOutputTokens = maxOutputTokens
             self.temperature = temperature
             self.topP = topP
@@ -424,6 +427,7 @@ extension GeminiGenerateContentRequestBody {
         }
 
         private enum CodingKeys: String, CodingKey {
+            case imageConfig
             case maxOutputTokens
             case temperature
             case topP
@@ -440,6 +444,25 @@ extension GeminiGenerateContentRequestBody {
 }
 
 extension GeminiGenerateContentRequestBody.GenerationConfig {
+    /// Config for image generation features.
+    /// https://ai.google.dev/api/generate-content#ImageConfig
+    nonisolated public struct ImageConfig: Encodable, Sendable {
+        /// The aspect ratio of the image to generate.
+        /// If not specified, the model will choose a default aspect ratio based on any reference images provided.
+        /// See the available sizes for each gemini image model here: https://ai.google.dev/gemini-api/docs/image-generation
+        public let aspectRatio: String?
+
+        /// Specifies the size of generated images.
+        /// If not specified, the model will use default value 1K.
+        /// See the available sizes for each gemini image model here: https://ai.google.dev/gemini-api/docs/image-generation
+        public let imageSize: String?
+
+        public init(aspectRatio: String? = nil, imageSize: String? = nil) {
+            self.aspectRatio = aspectRatio
+            self.imageSize = imageSize
+        }
+    }
+
     nonisolated public struct ThinkingConfig: Encodable, Sendable {
         public let thinkingBudget: Int
 

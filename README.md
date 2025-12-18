@@ -2946,7 +2946,7 @@ Use the file URL returned from the snippet above.
     }
 ```
 
-### How to generate an image with Gemini
+### How to generate an image with Gemini Nano Banana Pro
 
 ```swift
     import AIProxy
@@ -2977,6 +2977,9 @@ Use the file URL returned from the snippet above.
             )
         ],
         generationConfig: .init(
+            imageConfig: .init(
+                aspectRatio: "5:4",
+            ),
             responseModalities: [
                 "Text",
                 "Image"
@@ -2994,7 +2997,7 @@ Use the file URL returned from the snippet above.
     do {
         let response = try await geminiService.generateContentRequest(
             body: requestBody,
-            model: "gemini-2.0-flash-exp-image-generation",
+            model: "gemini-3-pro-image-preview",
             secondsToWait: 120
         )
         for part in response.candidates?.first?.content?.parts ?? [] {
@@ -3010,7 +3013,7 @@ Use the file URL returned from the snippet above.
 ```
 
 
-### How to generate an image with Gemini and Imagen
+### How to generate an image with Imagen
 
 ```swift
     import AIProxy
