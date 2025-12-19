@@ -183,11 +183,20 @@ offer full demo apps to jump-start your development. Please see the [AIProxyBoot
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
 
+    let requestBody = OpenAIChatCompletionRequestBody(
+        model: "gpt-5.2",
+        messages: [
+            .system(content: .text("You are a friendly assistant")),
+            .user(content: .text("hello world"))
+        ],
+        reasoningEffort: .noReasoning
+    )
+
     do {
-        let response = try await openAIService.chatCompletionRequest(body: .init(
-            model: "gpt-4o",
-            messages: [.user(content: .text("hello world"))]
-        ))
+        let response = try await openAIService.chatCompletionRequest(
+            body: requestBody,
+            secondsToWait: 120
+        )
         print(response.choices.first?.message.content ?? "")
     } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
         print("Received \(statusCode) status code with response body: \(responseBody)")
@@ -215,11 +224,12 @@ This is useful for `o1` and `o3` models.
     // )
 
     let requestBody = OpenAIChatCompletionRequestBody(
-        model: "o3-mini",
+        model: "gpt-5.2",
         messages: [
           .developer(content: .text("You are a coding assistant")),
           .user(content: .text("Build a ruby service that writes latency stats to redis on each request"))
-        ]
+        ],
+        reasoningEffort: .high
     )
 
     do {
@@ -257,8 +267,9 @@ This is useful for `o1` and `o3` models.
     // )
 
     let requestBody = OpenAIChatCompletionRequestBody(
-        model: "gpt-4o-mini",
+        model: "gpt-5.2",
         messages: [.user(content: .text("hello world"))]
+        reasoningEffort: .noReasoning
     )
 
     do {
@@ -310,7 +321,7 @@ As an alternative, you can use the new ChatGPT Responses API to hold the entire 
     var completion1: OpenAIChatCompletionResponseBody? = nil
     do {
         completion1 = try await openAIService.chatCompletionRequest(body: .init(
-            model: "gpt-4o-mini",
+            model: "gpt-5-mini",
             messages: [
                 userMessage1
             ]
@@ -340,7 +351,7 @@ As an alternative, you can use the new ChatGPT Responses API to hold the entire 
     var completion2: OpenAIChatCompletionResponseBody? = nil
     do {
         completion2 = try await openAIService.chatCompletionRequest(body: .init(
-            model: "gpt-4o-mini",
+            model: "gpt-5-mini",
             messages: [
                 userMessage1,
                 .assistant(content: .text(assistantContent1)),
@@ -392,7 +403,7 @@ On macOS, use `NSImage(named:)` in place of `UIImage(named:)`
 
     do {
         let response = try await openAIService.chatCompletionRequest(body: .init(
-            model: "gpt-4o",
+            model: "gpt-5.2",
             messages: [
                 .system(
                     content: .text("Tell me what you see")
@@ -743,7 +754,7 @@ in its response:
             "additionalProperties": false
         ]
         let requestBody = OpenAIChatCompletionRequestBody(
-            model: "gpt-4o-2024-08-06",
+            model: "gpt-5.2",
             messages: [
                 .system(content: .text("Return valid JSON only, and follow the specified JSON structure")),
                 .user(content: .text("Return a peaches and cream color palette"))
@@ -802,7 +813,7 @@ For more examples, see the [original structured outputs announcement](https://op
     var completion1: OpenAIChatCompletionResponseBody? = nil
     do {
         completion1 = try await openAIService.chatCompletionRequest(body: .init(
-            model: "gpt-4o-mini",
+            model: "gpt-5.2",
             messages: [
                 userMessage
             ],
@@ -859,7 +870,7 @@ For more examples, see the [original structured outputs announcement](https://op
     do {
         completion2 = try await openAIService.chatCompletionRequest(
             body: .init(
-                model: "gpt-4o-mini",
+                model: "gpt-5.2",
                 messages: [
                     userMessage,
                     .assistant(
@@ -911,7 +922,7 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
     //     serviceURL: "service-url-from-your-developer-dashboard"
     // )
     let requestBody = OpenAIChatCompletionRequestBody(
-        model: "gpt-4o-mini",
+        model: "gpt-5.2",
         messages: [
             .user(content: .text("What is the weather like in Paris today?")),
         ],

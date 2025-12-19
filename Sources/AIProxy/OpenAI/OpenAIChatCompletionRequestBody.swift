@@ -62,6 +62,31 @@ nonisolated public struct OpenAIChatCompletionRequestBody: Encodable, Sendable {
     /// Defaults to 0
     public let presencePenalty: Double?
 
+    /// Used by OpenAI to cache responses for similar requests to optimize your cache hit rates. Replaces the user field.
+    /// https://platform.openai.com/docs/guides/prompt-caching
+    public let promptCacheKey: String?
+
+    /// The retention policy for the prompt cache. Set to 24h to enable extended prompt caching, which keeps cached prefixes active for longer, up to a maximum of 24 hours.
+    /// https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention
+    public let promptCacheRetention: PromptCacheRetention?
+
+    /// Constrains effort on reasoning for reasoning models.
+    ///
+    /// Currently supported values are `noReasoning`, `minimal`, `low`, `medium`, `high`, and `xhigh`.
+    /// Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
+    ///
+    /// - gpt-5.1 defaults to `noReasoning`, which does not perform reasoning.
+    /// - The supported reasoning values for `gpt-5.1` are `none`, `low`, `medium`, and `high`.
+    /// - Tool calls are supported for all reasoning values in `gpt-5.1`.
+    /// - All models before `gpt-5.1` default to `medium` reasoning effort, and do not support `noReasoning`.
+    /// - The `gpt-5-pro` model defaults to (and only supports) `high` reasoning effort.
+    /// - `xhigh` is supported for all models after `gpt-5.1-codex-max`.
+    ///
+    /// We've mapped `noReasoning` to OpenAI's `none`  in order to avoid collision with Swift's Optional `none` case.
+    ///
+    /// Defaults to `medium`
+    public let reasoningEffort: ReasoningEffort?
+
     /// Specifies the format that the model must output. Please see the docstring on `ResponseFormat` for important usage information
     public let responseFormat: ResponseFormat?
 
@@ -135,6 +160,9 @@ nonisolated public struct OpenAIChatCompletionRequestBody: Encodable, Sendable {
         case n
         case parallelToolCalls = "parallel_tool_calls"
         case presencePenalty = "presence_penalty"
+        case promptCacheKey = "prompt_cache_key"
+        case promptCacheRetention = "prompt_cache_retention"
+        case reasoningEffort = "reasoning_effort"
         case responseFormat = "response_format"
         case seed
         case stop
@@ -165,6 +193,9 @@ nonisolated public struct OpenAIChatCompletionRequestBody: Encodable, Sendable {
         n: Int? = nil,
         parallelToolCalls: Bool? = nil,
         presencePenalty: Double? = nil,
+        promptCacheKey: String? = nil,
+        promptCacheRetention: OpenAIChatCompletionRequestBody.PromptCacheRetention? = nil,
+        reasoningEffort: OpenAIChatCompletionRequestBody.ReasoningEffort? = nil,
         responseFormat: OpenAIChatCompletionRequestBody.ResponseFormat? = nil,
         seed: Int? = nil,
         stop: [String]? = nil,
@@ -190,6 +221,9 @@ nonisolated public struct OpenAIChatCompletionRequestBody: Encodable, Sendable {
         self.n = n
         self.parallelToolCalls = parallelToolCalls
         self.presencePenalty = presencePenalty
+        self.promptCacheKey = promptCacheKey
+        self.promptCacheRetention = promptCacheRetention
+        self.reasoningEffort = reasoningEffort
         self.responseFormat = responseFormat
         self.seed = seed
         self.stop = stop
@@ -204,6 +238,7 @@ nonisolated public struct OpenAIChatCompletionRequestBody: Encodable, Sendable {
         self.user = user
         self.webSearchOptions = webSearchOptions
     }
+
 }
 
 // MARK: -
@@ -435,6 +470,24 @@ extension OpenAIChatCompletionRequestBody.Message.ToolCall {
 
 // MARK: -
 extension OpenAIChatCompletionRequestBody {
+    /// References:
+    /// https://platform.openai.com/docs/api-reference/chat/create#chat_create-prompt_cache_retention
+    /// https://platform.openai.com/docs/guides/prompt-caching#prompt-cache-retention
+    nonisolated public enum PromptCacheRetention: String, Encodable, Sendable {
+        case inMemory = "in_memory"
+        case twentyFourHours = "24h"
+    }
+
+    /// https://platform.openai.com/docs/api-reference/chat/create#chat_create-reasoning_effort
+    nonisolated public enum ReasoningEffort: String, Encodable, Sendable {
+        case noReasoning = "none"
+        case minimal
+        case low
+        case medium
+        case high
+        case xhigh
+    }
+
     /// An object specifying the format that the model must output. Compatible with GPT-4o, GPT-4o mini, GPT-4
     /// Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.
     nonisolated public enum ResponseFormat: Encodable, Sendable {
