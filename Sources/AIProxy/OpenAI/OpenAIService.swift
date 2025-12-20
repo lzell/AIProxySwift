@@ -410,6 +410,11 @@ import Foundation
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
+    /// Maps to the `createConversation` operationId in the OpenAPI spec
+    public func createConversation(
+        requestBody: OpenAICreateConversationBody
+ync throws -> Void {}
+
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
         switch self.requestFormat {
