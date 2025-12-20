@@ -193,6 +193,7 @@ extension OpenAICreateImageEditRequestBody {
         case dallE2 = "dall-e-2"
         case gptImage1 = "gpt-image-1"
         case gptImage1Mini = "gpt-image-1-mini"
+        case gptImage1_5 = "gpt-image-1.5"
     }
 
     nonisolated public enum OutputFormat: String, Sendable {
