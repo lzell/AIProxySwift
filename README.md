@@ -3783,7 +3783,7 @@ additionalHeaders: [
 ]
 ```
 
-2. In the AIProxy dashboard, configure your service to use the base URL of your Azure deployment *up to* the `/v1/messages` path component.
+2. In the AIProxy dashboard, configure your service to use the base URL of your Azure deployment *up to but not including* the `/v1/messages` path component.
 
 
 ***
