@@ -4,6 +4,8 @@
 //
 //  Created by Lou Zell on 12/19/24.
 //
+// OpenAPI spec: InputItem, version 2.3.0, line 44810
+// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items
 
 import Foundation
 
@@ -19,7 +21,7 @@ nonisolated public enum OpenAIInputItem: Encodable, Sendable {
     case item(OpenAIItem)
 
     // An internal identifier for an item to reference.
-    case itemReference(OpenAIItemReferenceParam)
+    case itemReference(OpenAIItemReference)
 
 
 //    case functionCallOutput(OpenAIConversationsInputFunctionCallOutput)

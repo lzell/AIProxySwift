@@ -4,6 +4,8 @@
 //
 //  Created by Lou Zell on 12/20/25.
 //
+// OpenAPI spec: FileSearchToolCall, version 2.3.0, line 42395
+// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-file_search_tool_call
 
 /// The results of a file search tool call.
 ///
