@@ -4,6 +4,7 @@
 //
 //  Created by Lou Zell on 12/20/25.
 //
+// OpenAPI spec: InputFileContent, version 2.3.0, line 65124
 
 /// A file input to the model.
 public nonisolated struct OpenAIInputFileContent: Encodable, Sendable {

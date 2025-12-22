@@ -4,6 +4,7 @@
 //
 //  Created by Lou Zell on 12/20/25.
 //
+// OpenAPI spec: InputTextContent, version 2.3.0, line 64803
 
 nonisolated public struct OpenAIInputTextContent: Encodable, Sendable {
     /// The type of the input item. Always `input_text`.

@@ -4,6 +4,8 @@
 //
 //  Created by Lou Zell on 12/20/25.
 //
+// OpenAPI spec: OutputMessage, version 2.3.0, line 47200
+// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-output_message
 
 /// An output message from the model.
 nonisolated public struct OpenAIOutputMessage: Encodable, Sendable {

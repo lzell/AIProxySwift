@@ -4,7 +4,8 @@
 //
 //  Created by Lou Zell on 12/20/25.
 //
-
+// OpenAPI spec: CreateConversationBody, version 2.3.0, line 66769
+// https://platform.openai.com/docs/api-reference/conversations/create
 
 public struct OpenAICreateConversationBody: Encodable {         
     // MARK: Optional Properties

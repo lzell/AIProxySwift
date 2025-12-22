@@ -1,12 +1,13 @@
 //
-//  OpenAIItemReferenceParam.swift
+//  OpenAIItemReference.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 12/20/25.
 //
+// OpenAPI spec: ItemReferenceParam, version 2.3.0, line 66250
 
 /// An internal identifier for an item to reference.
-public struct OpenAIItemReferenceParam: Encodable {
+public struct OpenAIItemReference: Encodable {
     /// The type of item to reference. Always `item_reference`.
     let type = "item_reference"
 
