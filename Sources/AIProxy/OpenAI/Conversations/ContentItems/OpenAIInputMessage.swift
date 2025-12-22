@@ -7,17 +7,14 @@
 // OpenAPI spec: InputMessage, version 2.3.0, line 44823
 // https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-input_message
 
-// TODO: Do we need EasyInputMessage at all? Seems like this one is more up to date.
-
 /// A message input to the model with a role indicating instruction following hierarchy.
-///
 /// Instructions given with the `developer` or `system` role take precedence over instructions given with the `user` role.
 nonisolated public struct OpenAIInputMessage: Encodable, Sendable {
     /// The type of the message input. Always set to `message`.
     public let type = "message"
 
     /// The content of the message.
-    public let content: OpenAIInputMessageContentList
+    public let content: [OpenAIInputContent]
 
     /// The role of the message input.
     ///
