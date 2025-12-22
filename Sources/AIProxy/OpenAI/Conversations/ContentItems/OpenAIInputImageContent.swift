@@ -1,14 +1,14 @@
 //
-//  InputImageContent.swift
+//  OpenAIInputImageContent.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 12/20/25.
 //
-
+// OpenAPI spec: InputImageContent, version 2.3.0, line 65062
 
 /// An image input to the model.
 ///
-/// Learn about image inputs:https://platform.openai.com/docs/guides/vision
+/// Learn about image inputs: https://platform.openai.com/docs/guides/vision
 public nonisolated struct OpenAIInputImageContent: Encodable, Sendable {
     /// The type of the input item. Always `input_image`.
     public let type = "input_image"
@@ -24,7 +24,7 @@ public nonisolated struct OpenAIInputImageContent: Encodable, Sendable {
     /// The detail level of the image to be sent to the model.
     ///
     /// One of `high`, `low`, or `auto`. Defaults to `auto`.
-    public let detail: ImageDetail
+    public let detail: OpenAIImageDetail
     
     /// Creates a new input image content.
     /// - Parameters:
@@ -34,7 +34,7 @@ public nonisolated struct OpenAIInputImageContent: Encodable, Sendable {
     public init(
         imageURL: String? = nil,
         fileID: String? = nil,
-        detail: ImageDetail = .auto
+        detail: OpenAIImageDetail = .auto
     ) {
         self.imageURL = imageURL
         self.fileID = fileID

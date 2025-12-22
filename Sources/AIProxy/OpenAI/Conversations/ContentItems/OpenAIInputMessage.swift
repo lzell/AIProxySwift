@@ -4,6 +4,8 @@
 //
 //  Created by Lou Zell on 12/20/25.
 //
+// OpenAPI spec: InputMessage, version 2.3.0, line 44823
+// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-input_message
 
 // TODO: Do we need EasyInputMessage at all? Seems like this one is more up to date.
 
@@ -58,7 +60,7 @@ nonisolated public struct OpenAIInputMessage: Encodable, Sendable {
     }
 }
 
-extension InputMessage {
+extension OpenAIInputMessage {
     /// The status of the message item.
     nonisolated public enum Status: String, Encodable, Sendable {
         case inProgress = "in_progress"

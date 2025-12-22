@@ -4,12 +4,12 @@
 //
 //  Created by Lou Zell on 12/19/24.
 //
+// OpenAPI spec: EasyInputMessage, version 2.3.0, line 40770
+// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-input_message
 
 import Foundation
 
 /// An input message that can be added to a conversation.
-/// Implementor's note:
-/// - Maps to the OpenAI type`EasyInputMessage`
 nonisolated public struct OpenAIEasyInputMessage: Encodable, Sendable {
     /// The type of item, always "message".
     public let type: String = "message"

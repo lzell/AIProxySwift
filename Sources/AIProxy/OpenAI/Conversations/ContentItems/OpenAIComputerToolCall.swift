@@ -4,13 +4,15 @@
 //
 //  Created by Lou Zell on 12/20/25.
 //
+// OpenAPI spec: ComputerToolCall, version 2.3.0, line 35839
+// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call
 
 /// A tool call to a computer use tool.
 ///
 /// See the [computer use guide](https://platform.openai.com/docs/guides/tools-computer-use) for more information.
 nonisolated public struct OpenAIComputerToolCall: Encodable, Sendable {
     /// The action to perform on the computer.
-    public let action: ComputerAction
+    public let action: OpenAIComputerAction
     
     /// An identifier used when responding to the tool call with output.
     public let callID: String
@@ -19,7 +21,7 @@ nonisolated public struct OpenAIComputerToolCall: Encodable, Sendable {
     public let id: String
     
     /// The pending safety checks for the computer call.
-    public let pendingSafetyChecks: [ComputerCallSafetyCheckParam]
+    public let pendingSafetyChecks: [OpenAIComputerSafetyCheck]
     
     /// The status of the item.
     ///
@@ -37,10 +39,10 @@ nonisolated public struct OpenAIComputerToolCall: Encodable, Sendable {
     ///   - pendingSafetyChecks: The pending safety checks for the computer call.
     ///   - status: The status of the item.
     public init(
-        action: ComputerAction,
+        action: OpenAIComputerAction,
         callID: String,
         id: String,
-        pendingSafetyChecks: [ComputerCallSafetyCheckParam],
+        pendingSafetyChecks: [OpenAIComputerToolCallSafetyCheck],
         status: Status
     ) {
         self.action = action
