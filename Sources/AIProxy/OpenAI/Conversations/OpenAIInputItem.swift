@@ -20,151 +20,17 @@ nonisolated public enum OpenAIInputItem: Encodable, Sendable {
     /// Can contain text, images, and audio inputs, as well as previous assistant responses and tool call
     case item(OpenAIItem)
 
-    // An internal identifier for an item to reference.
+    /// An internal identifier for an item to reference.
     case itemReference(OpenAIItemReference)
-
-
-//    case functionCallOutput(OpenAIConversationsInputFunctionCallOutput)
-//    case computerCallOutput(OpenAIConversationsInputComputerCallOutput)
-//    case localShellCallOutput(OpenAIConversationsInputLocalShellCallOutput)
-//    case mcpApprovalResponse(OpenAIConversationsInputMCPApprovalResponse)
 
     public func encode(to encoder: Encoder) throws {
         switch self {
-        case .inputMessage(let message):
-            try message.encode(to: encoder)
-        case .functionCallOutput(let output):
-            try output.encode(to: encoder)
-        case .computerCallOutput(let output):
-            try output.encode(to: encoder)
-        case .localShellCallOutput(let output):
-            try output.encode(to: encoder)
-        case .mcpApprovalResponse(let response):
-            try response.encode(to: encoder)
+        case .inputMessage(let ezMessage):
+            try ezMessage.encode(to: encoder)
+        case .item(let item):
+            try item.encode(to: encoder)
+        case .itemReference(let itemReference):
+            try itemReference.encode(to: encoder)
         }
-    }
-}
-
-/// Input for a function call output.
-nonisolated public struct OpenAIConversationsInputFunctionCallOutput: Encodable, Sendable {
-    /// The type of item, always "function_call_output".
-    public let type: String = "function_call_output"
-
-    /// The ID of the function call.
-    public let callId: String
-
-    /// The output of the function call.
-    public let output: String
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case callId = "call_id"
-        case output
-    }
-
-    public init(
-        callId: String,
-        output: String
-    ) {
-        self.callId = callId
-        self.output = output
-    }
-}
-
-/// Input for a computer call output.
-nonisolated public struct OpenAIConversationsInputComputerCallOutput: Encodable, Sendable {
-    /// The type of item, always "computer_call_output".
-    public let type: String = "computer_call_output"
-
-    /// The ID of the computer call.
-    public let callId: String
-
-    /// The output of the computer call.
-    public let output: OpenAIConversationsComputerCallOutputContent
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case callId = "call_id"
-        case output
-    }
-
-    public init(
-        callId: String,
-        output: OpenAIConversationsComputerCallOutputContent
-    ) {
-        self.callId = callId
-        self.output = output
-    }
-}
-
-/// Content of a computer call output.
-nonisolated public struct OpenAIConversationsComputerCallOutputContent: Encodable, Sendable {
-    /// The type of output.
-    public let type: String?
-
-    public init(type: String? = nil) {
-        self.type = type
-    }
-}
-
-/// Input for a local shell call output.
-nonisolated public struct OpenAIConversationsInputLocalShellCallOutput: Encodable, Sendable {
-    /// The type of item, always "local_shell_call_output".
-    public let type: String = "local_shell_call_output"
-
-    /// The ID of the local shell call.
-    public let callId: String
-
-    /// The output of the local shell call.
-    public let output: OpenAIConversationsLocalShellCallOutputContent
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case callId = "call_id"
-        case output
-    }
-
-    public init(
-        callId: String,
-        output: OpenAIConversationsLocalShellCallOutputContent
-    ) {
-        self.callId = callId
-        self.output = output
-    }
-}
-
-/// Content of a local shell call output.
-nonisolated public struct OpenAIConversationsLocalShellCallOutputContent: Encodable, Sendable {
-    /// The type of output.
-    public let type: String?
-
-    public init(type: String? = nil) {
-        self.type = type
-    }
-}
-
-/// Input for an MCP approval response.
-nonisolated public struct OpenAIConversationsInputMCPApprovalResponse: Encodable, Sendable {
-    /// The type of item, always "mcp_approval_response".
-    public let type: String = "mcp_approval_response"
-
-    /// The ID of the approval request.
-    public let approvalRequestId: String
-
-    /// Whether the request was approved.
-    public let approved: Bool
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case approvalRequestId = "approval_request_id"
-        case approved
-    }
-
-    public init(
-        approvalRequestId: String,
-        approved: Bool
-    ) {
-        self.approvalRequestId = approvalRequestId
-        self.approved = approved
     }
 }
