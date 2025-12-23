@@ -1,12 +1,14 @@
 //
-//  ComputerScreenshotImage.swift
+//  OpenAIComputerScreenshot.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 12/20/25.
 //
+// OpenAPI spec: ComputerScreenshotImage, version 2.3.0, line 35817
+// OpenAPI spec: ComputerScreenshotContent, version 2.3.0, line 65096
 
 /// A computer screenshot image used with the computer use tool.
-nonisolated public struct OpenAIComputerScreenshotImage: Encodable, Sendable {
+nonisolated public struct OpenAIComputerScreenshot: Encodable, Decodable, Sendable {
     /// Specifies the event type. For a computer screenshot, this property is always set to `computer_screenshot`.
     public let type = "computer_screenshot"
     
