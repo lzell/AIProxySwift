@@ -119,6 +119,27 @@ extension FalService {
         )
     }
 
+    /// Convenience method for creating a `fal-ai/flux-2` image.
+    ///
+    /// - Parameter input: The input schema. See `FalFlux2InputSchema.swift` for the range of controls that you
+    ///                    can use to adjust the image generation.
+    ///
+    /// - Returns: The inference result. The `images` property of the returned value contains a list of
+    ///            generated images. Each image has a `url` that you can use to fetch the image contents
+    ///            (or use with AsyncImage)
+    public func createFlux2Image(
+        input: FalFlux2InputSchema,
+        secondsToWait: UInt
+    ) async throws -> FalFlux2OutputSchema {
+        return try await self.createInferenceAndPollForResult(
+            model: "fal-ai/flux-2",
+            input: input,
+            pollAttempts: Int(ceil(Double(secondsToWait) / 2)),
+            secondsBetweenPollAttempts: 2
+        )
+    }
+
+
 #if false
     /// Convenience method for creating a `fal-ai/runway-gen3/turbo/image-to-video` video.
     ///

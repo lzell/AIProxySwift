@@ -5269,6 +5269,42 @@ See `FalFluxLoRAInputSchema.swift` for the full range of inference controls
     }
 ```
 
+#### How to generate an image using Flux 2
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let falService = AIProxy.falDirectService(
+    //     unprotectedAPIKey: "your-fal-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let falService = AIProxy.falService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let input = FalFlux2InputSchema(
+        prompt: "Yosemite Valley",
+        enableSafetyChecker: false
+    )
+    do {
+        let output = try await falService.createFlux2Image(
+            input: input,
+            secondsToWait: 120
+        )
+        print("""
+              The first output image is at \(output.images?.first?.url?.absoluteString ?? "")
+              It took \(output.timings?.inference ?? Double.nan) seconds to generate.
+              """)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create Fal Flux 2 image: \(error)")
+    }
+```
+
 
 ***
 
@@ -6962,7 +6998,9 @@ Contributions are welcome! This library uses the MIT license.
 
 - In codable representations, fields that are required by the API should be above fields that
   are optional. Within the two groups (required and optional) all fields should be
-  alphabetically ordered. Separate the two groups with a mark to aid users of ctrl-6:
+  in the provider's documentation order. This makes it easier for contributors and LLMs
+  to spot differences between the provider documentation and our encodable/decodable fields.
+  Separate the two groups with a mark to aid users of ctrl-6:
 
   ```swift
   // MARK: Optional properties
