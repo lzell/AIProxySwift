@@ -84,12 +84,3 @@ nonisolated public enum OpenAIItem: Sendable {
     /// The output of a custom tool call from your code, being sent back to the model.
     case customToolCallOutput(OpenAICustomToolCallOutput)
 }
-
-
-// - $ref: '#/components/schemas/MCPListTools'
-// - $ref: '#/components/schemas/MCPApprovalRequest'
-// - $ref: '#/components/schemas/MCPApprovalResponse'
-// - $ref: '#/components/schemas/MCPToolCall'
-// - $ref: '#/components/schemas/CustomToolCallOutput'
-// - $ref: '#/components/schemas/CustomToolCall'
-
