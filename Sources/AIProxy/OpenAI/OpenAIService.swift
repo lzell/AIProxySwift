@@ -413,7 +413,7 @@ import Foundation
     /// Maps to the `createConversation` operationId in the OpenAPI spec
     public func createConversation(
         requestBody: OpenAICreateConversationBody
-ync throws -> Void {}
+    throws -> Void {}
 
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
