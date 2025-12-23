@@ -9,7 +9,7 @@
 /// A list of Conversation items.
 nonisolated public struct OpenAIConversationItemList: Decodable, Sendable {
     /// A list of conversation items.
-    public let data: [ConversationItem]
+    public let data: [OpenAIConversationItem]
     
     /// The ID of the first item in the list.
     public let firstID: String
@@ -31,7 +31,7 @@ nonisolated public struct OpenAIConversationItemList: Decodable, Sendable {
     ///   - lastID: The ID of the last item in the list.
     ///   - object: The type of object returned, must be `list`.
     public init(
-        data: [ConversationItem],
+        data: [OpenAIConversationItem],
         firstID: String,
         hasMore: Bool,
         lastID: String,
@@ -54,7 +54,7 @@ nonisolated public struct OpenAIConversationItemList: Decodable, Sendable {
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.data = try container.decode([ConversationItem].self, forKey: .data)
+        self.data = try container.decode([OpenAIConversationItem].self, forKey: .data)
         self.firstID = try container.decode(String.self, forKey: .firstID)
         self.hasMore = try container.decode(Bool.self, forKey: .hasMore)
         self.lastID = try container.decode(String.self, forKey: .lastID)
