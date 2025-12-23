@@ -1,10 +1,10 @@
 //
-//  OpenAIMessageResource.swift
+//  OpenAIMessage.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 12/22/25.
 //
-// OpenAPI spec: Message, version 2.3.0, line 23074
+// OpenAPI spec: Message, version 2.3.0, line 65153
 
 /// A message to or from the model.
 nonisolated public struct OpenAIMessageResource: Decodable, Sendable {

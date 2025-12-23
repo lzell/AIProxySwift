@@ -4,18 +4,36 @@
 //
 //  Created by Lou Zell on 12/22/25.
 //
-// OpenAPI spec: Message content, version 2.3.0, line 23097
+// OpenAPI spec: Message#content, version 2.3.0, line 65175
+// https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-message-content
 
 /// Content of a message.
 nonisolated public enum OpenAIMessageContent: Decodable, Sendable {
-    case computerScreenshot(OpenAIComputerScreenshotContentResource)
+    /// A screenshot of a computer.
+    case computerScreenshot(OpenAIComputerScreenshot)
+
+    /// A file input to the model.
     case inputFile(OpenAIInputFileContentResource)
+
+    /// An image input to the model. Learn about image inputs: https://platform.openai.com/docs/guides/vision
     case inputImage(OpenAIInputImageContentResource)
+
+    /// A text input to the model.
     case inputText(OpenAIInputTextContentResource)
+
+    /// A text output from the model.
     case outputText(OpenAIOutputTextContentResource)
+
+    /// Reasoning text from the model.
     case reasoningText(OpenAIReasoningTextContentResource)
+
+    /// A refusal from the model.
     case refusal(OpenAIRefusalContentResource)
+
+    /// A summary text from the model.
     case summaryText(OpenAISummaryTextContentResource)
+
+    /// A text content.
     case text(OpenAITextContentResource)
 
     private enum CodingKeys: String, CodingKey {
@@ -28,7 +46,7 @@ nonisolated public enum OpenAIMessageContent: Decodable, Sendable {
 
         switch type {
         case "computer_screenshot":
-            self = .computerScreenshot(try OpenAIComputerScreenshotContentResource(from: decoder))
+            self = .computerScreenshot(try OpenAIComputerScreenshot(from: decoder))
         case "input_file":
             self = .inputFile(try OpenAIInputFileContentResource(from: decoder))
         case "input_image":
@@ -194,26 +212,6 @@ nonisolated public enum OpenAIImageDetailResource: String, Decodable, Sendable {
     case auto
     case high
     case low
-}
-
-// MARK: - Computer Screenshot Content
-
-/// A screenshot of a computer.
-nonisolated public struct OpenAIComputerScreenshotContentResource: Decodable, Sendable {
-    /// The identifier of an uploaded file that contains the screenshot.
-    public let fileID: String?
-
-    /// The URL of the screenshot image.
-    public let imageURL: String?
-
-    /// Specifies the event type. For a computer screenshot, this property is always set to `computer_screenshot`.
-    public let type: String
-
-    private enum CodingKeys: String, CodingKey {
-        case fileID = "file_id"
-        case imageURL = "image_url"
-        case type
-    }
 }
 
 // MARK: - Input File Content

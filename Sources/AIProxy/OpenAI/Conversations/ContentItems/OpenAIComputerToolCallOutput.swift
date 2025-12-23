@@ -13,7 +13,7 @@ nonisolated public struct OpenAIComputerToolCallOutput: Encodable, Sendable {
     public let callID: String
 
     /// The output of the computer tool call.
-    public let output: OpenAIComputerScreenshotImage
+    public let output: OpenAIComputerScreenshot
 
     /// The type of the computer tool call output. Always `computer_call_output`.
     public let type = "computer_call_output"
@@ -38,7 +38,7 @@ nonisolated public struct OpenAIComputerToolCallOutput: Encodable, Sendable {
     ///   - status: The status of the message input.
     public init(
         callID: String,
-        output: OpenAIComputerScreenshotImage,
+        output: OpenAIComputerScreenshot,
         acknowledgedSafetyChecks: [OpenAIComputerSafetyCheck]? = nil,
         id: String? = nil,
         status: Status? = nil
