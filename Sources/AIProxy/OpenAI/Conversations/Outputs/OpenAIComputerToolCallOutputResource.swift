@@ -15,7 +15,7 @@ nonisolated public struct OpenAIComputerToolCallOutputResource: Decodable, Senda
     public let id: String
 
     /// The screenshot output from the computer.
-    public let output: OpenAIComputerScreenshotImageResource
+    public let output: OpenAIComputerScreenshot
 
     /// The type of the computer tool call output. Always `computer_call_output`.
     public let type: String
@@ -35,23 +35,5 @@ nonisolated public struct OpenAIComputerToolCallOutputResource: Decodable, Senda
         case type
         case acknowledgedSafetyChecks = "acknowledged_safety_checks"
         case status
-    }
-}
-
-/// A computer screenshot image used with the computer use tool.
-nonisolated public struct OpenAIComputerScreenshotImageResource: Decodable, Sendable {
-    /// Specifies the event type. For a computer screenshot, this property is always set to `computer_screenshot`.
-    public let type: String
-
-    /// The identifier of an uploaded file that contains the screenshot.
-    public let fileID: String?
-
-    /// The URL of the screenshot image.
-    public let imageURL: String?
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileID = "file_id"
-        case imageURL = "image_url"
     }
 }
