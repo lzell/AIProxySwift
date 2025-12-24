@@ -5,6 +5,7 @@
 //  Created by Lou Zell on 12/22/25.
 //
 // OpenAPI spec: ConversationResource, version 2.3.0, line 66269
+// https://platform.openai.com/docs/api-reference/conversations/object
 
 /// A conversation resource.
 nonisolated public struct OpenAIConversation: Decodable, Sendable {
@@ -21,7 +22,7 @@ nonisolated public struct OpenAIConversation: Decodable, Sendable {
     public let metadata: [String: String]
 
     /// The object type, which is always `conversation`.
-    public let object: String
+    public let object = "conversation"
 
     /// Creates a new conversation resource.
     /// - Parameters:
@@ -33,7 +34,6 @@ nonisolated public struct OpenAIConversation: Decodable, Sendable {
         createdAt: Int,
         id: String,
         metadata: [String: String],
-        object: String
     ) {
         self.createdAt = createdAt
         self.id = id
@@ -45,7 +45,6 @@ nonisolated public struct OpenAIConversation: Decodable, Sendable {
         case createdAt = "created_at"
         case id
         case metadata
-        case object
     }
 
     public init(from decoder: Decoder) throws {
@@ -53,6 +52,5 @@ nonisolated public struct OpenAIConversation: Decodable, Sendable {
         self.createdAt = try container.decode(Int.self, forKey: .createdAt)
         self.id = try container.decode(String.self, forKey: .id)
         self.metadata = try container.decode([String: String].self, forKey: .metadata)
-        self.object = try container.decode(String.self, forKey: .object)
     }
 }
