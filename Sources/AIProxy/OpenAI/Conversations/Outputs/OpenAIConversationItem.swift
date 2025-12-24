@@ -4,35 +4,80 @@
 //
 //  Created by Lou Zell on 12/22/25.
 //
-// OpenAPI spec: ConversationItem, version 2.3.0, line 2401
+// OpenAPI spec: ConversationItem, version 2.3.0, line 36122
+// https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data
 
 /// A single item within a conversation.
 ///
 /// The set of possible types are the same as the `output` type of a
 /// [Response object](https://platform.openai.com/docs/api-reference/responses/object#responses/object-output).
 nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
-    case applyPatchToolCall(OpenAIApplyPatchToolCallResource)
-    case applyPatchToolCallOutput(OpenAIApplyPatchToolCallOutputResource)
-    case codeInterpreterToolCall(OpenAICodeInterpreterToolCallResource)
-    case computerToolCall(OpenAIComputerToolCallResource)
-    case computerToolCallOutput(OpenAIComputerToolCallOutputResource)
-    case customToolCall(OpenAICustomToolCallResource)
-    case customToolCallOutput(OpenAICustomToolCallOutputResource)
-    case fileSearchToolCall(OpenAIFileSearchToolCallResource)
-    case functionShellCall(OpenAIFunctionShellCallResource)
-    case functionShellCallOutput(OpenAIFunctionShellCallOutputResource)
-    case functionToolCall(OpenAIFunctionToolCallResource)
-    case functionToolCallOutput(OpenAIFunctionToolCallOutputResource)
-    case imageGenToolCall(OpenAIImageGenToolCallResource)
-    case localShellToolCall(OpenAILocalShellToolCallResource)
-    case localShellToolCallOutput(OpenAILocalShellToolCallOutputResource)
-    case mcpApprovalRequest(OpenAIMCPApprovalRequestResource)
-    case mcpApprovalResponse(OpenAIMCPApprovalResponseResource)
-    case mcpListTools(OpenAIMCPListToolsResource)
-    case mcpToolCall(OpenAIMCPToolCallResource)
+    /// A message to or from the model.
     case message(OpenAIMessageResource)
-    case reasoning(OpenAIReasoningItemResource)
+
+    /// A tool call to run a function. See the function calling guide for more information: https://platform.openai.com/docs/guides/function-calling
+    case functionToolCall(OpenAIFunctionToolCallResource)
+
+    /// The output of a function tool call.
+    case functionToolCallOutput(OpenAIFunctionToolCallOutputResource)
+
+    /// The results of a file search tool call. See the file search guide for more information: https://platform.openai.com/docs/guides/tools-file-search
+    case fileSearchToolCall(OpenAIFileSearchToolCallResource)
+
+    /// The results of a web search tool call. See the web search guide for more information: https://platform.openai.com/docs/guides/tools-web-search
     case webSearchToolCall(OpenAIWebSearchToolCallResource)
+
+    /// An image generation request made by the model.
+    case imageGenToolCall(OpenAIImageGenToolCallResource)
+
+    /// A tool call to a computer use tool. See the computer use guide for more information: https://platform.openai.com/docs/guides/tools-computer-use
+    case computerToolCall(OpenAIComputerToolCallResource)
+
+    /// The output of a computer tool call.
+    case computerToolCallOutput(OpenAIComputerToolCallOutputResource)
+
+    /// A description of the chain of thought used by a reasoning model while generating a response.
+    /// Be sure to include these items in your input to the Responses API for subsequent turns of a conversation if you are manually managing context: https://platform.openai.com/docs/guides/conversation-state
+    case reasoning(OpenAIReasoningItemResource)
+
+    /// A tool call to run code.
+    case codeInterpreterToolCall(OpenAICodeInterpreterToolCallResource)
+
+    /// A tool call to run a command on the local shell.
+    case localShellToolCall(OpenAILocalShellToolCallResource)
+
+    /// The output of a local shell tool call.
+    case localShellToolCallOutput(OpenAILocalShellToolCallOutputResource)
+
+    /// A tool call that executes one or more shell commands in a managed environment.
+    case functionShellCall(OpenAIFunctionShellCallResource)
+
+    /// The output of a shell tool call.
+    case functionShellCallOutput(OpenAIFunctionShellCallOutputResource)
+
+    /// A tool call that applies file diffs by creating, deleting, or updating files.
+    case applyPatchToolCall(OpenAIApplyPatchToolCallResource)
+
+    /// The output emitted by an apply patch tool call.
+    case applyPatchToolCallOutput(OpenAIApplyPatchToolCallOutputResource)
+
+    /// A list of tools available on an MCP server.
+    case mcpListTools(OpenAIMCPListToolsResource)
+
+    /// A request for human approval of a tool invocation.
+    case mcpApprovalRequest(OpenAIMCPApprovalRequestResource)
+
+    /// A response to an MCP approval request.
+    case mcpApprovalResponse(OpenAIMCPApprovalResponseResource)
+
+    /// An invocation of a tool on an MCP server.
+    case mcpToolCall(OpenAIMCPToolCallResource)
+
+    /// A call to a custom tool created by the model.
+    case customToolCall(OpenAICustomToolCallResource)
+
+    /// The output of a custom tool call from your code, being sent back to the model.
+    case customToolCallOutput(OpenAICustomToolCallOutputResource)
 
     private enum CodingKeys: String, CodingKey {
         case type
