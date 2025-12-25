@@ -182,7 +182,7 @@ nonisolated public struct OpenAIRefusalContentResource: Decodable, Sendable {
 /// An image input to the model.
 ///
 /// Learn about [image inputs](https://platform.openai.com/docs/guides/vision).
-nonisolated public struct OpenAIInputImageContentResource: Decodable, Sendable {
+nonisolated public struct DEADOpenAIInputImageContentResource: Decodable, Sendable {
     /// The detail level of the image to be sent to the model.
     ///
     /// One of `high`, `low`, or `auto`. Defaults to `auto`.
@@ -208,7 +208,7 @@ nonisolated public struct OpenAIInputImageContentResource: Decodable, Sendable {
 }
 
 /// The detail level of an image.
-nonisolated public enum OpenAIImageDetailResource: String, Decodable, Sendable {
+nonisolated public enum DEADOpenAIImageDetailResource: String, Decodable, Sendable {
     case auto
     case high
     case low
@@ -217,7 +217,7 @@ nonisolated public enum OpenAIImageDetailResource: String, Decodable, Sendable {
 // MARK: - Input File Content
 
 /// A file input to the model.
-nonisolated public struct OpenAIInputFileContentResource: Decodable, Sendable {
+nonisolated public struct DEADOpenAIInputFileContentResource: Decodable, Sendable {
     /// The type of the input item. Always `input_file`.
     public let type: String
 

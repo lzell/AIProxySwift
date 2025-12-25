@@ -13,13 +13,14 @@
 /// [Response object](https://platform.openai.com/docs/api-reference/responses/object#responses/object-output).
 nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     /// A message to or from the model.
+    /// TODO: Return to this last
     case message(OpenAIMessageResource)
 
     /// A tool call to run a function. See the function calling guide for more information: https://platform.openai.com/docs/guides/function-calling
-    case functionToolCall(OpenAIFunctionToolCallResource)
+    case functionToolCall(OpenAIFunctionToolCall)
 
     /// The output of a function tool call.
-    case functionToolCallOutput(OpenAIFunctionToolCallOutputResource)
+    case functionToolCallOutput(OpenAIFunctionToolCallOutput)
 
     /// The results of a file search tool call. See the file search guide for more information: https://platform.openai.com/docs/guides/tools-file-search
     case fileSearchToolCall(OpenAIFileSearchToolCallResource)
