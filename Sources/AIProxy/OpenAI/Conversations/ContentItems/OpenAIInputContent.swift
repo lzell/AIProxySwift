@@ -6,10 +6,38 @@
 //
 // OpenAPI spec: InputContent, version 2.3.0, line 44803
 // OpenAPI spec: InputMessageContentList, version 2.3.0, line 44860
+// OpenAPI spec: FunctionAndCustomToolCallOutput, version 2.3.0, line 43338
+// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-custom_tool_call_output-output-output_content_list
 
-nonisolated public enum OpenAIInputContent: Encodable, Sendable {
+nonisolated public enum OpenAIInputContent: Encodable, Decodable, Sendable {
     case text(OpenAIInputTextContent)
     case image(OpenAIInputImageContent)
     case file(OpenAIInputFileContent)
+    case futureProof
+
+    private enum CodingKeys: String, CodingKey {
+        case type
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+
+        switch type {
+        case "input_file":
+            self = .file(try OpenAIInputFileContent(from: decoder))
+        case "input_image":
+            self = .image(try OpenAIInputImageContent(from: decoder))
+        case "input_text":
+            self = .text(try OpenAIInputTextContent(from: decoder))
+        default:
+            self = .futureProof
+            logIf(.error)?.error("AIProxy: Could not decode input content type \(type)")
+        }
+    }
 }
+
+public typealias OpenAIOutputContent = OpenAIInputContent
+
+
 

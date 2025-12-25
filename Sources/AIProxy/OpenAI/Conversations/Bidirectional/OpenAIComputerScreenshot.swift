@@ -8,7 +8,7 @@
 // OpenAPI spec: ComputerScreenshotContent, version 2.3.0, line 65096
 
 /// A computer screenshot image used with the computer use tool.
-nonisolated public struct OpenAIComputerScreenshot: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAIComputerScreenshot: Codable, Sendable {
     /// Specifies the event type. For a computer screenshot, this property is always set to `computer_screenshot`.
     public let type = "computer_screenshot"
     

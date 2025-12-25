@@ -9,7 +9,7 @@
 /// An image input to the model.
 ///
 /// Learn about image inputs: https://platform.openai.com/docs/guides/vision
-public nonisolated struct OpenAIInputImageContent: Encodable, Sendable {
+public nonisolated struct OpenAIInputImageContent: Encodable, Decodable, Sendable {
     /// The type of the input item. Always `input_image`.
     public let type = "input_image"
     

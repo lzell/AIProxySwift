@@ -8,8 +8,10 @@
 // https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item
 
 /// Content item used to generate a response.
+/// This is an item sent into the model, and therefore Encodable only.
+/// For the corresponding Decodable output, see OpenAIConversationItem.
+/// The names are taken from OpenAI's spec, but can they be DRY'd into a single type?
 nonisolated public enum OpenAIItem: Sendable {
-
     /// A message input to the model with a role indicating instruction following hierarchy.
     /// Instructions given with the `developer` or` system` role take precedence over instructions given with the `user` role.
     case inputMessage(OpenAIInputMessage)
