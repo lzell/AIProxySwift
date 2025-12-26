@@ -326,6 +326,7 @@ class TypeVisitor: SyntaxVisitor {
                             )
                         } else {
                             // Multiple parameters - extract as fields
+                            // Note: For variant fields, we don't use 'required' - optionality is in the type itself
                             var fields: [String: FieldDef] = [:]
                             for param in paramList {
                                 let firstName = param.firstName?.text ?? "_"
@@ -334,7 +335,7 @@ class TypeVisitor: SyntaxVisitor {
                                 fields[paramName] = FieldDef(
                                     type: normalizeType(paramType),
                                     json: nil,
-                                    required: !paramType.hasSuffix("?"),
+                                    required: true,  // Always true for variant fields - optionality is in the type
                                     doc: nil
                                 )
                             }

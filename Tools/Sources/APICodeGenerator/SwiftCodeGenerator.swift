@@ -287,10 +287,12 @@ struct SwiftCodeGenerator: CodeGenerator {
                     lines.append("        case .\(caseName)(\(params)):")
                     lines.append("            try container.encode(\"\(jsonValue)\", forKey: .type)")
                     for (fieldName, field) in fields.sorted(by: { $0.key < $1.key }) {
-                        if field.required {
-                            lines.append("            try container.encode(\(fieldName), forKey: .\(fieldName))")
-                        } else {
+                        // For variant fields, optionality is in the type itself
+                        let isOptional = field.type.hasSuffix("?")
+                        if isOptional {
                             lines.append("            try container.encodeIfPresent(\(fieldName), forKey: .\(fieldName))")
+                        } else {
+                            lines.append("            try container.encode(\(fieldName), forKey: .\(fieldName))")
                         }
                     }
                 } else {

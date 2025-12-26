@@ -10,7 +10,7 @@ nonisolated public enum AnthropicToolChoice: Encodable, Sendable {
     case any(Bool?)
     case auto(Bool?)
     case none
-    case tool(disableParallelToolUse: Bool??, name: String)
+    case tool(disableParallelToolUse: Bool?, name: String)
 
     private enum CodingKeys: String, CodingKey {
         case type

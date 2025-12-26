@@ -1009,6 +1009,7 @@ types:
         fields:
           disableParallelToolUse:
             type: "bool?"
+            required: true
           name:
             type: "string"
             required: true
