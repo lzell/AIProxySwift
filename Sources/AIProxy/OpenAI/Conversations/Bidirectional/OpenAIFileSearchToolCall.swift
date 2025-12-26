@@ -6,11 +6,11 @@
 //
 // OpenAPI spec: FileSearchToolCall, version 2.3.0, line 42395
 // https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-file_search_tool_call
+// https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-file_search_tool_call
 
 /// The results of a file search tool call.
-///
-/// See the [file search guide](https://platform.openai.com/docs/guides/tools-file-search) for more information.
-nonisolated public struct OpenAIFileSearchToolCall: Encodable, Sendable {
+/// See the file search guide: https://platform.openai.com/docs/guides/tools-file-search
+nonisolated public struct OpenAIFileSearchToolCall: Encodable, Decodable, Sendable {
     /// The unique ID of the file search tool call.
     public let id: String
 
@@ -50,7 +50,6 @@ nonisolated public struct OpenAIFileSearchToolCall: Encodable, Sendable {
         case id
         case queries
         case status
-        case type
         case results
     }
 
@@ -59,7 +58,6 @@ nonisolated public struct OpenAIFileSearchToolCall: Encodable, Sendable {
         try container.encode(id, forKey: .id)
         try container.encode(queries, forKey: .queries)
         try container.encode(status, forKey: .status)
-        try container.encode(type, forKey: .type)
         try container.encodeIfPresent(results, forKey: .results)
     }
 }

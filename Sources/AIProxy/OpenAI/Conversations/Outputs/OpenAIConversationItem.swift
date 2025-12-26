@@ -6,6 +6,7 @@
 //
 // OpenAPI spec: ConversationItem, version 2.3.0, line 36122
 // https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data
+// Can this be DRY'd with OpenAIItem?
 
 /// A single item within a conversation.
 ///
@@ -23,7 +24,7 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     case functionToolCallOutput(OpenAIFunctionToolCallOutput)
 
     /// The results of a file search tool call. See the file search guide for more information: https://platform.openai.com/docs/guides/tools-file-search
-    case fileSearchToolCall(OpenAIFileSearchToolCallResource)
+    case fileSearchToolCall(OpenAIFileSearchToolCall)
 
     /// The results of a web search tool call. See the web search guide for more information: https://platform.openai.com/docs/guides/tools-web-search
     case webSearchToolCall(OpenAIWebSearchToolCallResource)
