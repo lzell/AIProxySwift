@@ -51,6 +51,7 @@ nonisolated public struct OpenAIFileSearchToolCall: Encodable, Decodable, Sendab
         case queries
         case status
         case results
+        case type
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -58,6 +59,7 @@ nonisolated public struct OpenAIFileSearchToolCall: Encodable, Decodable, Sendab
         try container.encode(id, forKey: .id)
         try container.encode(queries, forKey: .queries)
         try container.encode(status, forKey: .status)
+        try container.encode(type, forKey: .type)
         try container.encodeIfPresent(results, forKey: .results)
     }
 }

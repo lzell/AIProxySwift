@@ -47,6 +47,7 @@ nonisolated public struct OpenAIFunctionToolCall: Encodable, Decodable, Sendable
         case name
         case id
         case status
+        case type
     }
     
     public func encode(to encoder: Encoder) throws {
@@ -57,6 +58,7 @@ nonisolated public struct OpenAIFunctionToolCall: Encodable, Decodable, Sendable
         try container.encode(type, forKey: .type)
         try container.encode(id, forKey: .id)
         try container.encode(status, forKey: .status)
+        try container.encode(type, forKey: .type)
     }
 
     public init(

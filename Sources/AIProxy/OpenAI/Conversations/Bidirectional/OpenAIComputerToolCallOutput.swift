@@ -8,9 +8,12 @@
 // https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call_output
 
 /// The output of a computer tool call.
-nonisolated public struct OpenAIComputerToolCallOutput: Encodable, Sendable {
+nonisolated public struct OpenAIComputerToolCallOutput: Encodable, Decodable, Sendable {
     /// The ID of the computer tool call that produced the output.
     public let callID: String
+
+    /// The ID of the computer tool call output.
+    public let id: String
 
     /// The output of the computer tool call.
     public let output: OpenAIComputerScreenshot
@@ -20,9 +23,6 @@ nonisolated public struct OpenAIComputerToolCallOutput: Encodable, Sendable {
 
     /// The safety checks reported by the API that have been acknowledged by the developer.
     public let acknowledgedSafetyChecks: [OpenAIComputerSafetyCheck]?
-
-    /// The ID of the computer tool call output.
-    public let id: String?
 
     /// The status of the message input.
     ///
@@ -38,9 +38,9 @@ nonisolated public struct OpenAIComputerToolCallOutput: Encodable, Sendable {
     ///   - status: The status of the message input.
     public init(
         callID: String,
+        id: String,
         output: OpenAIComputerScreenshot,
         acknowledgedSafetyChecks: [OpenAIComputerSafetyCheck]? = nil,
-        id: String? = nil,
         status: Status? = nil
     ) {
         self.callID = callID
@@ -65,7 +65,7 @@ nonisolated public struct OpenAIComputerToolCallOutput: Encodable, Sendable {
         try container.encode(output, forKey: .output)
         try container.encode(type, forKey: .type)
         try container.encodeIfPresent(acknowledgedSafetyChecks, forKey: .acknowledgedSafetyChecks)
-        try container.encodeIfPresent(id, forKey: .id)
+        try container.encode(id, forKey: .id)
         try container.encodeIfPresent(status, forKey: .status)
     }
 }
