@@ -4,10 +4,13 @@
 //
 //  Created by Lou Zell on 12/20/25.
 //
+// TODO: Rename to OpenAIFileSearchResult
+// OpenAPI spec: FileSearchToolCall#results, version 2.3.0, line 42435
+//
 
 /// A file search result.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-file_search_tool_call-results
-public nonisolated struct OpenAIFileSearchToolCallResult: Encodable, Sendable {
+public nonisolated struct OpenAIFileSearchToolCallResult: Encodable, Decodable, Sendable {
     /// Set of 16 key-value pairs that can be attached to an object. This can be
     /// useful for storing additional information about the object in a structured
     /// format, and querying for objects via API or the dashboard. Keys are strings
@@ -26,7 +29,6 @@ public nonisolated struct OpenAIFileSearchToolCallResult: Encodable, Sendable {
 
     /// The text that was retrieved from the file.
     public let text: String?
-
 
     /// Creates a new file search result.
     /// - Parameters:
@@ -66,3 +68,30 @@ public nonisolated struct OpenAIFileSearchToolCallResult: Encodable, Sendable {
         try container.encodeIfPresent(text, forKey: .text)
     }
 }
+
+
+// We could take this if the type of [String: String] isn't sufficient for the `attributes` field.
+//nonisolated public enum OpenAIFileSearchAttributeValue: Decodable, Sendable {
+//    case bool(Bool)
+//    case number(Double)
+//    case string(String)
+//
+//    public init(from decoder: Decoder) throws {
+//        let container = try decoder.singleValueContainer()
+//        if let boolValue = try? container.decode(Bool.self) {
+//            self = .bool(boolValue)
+//        } else if let numberValue = try? container.decode(Double.self) {
+//            self = .number(numberValue)
+//        } else if let stringValue = try? container.decode(String.self) {
+//            self = .string(stringValue)
+//        } else {
+//            throw DecodingError.typeMismatch(
+//                OpenAIFileSearchAttributeValue.self,
+//                DecodingError.Context(
+//                    codingPath: decoder.codingPath,
+//                    debugDescription: "Expected Bool, Double, or String"
+//                )
+//            )
+//        }
+//    }
+//}
