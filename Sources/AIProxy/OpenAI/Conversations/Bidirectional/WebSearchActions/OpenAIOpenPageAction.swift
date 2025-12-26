@@ -6,7 +6,7 @@
 //
 
 /// Action type `open_page` - Opens a specific URL from search results.
-nonisolated public struct OpenAIOpenPageAction: Encodable, Sendable {
+nonisolated public struct OpenAIOpenPageAction: Encodable, Decodable, Sendable {
     /// The action type.
     public let type = "open_page"
 

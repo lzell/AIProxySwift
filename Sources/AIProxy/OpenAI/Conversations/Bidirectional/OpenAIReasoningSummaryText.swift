@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 12/21/25.
 //
 
-nonisolated public struct OpenAIReasoningSummaryText: Encodable, Sendable {
+nonisolated public struct OpenAIReasoningSummaryText: Encodable, Decodable, Sendable {
     /// A summary of the reasoning output from the model so far.
     public let text: String
 
