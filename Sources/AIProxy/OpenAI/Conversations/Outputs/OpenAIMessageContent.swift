@@ -145,22 +145,6 @@ nonisolated public struct OpenAISummaryTextContentResource: Decodable, Sendable 
     }
 }
 
-// MARK: - Reasoning Text Content
-
-/// Reasoning text from the model.
-nonisolated public struct OpenAIReasoningTextContentResource: Decodable, Sendable {
-    /// The reasoning text from the model.
-    public let text: String
-
-    /// The type of the reasoning text. Always `reasoning_text`.
-    public let type: String
-
-    private enum CodingKeys: String, CodingKey {
-        case text
-        case type
-    }
-}
-
 // MARK: - Refusal Content
 
 /// A refusal from the model.

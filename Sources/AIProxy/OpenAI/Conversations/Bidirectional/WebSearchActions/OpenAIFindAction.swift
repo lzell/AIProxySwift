@@ -6,7 +6,7 @@
 //
 
 /// Action type "find": Searches for a pattern within a loaded page.
-nonisolated public struct OpenAIFindAction: Encodable, Sendable {
+nonisolated public struct OpenAIFindAction: Encodable, Decodable, Sendable {
     /// The pattern or text to search for within the page.
     public let pattern: String
 

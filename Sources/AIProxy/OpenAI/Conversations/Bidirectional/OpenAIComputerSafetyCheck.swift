@@ -7,7 +7,7 @@
 
 /// A  safety check for computer tool calls
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call-pending_safety_checks
-nonisolated public struct OpenAIComputerSafetyCheck: Encodable, Sendable {
+nonisolated public struct OpenAIComputerSafetyCheck: Encodable, Decodable, Sendable {
     /// The ID of the safety check.
     public let id: String
 

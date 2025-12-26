@@ -8,7 +8,7 @@
 // https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-code_interpreter_tool_call
 
 /// A tool call to run code.
-nonisolated public struct OpenAICodeInterpreterToolCall: Encodable, Sendable {
+nonisolated public struct OpenAICodeInterpreterToolCall: Encodable, Decodable, Sendable {
     /// The code to run, or null if not available.
     public let code: String?
 

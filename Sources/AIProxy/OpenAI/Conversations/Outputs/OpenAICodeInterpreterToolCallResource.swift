@@ -50,7 +50,7 @@ nonisolated public enum OpenAICodeInterpreterToolCallStatusResource: String, Dec
 }
 
 /// Output from the code interpreter.
-nonisolated public enum OpenAICodeInterpreterOutputResource: Decodable, Sendable {
+nonisolated public enum DEADOpenAICodeInterpreterOutputResource: Decodable, Sendable {
     case image(OpenAICodeInterpreterOutputImageResource)
     case logs(OpenAICodeInterpreterOutputLogsResource)
 
@@ -58,23 +58,6 @@ nonisolated public enum OpenAICodeInterpreterOutputResource: Decodable, Sendable
         case type
     }
 
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
-
-        switch type {
-        case "image":
-            self = .image(try OpenAICodeInterpreterOutputImageResource(from: decoder))
-        case "logs":
-            self = .logs(try OpenAICodeInterpreterOutputLogsResource(from: decoder))
-        default:
-            throw DecodingError.dataCorruptedError(
-                forKey: .type,
-                in: container,
-                debugDescription: "Unknown code interpreter output type: \(type)"
-            )
-        }
-    }
 }
 
 /// The logs output from the code interpreter.

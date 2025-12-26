@@ -8,7 +8,7 @@
 // https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-image_generation_call
 
 /// An image generation request made by the model.
-nonisolated public struct OpenAIImageGenerationCall: Encodable, Sendable {
+nonisolated public struct OpenAIImageGenerationCall: Encodable, Decodable, Sendable {
     /// The unique ID of the image generation call.
     public let id: String
     

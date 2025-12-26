@@ -10,7 +10,7 @@
 /// A tool call to a computer use tool.
 ///
 /// See the [computer use guide](https://platform.openai.com/docs/guides/tools-computer-use) for more information.
-nonisolated public struct OpenAIComputerToolCall: Encodable, Sendable {
+nonisolated public struct OpenAIComputerToolCall: Encodable, Decodable, Sendable {
     /// The action to perform on the computer.
     public let action: OpenAIComputerAction
     

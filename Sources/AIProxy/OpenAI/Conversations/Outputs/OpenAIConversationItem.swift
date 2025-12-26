@@ -30,17 +30,17 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     case webSearchToolCall(OpenAIWebSearchToolCallResource)
 
     /// An image generation request made by the model.
-    case imageGenToolCall(OpenAIImageGenToolCallResource)
+    case imageGenToolCall(OpenAIImageGenerationCall)
 
     /// A tool call to a computer use tool. See the computer use guide for more information: https://platform.openai.com/docs/guides/tools-computer-use
-    case computerToolCall(OpenAIComputerToolCallResource)
+    case computerToolCall(OpenAIComputerToolCall)
 
     /// The output of a computer tool call.
-    case computerToolCallOutput(OpenAIComputerToolCallOutputResource)
+    case computerToolCallOutput(OpenAIComputerToolCallOutput)
 
     /// A description of the chain of thought used by a reasoning model while generating a response.
     /// Be sure to include these items in your input to the Responses API for subsequent turns of a conversation if you are manually managing context: https://platform.openai.com/docs/guides/conversation-state
-    case reasoning(OpenAIReasoningItemResource)
+    case reasoning(OpenAIReasoningItem)
 
     /// A tool call to run code.
     case codeInterpreterToolCall(OpenAICodeInterpreterToolCallResource)
