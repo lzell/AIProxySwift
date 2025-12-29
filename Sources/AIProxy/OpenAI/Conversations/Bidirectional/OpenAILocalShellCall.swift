@@ -5,10 +5,12 @@
 //  Created by Lou Zell on 12/21/25.
 //
 // OpenAPI spec: LocalShellToolCall, version 2.3.0, line 45541
-// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-local_shell_call
+// Encodable: https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-local_shell_call
+// Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-local_shell_call
 
 /// A tool call to run a command on the local shell.
-nonisolated public struct OpenAILocalShellCall: Encodable, Sendable {
+// TODO: Rename to LocalShellToolCall
+nonisolated public struct OpenAILocalShellCall: Encodable, Decodable, Sendable {
     /// The action to execute on the local shell.
     public let action: OpenAILocalShellCallAction
     
@@ -62,7 +64,7 @@ nonisolated public struct OpenAILocalShellCall: Encodable, Sendable {
 
 extension LocalShellToolCall {
     /// The status of the local shell call.
-    public enum Status: String, Encodable, Sendable {
+    public enum Status: String, Encodable, Decodable, Sendable {
         case inProgress = "in_progress"
         case completed
         case incomplete

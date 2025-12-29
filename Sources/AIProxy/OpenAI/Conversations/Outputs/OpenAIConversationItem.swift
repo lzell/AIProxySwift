@@ -43,13 +43,13 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     case reasoning(OpenAIReasoningItem)
 
     /// A tool call to run code.
-    case codeInterpreterToolCall(OpenAICodeInterpreterToolCallResource)
+    case codeInterpreterToolCall(OpenAICodeInterpreterToolCall)
 
     /// A tool call to run a command on the local shell.
-    case localShellToolCall(OpenAILocalShellToolCallResource)
+    case localShellToolCall(OpenAILocalShellCall)
 
     /// The output of a local shell tool call.
-    case localShellToolCallOutput(OpenAILocalShellToolCallOutputResource)
+    case localShellToolCallOutput(OpenAILocalShellCallOutput)
 
     /// A tool call that executes one or more shell commands in a managed environment.
     case functionShellCall(OpenAIFunctionShellCallResource)
