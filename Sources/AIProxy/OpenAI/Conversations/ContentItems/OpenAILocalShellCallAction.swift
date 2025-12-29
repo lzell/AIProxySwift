@@ -4,10 +4,11 @@
 //
 //  Created by Lou Zell on 12/21/25.
 //
+// Encodable: https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-local_shell_call-action
+// Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-local_shell_call-action
 
 /// Execute a shell command on the server.
-/// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-local_shell_call-action
-nonisolated public struct OpenAILocalShellCallAction: Encodable, Sendable {
+nonisolated public struct OpenAILocalShellCallAction: Encodable, Decodable, Sendable {
     /// The command to run.
     public let command: [String]
 
