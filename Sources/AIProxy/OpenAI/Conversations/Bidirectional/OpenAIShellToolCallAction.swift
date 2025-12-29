@@ -6,7 +6,7 @@
 //
 
 /// Commands and limits describing how to run the shell tool call.
-nonisolated public struct OpenAIShellToolCallAction: Encodable, Sendable {
+nonisolated public struct OpenAIShellToolCallAction: Encodable, Decodable, Sendable {
     /// Ordered shell commands for the execution environment to run.
     public let commands: [String]
 
