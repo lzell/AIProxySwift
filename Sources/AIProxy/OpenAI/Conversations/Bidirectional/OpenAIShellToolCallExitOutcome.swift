@@ -3,11 +3,11 @@
 //  AIProxy
 //
 //  Created by Lou Zell on 12/21/25.
-//
+// 65471     FunctionShellCallOutputExitOutcome
 
 /// Indicates that the shell commands finished and returned an exit code.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-shell_tool_call_output-output-outcome-shell_call_exit_outcome
-nonisolated public struct OpenAIShellToolCallExitOutcome: Encodable, Sendable {
+nonisolated public struct OpenAIShellToolCallExitOutcome: Encodable, Decodable, Sendable {
     /// The exit code returned by the shell process.
     public let exitCode: Int
     

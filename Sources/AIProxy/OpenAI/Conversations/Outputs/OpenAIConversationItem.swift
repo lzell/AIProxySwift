@@ -27,7 +27,7 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     case fileSearchToolCall(OpenAIFileSearchToolCall)
 
     /// The results of a web search tool call. See the web search guide for more information: https://platform.openai.com/docs/guides/tools-web-search
-    case webSearchToolCall(OpenAIWebSearchToolCallResource)
+    case webSearchToolCall(OpenAIWebSearchToolCall)
 
     /// An image generation request made by the model.
     case imageGenToolCall(OpenAIImageGenerationCall)
@@ -52,34 +52,34 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     case localShellToolCallOutput(OpenAILocalShellCallOutput)
 
     /// A tool call that executes one or more shell commands in a managed environment.
-    case functionShellCall(OpenAIFunctionShellCallResource)
+    case functionShellCall(OpenAIShellToolCall)
 
     /// The output of a shell tool call.
-    case functionShellCallOutput(OpenAIFunctionShellCallOutputResource)
+    case functionShellCallOutput(OpenAIShellToolCallOutput)
 
     /// A tool call that applies file diffs by creating, deleting, or updating files.
-    case applyPatchToolCall(OpenAIApplyPatchToolCallResource)
+    case applyPatchToolCall(OpenAIApplyPatchToolCall)
 
     /// The output emitted by an apply patch tool call.
-    case applyPatchToolCallOutput(OpenAIApplyPatchToolCallOutputResource)
+    case applyPatchToolCallOutput(OpenAIApplyPatchToolCallOutput)
 
     /// A list of tools available on an MCP server.
-    case mcpListTools(OpenAIMCPListToolsResource)
+    case mcpListTools(OpenAIMCPListTools)
 
     /// A request for human approval of a tool invocation.
-    case mcpApprovalRequest(OpenAIMCPApprovalRequestResource)
+    case mcpApprovalRequest(OpenAIMCPApprovalRequest)
 
     /// A response to an MCP approval request.
-    case mcpApprovalResponse(OpenAIMCPApprovalResponseResource)
+    case mcpApprovalResponse(OpenAIMCPApprovalResponse)
 
     /// An invocation of a tool on an MCP server.
-    case mcpToolCall(OpenAIMCPToolCallResource)
+    case mcpToolCall(OpenAIMCPToolCall)
 
     /// A call to a custom tool created by the model.
-    case customToolCall(OpenAICustomToolCallResource)
+    case customToolCall(OpenAICustomToolCall)
 
     /// The output of a custom tool call from your code, being sent back to the model.
-    case customToolCallOutput(OpenAICustomToolCallOutputResource)
+    case customToolCallOutput(OpenAICustomToolCall)
 
     private enum CodingKeys: String, CodingKey {
         case type
