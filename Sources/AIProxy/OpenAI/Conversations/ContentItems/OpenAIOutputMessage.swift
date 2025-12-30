@@ -16,7 +16,7 @@ nonisolated public struct OpenAIOutputMessage: Encodable, Sendable {
     public let id: String
 
     /// The role of the output message. Always `assistant`.
-    public let role = "assistant"
+    public let role = OpenAIMessageRole.assistant
 
     /// The status of the message input.
     ///

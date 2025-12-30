@@ -36,18 +36,6 @@ nonisolated public struct OpenAIMessageResource: Decodable, Sendable {
     }
 }
 
-/// The role of the message.
-nonisolated public enum OpenAIMessageRole: String, Decodable, Sendable {
-    case assistant
-    case critic
-    case developer
-    case discriminator
-    case system
-    case tool
-    case unknown
-    case user
-}
-
 /// The status of the message.
 nonisolated public enum OpenAIMessageStatus: String, Decodable, Sendable {
     case completed
