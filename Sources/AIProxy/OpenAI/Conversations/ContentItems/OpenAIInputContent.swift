@@ -7,9 +7,10 @@
 // OpenAPI spec: InputContent, version 2.3.0, line 44803
 // OpenAPI spec: InputMessageContentList, version 2.3.0, line 44860
 // OpenAPI spec: FunctionAndCustomToolCallOutput, version 2.3.0, line 43338
-// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-custom_tool_call_output-output-output_content_list
+// Encodable: https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-custom_tool_call_output-output-output_content_list
+// Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-custom_tool_call_output-output-output_content_list
 
-nonisolated public enum OpenAIInputContent: Encodable, Decodable, Sendable {
+nonisolated public enum OpenAIInputContent: Codable, Sendable {
     case text(OpenAIInputTextContent)
     case image(OpenAIInputImageContent)
     case file(OpenAIInputFileContent)
@@ -36,8 +37,3 @@ nonisolated public enum OpenAIInputContent: Encodable, Decodable, Sendable {
         }
     }
 }
-
-public typealias OpenAIOutputContent = OpenAIInputContent
-
-
-

@@ -8,7 +8,7 @@
 // https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-mcp_list_tools
 
 /// A list of tools available on an MCP server.
-nonisolated public struct OpenAIMCPListTools: Encodable, Sendable {
+nonisolated public struct OpenAIMCPListTools: Codable, Sendable {
     /// The unique ID of the list.
     public let id: String
 
@@ -65,7 +65,7 @@ nonisolated public struct OpenAIMCPListTools: Encodable, Sendable {
 // https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-mcp_list_tools-tools
 /// A tool available on an MCP server.
 extension OpenAIMCPListTools {
-    nonisolated public struct Tool: Encodable, Sendable {
+    nonisolated public struct Tool: Codable, Sendable {
         /// The JSON schema describing the tool's input.
         public let inputSchema: [String: AIProxyJSONValue]
 

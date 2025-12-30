@@ -7,7 +7,7 @@
 // OpenAPI spec: InputFileContent, version 2.3.0, line 65124
 
 /// A file input to the model.
-public nonisolated struct OpenAIInputFileContent: Encodable, Decodable, Sendable {
+public nonisolated struct OpenAIInputFileContent: Codable, Sendable {
     /// The type of the input item. Always `input_file`.
     public let type = "input_file"
 

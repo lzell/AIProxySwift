@@ -6,7 +6,7 @@
 //
 
 /// Instruction for creating a new file via the `apply_patch` tool.
-nonisolated public struct OpenAIApplyPatchCreateFile: Encodable, Sendable {
+nonisolated public struct OpenAIApplyPatchCreateFile: Codable, Sendable {
     /// Unified diff content to apply when creating the file.
     public let diff: String
     
