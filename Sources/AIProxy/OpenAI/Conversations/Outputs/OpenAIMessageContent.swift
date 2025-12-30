@@ -4,8 +4,8 @@
 //
 //  Created by Lou Zell on 12/22/25.
 //
-// OpenAPI spec: Message#content, version 2.3.0, line 65175
-// https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-message-content
+// OpenAPI spec: Message#content union, version 2.3.0, line 65175
+// Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-message-content
 
 /// Content of a message.
 nonisolated public enum OpenAIMessageContent: Decodable, Sendable {

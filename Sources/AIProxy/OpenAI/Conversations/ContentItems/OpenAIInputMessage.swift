@@ -19,7 +19,7 @@ nonisolated public struct OpenAIInputMessage: Encodable, Sendable {
     /// The role of the message input.
     ///
     /// One of `user`, `system`, or `developer`.
-    public let role: OpenAIRole
+    public let role: Role
 
     /// The status of item.
     ///
@@ -58,6 +58,13 @@ nonisolated public struct OpenAIInputMessage: Encodable, Sendable {
 }
 
 extension OpenAIInputMessage {
+
+    nonisolated public enum Role: String, Encodable, Sendable {
+        case user
+        case system
+        case developer
+    }
+
     /// The status of the message item.
     nonisolated public enum Status: String, Encodable, Sendable {
         case inProgress = "in_progress"

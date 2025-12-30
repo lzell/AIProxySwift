@@ -5,13 +5,11 @@
 //  Created by Lou Zell on 12/22/25.
 //
 // OpenAPI spec: ConversationItem, version 2.3.0, line 36122
-// https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data
-// Can this be DRY'd with OpenAIItem?
+// Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data
+// For the corresponding Encodable input, see OpenAIItem
 
 /// A single item within a conversation.
-///
-/// The set of possible types are the same as the `output` type of a
-/// [Response object](https://platform.openai.com/docs/api-reference/responses/object#responses/object-output).
+/// The set of possible types are the same as the `output` type of a Response object: https://platform.openai.com/docs/api-reference/responses/object#responses/object-output
 nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     /// A message to or from the model.
     /// TODO: Return to this last
@@ -81,6 +79,8 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     /// The output of a custom tool call from your code, being sent back to the model.
     case customToolCallOutput(OpenAICustomToolCall)
 
+    case futureProof
+
     private enum CodingKeys: String, CodingKey {
         case type
     }
@@ -135,11 +135,8 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
         case "web_search_call":
             self = .webSearchToolCall(try OpenAIWebSearchToolCallResource(from: decoder))
         default:
-            throw DecodingError.dataCorruptedError(
-                forKey: .type,
-                in: container,
-                debugDescription: "Unknown conversation item type: \(type)"
-            )
+            self = .futurePoof
+            logIf(.error)?.error("Unknown conversation item type: \(type)")
         }
     }
 }
