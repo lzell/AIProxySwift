@@ -14,7 +14,7 @@
 // It's more likely that a decoded shell tool call is passed back into the model at a future time.
 
 /// A tool representing a request to execute one or more shell commands.
-nonisolated public struct OpenAIShellToolCall: Encodable, Decodable Sendable {
+nonisolated public struct OpenAIShellToolCall: Encodable, Decodable, Sendable {
     /// The shell commands and limits that describe how to run the tool call.
     public let action: OpenAIShellToolCallAction
 

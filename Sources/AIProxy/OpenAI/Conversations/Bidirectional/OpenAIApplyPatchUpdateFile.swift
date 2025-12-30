@@ -6,7 +6,7 @@
 //
 
 /// Instruction for updating an existing file via the `apply_patch` tool.
-nonisolated public struct OpenAIApplyPatchUpdateFile: Encodable, Sendable {
+nonisolated public struct OpenAIApplyPatchUpdateFile: Codable, Sendable {
     /// Unified diff content to apply to the existing file.
     public let diff: String
 

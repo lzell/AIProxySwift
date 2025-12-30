@@ -6,7 +6,7 @@
 //
 
 /// Instruction for deleting an existing file via the `apply_patch` tool.
-nonisolated public struct OpenAIApplyPatchDeleteFile: Encodable, Sendable {
+nonisolated public struct OpenAIApplyPatchDeleteFile: Codable, Sendable {
     /// Path of the file to delete relative to the workspace root.
     public let path: String
 

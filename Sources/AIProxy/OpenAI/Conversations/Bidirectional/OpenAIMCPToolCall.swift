@@ -5,7 +5,8 @@
 //  Created by Lou Zell on 12/21/25.
 //
 // OpenAPI spec: MCPToolCall, version 2.3.0, line 45923
-// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-mcp_tool_call
+// Encodable: https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-mcp_tool_call
+// Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-mcp_tool_call
 
 /// An invocation of a tool on an MCP server.
 nonisolated public struct OpenAIMCPToolCall: Encodable, Sendable {
@@ -95,7 +96,8 @@ nonisolated public struct OpenAIMCPToolCall: Encodable, Sendable {
 }
 
 extension OpenAIMCPToolCall {
-    public enum Status: String, Encodable, Sendable {
+    /// The status of an MCP tool call.
+    public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case completed
         case incomplete

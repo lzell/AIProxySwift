@@ -4,10 +4,11 @@
 //
 //  Created by Lou Zell on 12/21/25.
 //
+// 65457     FunctionShellCallOutputTimeoutOutcome
 
 /// Indicates that the shell call exceeded its configured time limit.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-shell_tool_call_output-output-outcome-shell_call_timeout_outcome
-nonisolated public struct OpenAIShellToolCallTimeoutOutcome: Encodable, Sendable {
+nonisolated public struct OpenAIShellToolCallTimeoutOutcome: Encodable, Decodable, Sendable {
     /// The outcome type. Always `timeout`.
     public let type = "timeout"
     
