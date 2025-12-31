@@ -1264,6 +1264,8 @@ This example it taken from OpenAI's [function calling guide](https://platform.op
 
 Use this example to have a conversation with OpenAI's realtime models.
 
+If you're building for iOS, see the [OpenAI realtime starter](https://github.com/lzell/OpenAIRealtimeSample) project for a jumping off point.
+
 We recommend getting a basic chat completion with OpenAI working before attempting realtime.
 Realtime is a more involved integration (as you can see from the code snippet below), and
 getting a basic integration working first narrows down the source of any problem.
