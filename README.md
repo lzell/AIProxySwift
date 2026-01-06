@@ -55,15 +55,11 @@ key secure and your AI bill predictable:
 
 Add to your podfile:
 
-    ```
     pod "AIProxy"
-    ```
 
 Then, from shell:
 
-    ```
     pod install
-    ```
 
 ## How to configure the package for use with AIProxy
 
@@ -77,56 +73,56 @@ To enable this, please first add support for iCloud's key-value storage:
 
 During your app's launch, call `AIProxy.configure`. Using this method, you can specify:
 
-- the log level that you'd like to see in your Xcode console from the AIProxy lib;
-- whether to print request/response bodies to Xcode's console, which is useful for debugging or contributing to the library;
-- whether to resolve DNS queries [using Cloudflare's DoT](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-tls/) (recommended);
-- whether to use stable identifiers as client IDs (recommended).
+- the log level that you'd like to see in your Xcode console from the AIProxy lib
+- whether to print request/response bodies to Xcode's console, which is useful for debugging or contributing to the library
+- whether to resolve DNS queries [using Cloudflare's DoT](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-tls/) (recommended)
+- whether to use stable identifiers as client IDs (recommended)
 
 In a SwiftUI app, call `AIProxy.configure` in your app's composition root:
 
-    ```swift
-    import AIProxy
+```swift
+import AIProxy
 
-    @main
-    struct MyApp: App {
-        init() {
-            AIProxy.configure(
-                logLevel: .debug,
-                printRequestBodies: false,
-                printResponseBodies: false,
-                resolveDNSOverTLS: true,
-                useStableID: true
-            )
-        }
-        // ...
+@main
+struct MyApp: App {
+    init() {
+        AIProxy.configure(
+            logLevel: .debug,
+            printRequestBodies: false,
+            printResponseBodies: false,
+            resolveDNSOverTLS: true,
+            useStableID: true
+        )
     }
-    ```
+    // ...
+}
+```
 
 In a UIKit app, call `AIProxy.configure` in applicationDidFinishLaunching:
 
-    ```swift
-    import AIProxy
+```swift
+import AIProxy
 
-    @UIApplicationMain
-    class AppDelegate: UIResponder, UIApplicationDelegate {
+@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
 
-        var window: UIWindow?
+    var window: UIWindow?
 
-        func application(_ application: UIApplication,
-                         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-            AIProxy.configure(
-                logLevel: .debug,
-                printRequestBodies: false,
-                printResponseBodies: false,
-                resolveDNSOverTLS: true,
-                useStableID: true
-            )
-            // ...
-            return true
-        }
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        AIProxy.configure(
+            logLevel: .debug,
+            printRequestBodies: false,
+            printResponseBodies: false,
+            resolveDNSOverTLS: true,
+            useStableID: true
+        )
         // ...
+        return true
     }
-    ```
+    // ...
+}
+```
 
 ## How to configure the AIProxy backend for use with your project
 
@@ -140,7 +136,7 @@ AIProxy as an alternative to building, monitoring, and maintaining your own back
 
 # How to update the package
 
-- If you set the dependency rule to `main` in step 2 above, then you can ensure the package is
+- If you set the dependency rule to `main` during installation, then you can ensure the package is
   up to date by right clicking on the package and selecting 'Update Package'
 
   <img src="https://github.com/lzell/AIProxySwift/assets/35940/aeee0ab2-362b-4995-b9ca-ff4e1dd04f47" alt="Update package version" width="720">
@@ -172,9 +168,6 @@ If you do that, then you can modify the source to AIProxySwift right from within
 Once you're happy with your changes, open a PR here.
 
 # Example usage
-
-Along with the snippets below, which you can copy and paste into your Xcode project, we also
-offer full demo apps to jump-start your development. Please see the [AIProxyBootstrap](https://github.com/lzell/AIProxyBootstrap) repo.
 
 * [OpenAI](#openai)
 * [Gemini](#gemini)
