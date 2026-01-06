@@ -56,7 +56,7 @@ import AVFoundation
 
         #elseif os(watchOS)
         try? AVAudioSession.sharedInstance().setCategory(.playAndRecord)
-        try? await AVAudioSession.sharedInstance().activate(options: [])
+        _ = try? await AVAudioSession.sharedInstance().activate(options: [])
         #endif
 
         self.audioEngine = AVAudioEngine()
