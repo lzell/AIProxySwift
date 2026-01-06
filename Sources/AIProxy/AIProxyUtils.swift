@@ -88,8 +88,8 @@ enum AIProxyUtils {
     }
 #endif
 
-    nonisolated static func metadataHeader(withBodySize bodySize: Int?) -> String {
-        let ri = RuntimeInfo.current
+    nonisolated static func metadataHeader(withBodySize bodySize: Int?) async -> String {
+        let ri = await RuntimeInfo.getCurrent()
         let fields: [String] = [
             "v4",
             ri.bundleID,

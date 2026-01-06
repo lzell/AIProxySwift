@@ -39,7 +39,7 @@ enum AIProxyDeviceCheck {
         let _dcDevice: DCDevice? = DCDevice.current
         guard let dcDevice = _dcDevice else {
             logIf(.error)?.error("DCDevice singleton is not available. Please contact Lou if you can reproduce this!")
-            ClientLibErrorLogger.logDeviceCheckSingletonIsNil(clientID: clientID)
+            await ClientLibErrorLogger.logDeviceCheckSingletonIsNil(clientID: clientID)
             return nil
         }
 
@@ -48,7 +48,7 @@ enum AIProxyDeviceCheck {
                 logIf(.warning)?.warning("\(deviceCheckWarning, privacy: .public)")
             }
             #if !targetEnvironment(simulator) && !DEBUG
-            ClientLibErrorLogger.logDeviceCheckNotSupported(clientID: clientID)
+            await ClientLibErrorLogger.logDeviceCheckNotSupported(clientID: clientID)
             #endif
             return nil
         }
@@ -59,7 +59,7 @@ enum AIProxyDeviceCheck {
         } catch {
             logIf(.error)?.error("Could not create DeviceCheck token. Are you using an explicit bundle identifier?")
             #if !targetEnvironment(simulator) && !DEBUG
-            ClientLibErrorLogger.logDeviceCheckCouldNotGenerateToken(error.localizedDescription, clientID: clientID)
+            await ClientLibErrorLogger.logDeviceCheckCouldNotGenerateToken(error.localizedDescription, clientID: clientID)
             #endif
             return nil
         }
