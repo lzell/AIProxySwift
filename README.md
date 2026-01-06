@@ -37,7 +37,9 @@ key secure and your AI bill predictable:
 - Per IP rate limits
 
 
-# Installation using Xcode
+# Installation
+
+## Installation using Xcode
 
 1. From within your Xcode project, select `File > Add Package Dependencies`
 
@@ -49,7 +51,7 @@ key secure and your AI bill predictable:
    <img src="https://github.com/lzell/AIProxySwift/assets/35940/fd76b588-5e19-4d4d-9748-8db3fd64df8e" alt="Set package rule" width="720">
 
 
-# Installation using cocoapods
+## Installation using cocoapods
 
 Add to your podfile:
 
@@ -63,7 +65,7 @@ Then, from shell:
     pod install
     ```
 
-### How to configure the package for use with AIProxy
+## How to configure the package for use with AIProxy
 
 We recommend using the AIProxy option `useStableID` to rate limit usage across an app store user's account on multiple devices.
 To enable this, please first add support for iCloud's key-value storage:
@@ -136,7 +138,7 @@ If you are shipping an app using a personal or company API key, we highly recomm
 AIProxy as an alternative to building, monitoring, and maintaining your own backend.
 
 
-## How to update the package
+# How to update the package
 
 - If you set the dependency rule to `main` in step 2 above, then you can ensure the package is
   up to date by right clicking on the package and selecting 'Update Package'
@@ -154,7 +156,7 @@ AIProxy as an alternative to building, monitoring, and maintaining your own back
   tree and select 'Update Package'.
 
 
-## How to contribute to the package
+# How to contribute to the package
 
 Your additions to AIProxySwift are welcome! I like to develop the library while working in an
 app that depends on it:
