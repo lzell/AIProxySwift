@@ -37,10 +37,7 @@ key secure and your AI bill predictable:
 - Per IP rate limits
 
 
-# Installation
-
-
-## How to add this package as a dependency to your Xcode project
+# Installation using Xcode
 
 1. From within your Xcode project, select `File > Add Package Dependencies`
 
@@ -51,7 +48,39 @@ key secure and your AI bill predictable:
 
    <img src="https://github.com/lzell/AIProxySwift/assets/35940/fd76b588-5e19-4d4d-9748-8db3fd64df8e" alt="Set package rule" width="720">
 
-3. Call `AIProxy.configure` during app launch. In a SwiftUI app, you can add an `init` to your `MyApp.swift` file: 
+
+# Installation using cocoapods
+
+Add to your podfile:
+
+    ```
+    pod "AIProxy"
+    ```
+
+Then, from shell:
+
+    ```
+    pod install
+    ```
+
+### How to configure the package for use with AIProxy
+
+We recommend using the AIProxy option `useStableID` to rate limit usage across an app store user's account on multiple devices.
+To enable this, please first add support for iCloud's key-value storage:
+
+1. Tap on your project in Xcode's project tree
+2. Select your target in the secondary sidebar
+3. Tap on Signing & Capabilities > Add Capability > iCloud
+4. Check the 'Key-Value storage' checkbox
+
+During your app's launch, call `AIProxy.configure`. Using this method, you can specify:
+
+- the log level that you'd like to see in your Xcode console from the AIProxy lib;
+- whether to print request/response bodies to Xcode's console, which is useful for debugging or contributing to the library;
+- whether to resolve DNS queries [using Cloudflare's DoT](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-tls/) (recommended);
+- whether to use stable identifiers as client IDs (recommended).
+
+In a SwiftUI app, call `AIProxy.configure` in your app's composition root:
 
     ```swift
     import AIProxy
@@ -61,17 +90,17 @@ key secure and your AI bill predictable:
         init() {
             AIProxy.configure(
                 logLevel: .debug,
-                printRequestBodies: false,  // Flip to true for library development
-                printResponseBodies: false, // Flip to true for library development
+                printRequestBodies: false,
+                printResponseBodies: false,
                 resolveDNSOverTLS: true,
-                useStableID: false,         // Please see the docstring if you'd like to enable this
+                useStableID: true
             )
         }
         // ...
     }
     ```
 
-   In a UIKit app, add `configure` to applicationDidFinishLaunching:
+In a UIKit app, call `AIProxy.configure` in applicationDidFinishLaunching:
 
     ```swift
     import AIProxy
@@ -85,8 +114,8 @@ key secure and your AI bill predictable:
                          didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
             AIProxy.configure(
                 logLevel: .debug,
-                printRequestBodies: false,  // Flip to true for library development
-                printResponseBodies: false, // Flip to true for library development
+                printRequestBodies: false,
+                printResponseBodies: false,
                 resolveDNSOverTLS: true,
                 useStableID: true
             )
@@ -97,7 +126,7 @@ key secure and your AI bill predictable:
     }
     ```
 
-### How to configure the package for use with AIProxy
+## How to configure the AIProxy backend for use with your project
 
 See the [AIProxy integration video](https://www.aiproxy.com/docs/integration-guide.html).
 Note that this is not required if you are shipping an app where the customers provide their own
