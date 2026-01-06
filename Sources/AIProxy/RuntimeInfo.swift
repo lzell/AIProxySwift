@@ -20,7 +20,7 @@ nonisolated struct RuntimeInfo {
     let osVersion: String
     let systemName: String
 
-    nonisolated static let current: RuntimeInfo = {
+    static func getCurrent() async -> RuntimeInfo {
         let bundle = Bundle.main
         let infoDict = bundle.infoDictionary ?? [:]
 
@@ -31,9 +31,9 @@ nonisolated struct RuntimeInfo {
             bundleID: bundle.bundleIdentifier ?? "Unknown",
             deviceModel: getDeviceModel(),
             osVersion: getOSVersion(),
-            systemName: getSystemName()
+            systemName: await getSystemName()
         )
-    }()
+    }
 }
 
 nonisolated private func getDeviceModel() -> String {
@@ -62,13 +62,13 @@ nonisolated private func getDeviceModel() -> String {
     return deviceModel
 }
 
-nonisolated private func getSystemName() -> String {
+nonisolated private func getSystemName() async -> String {
     #if os(macOS)
     return "macOS"
     #elseif os(watchOS)
     return "watchOS"
     #else
-    return UIDevice.current.systemName
+    return await UIDevice.current.systemName
     #endif
 }
 

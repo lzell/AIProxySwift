@@ -50,7 +50,7 @@ import AVFoundation
         try? AVAudioSession.sharedInstance().setCategory(
             .playAndRecord,
             mode: .voiceChat,
-            options: [.defaultToSpeaker, .allowBluetooth]
+            options: [.defaultToSpeaker, .allowBluetoothHFP]
         )
         try? AVAudioSession.sharedInstance().setActive(true, options: [])
 

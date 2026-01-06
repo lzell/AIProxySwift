@@ -10,35 +10,38 @@ nonisolated private let kLibError = "client-lib-error"
 nonisolated private let kGlobal = "global"
 
 @AIProxyActor struct ClientLibErrorLogger {
-    static func logClientIdentifierIsNil() {
-        let payload = buildPayload(errorType: "error-client-id-nil", errorMessage: nil)
+    static func logClientIdentifierIsNil() async {
+        let payload = await buildPayload(errorType: "error-client-id-nil", errorMessage: nil)
         deliver(payload, clientID: nil)
     }
 
-    static func logDeviceCheckSingletonIsNil(clientID: String?) {
-        let payload = buildPayload(errorType: "error-dc-singleton-nil", errorMessage: nil)
+    static func logDeviceCheckSingletonIsNil(clientID: String?) async {
+        let payload = await buildPayload(errorType: "error-dc-singleton-nil", errorMessage: nil)
         deliver(payload, clientID: clientID)
     }
 
-    static func logDeviceCheckNotSupported(clientID: String?) {
-        let payload = buildPayload(errorType: "error-dc-not-supported", errorMessage: nil)
+    static func logDeviceCheckNotSupported(clientID: String?) async {
+        let payload = await buildPayload(errorType: "error-dc-not-supported", errorMessage: nil)
         deliver(payload, clientID: clientID)
     }
 
-    static func logDeviceCheckCouldNotGenerateToken(_ msg: String, clientID: String?) {
-        let payload = buildPayload(errorType: "error-dc-token-gen-failed", errorMessage: msg)
+    static func logDeviceCheckCouldNotGenerateToken(_ msg: String, clientID: String?) async {
+        let payload = await buildPayload(errorType: "error-dc-token-gen-failed", errorMessage: msg)
         deliver(payload, clientID: clientID)
     }
 }
 
 // Fire and forget delivery
 @AIProxyActor private func deliver(_ payload: Payload, clientID: String?) {
-    let session = AIProxy.session()
-    if let req = buildRequest(payload, clientID: clientID) {
-        Task {
+    Task {
+        let session = AIProxy.session()
+        do {
+            let req = try await buildRequest(payload, clientID: clientID)
             if let (_, res) = try? await BackgroundNetworker.makeRequestAndWaitForData(session, req) {
                 logIf(.debug)?.debug("Fired logging event and received status code \(res.statusCode)")
             }
+        } catch {
+            logIf(.error)?.error("Could not build lib error: \(error)")
         }
     }
 }
@@ -55,8 +58,8 @@ nonisolated private let kGlobal = "global"
     let timestamp: Double
 }
 
-@AIProxyActor private func buildPayload(errorType: String, errorMessage: String?) -> Payload {
-    let runtimeInfo = RuntimeInfo.current
+@AIProxyActor private func buildPayload(errorType: String, errorMessage: String?) async -> Payload {
+    let runtimeInfo = await RuntimeInfo.getCurrent()
 
     return Payload(
         appName: runtimeInfo.appName,
@@ -71,20 +74,21 @@ nonisolated private let kGlobal = "global"
     )
 }
 
-@AIProxyActor private func buildRequest(_ payload: Payload, clientID: String?) -> URLRequest? {
-    guard let body: Data = try? payload.serialize(),
-          let libErrorURL = URL(string: ["https://api.aiproxy.com", kGlobal, kLibError].joined(separator: "/")) else {
-          // let libErrorURL = URL(string: ["http://Lous-MacBook-Air-3.local:4000", kGlobal, kLibError].joined(separator: "/")) else {
-        return nil
+@AIProxyActor private func buildRequest(_ payload: Payload, clientID: String?) async throws -> URLRequest {
+    let body: Data = try payload.serialize()
+    guard let libErrorURL = URL(string: ["https://api.aiproxy.com", kGlobal, kLibError].joined(separator: "/")) else {
+         // let libErrorURL = URL(string: ["http://Lous-MacBook-Air-3.local:4000", kGlobal, kLibError].joined(separator: "/")) else {
+        throw AIProxyError.assertion("Could not build request in ClientLibErrorLogger")
     }
 
+    let resolvedClientID = await getResolvedClientID(clientID)
     var request = URLRequest(url: libErrorURL)
     request.httpMethod = "POST"
     request.httpBody = body
-    request.addValue(clientID ?? AIProxyIdentifier.getClientID(), forHTTPHeaderField: "aiproxy-client-id")
+    request.addValue(resolvedClientID, forHTTPHeaderField: "aiproxy-client-id")
 
     request.addValue(
-        AIProxyUtils.metadataHeader(withBodySize: body.count),
+        await AIProxyUtils.metadataHeader(withBodySize: body.count),
         forHTTPHeaderField: "aiproxy-metadata"
     )
 
@@ -94,4 +98,11 @@ nonisolated private let kGlobal = "global"
 
     request.addValue("application/json", forHTTPHeaderField: "Content-Type")
     return request
+}
+
+nonisolated private func getResolvedClientID(_ clientID: String?) async -> String {
+    if let clientID {
+        return clientID
+    }
+    return await AIProxyIdentifier.getClientID()
 }
