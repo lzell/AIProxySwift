@@ -142,6 +142,11 @@ nonisolated public struct OpenAIChatCompletionRequestBody: Encodable, Sendable {
     /// Learn more: https://platform.openai.com/docs/guides/safety-best-practices#end-user-ids
     public let user: String?
 
+    /// Constrains the verbosity of the model's response.
+    /// Lower values will result in more concise responses, while higher values will result in more verbose responses.
+    /// Currently supported values are `low`, `medium`, and `high`.
+    public let verbosity: Verbosity?
+
     /// This tool searches the web for relevant results to use in a response.
     /// Learn more: https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat
     public let webSearchOptions: OpenAIChatCompletionRequestBody.WebSearchOptions?
@@ -175,6 +180,7 @@ nonisolated public struct OpenAIChatCompletionRequestBody: Encodable, Sendable {
         case topLogprobs = "top_logprobs"
         case topP = "top_p"
         case user
+        case verbosity
         case webSearchOptions = "web_search_options"
     }
 
@@ -208,6 +214,7 @@ nonisolated public struct OpenAIChatCompletionRequestBody: Encodable, Sendable {
         topLogprobs: Int? = nil,
         topP: Double? = nil,
         user: String? = nil,
+        verbosity: Verbosity? = nil,
         webSearchOptions: OpenAIChatCompletionRequestBody.WebSearchOptions? = nil
     ) {
         self.model = model
@@ -236,6 +243,7 @@ nonisolated public struct OpenAIChatCompletionRequestBody: Encodable, Sendable {
         self.topLogprobs = topLogprobs
         self.topP = topP
         self.user = user
+        self.verbosity = verbosity
         self.webSearchOptions = webSearchOptions
     }
 
@@ -767,6 +775,18 @@ extension OpenAIChatCompletionRequestBody {
     }
 }
 
+// MARK: -
+extension OpenAIChatCompletionRequestBody {
+    /// Constrains the verbosity of the model's response.
+    /// Lower values will result in more concise responses, while higher values will result in more verbose responses.
+    nonisolated public enum Verbosity: String, Encodable, Sendable {
+        case low
+        case medium
+        case high
+    }
+}
+
+// MARK: -
 extension OpenAIChatCompletionRequestBody {
     nonisolated public struct WebSearchOptions: Encodable, Sendable {
 
@@ -822,4 +842,3 @@ extension OpenAIChatCompletionRequestBody {
         }
     }
 }
-
