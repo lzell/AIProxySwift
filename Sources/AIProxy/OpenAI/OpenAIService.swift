@@ -413,7 +413,6 @@ import Foundation
     // MARK: - Conversations
 
     /// Creates a new conversation.
-    /// https://platform.openai.com/docs/api-reference/conversations/create
     ///
     /// - Parameters:
     ///   - body: The create conversation request body
@@ -421,14 +420,18 @@ import Foundation
     ///   - additionalHeaders: Optional headers to pass up with the request
     ///
     /// - Returns: The created conversation resource
+    ///
+    /// - References:
+    ///   - Docs site: https://platform.openai.com/docs/api-reference/conversations/create
+    ///   - Find existing conversations here: https://platform.openai.com/logs?api=conversations
     public func createConversation(
-        body: OpenAICreateConversationRequestBody,
+        requestBody: OpenAICreateConversationRequestBody,
         secondsToWait: UInt,
         additionalHeaders: [String: String] = [:]
     ) async throws -> OpenAIConversation {
         let request = try await self.requestBuilder.jsonPOST(
             path: "/v1/conversations",
-            body: body,
+            body: requestBody,
             secondsToWait: secondsToWait,
             additionalHeaders: additionalHeaders
         )
@@ -488,18 +491,18 @@ import Foundation
 //    ///   - additionalHeaders: Optional headers to pass up with the request
 //    ///
 //    /// - Returns: The deleted conversation resource
-//    public func deleteConversation(
-//        conversationID: String,
-//        secondsToWait: UInt,
-//        additionalHeaders: [String: String] = [:]
-//    ) async throws -> OpenAIConversationsDeletedResource {
-//        let request = try await self.requestBuilder.plainDELETE(
-//            path: "/v1/conversations/\(conversationID)",
-//            secondsToWait: secondsToWait,
-//            additionalHeaders: additionalHeaders
-//        )
-//        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
-//    }
+    public func deleteConversation(
+        conversationID: String,
+        secondsToWait: UInt,
+        additionalHeaders: [String: String] = [:]
+    ) async throws -> OpenAIConversationsDeletedResource {
+        let request = try await self.requestBuilder.plainDELETE(
+            path: "/v1/conversations/\(conversationID)",
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
 //
 //    // MARK: - Item CRUD
 //

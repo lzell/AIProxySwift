@@ -13,4 +13,14 @@ nonisolated public enum OpenAIEasyInputMessageContent: Encodable, Sendable {
 
     /// A list of one or many input items to the model, containing different content types.
     case items([OpenAIInputContent])
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .text(let text):
+            try container.encode(text)
+        case .items(let items):
+            try container.encode(items)
+        }
+    }
 }
