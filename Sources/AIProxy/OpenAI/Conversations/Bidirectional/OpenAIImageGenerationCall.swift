@@ -52,9 +52,9 @@ nonisolated public struct OpenAIImageGenerationCall: Encodable, Decodable, Senda
     }
 }
 
-extension ImageGenToolCall {
+extension OpenAIImageGenerationCall {
     /// The status of the image generation call.
-    public enum Status: String, Encodable, Sendable {
+    public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case completed
         case generating

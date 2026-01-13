@@ -64,7 +64,7 @@ nonisolated public struct OpenAIApplyPatchToolCall: Codable, Sendable {
 }
 
 extension OpenAIApplyPatchToolCall {
-    public enum Status: String, Encodable, Sendable {
+    public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case completed
     }

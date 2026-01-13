@@ -413,6 +413,7 @@ import Foundation
     // MARK: - Conversations
 
     /// Creates a new conversation.
+    /// https://platform.openai.com/docs/api-reference/conversations/create
     ///
     /// - Parameters:
     ///   - body: The create conversation request body

@@ -40,7 +40,6 @@ nonisolated public struct OpenAIConversationItemList: Decodable, Sendable {
         self.firstID = firstID
         self.hasMore = hasMore
         self.lastID = lastID
-        self.object = object
     }
     
     private enum CodingKeys: String, CodingKey {

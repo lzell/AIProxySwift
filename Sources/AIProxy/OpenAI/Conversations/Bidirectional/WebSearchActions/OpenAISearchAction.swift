@@ -42,7 +42,7 @@ nonisolated public struct OpenAISearchAction: Encodable, Decodable, Sendable {
     }
 }
 
-extension WebSearchActionSearch {
+extension OpenAISearchAction {
     /// A source used in the search.
     nonisolated public struct Source: Encodable, Decodable, Sendable {
         /// The type of source. Always `url`.

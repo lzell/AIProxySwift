@@ -32,7 +32,7 @@ nonisolated public struct OpenAIInputMessage: Encodable, Sendable {
     ///   - content: The content of the message.
     ///   - status: The status of item.
     public init(
-        content: InputMessageContentList,
+        content: [OpenAIInputContent],
         role: Role,
         status: Status? = nil
     ) {

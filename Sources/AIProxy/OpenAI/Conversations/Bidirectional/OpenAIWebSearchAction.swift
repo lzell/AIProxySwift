@@ -31,4 +31,17 @@ nonisolated public enum OpenAIWebSearchAction: Encodable, Decodable, Sendable {
             logIf(.error)?.error("No OpenAIWebSearchAction type of \(type)")
         }
     }
+
+    public func encode(to encoder: Encoder) throws {
+        switch self {
+        case .search(let action):
+            try action.encode(to: encoder)
+        case .openPage(let action):
+            try action.encode(to: encoder)
+        case .find(let action):
+            try action.encode(to: encoder)
+        case .futureProof:
+            break
+        }
+    }
 }

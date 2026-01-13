@@ -90,51 +90,51 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
 
         switch type {
         case "apply_patch_call":
-            self = .applyPatchToolCall(try OpenAIApplyPatchToolCallResource(from: decoder))
+            self = .applyPatchToolCall(try OpenAIApplyPatchToolCall(from: decoder))
         case "apply_patch_call_output":
-            self = .applyPatchToolCallOutput(try OpenAIApplyPatchToolCallOutputResource(from: decoder))
+            self = .applyPatchToolCallOutput(try OpenAIApplyPatchToolCallOutput(from: decoder))
         case "code_interpreter_call":
-            self = .codeInterpreterToolCall(try OpenAICodeInterpreterToolCallResource(from: decoder))
+            self = .codeInterpreterToolCall(try OpenAICodeInterpreterToolCall(from: decoder))
         case "computer_call":
-            self = .computerToolCall(try OpenAIComputerToolCallResource(from: decoder))
+            self = .computerToolCall(try OpenAIComputerToolCall(from: decoder))
         case "computer_call_output":
-            self = .computerToolCallOutput(try OpenAIComputerToolCallOutputResource(from: decoder))
+            self = .computerToolCallOutput(try OpenAIComputerToolCallOutput(from: decoder))
         case "custom_tool_call":
-            self = .customToolCall(try OpenAICustomToolCallResource(from: decoder))
+            self = .customToolCall(try OpenAICustomToolCall(from: decoder))
         case "custom_tool_call_output":
-            self = .customToolCallOutput(try OpenAICustomToolCallOutputResource(from: decoder))
+            self = .customToolCallOutput(try OpenAICustomToolCall(from: decoder))
         case "file_search_call":
-            self = .fileSearchToolCall(try OpenAIFileSearchToolCallResource(from: decoder))
+            self = .fileSearchToolCall(try OpenAIFileSearchToolCall(from: decoder))
         case "function_call":
-            self = .functionToolCall(try OpenAIFunctionToolCallResource(from: decoder))
+            self = .functionToolCall(try OpenAIFunctionToolCall(from: decoder))
         case "function_call_output":
-            self = .functionToolCallOutput(try OpenAIFunctionToolCallOutputResource(from: decoder))
+            self = .functionToolCallOutput(try OpenAIFunctionToolCallOutput(from: decoder))
         case "image_generation_call":
-            self = .imageGenToolCall(try OpenAIImageGenToolCallResource(from: decoder))
+            self = .imageGenToolCall(try OpenAIImageGenerationCall(from: decoder))
         case "local_shell_call":
-            self = .localShellToolCall(try OpenAILocalShellToolCallResource(from: decoder))
+            self = .localShellToolCall(try OpenAILocalShellCall(from: decoder))
         case "local_shell_call_output":
-            self = .localShellToolCallOutput(try OpenAILocalShellToolCallOutputResource(from: decoder))
+            self = .localShellToolCallOutput(try OpenAILocalShellCallOutput(from: decoder))
         case "mcp_approval_request":
-            self = .mcpApprovalRequest(try OpenAIMCPApprovalRequestResource(from: decoder))
+            self = .mcpApprovalRequest(try OpenAIMCPApprovalRequest(from: decoder))
         case "mcp_approval_response":
-            self = .mcpApprovalResponse(try OpenAIMCPApprovalResponseResource(from: decoder))
+            self = .mcpApprovalResponse(try OpenAIMCPApprovalResponse(from: decoder))
         case "mcp_call":
-            self = .mcpToolCall(try OpenAIMCPToolCallResource(from: decoder))
+            self = .mcpToolCall(try OpenAIMCPToolCall(from: decoder))
         case "mcp_list_tools":
-            self = .mcpListTools(try OpenAIMCPListToolsResource(from: decoder))
+            self = .mcpListTools(try OpenAIMCPListTools(from: decoder))
         case "message":
             self = .message(try OpenAIMessageResource(from: decoder))
         case "reasoning":
-            self = .reasoning(try OpenAIReasoningItemResource(from: decoder))
+            self = .reasoning(try OpenAIReasoningItem(from: decoder))
         case "shell_call":
-            self = .functionShellCall(try OpenAIFunctionShellCallResource(from: decoder))
+            self = .functionShellCall(try OpenAIShellToolCall(from: decoder))
         case "shell_call_output":
-            self = .functionShellCallOutput(try OpenAIFunctionShellCallOutputResource(from: decoder))
+            self = .functionShellCallOutput(try OpenAIShellToolCallOutput(from: decoder))
         case "web_search_call":
-            self = .webSearchToolCall(try OpenAIWebSearchToolCallResource(from: decoder))
+            self = .webSearchToolCall(try OpenAIWebSearchToolCall(from: decoder))
         default:
-            self = .futurePoof
+            self = .futureProof
             logIf(.error)?.error("Unknown conversation item type: \(type)")
         }
     }

@@ -38,7 +38,7 @@ nonisolated public struct OpenAIFileSearchToolCall: Encodable, Decodable, Sendab
         id: String,
         queries: [String],
         status: Status,
-        results: [Result]? = nil
+        results: [OpenAIFileSearchToolCallResult]? = nil
     ) {
         self.id = id
         self.queries = queries
@@ -66,7 +66,7 @@ nonisolated public struct OpenAIFileSearchToolCall: Encodable, Decodable, Sendab
 
 extension OpenAIFileSearchToolCall {
     /// The status of the file search tool call.
-    nonisolated public enum Status: String, Encodable, Sendable {
+    nonisolated public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case searching
         case completed

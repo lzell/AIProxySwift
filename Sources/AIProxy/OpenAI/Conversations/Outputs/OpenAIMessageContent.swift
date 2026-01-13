@@ -8,7 +8,7 @@
 // Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-message-content
 
 /// Content of a message.
-nonisolated public enum OpenAIMessageContent: Decodable, Sendable {
+nonisolated public enum OpenAIMessageContent: Codable, Sendable {
     /// A screenshot of a computer.
     case computerScreenshot(OpenAIComputerScreenshot)
 
@@ -71,12 +71,35 @@ nonisolated public enum OpenAIMessageContent: Decodable, Sendable {
             )
         }
     }
+
+    public func encode(to encoder: Encoder) throws {
+        switch self {
+        case .computerScreenshot(let content):
+            try content.encode(to: encoder)
+        case .inputFile(let content):
+            try content.encode(to: encoder)
+        case .inputImage(let content):
+            try content.encode(to: encoder)
+        case .inputText(let content):
+            try content.encode(to: encoder)
+        case .outputText(let content):
+            try content.encode(to: encoder)
+        case .reasoningText(let content):
+            try content.encode(to: encoder)
+        case .refusal(let content):
+            try content.encode(to: encoder)
+        case .summaryText(let content):
+            try content.encode(to: encoder)
+        case .text(let content):
+            try content.encode(to: encoder)
+        }
+    }
 }
 
 // MARK: - Input Text Content
 
 /// A text input to the model.
-nonisolated public struct OpenAIInputTextContentResource: Decodable, Sendable {
+nonisolated public struct OpenAIInputTextContentResource: Codable, Sendable {
     /// The text input to the model.
     public let text: String
 
@@ -92,7 +115,7 @@ nonisolated public struct OpenAIInputTextContentResource: Decodable, Sendable {
 // MARK: - Output Text Content
 
 /// A text output from the model.
-nonisolated public struct OpenAIOutputTextContentResource: Decodable, Sendable {
+nonisolated public struct OpenAIOutputTextContentResource: Codable, Sendable {
     /// The annotations of the text output.
     public let annotations: [OpenAIAnnotation]
 
@@ -116,7 +139,7 @@ nonisolated public struct OpenAIOutputTextContentResource: Decodable, Sendable {
 // MARK: - Text Content
 
 /// A text content.
-nonisolated public struct OpenAITextContentResource: Decodable, Sendable {
+nonisolated public struct OpenAITextContentResource: Codable, Sendable {
     /// The text.
     public let text: String
 
@@ -132,7 +155,7 @@ nonisolated public struct OpenAITextContentResource: Decodable, Sendable {
 // MARK: - Summary Text Content
 
 /// A summary text from the model.
-nonisolated public struct OpenAISummaryTextContentResource: Decodable, Sendable {
+nonisolated public struct OpenAISummaryTextContentResource: Codable, Sendable {
     /// A summary of the reasoning output from the model so far.
     public let text: String
 
@@ -148,7 +171,7 @@ nonisolated public struct OpenAISummaryTextContentResource: Decodable, Sendable 
 // MARK: - Refusal Content
 
 /// A refusal from the model.
-nonisolated public struct OpenAIRefusalContentResource: Decodable, Sendable {
+nonisolated public struct OpenAIRefusalContentResource: Codable, Sendable {
     /// The refusal explanation from the model.
     public let refusal: String
 
@@ -166,11 +189,11 @@ nonisolated public struct OpenAIRefusalContentResource: Decodable, Sendable {
 /// An image input to the model.
 ///
 /// Learn about [image inputs](https://platform.openai.com/docs/guides/vision).
-nonisolated public struct DEADOpenAIInputImageContentResource: Decodable, Sendable {
+nonisolated public struct OpenAIInputImageContentResource: Codable, Sendable {
     /// The detail level of the image to be sent to the model.
     ///
     /// One of `high`, `low`, or `auto`. Defaults to `auto`.
-    public let detail: OpenAIImageDetailResource
+    public let detail: OpenAIImageDetailResource?
 
     /// The type of the input item. Always `input_image`.
     public let type: String
@@ -192,16 +215,32 @@ nonisolated public struct DEADOpenAIInputImageContentResource: Decodable, Sendab
 }
 
 /// The detail level of an image.
-nonisolated public enum DEADOpenAIImageDetailResource: String, Decodable, Sendable {
+nonisolated public enum OpenAIImageDetailResource: String, Codable, Sendable {
     case auto
     case high
     case low
 }
 
+// MARK: - Reasoning Text Content
+
+/// Reasoning text content from the model.
+nonisolated public struct OpenAIReasoningTextContentResource: Codable, Sendable {
+    /// The reasoning text.
+    public let text: String
+
+    /// The type of the content. Always `reasoning_text`.
+    public let type: String
+
+    private enum CodingKeys: String, CodingKey {
+        case text
+        case type
+    }
+}
+
 // MARK: - Input File Content
 
 /// A file input to the model.
-nonisolated public struct DEADOpenAIInputFileContentResource: Decodable, Sendable {
+nonisolated public struct OpenAIInputFileContentResource: Codable, Sendable {
     /// The type of the input item. Always `input_file`.
     public let type: String
 

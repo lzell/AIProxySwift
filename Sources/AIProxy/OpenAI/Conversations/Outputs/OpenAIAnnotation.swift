@@ -7,7 +7,7 @@
 // OpenAPI spec: Annotation, version 2.3.0, line 64911
 
 /// An annotation in the output text.
-nonisolated public enum OpenAIAnnotation: Decodable, Sendable {
+nonisolated public enum OpenAIAnnotation: Codable, Sendable {
     case containerFileCitation(OpenAIContainerFileCitationResource)
     case fileCitation(OpenAIFileCitationResource)
     case filePath(OpenAIFilePathResource)
@@ -38,12 +38,25 @@ nonisolated public enum OpenAIAnnotation: Decodable, Sendable {
             )
         }
     }
+
+    public func encode(to encoder: Encoder) throws {
+        switch self {
+        case .containerFileCitation(let annotation):
+            try annotation.encode(to: encoder)
+        case .fileCitation(let annotation):
+            try annotation.encode(to: encoder)
+        case .filePath(let annotation):
+            try annotation.encode(to: encoder)
+        case .urlCitation(let annotation):
+            try annotation.encode(to: encoder)
+        }
+    }
 }
 
 // MARK: - File Citation
 
 /// A citation to a file.
-nonisolated public struct OpenAIFileCitationResource: Decodable, Sendable {
+nonisolated public struct OpenAIFileCitationResource: Codable, Sendable {
     /// The ID of the file.
     public let fileID: String
 
@@ -67,7 +80,7 @@ nonisolated public struct OpenAIFileCitationResource: Decodable, Sendable {
 // MARK: - URL Citation
 
 /// A citation for a web resource used to generate a model response.
-nonisolated public struct OpenAIURLCitationResource: Decodable, Sendable {
+nonisolated public struct OpenAIURLCitationResource: Codable, Sendable {
     /// The index of the last character of the URL citation in the message.
     public let endIndex: Int
 
@@ -96,7 +109,7 @@ nonisolated public struct OpenAIURLCitationResource: Decodable, Sendable {
 
 // 64877 ContainerFileCitationBody
 /// A citation for a container file used to generate a model response.
-nonisolated public struct OpenAIContainerFileCitationResource: Decodable, Sendable {
+nonisolated public struct OpenAIContainerFileCitationResource: Codable, Sendable {
     /// The ID of the container file.
     public let containerID: String
 
@@ -128,7 +141,7 @@ nonisolated public struct OpenAIContainerFileCitationResource: Decodable, Sendab
 // MARK: - File Path
 
 /// A path to a file.
-nonisolated public struct OpenAIFilePathResource: Decodable, Sendable {
+nonisolated public struct OpenAIFilePathResource: Codable, Sendable {
     /// The ID of the file.
     public let fileID: String
 
@@ -148,7 +161,7 @@ nonisolated public struct OpenAIFilePathResource: Decodable, Sendable {
 // MARK: - Log Probability
 
 /// The log probability of a token.
-nonisolated public struct OpenAILogProb: Decodable, Sendable {
+nonisolated public struct OpenAILogProb: Codable, Sendable {
     /// The bytes that were used to generate the log probability.
     public let bytes: [Int]
 
@@ -170,7 +183,7 @@ nonisolated public struct OpenAILogProb: Decodable, Sendable {
 }
 
 /// The top log probability of a token.
-nonisolated public struct OpenAITopLogProb: Decodable, Sendable {
+nonisolated public struct OpenAITopLogProb: Codable, Sendable {
     /// The bytes of the token.
     public let bytes: [Int]
 

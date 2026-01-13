@@ -6,7 +6,7 @@
 //
 
 /// The logs output from the code interpreter.
-nonisolated public struct OpenAICodeInterpreterOutputLogs: Encodable, Sendable {
+nonisolated public struct OpenAICodeInterpreterOutputLogs: Codable, Sendable {
     /// The logs output from the code interpreter.
     public let logs: String
     

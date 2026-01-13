@@ -8,7 +8,7 @@
 
 /// A click action.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call-action-click
-nonisolated public struct OpenAIClickAction: Encodable, Sendable {
+nonisolated public struct OpenAIClickAction: Codable, Sendable {
     /// Indicates which mouse button was pressed during the click.
     ///
     /// One of `left`, `right`, `wheel`, `back`, or `forward`.
@@ -29,7 +29,7 @@ nonisolated public struct OpenAIClickAction: Encodable, Sendable {
     ///   - x: The x-coordinate where the click occurred.
     ///   - y: The y-coordinate where the click occurred.
     public init(
-        button: ClickButtonType,
+        button: Button,
         x: Int,
         y: Int
     ) {
@@ -55,7 +55,7 @@ nonisolated public struct OpenAIClickAction: Encodable, Sendable {
 }
 
 extension OpenAIClickAction {
-    nonisolated public enum Button: String, Encodable, Sendable {
+    nonisolated public enum Button: String, Codable, Sendable {
         case left
         case right
         case wheel

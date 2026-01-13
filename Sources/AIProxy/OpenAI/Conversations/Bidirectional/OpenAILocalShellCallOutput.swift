@@ -56,7 +56,7 @@ nonisolated public struct OpenAILocalShellCallOutput: Encodable, Decodable, Send
     }
 }
 
-extension LocalShellToolCallOutput {
+extension OpenAILocalShellCallOutput {
     /// The status of the local shell tool call output.
     public enum Status: String, Encodable, Decodable, Sendable {
         case inProgress = "in_progress"

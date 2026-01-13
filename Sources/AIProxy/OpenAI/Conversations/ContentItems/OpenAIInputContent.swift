@@ -36,4 +36,17 @@ nonisolated public enum OpenAIInputContent: Codable, Sendable {
             logIf(.error)?.error("AIProxy: Could not decode input content type \(type)")
         }
     }
+
+    public func encode(to encoder: Encoder) throws {
+        switch self {
+        case .text(let content):
+            try content.encode(to: encoder)
+        case .image(let content):
+            try content.encode(to: encoder)
+        case .file(let content):
+            try content.encode(to: encoder)
+        case .futureProof:
+            break
+        }
+    }
 }

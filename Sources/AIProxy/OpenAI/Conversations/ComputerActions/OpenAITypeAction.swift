@@ -7,7 +7,7 @@
 
 /// An action to type in text.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call-action-type
-nonisolated public struct OpenAITypeAction: Encodable, Sendable {
+nonisolated public struct OpenAITypeAction: Codable, Sendable {
     /// The text to type.
     public let text: String
 
@@ -26,9 +26,9 @@ nonisolated public struct OpenAITypeAction: Encodable, Sendable {
         case type
     }
 
-    public func encode(to encoder: Envelope) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(text, forKey: .text)
-        try container.encode(type, forKey: .type)
+        try container.encode(text, forKey: CodingKeys.text)
+        try container.encode(type, forKey: CodingKeys.type)
     }
 }

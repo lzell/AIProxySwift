@@ -12,6 +12,10 @@ nonisolated public enum OpenAIShellToolCallOutcome: Encodable, Decodable, Sendab
     case exit(OpenAIShellToolCallExitOutcome)
     case futureProof
 
+    private enum CodingKeys: String, CodingKey {
+        case type
+    }
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let type = try container.decode(String.self, forKey: .type)
@@ -24,6 +28,17 @@ nonisolated public enum OpenAIShellToolCallOutcome: Encodable, Decodable, Sendab
         default:
             self = .futureProof
             logIf(.error)?.error("Unknown shell call outcome type: \(type)")
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        switch self {
+        case .timeout(let outcome):
+            try outcome.encode(to: encoder)
+        case .exit(let outcome):
+            try outcome.encode(to: encoder)
+        case .futureProof:
+            break
         }
     }
 }

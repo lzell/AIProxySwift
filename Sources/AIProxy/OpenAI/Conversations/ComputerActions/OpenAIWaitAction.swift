@@ -7,7 +7,7 @@
 
 /// A wait action.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call-action-wait
-nonisolated public struct OpenAIWaitAction: Encodable, Sendable {
+nonisolated public struct OpenAIWaitAction: Codable, Sendable {
     /// Specifies the event type. For a wait action, this property is always set to `wait`.
     public let type = "wait"
 

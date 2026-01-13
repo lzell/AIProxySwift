@@ -56,9 +56,9 @@ nonisolated public struct OpenAIWebSearchToolCall: Encodable, Decodable, Sendabl
     }
 }
 
-extension WebSearchToolCall {
+extension OpenAIWebSearchToolCall {
     /// The status of the web search tool call.
-    public enum Status: String, Encodable, Sendable {
+    public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case searching
         case completed

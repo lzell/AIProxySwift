@@ -42,7 +42,7 @@ nonisolated public struct OpenAIComputerToolCall: Encodable, Decodable, Sendable
         action: OpenAIComputerAction,
         callID: String,
         id: String,
-        pendingSafetyChecks: [OpenAIComputerToolCallSafetyCheck],
+        pendingSafetyChecks: [OpenAIComputerSafetyCheck],
         status: Status
     ) {
         self.action = action
@@ -74,7 +74,7 @@ nonisolated public struct OpenAIComputerToolCall: Encodable, Decodable, Sendable
 
 extension OpenAIComputerToolCall {
     /// The status of the computer tool call.
-    public enum Status: String, Encodable, Sendable {
+    public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case completed
         case incomplete

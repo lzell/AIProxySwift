@@ -71,7 +71,7 @@ nonisolated public struct OpenAIComputerToolCallOutput: Encodable, Decodable, Se
 }
 
 extension OpenAIComputerToolCallOutput {
-    nonisolated public enum Status: String, Encodable, Sendable {
+    nonisolated public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case completed
         case incomplete

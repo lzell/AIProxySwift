@@ -71,7 +71,7 @@ nonisolated public struct OpenAICodeInterpreterToolCall: Encodable, Decodable, S
     }
 }
 
-extension CodeInterpreterToolCall {
+extension OpenAICodeInterpreterToolCall {
     /// The status of the code interpreter tool call.
     public enum Status: String, Encodable, Decodable, Sendable {
         case inProgress = "in_progress"

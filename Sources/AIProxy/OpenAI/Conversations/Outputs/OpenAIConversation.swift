@@ -33,12 +33,11 @@ nonisolated public struct OpenAIConversation: Decodable, Sendable {
     public init(
         createdAt: Int,
         id: String,
-        metadata: [String: String],
+        metadata: [String: String]
     ) {
         self.createdAt = createdAt
         self.id = id
         self.metadata = metadata
-        self.object = object
     }
 
     private enum CodingKeys: String, CodingKey {
