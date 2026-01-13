@@ -495,7 +495,7 @@ import Foundation
         conversationID: String,
         secondsToWait: UInt,
         additionalHeaders: [String: String] = [:]
-    ) async throws -> OpenAIConversationsDeletedResource {
+    ) async throws -> OpenAIDeletedConversation {
         let request = try await self.requestBuilder.plainDELETE(
             path: "/v1/conversations/\(conversationID)",
             secondsToWait: secondsToWait,
