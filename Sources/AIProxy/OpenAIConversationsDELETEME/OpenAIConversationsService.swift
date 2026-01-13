@@ -14,7 +14,7 @@ import Foundation
     /// This designated initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.openaiConversationsService` or
     /// `AIProxy.openaiConversationsDirectService` defined in AIProxy.swift.
-    nonisolated init(
+    nonisolated init(o
         requestBuilder: AIProxyRequestBuilder,
         serviceNetworker: ServiceMixin
     ) {

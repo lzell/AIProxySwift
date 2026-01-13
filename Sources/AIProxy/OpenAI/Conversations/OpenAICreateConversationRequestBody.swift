@@ -1,5 +1,5 @@
 //
-//  OpenAICreateConversationBody.swift
+//  OpenAICreateConversationRequestBody.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 12/20/25.
@@ -7,7 +7,7 @@
 // OpenAPI spec: CreateConversationBody, version 2.3.0, line 66769
 // https://platform.openai.com/docs/api-reference/conversations/create
 
-public struct OpenAICreateConversationBody: Encodable {         
+public struct OpenAICreateConversationRequestBody: Encodable {
     // MARK: Optional Properties
 
     /// Initial items to include in the conversation context. You may add up to 20 items at a time.

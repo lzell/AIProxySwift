@@ -94,7 +94,7 @@ nonisolated public struct OpenAIURLCitationResource: Decodable, Sendable {
 
 // MARK: - Container File Citation
 
-64877 ContainerFileCitationBody
+// 64877 ContainerFileCitationBody
 /// A citation for a container file used to generate a model response.
 nonisolated public struct OpenAIContainerFileCitationResource: Decodable, Sendable {
     /// The ID of the container file.
