@@ -55,7 +55,7 @@ nonisolated public struct OpenAICustomToolCallOutput: Codable, Sendable {
     }
 }
 
-extension CustomToolCallOutput {
+extension OpenAICustomToolCallOutput {
     // OpenAPI spec: CustomToolCallOutput#output union, version 2.3.0, line 40448
     // Encodable: https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-custom_tool_call_output-output
     // Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-custom_tool_call_output-output
@@ -76,6 +76,8 @@ extension CustomToolCallOutput {
                 try container.encode(value)
             case .items(let items):
                 try container.encode(items)
+            case .futureProof:
+                break
             }
         }
 
@@ -83,8 +85,8 @@ extension CustomToolCallOutput {
             let container = try decoder.singleValueContainer()
             if let stringValue = try? container.decode(String.self) {
                 self = .text(stringValue)
-            } else if let contentArray = try? container.decode([OpenAIFunctionToolCallOutputContent].self) {
-                self = .content(contentArray)
+            } else if let contentArray = try? container.decode([OpenAIInputContent].self) {
+                self = .items(contentArray)
             } else {
                 logIf(.error)?.error("Expected String or array of output content for CustomToolCallOutput.Output")
                 self = .futureProof

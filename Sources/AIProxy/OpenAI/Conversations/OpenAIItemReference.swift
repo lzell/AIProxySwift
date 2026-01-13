@@ -7,7 +7,7 @@
 // OpenAPI spec: ItemReferenceParam, version 2.3.0, line 66250
 
 /// An internal identifier for an item to reference.
-public struct OpenAIItemReference: Encodable {
+public struct OpenAIItemReference: Encodable, Sendable {
     /// The type of item to reference. Always `item_reference`.
     let type = "item_reference"
 
@@ -26,7 +26,7 @@ public struct OpenAIItemReference: Encodable {
         case id
     }
 
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(type, forKey: .type)
         try container.encode(id, forKey: .id)

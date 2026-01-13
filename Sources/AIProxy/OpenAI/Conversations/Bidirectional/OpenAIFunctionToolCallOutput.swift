@@ -27,7 +27,7 @@ nonisolated public struct OpenAIFunctionToolCallOutput: Encodable, Decodable, Se
     /// The status of the item.
     ///
     /// One of `in_progress`, `completed`, or `incomplete`. Populated when items are returned via API.
-    public let status: FunctionToolCallOutput.Status
+    public let status: Status
 
     /// Creates a new function call output item parameter.
     /// - Parameters:
@@ -39,7 +39,7 @@ nonisolated public struct OpenAIFunctionToolCallOutput: Encodable, Decodable, Se
         id: String,
         callID: String,
         output: Output,
-        status: FunctionToolCallOutput.Status
+        status: Status
     ) {
         self.callID = callID
         self.output = output
@@ -75,6 +75,8 @@ extension OpenAIFunctionToolCallOutput {
         /// An array of text, image, or file content items.
         case items([OpenAIInputContent])
 
+        case futureProof
+
         public func encode(to encoder: Encoder) throws {
             var container = encoder.singleValueContainer()
             switch self {
@@ -82,27 +84,28 @@ extension OpenAIFunctionToolCallOutput {
                 try container.encode(value)
             case .items(let items):
                 try container.encode(items)
+            case .futureProof:
+                break
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let stringValue = try? container.decode(String.self) {
+                self = .text(stringValue)
+            } else if let contentArray = try? container.decode([OpenAIInputContent].self) {
+                self = .items(contentArray)
+            } else {
+                self = .futureProof
+                logIf(.error)?.error("AIProxy: Could not decode OpenAIFunctionToolCallOutput.Output. Expected String or array of output content")
             }
         }
     }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let stringValue = try? container.decode(String.self) {
-            self = .text(stringValue)
-        } else if let contentArray = try? container.decode([OpenAIInputContent].self) {
-            self = .items(contentArray)
-        } else {
-            self = .futureProof
-            logIf(.error)?.error("AIProxy: Could not decode OpenAIFunctionToolCallOutput.Output. Expected String or array of output content")
-        }
-    }
-
 }
 
-extension FunctionToolCallOutput {
+extension OpenAIFunctionToolCallOutput {
     /// The status of the function tool call.
-    public enum Status: String, Encodable, Sendable {
+    public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case completed
         case incomplete

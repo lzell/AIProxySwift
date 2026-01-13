@@ -78,7 +78,7 @@ nonisolated public struct OpenAIFunctionToolCall: Encodable, Decodable, Sendable
 
 extension OpenAIFunctionToolCall {
     /// The status of the function tool call.
-    public enum Status: String, Encodable, Sendable {
+    public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case completed
         case incomplete

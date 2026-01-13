@@ -7,7 +7,7 @@
 
 /// A scroll action.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call-action-scroll
-nonisolated public struct OpenAIScrollAction: Encodable, Sendable {
+nonisolated public struct OpenAIScrollAction: Codable, Sendable {
     /// The horizontal scroll distance.
     public let scrollX: Int
 

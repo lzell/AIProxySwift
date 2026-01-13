@@ -7,7 +7,7 @@
 
 /// A collection of keypresses the model would like to perform.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call-action-keypress
-nonisolated public struct OpenAIKeyPressAction: Encodable, Sendable {
+nonisolated public struct OpenAIKeyPressAction: Codable, Sendable {
     /// The combination of keys the model is requesting to be pressed.
     /// Each element of the array represents a key.
     public let keys: [String]

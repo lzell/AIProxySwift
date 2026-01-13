@@ -33,7 +33,7 @@ nonisolated public struct OpenAILocalShellCall: Encodable, Decodable, Sendable {
     ///   - id: The unique ID of the local shell call.
     ///   - status: The status of the local shell call.
     public init(
-        action: LocalShellExecAction,
+        action: OpenAILocalShellCallAction,
         callID: String,
         id: String,
         status: Status
@@ -62,7 +62,7 @@ nonisolated public struct OpenAILocalShellCall: Encodable, Decodable, Sendable {
     }
 }
 
-extension LocalShellToolCall {
+extension OpenAILocalShellCall {
     /// The status of the local shell call.
     public enum Status: String, Encodable, Decodable, Sendable {
         case inProgress = "in_progress"

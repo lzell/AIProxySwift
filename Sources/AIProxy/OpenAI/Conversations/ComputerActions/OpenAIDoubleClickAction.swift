@@ -7,7 +7,7 @@
 
 /// A double click action.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call-action-doubleclick
-nonisolated public struct OpenAIDoubleClickAction: Encodable, Sendable {
+nonisolated public struct OpenAIDoubleClickAction: Codable, Sendable {
     /// Specifies the event type. For a double click action, this property is always set to `double_click`.
     public let type = "double_click"
 

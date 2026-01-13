@@ -20,6 +20,8 @@ public enum OpenAIApplyPatchOperation: Encodable, Decodable, Sendable {
             try operation.encode(to: encoder)
         case .updateFile(let operation):
             try operation.encode(to: encoder)
+        case .futureProof:
+            break
         }
     }
 

@@ -7,6 +7,9 @@
 // OpenAPI spec: OutputMessage, version 2.3.0, line 47200
 // https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-output_message
 
+/// Type alias for output message content.
+public typealias OpenAIOutputMessageContent = OpenAIMessageContent
+
 /// An output message from the model.
 nonisolated public struct OpenAIOutputMessage: Encodable, Sendable {
     /// The content of the output message.
@@ -59,7 +62,7 @@ nonisolated public struct OpenAIOutputMessage: Encodable, Sendable {
     }
 }
 
-extension OutputMessage {
+extension OpenAIOutputMessage {
     /// The status of the message.
     public enum Status: String, Encodable, Sendable {
         case inProgress = "in_progress"

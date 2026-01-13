@@ -13,15 +13,15 @@ nonisolated public struct OpenAIEasyInputMessage: Encodable, Sendable {
     public let type: String = "message"
 
     /// The role of the message input. One of `user`, `assistant`, `system`, or `developer`.
-    public let role: OpenAIRole
+    public let role: OpenAIMessageRole
 
     /// Text, image, or audio input to the model, used to generate a response.
     /// Can also contain previous assistant responses.
     public let content: OpenAIEasyInputMessageContent
 
     public init(
-        role: OpenAIConversationsRole,
-        content: OpenAIConversationsInputContent
+        role: OpenAIMessageRole,
+        content: OpenAIEasyInputMessageContent
     ) {
         self.role = role
         self.content = content

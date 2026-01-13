@@ -56,7 +56,7 @@ nonisolated public struct OpenAIReasoningItem: Encodable, Decodable, Sendable {
 
 extension OpenAIReasoningItem {
     /// The status of the reasoning item.
-    public enum Status: String, Encodable, Sendable {
+    public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case completed
         case incomplete

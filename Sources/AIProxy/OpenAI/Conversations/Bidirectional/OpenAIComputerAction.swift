@@ -27,27 +27,51 @@ nonisolated public enum OpenAIComputerAction: Encodable, Decodable, Sendable {
 
         switch type {
         case "click":
-            self = .click(try OpenAIClickActionResource(from: decoder))
+            self = .click(try OpenAIClickAction(from: decoder))
         case "double_click":
-            self = .doubleClick(try OpenAIDoubleClickActionResource(from: decoder))
+            self = .doubleClick(try OpenAIDoubleClickAction(from: decoder))
         case "drag":
-            self = .drag(try OpenAIDragActionResource(from: decoder))
+            self = .drag(try OpenAIDragAction(from: decoder))
         case "keypress":
-            self = .keypress(try OpenAIKeypressActionResource(from: decoder))
+            self = .keyPress(try OpenAIKeyPressAction(from: decoder))
         case "move":
-            self = .move(try OpenAIMoveActionResource(from: decoder))
+            self = .move(try OpenAIMoveAction(from: decoder))
         case "screenshot":
-            self = .screenshot(try OpenAIScreenshotActionResource(from: decoder))
+            self = .screenshot(try OpenAIScreenshotAction(from: decoder))
         case "scroll":
-            self = .scroll(try OpenAIScrollActionResource(from: decoder))
+            self = .scroll(try OpenAIScrollAction(from: decoder))
         case "type":
-            self = .type(try OpenAITypeActionResource(from: decoder))
+            self = .type(try OpenAITypeAction(from: decoder))
         case "wait":
-            self = .wait(try OpenAIWaitActionResource(from: decoder))
+            self = .wait(try OpenAIWaitAction(from: decoder))
         default:
             self = .futureProof
             logIf(.error)?.error("Unknown computer action type: \(type)")
         }
     }
 
+    public func encode(to encoder: Encoder) throws {
+        switch self {
+        case .click(let action):
+            try action.encode(to: encoder)
+        case .doubleClick(let action):
+            try action.encode(to: encoder)
+        case .drag(let action):
+            try action.encode(to: encoder)
+        case .keyPress(let action):
+            try action.encode(to: encoder)
+        case .move(let action):
+            try action.encode(to: encoder)
+        case .screenshot(let action):
+            try action.encode(to: encoder)
+        case .scroll(let action):
+            try action.encode(to: encoder)
+        case .type(let action):
+            try action.encode(to: encoder)
+        case .wait(let action):
+            try action.encode(to: encoder)
+        case .futureProof:
+            break
+        }
+    }
 }

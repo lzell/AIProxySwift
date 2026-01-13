@@ -7,7 +7,7 @@
 
 /// A mouse move action.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call-action-move
-nonisolated public struct OpenAIMoveAction: Encodable, Sendable {
+nonisolated public struct OpenAIMoveAction: Codable, Sendable {
     /// Specifies the event type. For a move action, this property is always set to `move`.
     public let type = "move"
 

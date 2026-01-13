@@ -6,7 +6,7 @@
 //
 
 /// The image output from the code interpreter.
-nonisolated public struct OpenAICodeInterpreterOutputImage: Encodable, Sendable {
+nonisolated public struct OpenAICodeInterpreterOutputImage: Codable, Sendable {
     /// The type of the output. Always `image`.
     public let type = "image"
     

@@ -7,7 +7,7 @@
 
 /// A screenshot action.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call-action-screenshot
-nonisolated public struct OpenAIScreenshotAction: Encodable, Sendable {
+nonisolated public struct OpenAIScreenshotAction: Codable, Sendable {
     /// Specifies the event type. For a screenshot action, this property is always set to `screenshot`.
     public let type = "screenshot"
 

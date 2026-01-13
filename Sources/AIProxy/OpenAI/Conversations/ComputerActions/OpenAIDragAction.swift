@@ -7,7 +7,7 @@
 
 /// A drag action.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call-action-drag
-nonisolated public struct OpenAIDragAction: Encodable, Sendable {
+nonisolated public struct OpenAIDragAction: Codable, Sendable {
     /// An array of coordinates representing the path of the drag action.
     ///
     /// Coordinates will appear as an array of objects, e.g.:
@@ -43,7 +43,7 @@ nonisolated public struct OpenAIDragAction: Encodable, Sendable {
 
 extension OpenAIDragAction {
     /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call-action-drag-path
-    nonisolated public struct Coordinate: Encodable, Sendable {
+    nonisolated public struct Coordinate: Codable, Sendable {
         /// The x-coordinate.
         public let x: Int
 

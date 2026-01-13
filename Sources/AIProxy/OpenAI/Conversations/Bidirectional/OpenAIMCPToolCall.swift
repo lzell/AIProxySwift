@@ -9,7 +9,7 @@
 // Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-mcp_tool_call
 
 /// An invocation of a tool on an MCP server.
-nonisolated public struct OpenAIMCPToolCall: Encodable, Sendable {
+nonisolated public struct OpenAIMCPToolCall: Codable, Sendable {
     /// A JSON string of the arguments passed to the tool.
     public let arguments: [String: AIProxyJSONValue]
 
