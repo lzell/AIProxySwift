@@ -6,13 +6,12 @@
 //
 // OpenAPI spec: ConversationItem, version 2.3.0, line 36122
 // Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data
-// For the corresponding Encodable input, see OpenAIItem
 
 /// A single item within a conversation.
 /// The set of possible types are the same as the `output` type of a Response object: https://platform.openai.com/docs/api-reference/responses/object#responses/object-output
+/// For the corresponding Encodable input, see OpenAIItem
 nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     /// A message to or from the model.
-    /// TODO: Return to this last
     case message(OpenAIMessageResource)
 
     /// A tool call to run a function. See the function calling guide for more information: https://platform.openai.com/docs/guides/function-calling
