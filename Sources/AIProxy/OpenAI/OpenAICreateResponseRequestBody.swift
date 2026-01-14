@@ -17,7 +17,7 @@ import Foundation
 nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
 
     /// Specify additional output data to include in the model response.
-    public let include: [Include]?
+    public let include: [OpenAIInclude]?
 
     /// Text, image, or file inputs to the model, used to generate a response.
     public let input: OpenAIResponse.Input?
@@ -117,7 +117,7 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
     // To regenerate, use `cmd-shift-a` > Generate Memberwise Initializer
     // To format, place the cursor in the initializer's parameter list and use `ctrl-m`
     public init(
-        include: [Include]? = nil,
+        include: [OpenAIInclude]? = nil,
         input: OpenAIResponse.Input? = nil,
         instructions: String? = nil,
         model: String? = nil,
@@ -161,30 +161,6 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
 }
 
 extension OpenAICreateResponseRequestBody {
-
-    /// Specify additional output data to include in the model response.
-    nonisolated public enum Include: String, Codable, Sendable {
-        /// Include the outputs of python code execution in code interpreter tool call items.
-        case codeInterpreterCallOutputs = "code_interpreter_call.outputs"
-        
-        /// Include image urls from the computer call output.
-        case computerCallOutputImageUrl = "computer_call_output.output.image_url"
-        
-        /// Include the search results of the file search tool call.
-        case fileSearchCallResults = "file_search_call.results"
-        
-        /// Include image urls from the input message.
-        case messageInputImageImageUrl = "message.input_image.image_url"
-        
-        /// Include logprobs with assistant messages.
-        case messageOutputTextLogprobs = "message.output_text.logprobs"
-        
-        /// Includes an encrypted version of reasoning tokens in reasoning item outputs.
-        case reasoningEncryptedContent = "reasoning.encrypted_content"
-        
-        /// Include the sources of the web search tool call.
-        case webSearchCallActionSources = "web_search_call.action.sources"
-    }
 
     /// The truncation strategy to use for the model response.
     nonisolated public enum Truncation: String, Encodable, Sendable {

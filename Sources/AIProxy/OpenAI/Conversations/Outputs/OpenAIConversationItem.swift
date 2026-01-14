@@ -12,7 +12,7 @@
 /// For the corresponding Encodable input, see OpenAIItem
 nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     /// A message to or from the model.
-    case message(OpenAIMessageResource)
+    case message(OpenAIMessage)
 
     /// A tool call to run a function. See the function calling guide for more information: https://platform.openai.com/docs/guides/function-calling
     case functionToolCall(OpenAIFunctionToolCall)
@@ -124,7 +124,7 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
         case "mcp_list_tools":
             self = .mcpListTools(try OpenAIMCPListTools(from: decoder))
         case "message":
-            self = .message(try OpenAIMessageResource(from: decoder))
+            self = .message(try OpenAIMessage(from: decoder))
         case "reasoning":
             self = .reasoning(try OpenAIReasoningItem(from: decoder))
         case "shell_call":

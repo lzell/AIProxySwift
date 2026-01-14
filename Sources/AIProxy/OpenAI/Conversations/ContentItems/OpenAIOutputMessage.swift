@@ -10,7 +10,7 @@
 /// An output message from the model.
 nonisolated public struct OpenAIOutputMessage: Encodable, Sendable {
     /// The content of the output message.
-    public let content: [OpenAIMessageContent]
+    public let content: [OpenAIMessageContent]  // TODO: This is the wrong type!
 
     /// The unique ID of the output message.
     public let id: String
