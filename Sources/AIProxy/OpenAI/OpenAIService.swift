@@ -446,6 +446,9 @@ import Foundation
     ///   - additionalHeaders: Optional headers to pass up with the request
     ///
     /// - Returns: The conversation resource
+    ///
+    /// - References:
+    ///   - https://platform.openai.com/docs/api-reference/conversations/retrieve
     public func getConversation(
         conversationID: String,
         secondsToWait: UInt,
@@ -458,7 +461,6 @@ import Foundation
         )
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
-
 
     /// Updates a conversation's metadata.
     ///
@@ -484,7 +486,6 @@ import Foundation
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
-
     /// Deletes a conversation.
     ///
     /// - Parameters:
@@ -505,45 +506,44 @@ import Foundation
         )
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
-//
-//    // MARK: - Item CRUD
-//
-//    /// Lists items in a conversation.
-//    ///
-//    /// - Parameters:
-//    ///   - conversationID: The ID of the conversation
-//    ///   - limit: Maximum number of items to return (1-100, default 20)
-//    ///   - order: Sort order (asc or desc, default desc)
-//    ///   - after: Cursor for pagination
-//    ///   - include: Additional fields to include in the response
-//    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
-//    ///   - additionalHeaders: Optional headers to pass up with the request
-//    ///
-//    /// - Returns: A list of conversation items
-//    public func listItems(
-//        conversationID: String,
-//        limit: Int? = nil,
-//        order: OpenAIConversationsOrderParam? = nil,
-//        after: String? = nil,
-//        include: [OpenAIConversationsIncludeParam]? = nil,
-//        secondsToWait: UInt,
-//        additionalHeaders: [String: String] = [:]
-//    ) async throws -> OpenAIConversationsItemList {
-//        let path = Self.buildPath(
-//            base: "/v1/conversations/\(conversationID)/items",
-//            limit: limit,
-//            order: order,
-//            after: after,
-//            include: include
-//        )
-//
-//        let request = try await self.requestBuilder.plainGET(
-//            path: path,
-//            secondsToWait: secondsToWait,
-//            additionalHeaders: additionalHeaders
-//        )
-//        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
-//    }
+
+    /// Lists items in a conversation.
+    ///
+    /// - Parameters:
+    ///   - conversationID: The ID of the conversation to list items for.
+    ///   - after: An item ID to list items after, used in pagination.
+    ///   - include: Specify additional output data to include in the model response
+    ///   - limit: Maximum number of items to return (1-100, default 20)
+    ///   - order: Sort order (asc or desc, default desc)
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    ///   - additionalHeaders: Optional headers to pass up with the request
+    ///
+    /// - Returns: A list of conversation items
+    ///
+    /// - References:
+    ///   - https://platform.openai.com/docs/api-reference/conversations/list-items
+    public func listItems(
+        conversationID: String,
+        after: String? = nil,
+        include: [OpenAIInclude]? = nil,
+        limit: Int? = nil,
+        order: OpenAIItemOrder? = nil,
+        secondsToWait: UInt,
+        additionalHeaders: [String: String] = [:]
+    ) async throws -> OpenAIConversationItemList {
+        let queryString = self.buildConversationsQueryString(
+            limit: limit,
+            order: order,
+            after: after,
+            include: include
+        )
+        let request = try await self.requestBuilder.plainGET(
+            path: "/v1/conversations/\(conversationID)/items?\(queryString)",
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
 //
 //    /// Creates items in a conversation.
 //    ///
@@ -631,35 +631,31 @@ import Foundation
 
     // MARK: - Private Helpers
 
-//    private static func buildPath(
-//        base: String,
-//        limit: Int? = nil,
-//        order: OpenAIConversationsOrderParam? = nil,
-//        after: String? = nil,
-//        include: [OpenAIConversationsIncludeParam]? = nil
-//    ) -> String {
-//        var queryItems: [String] = []
-//
-//        if let limit = limit {
-//            queryItems.append("limit=\(limit)")
-//        }
-//        if let order = order {
-//            queryItems.append("order=\(order.rawValue)")
-//        }
-//        if let after = after {
-//            queryItems.append("after=\(after.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? after)")
-//        }
-//        if let include = include {
-//            for item in include {
-//                queryItems.append("include[]=\(item.rawValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? item.rawValue)")
-//            }
-//        }
-//
-//        if queryItems.isEmpty {
-//            return base
-//        }
-//        return "\(base)?\(queryItems.joined(separator: "&"))"
-//    }
+    private func buildConversationsQueryString(
+        limit: Int? = nil,
+        order: OpenAIItemOrder? = nil,
+        after: String? = nil,
+        include: [OpenAIInclude]? = nil
+    ) -> String {
+        var components = URLComponents()
+        var queryItems: [URLQueryItem] = []
+
+        if let limit {
+            queryItems.append(URLQueryItem(name: "limit", value: "\(limit)"))
+        }
+        if let order {
+            queryItems.append(URLQueryItem(name: "order", value: order.rawValue))
+        }
+        if let after {
+            queryItems.append(URLQueryItem(name: "after", value: after))
+        }
+        if let include {
+            queryItems += include.map { URLQueryItem(name: "include[]", value: $0.rawValue) }
+        }
+
+        components.queryItems = queryItems.isEmpty ? nil : queryItems
+        return components.query ?? ""
+    }
 
     private func resolvedPath(_ common: String) -> String {
         assert(common[common.startIndex] != "/")
