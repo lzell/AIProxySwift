@@ -438,26 +438,27 @@ import Foundation
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
-//    /// Retrieves a conversation by ID.
-//    ///
-//    /// - Parameters:
-//    ///   - conversationID: The ID of the conversation to retrieve
-//    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
-//    ///   - additionalHeaders: Optional headers to pass up with the request
-//    ///
-//    /// - Returns: The conversation resource
-//    public func getConversation(
-//        conversationID: String,
-//        secondsToWait: UInt,
-//        additionalHeaders: [String: String] = [:]
-//    ) async throws -> OpenAIConversationsResource {
-//        let request = try await self.requestBuilder.plainGET(
-//            path: "/v1/conversations/\(conversationID)",
-//            secondsToWait: secondsToWait,
-//            additionalHeaders: additionalHeaders
-//        )
-//        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
-//    }
+    /// Retrieves a conversation by ID.
+    ///
+    /// - Parameters:
+    ///   - conversationID: The ID of the conversation to retrieve
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    ///   - additionalHeaders: Optional headers to pass up with the request
+    ///
+    /// - Returns: The conversation resource
+    public func getConversation(
+        conversationID: String,
+        secondsToWait: UInt,
+        additionalHeaders: [String: String] = [:]
+    ) async throws -> OpenAIConversation {
+        let request = try await self.requestBuilder.plainGET(
+            path: "/v1/conversations/\(conversationID)",
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
+
 //
 //    /// Updates a conversation's metadata.
 //    ///
