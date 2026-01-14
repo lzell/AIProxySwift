@@ -483,14 +483,15 @@ import Foundation
 //        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
 //    }
 //
-//    /// Deletes a conversation.
-//    ///
-//    /// - Parameters:
-//    ///   - conversationID: The ID of the conversation to delete
-//    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
-//    ///   - additionalHeaders: Optional headers to pass up with the request
-//    ///
-//    /// - Returns: The deleted conversation resource
+
+    /// Deletes a conversation.
+    ///
+    /// - Parameters:
+    ///   - conversationID: The ID of the conversation to delete
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    ///   - additionalHeaders: Optional headers to pass up with the request
+    ///
+    /// - Returns: The deleted conversation resource
     public func deleteConversation(
         conversationID: String,
         secondsToWait: UInt,

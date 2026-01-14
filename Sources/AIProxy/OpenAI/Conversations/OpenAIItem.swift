@@ -84,4 +84,80 @@ nonisolated public enum OpenAIItem: Encodable, Sendable {
 
     /// The output of a custom tool call from your code, being sent back to the model.
     case customToolCallOutput(OpenAICustomToolCallOutput)
+
+    public func encode(to encoder: Encoder) throws {
+        switch self {
+        case .inputMessage(let inputMessage):
+            try inputMessage.encode(to: encoder)
+
+        case .outputMessage(let outputMessage):
+            try outputMessage.encode(to: encoder)
+
+        case .fileSearchToolCall(let fileSearchToolCall):
+            try fileSearchToolCall.encode(to: encoder)
+
+        case .computerToolCall(let computerToolCall):
+            try computerToolCall.encode(to: encoder)
+
+        case .computerToolCallOutput(let computerToolCallOutput):
+            try computerToolCallOutput.encode(to: encoder)
+
+        case .webSearchToolCall(let webSearchToolCall):
+            try webSearchToolCall.encode(to: encoder)
+
+        case .functionToolCall(let functionToolCall):
+            try functionToolCall.encode(to: encoder)
+
+        case .functionToolCallOutput(let functionToolCallOutput):
+            try functionToolCallOutput.encode(to: encoder)
+
+        case .reasoningItem(let reasoningItem):
+            try reasoningItem.encode(to: encoder)
+
+        case .compactionItem(let compactionItem):
+            try compactionItem.encode(to: encoder)
+
+        case .imageGenerationCall(let imageGenerationCall):
+            try imageGenerationCall.encode(to: encoder)
+
+        case .codeInterpreterToolCall(let codeInterpreterToolCall):
+            try codeInterpreterToolCall.encode(to: encoder)
+
+        case .localShellCall(let localShellCall):
+            try localShellCall.encode(to: encoder)
+
+        case .localShellCallOutput(let localShellCallOutput):
+            try localShellCallOutput.encode(to: encoder)
+
+        case .shellToolCall(let shellToolCall):
+            try shellToolCall.encode(to: encoder)
+
+        case .shellToolCallOutput(let shellToolCallOutput):
+            try shellToolCallOutput.encode(to: encoder)
+
+        case .applyPatchToolCall(let applyPatchToolCall):
+            try applyPatchToolCall.encode(to: encoder)
+
+        case .applyPatchToolCallOutput(let applyPatchToolCallOutput):
+            try applyPatchToolCallOutput.encode(to: encoder)
+
+        case .mcpListTools(let mcpListTools):
+            try mcpListTools.encode(to: encoder)
+
+        case .mcpApprovalRequest(let mcpApprovalRequest):
+            try mcpApprovalRequest.encode(to: encoder)
+
+        case .mcpApprovalResponse(let mcpApprovalResponse):
+            try mcpApprovalResponse.encode(to: encoder)
+
+        case .mcpToolCall(let mcpToolCall):
+            try mcpToolCall.encode(to: encoder)
+
+        case .customToolCall(let customToolCall):
+            try customToolCall.encode(to: encoder)
+
+        case .customToolCallOutput(let customToolCallOutput):
+            try customToolCallOutput.encode(to: encoder)
+        }
+    }
 }

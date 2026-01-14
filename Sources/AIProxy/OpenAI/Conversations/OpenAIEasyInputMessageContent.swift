@@ -24,3 +24,9 @@ nonisolated public enum OpenAIEasyInputMessageContent: Encodable, Sendable {
         }
     }
 }
+
+extension OpenAIEasyInputMessageContent: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        self = .text(value)
+    }
+}
