@@ -459,31 +459,31 @@ import Foundation
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
-//
-//    /// Updates a conversation's metadata.
-//    ///
-//    /// - Parameters:
-//    ///   - conversationID: The ID of the conversation to update
-//    ///   - body: The update request body containing new metadata
-//    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
-//    ///   - additionalHeaders: Optional headers to pass up with the request
-//    ///
-//    /// - Returns: The updated conversation resource
-//    public func updateConversation(
-//        conversationID: String,
-//        body: OpenAIConversationsUpdateRequestBody,
-//        secondsToWait: UInt,
-//        additionalHeaders: [String: String] = [:]
-//    ) async throws -> OpenAIConversationsResource {
-//        let request = try await self.requestBuilder.jsonPOST(
-//            path: "/v1/conversations/\(conversationID)",
-//            body: body,
-//            secondsToWait: secondsToWait,
-//            additionalHeaders: additionalHeaders
-//        )
-//        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
-//    }
-//
+
+    /// Updates a conversation's metadata.
+    ///
+    /// - Parameters:
+    ///   - conversationID: The ID of the conversation to update
+    ///   - body: The update request body containing new metadata
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    ///   - additionalHeaders: Optional headers to pass up with the request
+    ///
+    /// - Returns: The updated conversation resource
+    public func updateConversation(
+        conversationID: String,
+        requestBody: OpenAIUpdateConversationRequestBody,
+        secondsToWait: UInt,
+        additionalHeaders: [String: String] = [:]
+    ) async throws -> OpenAIConversation {
+        let request = try await self.requestBuilder.jsonPOST(
+            path: "/v1/conversations/\(conversationID)",
+            body: requestBody,
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
+
 
     /// Deletes a conversation.
     ///
