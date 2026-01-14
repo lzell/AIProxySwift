@@ -17,3 +17,9 @@ nonisolated public struct OpenAIInputTextContent: Codable, Sendable {
         self.text = text
     }
 }
+
+extension OpenAIInputTextContent: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        self.init(text: value)
+    }
+}
