@@ -300,7 +300,7 @@ final class OpenAICreateResponseRequestTests: XCTestCase {
             reasoning: .init(effort: .minimal, summary: .auto),
             text: .init(verbosity: .high)
         )
-        
+
         XCTAssertEqual(
             """
             {
@@ -313,6 +313,27 @@ final class OpenAICreateResponseRequestTests: XCTestCase {
               "text" : {
                 "verbosity" : "high"
               }
+            }
+            """,
+            try requestBody.serialize(pretty: true)
+        )
+    }
+
+    func testResponseRequestWithStoreAndInstructions() throws {
+        let requestBody = OpenAICreateResponseRequestBody(
+            input: .text("hello world"),
+            instructions: "You are an expert greeter",
+            model: "gpt-5.2",
+            store: false
+        )
+
+        XCTAssertEqual(
+            """
+            {
+              "input" : "hello world",
+              "instructions" : "You are an expert greeter",
+              "model" : "gpt-5.2",
+              "store" : false
             }
             """,
             try requestBody.serialize(pretty: true)
