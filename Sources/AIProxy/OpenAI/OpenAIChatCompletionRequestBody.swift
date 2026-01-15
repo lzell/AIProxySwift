@@ -99,7 +99,7 @@ nonisolated public struct OpenAIChatCompletionRequestBody: Encodable, Sendable {
     /// Whether or not to store the output of this chat completion request for use in our model distillation or evals products.
     /// Model distillation: https://platform.openai.com/docs/guides/distillation
     /// Evals: https://platform.openai.com/docs/guides/evals
-    /// Deafults to false
+    /// Defaults to false
     public let store: Bool?
 
     /// If set, partial message deltas will be sent. Using the `OpenAIService.streamingChatCompletionRequest`
