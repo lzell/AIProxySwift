@@ -82,14 +82,34 @@ import Foundation
         return AsyncStream<AVAudioPCMBuffer> { [weak self] continuation in
             guard let this = self else { return }
             this.continuation = continuation
-            this.inputNode.installTap(onBus: 0, bufferSize: targetBufferSize, format: desiredTapFormat) { [weak this] sampleBuffer, _ in
-                if let accumulatedBuffer = this?.microphonePCMSampleVendorCommon.resampleAndAccumulate(sampleBuffer) {
-                    // If the buffer has accumulated to a sufficient level, give it back to the caller
-                    Task { @AIProxyActor in
-                        this?.continuation?.yield(accumulatedBuffer)
-                    }
-                }
+
+            // This ensures the closure created is NOT actor-isolated.
+            // See PR https://github.com/lzell/AIProxySwift/pull/238 for more.
+            this.installTapNonIsolated(
+                inputNode: this.inputNode,
+                bufferSize: targetBufferSize,
+                format: desiredTapFormat
+            )
+        }
+    }
+
+    nonisolated private func installTapNonIsolated(
+        inputNode: AVAudioInputNode,
+        bufferSize: AVAudioFrameCount,
+        format: AVAudioFormat
+    ) {
+        inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: format) { [weak self] sampleBuffer, _ in
+            guard let self else { return }
+            Task {
+                await self.processBuffer(sampleBuffer)
             }
+        }
+    }
+
+    private func processBuffer(_ buffer: AVAudioPCMBuffer) {
+        // This runs on the actor, so we can safely access isolated properties.
+        if let accumulatedBuffer = self.microphonePCMSampleVendorCommon.resampleAndAccumulate(buffer) {
+            self.continuation?.yield(accumulatedBuffer)
         }
     }
 

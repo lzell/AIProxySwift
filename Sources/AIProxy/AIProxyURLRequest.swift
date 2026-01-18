@@ -22,28 +22,8 @@ import Foundation
         contentType: String? = nil,
         additionalHeaders: [String: String] = [:]
     ) async throws -> URLRequest {
-        let resolvedClientID = clientID ?? AIProxyIdentifier.getClientID()
-
-        var proxyPath = proxyPath
-        if !proxyPath.starts(with: "/") {
-            proxyPath = "/\(proxyPath)"
-        }
-
-        guard var urlComponents = URLComponents(string: serviceURL),
-              let proxyPathComponents = URLComponents(string: proxyPath) else {
-            throw AIProxyError.assertion(
-                "Could not create urlComponents, please check the aiproxyEndpoint constant"
-            )
-        }
-
-        urlComponents.path += proxyPathComponents.path
-        urlComponents.queryItems = proxyPathComponents.queryItems
-
-        guard let url = urlComponents.url else {
-            throw AIProxyError.assertion("Could not create a request URL")
-        }
-
-        var request = URLRequest(url: url)
+        let resolvedClientID = await getResolvedClientID(clientID)
+        var request = try URLRequest(serviceURL: serviceURL, proxyPath: proxyPath)
         request.networkServiceType = .avStreaming
         request.httpMethod = verb.toString(hasBody: body != nil)
         request.httpBody = body
@@ -51,7 +31,7 @@ import Foundation
         request.addValue(resolvedClientID, forHTTPHeaderField: "aiproxy-client-id")
 
         request.addValue(
-            AIProxyUtils.metadataHeader(withBodySize: body?.count ?? 0),
+            await AIProxyUtils.metadataHeader(withBodySize: body?.count ?? 0),
             forHTTPHeaderField: "aiproxy-metadata"
         )
 
@@ -129,5 +109,36 @@ import Foundation
         request.timeoutInterval = TimeInterval(secondsToWait)
         return request
     }
+}
 
+nonisolated private func getResolvedClientID(_ clientID: String?) async -> String {
+    if let clientID {
+        return clientID
+    }
+    return await AIProxyIdentifier.getClientID()
+}
+
+private extension URLRequest {
+    nonisolated init(serviceURL: String, proxyPath: String) throws {
+        var proxyPath = proxyPath
+        if !proxyPath.starts(with: "/") {
+            proxyPath = "/\(proxyPath)"
+        }
+
+        guard var urlComponents = URLComponents(string: serviceURL),
+              let proxyPathComponents = URLComponents(string: proxyPath) else {
+            throw AIProxyError.assertion(
+                "Could not create urlComponents, please check your AIProxy serviceURL constant"
+            )
+        }
+
+        urlComponents.path += proxyPathComponents.path
+        urlComponents.queryItems = proxyPathComponents.queryItems
+
+        guard let url = urlComponents.url else {
+            throw AIProxyError.assertion("Could not create a request URL")
+        }
+
+        self = Self(url: url)
+    }
 }

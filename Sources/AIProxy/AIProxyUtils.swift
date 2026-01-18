@@ -27,7 +27,11 @@ import Network
 enum AIProxyUtils {
 
     nonisolated static func directURLSession() -> URLSession {
-        return URLSession(configuration: .ephemeral)
+        return URLSession(
+            configuration: .ephemeral,
+            delegate: DirectURLSessionDataDelegate(),
+            delegateQueue: nil
+        )
     }
 
     nonisolated static func proxiedURLSession() -> URLSession {
@@ -84,8 +88,8 @@ enum AIProxyUtils {
     }
 #endif
 
-    nonisolated static func metadataHeader(withBodySize bodySize: Int?) -> String {
-        let ri = RuntimeInfo.current
+    nonisolated static func metadataHeader(withBodySize bodySize: Int?) async -> String {
+        let ri = await RuntimeInfo.getCurrent()
         let fields: [String] = [
             "v4",
             ri.bundleID,

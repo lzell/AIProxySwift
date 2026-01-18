@@ -22,7 +22,7 @@ import Foundation
         )
         super.init(
             requestBuilder: requestBuilder,
-            serviceNetworker: OpenAIProxiedServiceNetworker()
+            serviceNetworker: ProxiedServiceNetworker()
         )
     }
 }

@@ -22,6 +22,12 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
     /// Text, image, or file inputs to the model, used to generate a response.
     public let input: OpenAIResponse.Input?
 
+    /// Inserts a system (or developer) message as the first item in the model's context.
+    /// When using along with `previousResponseId`, the instructions from a previous response
+    /// will not be carried over to the next response. This makes it simple to swap out system
+    /// (or developer) messages in new responses.
+    public let instructions: String?
+
     /// Model ID used to generate the response, like gpt-4o or o1.
     /// OpenAI offers a wide range of models with different capabilities, performance characteristics, and price points.
     /// Refer to the model guide to browse and compare available models: https://platform.openai.com/docs/models
@@ -47,6 +53,10 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
     /// The IDs should be a string that uniquely identifies each user.
     /// We recommend hashing their username or email address, in order to avoid sending us any identifying information.
     public let safetyIdentifier: String?
+
+    /// Whether to store the generated model response for later retrieval via API.
+    /// Defaults to true.
+    public let store: Bool?
 
     /// If set, partial response deltas will be sent as server-sent events.
     /// Set this to true when using the streaming response method.
@@ -85,11 +95,13 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
     private enum CodingKeys: String, CodingKey {
         case include
         case input
+        case instructions
         case model
         case tools
         case toolChoice = "tool_choice"
         case reasoning
         case safetyIdentifier = "safety_identifier"
+        case store
         case parallelToolCalls = "parallel_tool_calls"
         case previousResponseId = "previous_response_id"
         case prompt
@@ -107,12 +119,14 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
     public init(
         include: [Include]? = nil,
         input: OpenAIResponse.Input? = nil,
+        instructions: String? = nil,
         model: String? = nil,
         parallelToolCalls: Bool? = nil,
         previousResponseId: String? = nil,
         prompt: OpenAICreateResponseRequestBody.Prompt? = nil,
         reasoning: OpenAICreateResponseRequestBody.Reasoning? = nil,
         safetyIdentifier: String? = nil,
+        store: Bool? = nil,
         stream: Bool? = nil,
         temperature: Double? = nil,
         text: OpenAIResponse.TextConfiguration? = nil,
@@ -124,12 +138,14 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
     ) {
         self.include = include
         self.input = input
+        self.instructions = instructions
         self.model = model
         self.parallelToolCalls = parallelToolCalls
         self.previousResponseId = previousResponseId
         self.prompt = prompt
         self.reasoning = reasoning
         self.safetyIdentifier = safetyIdentifier
+        self.store = store
         self.stream = stream
         self.temperature = temperature
         self.text = text
@@ -637,8 +653,16 @@ extension OpenAICreateResponseRequestBody {
 
 // MARK: - Reasoning Types
 extension OpenAICreateResponseRequestBody.Reasoning {
-    /// Supported effort levels for reasoning models
+    /// Constrains effort on reasoning for reasoning models. Currently supported values are `none`, `minimal`, `low`, `medium`, and `high`.
+    /// Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
+    ///
+    /// gpt-5.1 defaults to `none`, which does not perform reasoning.
+    /// The supported reasoning values for gpt-5.1 are `none`, `low`, `medium`, and `high`.
+    /// Tool calls are supported for all reasoning values in gpt-5.1.
+    /// All models before gpt-5.1 default to `medium` reasoning effort, and do not support `none`.
+    /// The gpt-5-pro model defaults to (and only supports) `high` reasoning effort.
     nonisolated public enum Effort: String, Encodable, Sendable {
+        case noReasoning = "none"
         case minimal
         case low
         case medium

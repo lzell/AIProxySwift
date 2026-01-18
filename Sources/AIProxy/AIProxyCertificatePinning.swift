@@ -49,7 +49,7 @@ import Foundation
 ///
 /// If you encounter other calls in the wild that do not invoke `urlSession:didReceiveChallenge:` on this class,
 /// please report them to me.
-nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDataDelegate {
 
     nonisolated(unsafe) private var _progressCallback: (@Sendable (Double) -> Void)?
     public var progressCallback: (@Sendable (Double) -> Void)? {
@@ -61,21 +61,47 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
         }
     }
 
-   public func urlSession(
+    /// Why is this needed?
+    /// For some streaming use cases, we don't want to always consume textual lines through the modern `asyncBytes.lines` helper.
+    /// Some use cases require vending data as it arrives off the wire, such as streaming audio.
+    /// Unfortunately, modern async/await URLSession APIs don't provide this functionality out of the box.
+    /// This closure acts as a bridge to the legacy delegate-based URLSession partial data vendor.
+    nonisolated(unsafe) private var _bridges: [URLSessionDataTask: URLSessionDataTaskBridge] = [:]
+    var bridges: [URLSessionDataTask: URLSessionDataTaskBridge] {
+        get {
+            ProtectedPropertyQueue.urlSessionBridges.sync { self._bridges }
+        }
+    }
+
+    func addBridge(for dataTask: URLSessionDataTask, box: URLSessionDataTaskBridge) {
+        ProtectedPropertyQueue.urlSessionBridges.async(flags: .barrier) {
+            self._bridges[dataTask] = box
+        }
+    }
+
+    func removeBridge(for dataTask: URLSessionDataTask) {
+        ProtectedPropertyQueue.urlSessionBridges.async(flags: .barrier) {
+            self._bridges.removeValue(forKey: dataTask)
+        }
+    }
+
+    // MARK: - URLSessionDelegate
+    public func urlSession(
+       _ session: URLSession,
+       didReceive challenge: URLAuthenticationChallenge
+    ) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
+       return self.answerChallenge(challenge)
+    }
+
+    // MARK: - URLSessionTaskDelegate
+    public func urlSession(
       _ session: URLSession,
       task: URLSessionTask,
       didReceive challenge: URLAuthenticationChallenge
-   ) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
+    ) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
       return self.answerChallenge(challenge)
-   }
+    }
 
-   public func urlSession(
-      _ session: URLSession,
-      didReceive challenge: URLAuthenticationChallenge
-   ) async -> (URLSession.AuthChallengeDisposition, URLCredential?) {
-      return self.answerChallenge(challenge)
-   }
-   
    public func urlSession(
        _ session: URLSession,
        task: URLSessionTask,
@@ -89,6 +115,50 @@ nonisolated public final class AIProxyCertificatePinningDelegate: NSObject, URLS
        progressCallback(progress)
    }
 
+    public func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        didCompleteWithError error: Error?
+    ) {
+        guard let dataTask = task as? URLSessionDataTask else {
+            return
+        }
+        Task { @AIProxyActor in
+            for completeCallback in self.bridges[dataTask]?.onComplete ?? [] {
+                completeCallback(error)
+            }
+            self.removeBridge(for: dataTask)
+        }
+    }
+
+    // MARK: - URLSessionDataDelegate conformance
+    public func urlSession(
+        _ session: URLSession,
+        dataTask: URLSessionDataTask,
+        didReceive response: URLResponse,
+        completionHandler: @Sendable @escaping (URLSession.ResponseDisposition) -> Void
+    ) {
+        Task { @AIProxyActor in
+            for responseCallback in self.bridges[dataTask]?.onResponse ?? [] {
+                responseCallback(response)
+            }
+        }
+        completionHandler(.allow)
+    }
+
+    public func urlSession(
+        _ session: URLSession,
+        dataTask: URLSessionDataTask,
+        didReceive data: Data
+    ) {
+        Task { @AIProxyActor in
+            for dataCallback in self.bridges[dataTask]?.onData ?? [] {
+                dataCallback(data)
+            }
+        }
+    }
+
+   // MARK: - Private
    private func answerChallenge(
       _ challenge: URLAuthenticationChallenge
    ) -> (URLSession.AuthChallengeDisposition, URLCredential?) {
@@ -158,7 +228,7 @@ nonisolated private let publicKeysAsHex: [[UInt8]] = [
          0x9d, 0xea, 0x4b, 0xfb, 0xaf, 0xe7, 0xc6, 0x93, 0xf0, 0xbf, 0x92, 0x0f, 0x12, 0x7a, 0x22,
          0x7d, 0x00, 0x77, 0x81, 0xa5, 0x06, 0x26, 0x06, 0x5c, 0x47, 0x8f, 0x57, 0xef, 0x41, 0x39,
          0x0b, 0x3d, 0x41, 0x72, 0x68, 0x33, 0x86, 0x69, 0x14, 0x2a, 0x36, 0x4d, 0x74, 0x7d, 0xbc,
-         0x60, 0x91, 0xff, 0xcc, 0x29,
+         0x60, 0x91, 0xff, 0xcc, 0x29
      ],
 
      // live on api.aiproxy.pro
@@ -170,13 +240,13 @@ nonisolated private let publicKeysAsHex: [[UInt8]] = [
          0xa5, 0xcb, 0xc1, 0x29, 0x35
      ],
 
-     // live on beta-api.aiproxy.pro
+     // live on beta-api.aiproxy.com
      [
-         0x04, 0xaf, 0xb2, 0xcc, 0xe2, 0x51, 0x92, 0xcf, 0xb8, 0x01, 0x25, 0xc1, 0xb8, 0xda, 0x29,
-         0x51, 0x9f, 0x91, 0x4c, 0xaa, 0x09, 0x66, 0x3d, 0x81, 0xd7, 0xad, 0x6f, 0xdb, 0x78, 0x10,
-         0xd4, 0xbe, 0xcd, 0x4f, 0xe3, 0xaf, 0x4f, 0xb6, 0xd2, 0xca, 0x85, 0xb6, 0xc7, 0x3e, 0xb4,
-         0x61, 0x62, 0xe1, 0xfc, 0x90, 0xd6, 0x84, 0x1f, 0x98, 0xca, 0x83, 0x60, 0x8b, 0x65, 0xcb,
-         0x1a, 0x57, 0x6e, 0x32, 0x35,
+         0x04, 0x17, 0x17, 0x1b, 0x5a, 0x2a, 0x6c, 0xc0, 0xcb, 0xd9, 0x1f, 0x87, 0xcc, 0xf8, 0x12,
+         0x42, 0xd6, 0x73, 0x5f, 0x8e, 0x74, 0x0a, 0x3c, 0x03, 0x27, 0xae, 0x8f, 0xbc, 0xde, 0x21,
+         0x49, 0xcd, 0xe1, 0x68, 0x53, 0x7d, 0xc5, 0x4e, 0xae, 0x81, 0xb5, 0x57, 0x92, 0x1c, 0xb3,
+         0xe0, 0xf6, 0xf3, 0x83, 0xad, 0x5c, 0x8b, 0x1f, 0xa8, 0x03, 0xb3, 0xf1, 0xd6, 0xd6, 0x4d,
+         0x76, 0x83, 0xaf, 0x2d, 0x8b
      ],
 
      // backup-EC-key-A.key

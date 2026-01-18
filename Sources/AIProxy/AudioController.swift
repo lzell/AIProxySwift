@@ -7,7 +7,7 @@
 
 import AVFoundation
 
-/// Use this class to control the streaming of mic data and playback of PCM16 data.
+/// Use this class to control the streaming of mic data and playback of 24kHz signed PCM16, little-endian data.
 /// Audio played using the `playPCM16Audio` method does not interfere with the mic data streaming out of the `micStream` AsyncStream.
 /// That is, if you use this to control audio in an OpenAI realtime session, the model will not hear itself.
 ///
@@ -38,6 +38,7 @@ import AVFoundation
     private let audioEngine: AVAudioEngine
     private var microphonePCMSampleVendor: MicrophonePCMSampleVendor? = nil
     private var audioPCMPlayer: AudioPCMPlayer? = nil
+    private var pendingUTF8Byte: UInt8? = nil
 
     public init(modes: [Mode]) async throws {
         self.modes = modes
@@ -49,13 +50,13 @@ import AVFoundation
         try? AVAudioSession.sharedInstance().setCategory(
             .playAndRecord,
             mode: .voiceChat,
-            options: [.defaultToSpeaker, .allowBluetooth]
+            options: [.defaultToSpeaker, .allowBluetoothHFP]
         )
         try? AVAudioSession.sharedInstance().setActive(true, options: [])
 
         #elseif os(watchOS)
         try? AVAudioSession.sharedInstance().setCategory(.playAndRecord)
-        try? await AVAudioSession.sharedInstance().activate(options: [])
+        _ = try? await AVAudioSession.sharedInstance().activate(options: [])
         #endif
 
         self.audioEngine = AVAudioEngine()
@@ -85,6 +86,10 @@ import AVFoundation
         }
     }
 
+    deinit {
+        logIf(.debug)?.debug("AIProxy: AudioPlayer is being freed")
+    }
+
     public func micStream() throws -> AsyncStream<AVAudioPCMBuffer> {
         guard self.modes.contains(.record),
               let microphonePCMSampleVendor = self.microphonePCMSampleVendor else {
@@ -105,6 +110,40 @@ import AVFoundation
             return
         }
         audioPCMPlayer.playPCM16Audio(from: base64String)
+    }
+
+    /// Plays PCM16 audio. If audio is currently being played from a previous call, the new `audioData` is enqueued.
+    ///
+    /// This method safely reconciles `audioData` that is split across a byte boundary, e.g. the two separate bytes
+    /// of a PCM16 sample arriving in separate calls to `playPCM16Audio`.
+    ///
+    /// - Parameter audioData: signed, PCM16Int little-endian audio data at a 24kHz sample rate
+    public func playPCM16Audio(data audioData: Data) {
+        guard self.modes.contains(.playback),
+              let audioPCMPlayer = self.audioPCMPlayer else {
+            logIf(.error)?.error("Please pass [.playback] to the AudioController initializer")
+            return
+        }
+
+        guard !audioData.isEmpty else {
+            return
+        }
+
+        var sampleBuffer: Data
+        if let p = self.pendingUTF8Byte {
+            sampleBuffer = Data([p]) + audioData
+            self.pendingUTF8Byte = nil
+        } else {
+            sampleBuffer = audioData
+        }
+
+        if (sampleBuffer.count & 1) != 0 {
+            self.pendingUTF8Byte = sampleBuffer.removeLast()
+        }
+
+        if !sampleBuffer.isEmpty {
+            audioPCMPlayer.playPCM16Audio(data: sampleBuffer)
+        }
     }
 
     public func interruptPlayback() {
