@@ -7,7 +7,7 @@
 // OpenAPI spec: Message, version 2.3.0, line 65153
 
 /// A message to or from the model.
-nonisolated public struct OpenAIMessageResource: Decodable, Sendable {
+nonisolated public struct OpenAIMessage: Decodable, Sendable {
     /// The content of the message
     public let content: [OpenAIMessageContent]
 
