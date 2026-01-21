@@ -10,10 +10,10 @@
 /// Content of an output message.
 nonisolated public enum OpenAIOutputMessageContent: Encodable, Sendable {
     /// A text output from the model.
-    case outputText(OpenAIOutputTextContent)
+    case outputText(OpenAIOutputText)
 
     /// A refusal from the model.
-    case refusal(OpenAIRefusalContent)
+    case refusal(OpenAIRefusal)
 
     public func encode(to encoder: Encoder) throws {
         switch self {

@@ -6,6 +6,7 @@
 //
 // OpenAPI spec: ComputerScreenshotImage, version 2.3.0, line 35817
 // OpenAPI spec: ComputerScreenshotContent, version 2.3.0, line 65096
+// Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-message-content-computer_screenshot
 
 /// A computer screenshot image used with the computer use tool.
 nonisolated public struct OpenAIComputerScreenshot: Codable, Sendable {

@@ -9,14 +9,6 @@
 
 /// Content of a message.
 nonisolated public enum OpenAIMessageContent: Decodable, Sendable {
-    /// A screenshot of a computer.
-    case computerScreenshot(OpenAIComputerScreenshot)
-
-    /// A file input to the model.
-    case inputFile(OpenAIInputFile)
-
-    /// An image input to the model. Learn about image inputs: https://platform.openai.com/docs/guides/vision
-    case inputImage(OpenAIInputImage)
 
     /// A text input to the model.
     case inputText(OpenAIInputText)
@@ -24,17 +16,26 @@ nonisolated public enum OpenAIMessageContent: Decodable, Sendable {
     /// A text output from the model.
     case outputText(OpenAIOutputText)
 
+    /// A text content.
+    case text(OpenAIText)
+
+    /// A summary text from the model.
+    case summaryText(OpenAISummaryText)
+
     /// Reasoning text from the model.
     case reasoningText(OpenAIReasoningText)
 
     /// A refusal from the model.
     case refusal(OpenAIRefusal)
 
-    /// A summary text from the model.
-    case summaryText(OpenAISummaryText)
+    /// An image input to the model. Learn about image inputs: https://platform.openai.com/docs/guides/vision
+    case inputImage(OpenAIInputImage)
 
-    /// A text content.
-    case text(OpenAIText)
+    /// A screenshot of a computer.
+    case computerScreenshot(OpenAIComputerScreenshot)
+
+    /// A file input to the model.
+    case inputFile(OpenAIInputFile)
 
     case futureProof
 
@@ -69,171 +70,5 @@ nonisolated public enum OpenAIMessageContent: Decodable, Sendable {
             logIf(.error)?.error("Unknown message content type: \(type)")
             self = .futureProof
         }
-    }
-
-//    public func encode(to encoder: Encoder) throws {
-//        switch self {
-//        case .computerScreenshot(let content):
-//            try content.encode(to: encoder)
-//        case .inputFile(let content):
-//            try content.encode(to: encoder)
-//        case .inputImage(let content):
-//            try content.encode(to: encoder)
-//        case .inputText(let content):
-//            try content.encode(to: encoder)
-//        case .outputText(let content):
-//            try content.encode(to: encoder)
-//        case .reasoningText(let content):
-//            try content.encode(to: encoder)
-//        case .refusal(let content):
-//            try content.encode(to: encoder)
-//        case .summaryText(let content):
-//            try content.encode(to: encoder)
-//        case .text(let content):
-//            try content.encode(to: encoder)
-//        }
-//    }
-}
-
-// MARK: - Input Text Content
-
-/// A text input to the model.
-nonisolated public struct OpenAIInputTextContentResource: Codable, Sendable {
-    /// The text input to the model.
-    public let text: String
-
-    /// The type of the input item. Always `input_text`.
-    public let type: String
-
-    private enum CodingKeys: String, CodingKey {
-        case text
-        case type
-    }
-}
-
-// MARK: - Output Text Content
-
-/// A text output from the model.
-nonisolated public struct OpenAIOutputTextContentResource: Codable, Sendable {
-    /// The annotations of the text output.
-    public let annotations: [OpenAIAnnotation]
-
-    /// The text output from the model.
-    public let text: String
-
-    /// The type of the output text. Always `output_text`.
-    public let type: String
-
-    /// Log probabilities for tokens (optional).
-    public let logprobs: [OpenAILogProb]?
-
-    private enum CodingKeys: String, CodingKey {
-        case annotations
-        case text
-        case type
-        case logprobs
-    }
-}
-
-// MARK: - Text Content
-
-/// A text content.
-
-// MARK: - Summary Text Content
-
-// MARK: - Refusal Content
-
-/// A refusal from the model.
-nonisolated public struct OpenAIRefusalContentResource: Codable, Sendable {
-    /// The refusal explanation from the model.
-    public let refusal: String
-
-    /// The type of the refusal. Always `refusal`.
-    public let type: String
-
-    private enum CodingKeys: String, CodingKey {
-        case refusal
-        case type
-    }
-}
-
-// MARK: - Input Image Content
-
-/// An image input to the model.
-///
-/// Learn about [image inputs](https://platform.openai.com/docs/guides/vision).
-nonisolated public struct OpenAIInputImageContentResource: Codable, Sendable {
-    /// The detail level of the image to be sent to the model.
-    ///
-    /// One of `high`, `low`, or `auto`. Defaults to `auto`.
-    public let detail: OpenAIImageDetailResource?
-
-    /// The type of the input item. Always `input_image`.
-    public let type: String
-
-    /// The ID of the file to be sent to the model.
-    public let fileID: String?
-
-    /// The URL of the image to be sent to the model.
-    ///
-    /// A fully qualified URL or base64 encoded image in a data URL.
-    public let imageURL: String?
-
-    private enum CodingKeys: String, CodingKey {
-        case detail
-        case type
-        case fileID = "file_id"
-        case imageURL = "image_url"
-    }
-}
-
-/// The detail level of an image.
-nonisolated public enum OpenAIImageDetailResource: String, Codable, Sendable {
-    case auto
-    case high
-    case low
-}
-
-// MARK: - Reasoning Text Content
-
-/// Reasoning text content from the model.
-nonisolated public struct OpenAIReasoningTextContentResource: Codable, Sendable {
-    /// The reasoning text.
-    public let text: String
-
-    /// The type of the content. Always `reasoning_text`.
-    public let type: String
-
-    private enum CodingKeys: String, CodingKey {
-        case text
-        case type
-    }
-}
-
-// MARK: - Input File Content
-
-/// A file input to the model.
-nonisolated public struct OpenAIInputFileContentResource: Codable, Sendable {
-    /// The type of the input item. Always `input_file`.
-    public let type: String
-
-    /// The content of the file to be sent to the model.
-    public let fileData: String?
-
-    /// The ID of the file to be sent to the model.
-    public let fileID: String?
-
-    /// The URL of the file to be sent to the model.
-    public let fileURL: String?
-
-    /// The name of the file to be sent to the model.
-    public let filename: String?
-
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case fileData = "file_data"
-        case fileID = "file_id"
-        case fileURL = "file_url"
-        case filename
     }
 }

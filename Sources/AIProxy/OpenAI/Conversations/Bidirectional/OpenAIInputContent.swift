@@ -26,11 +26,11 @@ nonisolated public enum OpenAIInputContent: Codable, Sendable {
 
         switch type {
         case "input_file":
-            self = .file(try OpenAIInputFileContent(from: decoder))
+            self = .file(try OpenAIInputFile(from: decoder))
         case "input_image":
-            self = .image(try OpenAIInputImageContent(from: decoder))
+            self = .image(try OpenAIInputImage(from: decoder))
         case "input_text":
-            self = .text(try OpenAIInputTextContent(from: decoder))
+            self = .text(try OpenAIInputText(from: decoder))
         default:
             self = .futureProof
             logIf(.error)?.error("AIProxy: Could not decode input content type \(type)")

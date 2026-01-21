@@ -7,6 +7,7 @@
 // OpenAPI spec: InputTextContent, version 2.3.0, line 64803
 // Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-message-content-input_text
 
+/// A text input to the model.
 nonisolated public struct OpenAIInputText: Codable, Sendable {
     /// The type of the input item. Always `input_text`.
     public let type = "input_text"

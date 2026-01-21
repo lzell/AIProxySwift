@@ -9,21 +9,30 @@
 
 /// An input message that can be added to a conversation.
 nonisolated public struct OpenAIEasyInputMessage: Encodable, Sendable {
-    /// The type of item, always "message".
-    public let type: String = "message"
-
-    /// The role of the message input. One of `user`, `assistant`, `system`, or `developer`.
-    public let role: OpenAIMessageRole
-
     /// Text, image, or audio input to the model, used to generate a response.
     /// Can also contain previous assistant responses.
     public let content: OpenAIEasyInputMessageContent
 
+    /// The role of the message input. One of `user`, `assistant`, `system`, or `developer`.
+    public let role: Role
+
+    /// The type of item, always "message".
+    public let type: String = "message"
+
     public init(
-        role: OpenAIMessageRole,
+        role: OpenAIEasyInputMessage.Role,
         content: OpenAIEasyInputMessageContent
     ) {
         self.role = role
         self.content = content
+    }
+}
+
+extension OpenAIEasyInputMessage {
+    nonisolated public enum Role: String, Encodable, Sendable {
+        case user
+        case assistant
+        case system
+        case developer
     }
 }

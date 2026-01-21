@@ -6,21 +6,21 @@
 //
 // OpenAPI spec: OutputTextContent, version 2.3.0, line 64958
 // Encodable: https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-output_message-content-output_text
-// Encodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-message-content-output_text
+// Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-message-content-output_text
 
 /// A text output from the model.
-nonisolated public struct OpenAIOutputText: Encodable, Sendable {
+nonisolated public struct OpenAIOutputText: Codable, Sendable {
     /// The annotations of the text output.
     public let annotations: [OpenAIAnnotation]
+
+    /// Log probabilities for tokens.
+    public let logprobs: [OpenAILogprob]
 
     /// The text output from the model.
     public let text: String
 
     /// The type of the output text. Always `output_text`.
     public let type = "output_text"
-
-    /// Log probabilities for tokens.
-    public let logprobs: [OpenAILogprob]?
 
     /// Creates a new output text content.
     /// - Parameters:
@@ -29,12 +29,20 @@ nonisolated public struct OpenAIOutputText: Encodable, Sendable {
     ///   - logprobs: Log probabilities for tokens.
     public init(
         annotations: [OpenAIAnnotation],
-        text: String,
-        logprobs: [OpenAILogprob]? = nil
+        logprobs: [OpenAILogprob],
+        text: String
     ) {
         self.annotations = annotations
         self.text = text
         self.logprobs = logprobs
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(annotations, forKey: .annotations)
+        try container.encode(logprobs, forKey: .logprobs)
+        try container.encode(text, forKey: .text)
+        try container.encode(type, forKey: .type)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -42,13 +50,5 @@ nonisolated public struct OpenAIOutputText: Encodable, Sendable {
         case logprobs
         case text
         case type
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(annotations, forKey: .annotations)
-        try container.encodeIfPresent(logprobs, forKey: .logprobs)
-        try container.encode(text, forKey: .text)
-        try container.encode(type, forKey: .type)
     }
 }

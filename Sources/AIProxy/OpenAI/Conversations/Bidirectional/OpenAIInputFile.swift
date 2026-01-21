@@ -5,6 +5,7 @@
 //  Created by Lou Zell on 12/20/25.
 //
 // OpenAPI spec: InputFileContent, version 2.3.0, line 65124
+// Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-message-content-input_file
 
 /// A file input to the model.
 public nonisolated struct OpenAIInputFile: Codable, Sendable {

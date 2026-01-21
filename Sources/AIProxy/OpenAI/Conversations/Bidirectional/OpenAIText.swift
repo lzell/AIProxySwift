@@ -22,6 +22,6 @@ nonisolated public struct OpenAIText: Codable, Sendable {
 
 extension OpenAIText: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {
-        init(text: value)
+        self.init(text: value)
     }
 }
