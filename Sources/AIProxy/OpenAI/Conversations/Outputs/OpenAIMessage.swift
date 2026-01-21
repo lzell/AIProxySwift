@@ -30,7 +30,6 @@ nonisolated public struct OpenAIMessage: Decodable, Sendable {
         case id
         case role
         case status
-        case type
     }
 }
 
