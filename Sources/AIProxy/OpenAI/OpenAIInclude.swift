@@ -8,7 +8,7 @@
 // https://platform.openai.com/docs/api-reference/conversations/list-items#conversations_list_items-include
 
 /// Specify additional output data to include in the model response.
-nonisolated public enum OpenAIInclude: String, Codable, Sendable {
+nonisolated public enum OpenAIInclude: String, Encodable, Sendable {
     /// Include the outputs of python code execution in code interpreter tool call items.
     case codeInterpreterCallOutputs = "code_interpreter_call.outputs"
 

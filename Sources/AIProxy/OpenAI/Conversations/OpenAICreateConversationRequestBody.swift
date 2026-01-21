@@ -8,8 +8,6 @@
 // https://platform.openai.com/docs/api-reference/conversations/create
 
 public struct OpenAICreateConversationRequestBody: Encodable {
-    // MARK: Optional Properties
-
     /// Initial items to include in the conversation context. You may add up to 20 items at a time.
     public var items: [OpenAIInputItem]?
                                                                                            
