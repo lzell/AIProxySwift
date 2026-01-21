@@ -5,11 +5,12 @@
 //  Created by Lou Zell on 12/20/25.
 //
 // OpenAPI spec: InputImageContent, version 2.3.0, line 65062
+// Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-message-content-input_image
 
 /// An image input to the model.
 ///
 /// Learn about image inputs: https://platform.openai.com/docs/guides/vision
-public nonisolated struct OpenAIInputImageContent: Codable, Sendable {
+public nonisolated struct OpenAIInputImage: Codable, Sendable {
     /// The type of the input item. Always `input_image`.
     public let type = "input_image"
     

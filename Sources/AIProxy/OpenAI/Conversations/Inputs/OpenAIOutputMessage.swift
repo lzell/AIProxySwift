@@ -10,7 +10,7 @@
 /// An output message from the model.
 nonisolated public struct OpenAIOutputMessage: Encodable, Sendable {
     /// The content of the output message.
-    public let content: [OpenAIMessageContent]  // TODO: This is the wrong type!
+    public let content: [OpenAIOutputMessageContent]
 
     /// The unique ID of the output message.
     public let id: String
@@ -28,16 +28,16 @@ nonisolated public struct OpenAIOutputMessage: Encodable, Sendable {
 
     /// Creates a new output message.
     /// - Parameters:
-    ///   - id: The unique ID of the output message.
     ///   - content: The content of the output message.
+    ///   - id: The unique ID of the output message.
     ///   - status: The status of the message input.
     public init(
+        content: [OpenAIOutputMessageContent],
         id: String,
-        content: [OpenAIMessageContent],
         status: Status
     ) {
-        self.id = id
         self.content = content
+        self.id = id
         self.status = status
     }
 

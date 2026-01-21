@@ -11,9 +11,9 @@
 // Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-custom_tool_call_output-output-output_content_list
 
 nonisolated public enum OpenAIInputContent: Codable, Sendable {
-    case text(OpenAIInputTextContent)
-    case image(OpenAIInputImageContent)
-    case file(OpenAIInputFileContent)
+    case text(OpenAIInputText)
+    case image(OpenAIInputImage)
+    case file(OpenAIInputFile)
     case futureProof
 
     private enum CodingKeys: String, CodingKey {
