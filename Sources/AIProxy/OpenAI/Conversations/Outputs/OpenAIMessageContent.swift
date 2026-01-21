@@ -61,11 +61,11 @@ nonisolated public enum OpenAIMessageContent: Decodable, Sendable {
         case "reasoning_text":
             self = .reasoningText(try OpenAIReasoningText(from: decoder))
         case "refusal":
-            self = .refusal(try OpenAIRefusalContentResource(from: decoder))
+            self = .refusal(try OpenAIRefusal(from: decoder))
         case "summary_text":
-            self = .summaryText(try OpenAISummaryTextContentResource(from: decoder))
+            self = .summaryText(try OpenAISummaryText(from: decoder))
         case "text":
-            self = .text(try OpenAITextContentResource(from: decoder))
+            self = .text(try OpenAIText(from: decoder))
         default:
             logIf(.error)?.error("Unknown message content type: \(type)")
             self = .futureProof

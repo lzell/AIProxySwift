@@ -23,6 +23,17 @@ nonisolated public struct OpenAIInputText: Codable, Sendable {
         case text
         case type
     }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.text = try container.decode(String.self, forKey: .text)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(text, forKey: .text)
+        try container.encode(type, forKey: .type)
+    }
 }
 
 extension OpenAIInputText: ExpressibleByStringLiteral {

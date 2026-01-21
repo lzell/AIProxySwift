@@ -28,6 +28,11 @@ nonisolated public struct OpenAIRefusal: Codable, Sendable {
         case type
     }
 
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.refusal = try container.decode(String.self, forKey: .refusal)
+    }
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(refusal, forKey: .refusal)

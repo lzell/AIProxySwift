@@ -8,7 +8,7 @@
 // Encodable: https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-output_message-content-output_text-annotations-url_citation
 
 /// A citation for a web resource used to generate a model response.
-nonisolated public struct OpenAIURLCitation: Encodable, Sendable {
+nonisolated public struct OpenAIURLCitation: Codable, Sendable {
     /// The index of the first character of the URL citation in the message.
     public let startIndex: Int
 
@@ -48,6 +48,14 @@ nonisolated public struct OpenAIURLCitation: Encodable, Sendable {
         case title
         case type
         case url
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.endIndex = try container.decode(Int.self, forKey: .endIndex)
+        self.startIndex = try container.decode(Int.self, forKey: .startIndex)
+        self.title = try container.decode(String.self, forKey: .title)
+        self.url = try container.decode(String.self, forKey: .url)
     }
 
     public func encode(to encoder: Encoder) throws {

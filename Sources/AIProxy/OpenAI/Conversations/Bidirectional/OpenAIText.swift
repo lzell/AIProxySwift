@@ -14,9 +14,24 @@ nonisolated public struct OpenAIText: Codable, Sendable {
     /// The type of the content. Always `text`.
     public let type = "text"
 
+    public init(text: String) {
+        self.text = text
+    }
+
     private enum CodingKeys: String, CodingKey {
         case text
         case type
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.text = try container.decode(String.self, forKey: .text)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(text, forKey: .text)
+        try container.encode(type, forKey: .type)
     }
 }
 

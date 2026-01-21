@@ -8,7 +8,7 @@
 // Encodable: https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-output_message-content-output_text-annotations-file_citation
 
 /// A citation to a file.
-nonisolated public struct OpenAIFileCitation: Encodable, Sendable {
+nonisolated public struct OpenAIFileCitation: Codable, Sendable {
     /// The ID of the file.
     public let fileID: String
 
@@ -41,6 +41,13 @@ nonisolated public struct OpenAIFileCitation: Encodable, Sendable {
         case filename
         case index
         case type
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.fileID = try container.decode(String.self, forKey: .fileID)
+        self.filename = try container.decode(String.self, forKey: .filename)
+        self.index = try container.decode(Int.self, forKey: .index)
     }
 
     public func encode(to encoder: Encoder) throws {

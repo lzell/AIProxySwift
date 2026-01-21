@@ -8,7 +8,7 @@
 // Encodable: https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-output_message-content-output_text-annotations-file_path
 
 /// A path to a file.
-nonisolated public struct OpenAIFilePath: Encodable, Sendable {
+nonisolated public struct OpenAIFilePath: Codable, Sendable {
     /// The ID of the file.
     public let fileID: String
 
@@ -34,6 +34,12 @@ nonisolated public struct OpenAIFilePath: Encodable, Sendable {
         case fileID = "file_id"
         case index
         case type
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.fileID = try container.decode(String.self, forKey: .fileID)
+        self.index = try container.decode(Int.self, forKey: .index)
     }
 
     public func encode(to encoder: Encoder) throws {

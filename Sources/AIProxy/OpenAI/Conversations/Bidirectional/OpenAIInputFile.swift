@@ -50,6 +50,14 @@ public nonisolated struct OpenAIInputFile: Codable, Sendable {
         case fileData = "file_data"
     }
 
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.fileID = try container.decodeIfPresent(String.self, forKey: .fileID)
+        self.filename = try container.decodeIfPresent(String.self, forKey: .filename)
+        self.fileURL = try container.decodeIfPresent(String.self, forKey: .fileURL)
+        self.fileData = try container.decodeIfPresent(String.self, forKey: .fileData)
+    }
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(type, forKey: .type)

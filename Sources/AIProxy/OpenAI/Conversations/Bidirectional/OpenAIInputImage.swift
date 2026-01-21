@@ -48,7 +48,14 @@ public nonisolated struct OpenAIInputImage: Codable, Sendable {
         case fileID = "file_id"
         case detail
     }
-    
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.imageURL = try container.decodeIfPresent(String.self, forKey: .imageURL)
+        self.fileID = try container.decodeIfPresent(String.self, forKey: .fileID)
+        self.detail = try container.decode(OpenAIImageDetail.self, forKey: .detail)
+    }
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(type, forKey: .type)

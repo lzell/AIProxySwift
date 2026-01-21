@@ -37,6 +37,13 @@ nonisolated public struct OpenAIOutputText: Codable, Sendable {
         self.logprobs = logprobs
     }
 
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.annotations = try container.decode([OpenAIAnnotation].self, forKey: .annotations)
+        self.logprobs = try container.decode([OpenAILogprob].self, forKey: .logprobs)
+        self.text = try container.decode(String.self, forKey: .text)
+    }
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(annotations, forKey: .annotations)

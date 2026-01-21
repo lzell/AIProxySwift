@@ -8,7 +8,7 @@
 // Encodable: https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-output_message-content-output_text-logprobs-top_logprobs
 
 /// The top log probability of a token.
-nonisolated public struct OpenAITopLogprob: Encodable, Sendable {
+nonisolated public struct OpenAITopLogprob: Codable, Sendable {
     /// The bytes of the token.
     public let bytes: [Int]
 
@@ -37,6 +37,13 @@ nonisolated public struct OpenAITopLogprob: Encodable, Sendable {
         case bytes
         case logprob
         case token
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.bytes = try container.decode([Int].self, forKey: .bytes)
+        self.logprob = try container.decode(Double.self, forKey: .logprob)
+        self.token = try container.decode(String.self, forKey: .token)
     }
 
     public func encode(to encoder: Encoder) throws {
