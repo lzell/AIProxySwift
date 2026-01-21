@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 12/20/25.
 //
 
-nonisolated public enum OpenAIComputerAction: Encodable, Decodable, Sendable {
+nonisolated public enum OpenAIComputerAction: Codable, Sendable {
     case click(OpenAIClickAction)
     case doubleClick(OpenAIDoubleClickAction)
     case drag(OpenAIDragAction)

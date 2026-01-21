@@ -10,7 +10,7 @@
 
 /// A file search result.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-file_search_tool_call-results
-public nonisolated struct OpenAIFileSearchToolCallResult: Encodable, Decodable, Sendable {
+public nonisolated struct OpenAIFileSearchToolCallResult: Codable, Sendable {
     /// Set of 16 key-value pairs that can be attached to an object. This can be
     /// useful for storing additional information about the object in a structured
     /// format, and querying for objects via API or the dashboard. Keys are strings

@@ -8,7 +8,7 @@
 // https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-computer_tool_call_output
 
 /// The output of a computer tool call.
-nonisolated public struct OpenAIComputerToolCallOutput: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAIComputerToolCallOutput: Codable, Sendable {
     /// The ID of the computer tool call that produced the output.
     public let callID: String
 

@@ -10,7 +10,7 @@
 /// The results of a web search tool call.
 ///
 /// See the [web search guide](https://platform.openai.com/docs/guides/tools-web-search) for more information.
-nonisolated public struct OpenAIWebSearchToolCall: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAIWebSearchToolCall: Codable, Sendable {
     /// An object describing the specific action taken in this web search call.
     ///
     /// Includes details on how the model used the web (`search`, `open_page`, `find`).

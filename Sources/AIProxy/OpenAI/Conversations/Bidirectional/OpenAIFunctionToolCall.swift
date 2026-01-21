@@ -12,7 +12,7 @@
 /// A tool call to run a function.
 ///
 /// See the [function calling guide](https://platform.openai.com/docs/guides/function-calling) for more information.
-nonisolated public struct OpenAIFunctionToolCall: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAIFunctionToolCall: Codable, Sendable {
     /// A JSON string of the arguments to pass to the function.
     public let arguments: [String: AIProxyJSONValue]
 

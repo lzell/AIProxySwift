@@ -6,7 +6,7 @@
 //
 
 /// Action type "search" - Performs a web search query.
-nonisolated public struct OpenAISearchAction: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAISearchAction: Codable, Sendable {
     /// The search query.
     public let query: String
 
@@ -44,7 +44,7 @@ nonisolated public struct OpenAISearchAction: Encodable, Decodable, Sendable {
 
 extension OpenAISearchAction {
     /// A source used in the search.
-    nonisolated public struct Source: Encodable, Decodable, Sendable {
+    nonisolated public struct Source: Codable, Sendable {
         /// The type of source. Always `url`.
         public let type = "url"
 

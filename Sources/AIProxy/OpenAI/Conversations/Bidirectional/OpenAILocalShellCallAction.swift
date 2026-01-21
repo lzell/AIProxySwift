@@ -8,7 +8,7 @@
 // Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-local_shell_call-action
 
 /// Execute a shell command on the server.
-nonisolated public struct OpenAILocalShellCallAction: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAILocalShellCallAction: Codable, Sendable {
     /// The command to run.
     public let command: [String]
 

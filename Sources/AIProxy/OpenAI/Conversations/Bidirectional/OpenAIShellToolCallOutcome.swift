@@ -7,7 +7,7 @@
 
 /// The exit or timeout outcome associated with this shell call.
 /// https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-shell_tool_call_output-output-outcome
-nonisolated public enum OpenAIShellToolCallOutcome: Encodable, Decodable, Sendable {
+nonisolated public enum OpenAIShellToolCallOutcome: Codable, Sendable {
     case timeout(OpenAIShellToolCallTimeoutOutcome)
     case exit(OpenAIShellToolCallExitOutcome)
     case futureProof

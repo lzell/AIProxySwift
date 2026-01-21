@@ -11,7 +11,7 @@
 // Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-function_tool_call_output
 
 /// The output of a function tool call.
-nonisolated public struct OpenAIFunctionToolCallOutput: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAIFunctionToolCallOutput: Codable, Sendable {
     /// The unique ID of the function tool call output. Populated when this item is returned via API.
     public let id: String
 
@@ -68,7 +68,7 @@ nonisolated public struct OpenAIFunctionToolCallOutput: Encodable, Decodable, Se
 extension OpenAIFunctionToolCallOutput {
     // OpenAPI spec: FunctionToolCallOutput#output union, version 2.3.0, line 43450
     /// The output of the function tool call.
-    public enum Output: Encodable, Decodable, Sendable {
+    public enum Output: Codable, Sendable {
         /// A JSON string of the output of the function tool call.
         case text(String)
 

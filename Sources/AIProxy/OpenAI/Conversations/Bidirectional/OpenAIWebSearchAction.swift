@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 12/21/25.
 //
 
-nonisolated public enum OpenAIWebSearchAction: Encodable, Decodable, Sendable {
+nonisolated public enum OpenAIWebSearchAction: Codable, Sendable {
     case search(OpenAISearchAction)
     case openPage(OpenAIOpenPageAction)
     case find(OpenAIFindAction)

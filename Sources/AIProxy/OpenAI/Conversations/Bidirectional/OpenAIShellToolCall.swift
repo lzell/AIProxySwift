@@ -14,7 +14,7 @@
 // It's more likely that a decoded shell tool call is passed back into the model at a future time.
 
 /// A tool representing a request to execute one or more shell commands.
-nonisolated public struct OpenAIShellToolCall: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAIShellToolCall: Codable, Sendable {
     /// The shell commands and limits that describe how to run the tool call.
     public let action: OpenAIShellToolCallAction
 
@@ -58,7 +58,7 @@ nonisolated public struct OpenAIShellToolCall: Encodable, Decodable, Sendable {
 
 extension OpenAIShellToolCall {
     /// The status of the shell call.
-    public enum Status: String, Encodable, Decodable, Sendable {
+    public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case completed
         case incomplete

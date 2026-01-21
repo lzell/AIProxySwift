@@ -9,7 +9,7 @@
 
 /// A description of the chain of thought used by a reasoning model while generating a response.
 /// Be sure to include these items in your `input` to the Responses API for subsequent turns of a conversation if you are manually managing context.
-nonisolated public struct OpenAIReasoningItem: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAIReasoningItem: Codable, Sendable {
     /// The unique identifier of the reasoning content.
     public let id: String
 

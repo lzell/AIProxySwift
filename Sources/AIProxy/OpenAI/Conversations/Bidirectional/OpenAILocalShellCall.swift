@@ -10,7 +10,7 @@
 
 /// A tool call to run a command on the local shell.
 // TODO: Rename to LocalShellToolCall
-nonisolated public struct OpenAILocalShellCall: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAILocalShellCall: Codable, Sendable {
     /// The action to execute on the local shell.
     public let action: OpenAILocalShellCallAction
     
@@ -64,7 +64,7 @@ nonisolated public struct OpenAILocalShellCall: Encodable, Decodable, Sendable {
 
 extension OpenAILocalShellCall {
     /// The status of the local shell call.
-    public enum Status: String, Encodable, Decodable, Sendable {
+    public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case completed
         case incomplete

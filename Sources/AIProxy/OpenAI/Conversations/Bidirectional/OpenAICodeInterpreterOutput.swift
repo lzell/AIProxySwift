@@ -5,7 +5,7 @@
 //  Created by Lou Zell on 12/21/25.
 //
 
-nonisolated public enum OpenAICodeInterpreterOutput: Encodable, Decodable, Sendable {
+nonisolated public enum OpenAICodeInterpreterOutput: Codable, Sendable {
     /// The logs output from the code interpreter.
     case logs(OpenAICodeInterpreterOutputLogs)
 

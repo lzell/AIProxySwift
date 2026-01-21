@@ -6,7 +6,7 @@
 //
 
 /// Operations supplied to the `apply_patch` tool.
-public enum OpenAIApplyPatchOperation: Encodable, Decodable, Sendable {
+public enum OpenAIApplyPatchOperation: Codable, Sendable {
     case createFile(OpenAIApplyPatchCreateFile)
     case deleteFile(OpenAIApplyPatchDeleteFile)
     case updateFile(OpenAIApplyPatchUpdateFile)

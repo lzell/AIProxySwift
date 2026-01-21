@@ -9,7 +9,7 @@
 // Decodable: https://platform.openai.com/docs/api-reference/conversations/list-items-object#conversations-list_items_object-data-code_interpreter_tool_call
 
 /// A tool call to run code.
-nonisolated public struct OpenAICodeInterpreterToolCall: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAICodeInterpreterToolCall: Codable, Sendable {
     /// The code to run, or null if not available.
     public let code: String
 
@@ -73,7 +73,7 @@ nonisolated public struct OpenAICodeInterpreterToolCall: Encodable, Decodable, S
 
 extension OpenAICodeInterpreterToolCall {
     /// The status of the code interpreter tool call.
-    public enum Status: String, Encodable, Decodable, Sendable {
+    public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"
         case completed
         case incomplete

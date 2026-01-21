@@ -10,7 +10,7 @@
 
 /// The results of a file search tool call.
 /// See the file search guide: https://platform.openai.com/docs/guides/tools-file-search
-nonisolated public struct OpenAIFileSearchToolCall: Encodable, Decodable, Sendable {
+nonisolated public struct OpenAIFileSearchToolCall: Codable, Sendable {
     /// The unique ID of the file search tool call.
     public let id: String
 
