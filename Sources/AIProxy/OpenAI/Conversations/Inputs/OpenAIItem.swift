@@ -44,16 +44,16 @@ nonisolated public enum OpenAIItem: Encodable, Sendable {
     case compactionItem(OpenAICompactionItem)
 
     /// An image generation request made by the model.
-    case imageGenerationCall(OpenAIImageGenerationCall)
+    case imageGenerationCall(OpenAIImageGenerationToolCall)
 
     /// A tool call to run code.
     case codeInterpreterToolCall(OpenAICodeInterpreterToolCall)
 
     /// A tool call to run a command on the local shell.
-    case localShellCall(OpenAILocalShellCall)
+    case localShellCall(OpenAILocalShellToolCall)
 
     /// The output of a local shell tool call.
-    case localShellCallOutput(OpenAILocalShellCallOutput)
+    case localShellCallOutput(OpenAILocalShellToolCallOutput)
 
     /// A tool representing a request to execute one or more shell commands.
     case shellToolCall(OpenAIShellToolCall)

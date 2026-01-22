@@ -1,5 +1,5 @@
 //
-//  OpenAIImageGenerationCall.swift
+//  OpenAIImageGenerationToolCall.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 12/21/25.
@@ -8,7 +8,7 @@
 // https://platform.openai.com/docs/api-reference/conversations/create#conversations_create-items-item-image_generation_call
 
 /// An image generation request made by the model.
-nonisolated public struct OpenAIImageGenerationCall: Codable, Sendable {
+nonisolated public struct OpenAIImageGenerationToolCall: Codable, Sendable {
     /// The unique ID of the image generation call.
     public let id: String
     
@@ -52,7 +52,7 @@ nonisolated public struct OpenAIImageGenerationCall: Codable, Sendable {
     }
 }
 
-extension OpenAIImageGenerationCall {
+extension OpenAIImageGenerationToolCall {
     /// The status of the image generation call.
     public enum Status: String, Codable, Sendable {
         case inProgress = "in_progress"

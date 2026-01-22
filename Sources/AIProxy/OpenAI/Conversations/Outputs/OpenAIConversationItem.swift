@@ -27,7 +27,7 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     case webSearchToolCall(OpenAIWebSearchToolCall)
 
     /// An image generation request made by the model.
-    case imageGenToolCall(OpenAIImageGenerationCall)
+    case imageGenToolCall(OpenAIImageGenerationToolCall)
 
     /// A tool call to a computer use tool. See the computer use guide for more information: https://platform.openai.com/docs/guides/tools-computer-use
     case computerToolCall(OpenAIComputerToolCall)
@@ -43,10 +43,10 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     case codeInterpreterToolCall(OpenAICodeInterpreterToolCall)
 
     /// A tool call to run a command on the local shell.
-    case localShellToolCall(OpenAILocalShellCall)
+    case localShellToolCall(OpenAILocalShellToolCall)
 
     /// The output of a local shell tool call.
-    case localShellToolCallOutput(OpenAILocalShellCallOutput)
+    case localShellToolCallOutput(OpenAILocalShellToolCallOutput)
 
     /// A tool call that executes one or more shell commands in a managed environment.
     case functionShellCall(OpenAIShellToolCall)
@@ -110,11 +110,11 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
         case "function_call_output":
             self = .functionToolCallOutput(try OpenAIFunctionToolCallOutput(from: decoder))
         case "image_generation_call":
-            self = .imageGenToolCall(try OpenAIImageGenerationCall(from: decoder))
+            self = .imageGenToolCall(try OpenAIImageGenerationToolCall(from: decoder))
         case "local_shell_call":
-            self = .localShellToolCall(try OpenAILocalShellCall(from: decoder))
+            self = .localShellToolCall(try OpenAILocalShellToolCall(from: decoder))
         case "local_shell_call_output":
-            self = .localShellToolCallOutput(try OpenAILocalShellCallOutput(from: decoder))
+            self = .localShellToolCallOutput(try OpenAILocalShellToolCallOutput(from: decoder))
         case "mcp_approval_request":
             self = .mcpApprovalRequest(try OpenAIMCPApprovalRequest(from: decoder))
         case "mcp_approval_response":
