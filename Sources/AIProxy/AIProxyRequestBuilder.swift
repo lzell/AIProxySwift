@@ -31,6 +31,13 @@ import Foundation
         additionalHeaders: [String: String],
         baseURLOverride: String?
     ) async throws -> URLRequest
+
+    func plainDELETE(
+        path: String,
+        secondsToWait: UInt,
+        additionalHeaders: [String: String],
+        baseURLOverride: String?
+    ) async throws -> URLRequest
 }
 
 extension AIProxyRequestBuilder {
@@ -70,6 +77,19 @@ extension AIProxyRequestBuilder {
         additionalHeaders: [String: String]
     ) async throws -> URLRequest {
         try await plainGET(
+            path: path,
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders,
+            baseURLOverride: nil
+        )
+    }
+
+    func plainDELETE(
+        path: String,
+        secondsToWait: UInt,
+        additionalHeaders: [String: String]
+    ) async throws -> URLRequest {
+        try await plainDELETE(
             path: path,
             secondsToWait: secondsToWait,
             additionalHeaders: additionalHeaders,
