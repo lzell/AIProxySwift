@@ -565,7 +565,7 @@ import Foundation
         let queryString = self.buildConversationsQueryString(include: include)
         let request = try await self.requestBuilder.jsonPOST(
             path: "/v1/conversations/\(conversationID)/items?\(queryString)",
-            body: body,
+            body: requestBody,
             secondsToWait: secondsToWait,
             additionalHeaders: additionalHeaders
         )
