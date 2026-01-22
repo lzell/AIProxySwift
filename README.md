@@ -2259,6 +2259,275 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
 
 ***
 
+## OpenAI Conversations API
+
+### How to create an OpenAI conversation
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenAICreateConversationRequestBody(
+        items: [
+            .item(
+                .inputMessage(OpenAIInputMessage(content: "Hello world", role: .user))
+            )
+        ],
+        metadata: ["topic": "demo"]
+    )
+
+    do {
+         let response = try await openAIService.createConversation(
+             requestBody: requestBody,
+             secondsToWait: 120
+         )
+        print("Created conversation with ID: \(response.id)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create OpenAI Conversation: \(error)")
+    }
+```
+
+### How to get an OpenAI conversation
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let response = try await openAIService.getConversation(
+            conversationID: "<conversation-id>",
+            secondsToWait: 120
+        )
+        print("Retreived conversation with ID \(response.id) and metadata: \(response.metadata)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get OpenAI Conversation: \(error)")
+    }
+```
+
+### How to list OpenAI conversation items
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let response = try await openAIService.listItems(
+            conversationID: "<conversation-id>",
+            include: [.messageOutputTextLogprobs],
+            secondsToWait: 120
+        )
+        print("Retreived conversation with ID \(response.data)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not list OpenAI conversation items: \(error)")
+    }
+```
+
+### How to add items to an OpenAI conversation
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let createConversationBody = OpenAICreateConversationRequestBody(
+        metadata: ["purpose": "item_creation_test"]
+    )
+
+    do {
+        let conversation = try await openAIService.createConversation(
+            requestBody: createConversationBody,
+            secondsToWait: 120
+        )
+        print("Created conversation: \(conversation.id)")
+
+        let createItemsBody = OpenAICreateConversationItemsRequestBody(
+            items: [
+                .item(
+                    .inputMessage(OpenAIInputMessage(content: "What is the capital of France?", role: .user))
+                )
+            ]
+        )
+
+        let response = try await openAIService.createItems(
+            conversationID: conversation.id,
+            requestBody: createItemsBody,
+            secondsToWait: 120
+        )
+        print("Created \(response.data.count) items in conversation")
+        print("First item ID: \(response.firstID)")
+        print("Last item ID: \(response.lastID)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create conversation items: \(error)")
+    }
+```
+
+### How to delete an item from an OpenAI conversation
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let result = try await openAIService.deleteItem(
+            conversationID: <conversation-id>,
+            itemID: <item-id>,
+            secondsToWait: 120
+        )
+        print("Deleted conversation item with id: \(result.id)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not delete conversation item: \(error)")
+    }
+```
+
+### How to delete an OpenAI conversation
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let response = try await openAIService.deleteConversation(
+            conversationID: "<conversation-id>",
+            secondsToWait: 120
+        )
+        print("Conversation with ID \(response.id) has been deleted: \(response.deleted)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not delete OpenAI Conversation: \(error)")
+    }
+```
+
+### How to list OpenAI conversation items with pagination
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let createConversationBody = OpenAICreateConversationRequestBody(
+        items: [
+            .item(.inputMessage(OpenAIInputMessage(content: "Page 1 - Item 1", role: .user))),
+            .item(.inputMessage(OpenAIInputMessage(content: "Page 1 - Item 2", role: .user))),
+            .item(.inputMessage(OpenAIInputMessage(content: "Page 2 - Item 1", role: .user))),
+            .item(.inputMessage(OpenAIInputMessage(content: "Page 2 - Item 2", role: .user)))
+        ],
+        metadata: ["purpose": "pagination_test"]
+    )
+
+    do {
+        let conversation = try await openAIService.createConversation(
+            requestBody: createConversationBody,
+            secondsToWait: 120
+        )
+        print("Created conversation: \(conversation.id)")
+
+        let page1 = try await openAIService.listItems(
+            conversationID: conversation.id,
+            limit: 2,
+            order: .asc,
+            secondsToWait: 120
+        )
+        print("Page 1: \(page1.data.count) items")
+        print("Has more: \(page1.hasMore)")
+
+        if page1.hasMore {
+            let page2 = try await openAIService.listItems(
+                conversationID: conversation.id,
+                after: page1.lastID,
+                limit: 2,
+                order: .asc,
+                secondsToWait: 120
+            )
+            print("Page 2: \(page2.data.count) items")
+            print("Has more: \(page2.hasMore)")
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not paginate conversation items: \(error)")
+    }
+```
+
+***
 
 ## Gemini
 
