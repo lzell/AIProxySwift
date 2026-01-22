@@ -410,7 +410,7 @@ import Foundation
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
 
-    // MARK: - Conversations
+    // MARK: - Conversations API
 
     /// Creates a new conversation.
     ///
@@ -530,7 +530,7 @@ import Foundation
         order: OpenAIItemOrder? = nil,
         secondsToWait: UInt,
         additionalHeaders: [String: String] = [:]
-    ) async throws -> OpenAIConversationItemList {
+    ) async throws -> OpenAIConversationItems {
         let queryString = self.buildConversationsQueryString(
             limit: limit,
             order: order,
@@ -544,93 +544,84 @@ import Foundation
         )
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
     }
-//
-//    /// Creates items in a conversation.
-//    ///
-//    /// - Parameters:
-//    ///   - conversationID: The ID of the conversation
-//    ///   - body: The create items request body
-//    ///   - include: Additional fields to include in the response
-//    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
-//    ///   - additionalHeaders: Optional headers to pass up with the request
-//    ///
-//    /// - Returns: A list of created conversation items
-//    public func createItems(
-//        conversationID: String,
-//        body: OpenAIConversationsCreateItemsRequestBody,
-//        include: [OpenAIConversationsIncludeParam]? = nil,
-//        secondsToWait: UInt,
-//        additionalHeaders: [String: String] = [:]
-//    ) async throws -> OpenAIConversationsItemList {
-//        let path = Self.buildPath(
-//            base: "/v1/conversations/\(conversationID)/items",
-//            include: include
-//        )
-//
-//        let request = try await self.requestBuilder.jsonPOST(
-//            path: path,
-//            body: body,
-//            secondsToWait: secondsToWait,
-//            additionalHeaders: additionalHeaders
-//        )
-//        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
-//    }
-//
-//    /// Retrieves a specific item from a conversation.
-//    ///
-//    /// - Parameters:
-//    ///   - conversationID: The ID of the conversation
-//    ///   - itemID: The ID of the item to retrieve
-//    ///   - include: Additional fields to include in the response
-//    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
-//    ///   - additionalHeaders: Optional headers to pass up with the request
-//    ///
-//    /// - Returns: The conversation item
-//    public func getItem(
-//        conversationID: String,
-//        itemID: String,
-//        include: [OpenAIConversationsIncludeParam]? = nil,
-//        secondsToWait: UInt,
-//        additionalHeaders: [String: String] = [:]
-//    ) async throws -> OpenAIConversationsItem {
-//        let path = Self.buildPath(
-//            base: "/v1/conversations/\(conversationID)/items/\(itemID)",
-//            include: include
-//        )
-//
-//        let request = try await self.requestBuilder.plainGET(
-//            path: path,
-//            secondsToWait: secondsToWait,
-//            additionalHeaders: additionalHeaders
-//        )
-//        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
-//    }
-//
-//    /// Deletes an item from a conversation.
-//    ///
-//    /// - Parameters:
-//    ///   - conversationID: The ID of the conversation
-//    ///   - itemID: The ID of the item to delete
-//    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
-//    ///   - additionalHeaders: Optional headers to pass up with the request
-//    ///
-//    /// - Returns: The conversation resource
-//    public func deleteItem(
-//        conversationID: String,
-//        itemID: String,
-//        secondsToWait: UInt,
-//        additionalHeaders: [String: String] = [:]
-//    ) async throws -> OpenAIConversationsResource {
-//        let request = try await self.requestBuilder.plainDELETE(
-//            path: "/v1/conversations/\(conversationID)/items/\(itemID)",
-//            secondsToWait: secondsToWait,
-//            additionalHeaders: additionalHeaders
-//        )
-//        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
-//    }
 
-    // MARK: - Private Helpers
+    /// Creates items in a conversation.
+    ///
+    /// - Parameters:
+    ///   - conversationID: The ID of the conversation
+    ///   - body: The create items request body
+    ///   - include: Additional fields to include in the response
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    ///   - additionalHeaders: Optional headers to pass up with the request
+    ///
+    /// - Returns: A list of created conversation items
+    public func createItems(
+        conversationID: String,
+        requestBody: OpenAICreateConversationItemsRequestBody,
+        include: [OpenAIInclude]? = nil,
+        secondsToWait: UInt,
+        additionalHeaders: [String: String] = [:]
+    ) async throws -> OpenAIConversationItems {
+        let queryString = self.buildConversationsQueryString(include: include)
+        let request = try await self.requestBuilder.jsonPOST(
+            path: "/v1/conversations/\(conversationID)/items?\(queryString)",
+            body: body,
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
 
+    /// Retrieves a specific item from a conversation.
+    ///
+    /// - Parameters:
+    ///   - conversationID: The ID of the conversation
+    ///   - itemID: The ID of the item to retrieve
+    ///   - include: Additional fields to include in the response
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    ///   - additionalHeaders: Optional headers to pass up with the request
+    ///
+    /// - Returns: The conversation item
+    public func getItem(
+        conversationID: String,
+        itemID: String,
+        include: [OpenAIInclude]? = nil,
+        secondsToWait: UInt,
+        additionalHeaders: [String: String] = [:]
+    ) async throws -> OpenAIConversationItem {
+        let queryString = self.buildConversationsQueryString(include: include)
+        let request = try await self.requestBuilder.plainGET(
+            path: "/v1/conversations/\(conversationID)/items/\(itemID)?\(queryString)",
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
+
+    /// Deletes an item from a conversation.
+    ///
+    /// - Parameters:
+    ///   - conversationID: The ID of the conversation
+    ///   - itemID: The ID of the item to delete
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    ///   - additionalHeaders: Optional headers to pass up with the request
+    ///
+    /// - Returns: The conversation resource
+    public func deleteItem(
+        conversationID: String,
+        itemID: String,
+        secondsToWait: UInt,
+        additionalHeaders: [String: String] = [:]
+    ) async throws -> OpenAIConversation {
+        let request = try await self.requestBuilder.plainDELETE(
+            path: "/v1/conversations/\(conversationID)/items/\(itemID)",
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
+
+    // MARK: - Private
     private func buildConversationsQueryString(
         limit: Int? = nil,
         order: OpenAIItemOrder? = nil,
@@ -670,7 +661,7 @@ import Foundation
     }
 }
 
-// Deprecated methods
+// MARK: - Deprecated
 extension OpenAIService {
     @available(*, deprecated, message: "This has been renamed to chatCompletionRequest(body:secondsToWait:). For parity with your existing call, pass 60 as the secondsToWait argument.")
     public func chatCompletionRequest(

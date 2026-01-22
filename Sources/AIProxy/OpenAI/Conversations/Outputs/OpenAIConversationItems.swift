@@ -1,5 +1,5 @@
 //
-//  OpenAIConversationItemList.swift
+//  OpenAIConversationItems.swift
 //  AIProxy
 //
 //  Created by Lou Zell on 12/22/25.
@@ -8,7 +8,7 @@
 // https://platform.openai.com/docs/api-reference/conversations/list-items-object
 
 /// A list of Conversation items.
-nonisolated public struct OpenAIConversationItemList: Decodable, Sendable {
+nonisolated public struct OpenAIConversationItems: Decodable, Sendable {
     /// A list of conversation items.
     public let data: [OpenAIConversationItem]
     
