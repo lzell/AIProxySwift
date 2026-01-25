@@ -132,8 +132,6 @@ import Foundation
     ///   - body: The request body to send to ElevenLabs. See this reference:
     ///           https://elevenlabs.io/docs/api-reference/text-to-speech/stream-with-timestamps
     ///
-    ///   - outputFormat: Output format of the generated audio. Defaults to mp3_44100_128.
-    ///
     ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     ///
     /// - Returns: Returns an async stream of response chunks containing base64 audio and character timing.
