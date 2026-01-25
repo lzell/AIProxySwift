@@ -133,7 +133,10 @@ import Foundation
     ///
     ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     ///
-    /// - Returns: ElevenLabsTTSWithTimestampsResponseBody which includes timings for the returned audio.
+    /// - Returns: ElevenLabsTTSWithTimestampsResponseBody which includes timings for the returned audio. The
+    ///            audio is always returned as PCM16, signed, little-endian data at a 24 kHz sample rate
+    ///            (`output_format=pcm_24000`), and this output format is fixed in the request URL rather than
+    ///            being configurable via a parameter.
 
     func streamingTTSWithTimestampsRequest(
         voiceID: String,
