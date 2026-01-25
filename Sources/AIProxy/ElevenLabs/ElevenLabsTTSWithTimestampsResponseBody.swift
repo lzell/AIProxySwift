@@ -1,5 +1,5 @@
 //
-//  ElevenLabsTTSStreamWithTimestampsResponseBody.swift
+//  ElevenLabsTTSWithTimestampsResponseBody.swift
 //
 //
 //  Created by Sean Langley on 1/18/26.
