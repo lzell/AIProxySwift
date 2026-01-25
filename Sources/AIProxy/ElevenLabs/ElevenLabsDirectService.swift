@@ -99,7 +99,7 @@ import Foundation
     ///
     ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
     ///
-    /// - Returns: Returns an async stream that vends each time a chunk of audio is recieved over the network.
+    /// - Returns: Returns an async stream that vends each time a chunk of audio is received over the network.
     ///            The stream consists of PCM16, int encoded, signed, little-endian audio at a 24 kHz sample rate.
     ///            The returned audio is playable by the `AudioController` class in this SDK.
     func streamingTTSRequest(
