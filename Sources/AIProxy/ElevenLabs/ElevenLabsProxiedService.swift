@@ -7,12 +7,11 @@
 
 import Foundation
 
-@AIProxyActor final class ElevenLabsProxiedService: ElevenLabsService, ProxiedService, ServiceMixin, Sendable {
-    
+@AIProxyActor final class ElevenLabsProxiedService: ElevenLabsService, ProxiedService, Sendable {
     private let partialKey: String
     private let serviceURL: String
     private let clientID: String?
-    
+
     /// This initializer is not public on purpose.
     /// Customers are expected to use the factory `AIProxy.elevenLabsService` defined in AIProxy.swift
     nonisolated init(partialKey: String, serviceURL: String, clientID: String?) {
@@ -20,7 +19,7 @@ import Foundation
         self.serviceURL = serviceURL
         self.clientID = clientID
     }
-    
+
     /// Converts text to speech with a request to /v1/text-to-speech/<voice-id>
     ///
     /// - Parameters:
