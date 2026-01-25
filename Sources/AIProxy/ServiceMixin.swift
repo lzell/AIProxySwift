@@ -66,6 +66,54 @@ extension ServiceMixin {
             }
         }
     }
+
+    /// Deserializes streaming NDJSON (newline-delimited JSON) chunks.
+    /// Unlike `makeRequestAndDeserializeStreamingChunks`, this method does not expect
+    /// SSE-style "data: " prefixes. Each line is treated as raw JSON.
+    @AIProxyActor func makeRequestAndDeserializeNDJSONChunks<T: Decodable & Sendable>(_ request: URLRequest) async throws -> AsyncThrowingStream<T, Error> {
+        if AIProxy.printRequestBodies {
+            printRequestBody(request)
+        }
+
+        let (asyncBytes, _) = try await BackgroundNetworker.makeRequestAndWaitForAsyncBytes(
+            self.urlSession,
+            request
+        )
+
+        return AsyncThrowingStream { @AIProxyActor continuation in
+            let task = Task {
+                do {
+                    for try await line in asyncBytes.lines {
+                        if Task.isCancelled {
+                            break
+                        }
+                        if AIProxy.printResponseBodies {
+                            printStreamingResponseChunk(line)
+                        }
+                        guard !line.isEmpty else { continue }
+                        guard let data = line.data(using: .utf8) else { continue }
+                        do {
+                            let deserialized = try T.deserialize(from: data)
+                            continuation.yield(deserialized)
+                        } catch {
+                            logIf(.warning)?.warning(
+                                """
+                                AIProxy: Could not deserialize \(T.self) from NDJSON line: \(line)
+                                Decodable error: \(error)
+                                """
+                            )
+                        }
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+            continuation.onTermination = { _ in
+                task.cancel()
+            }
+        }
+    }
 }
 
 private extension URLRequest {
