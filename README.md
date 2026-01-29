@@ -5177,7 +5177,17 @@ model owner and model name in the string.
 
 - See the full range of TTS controls by viewing `ElevenLabsTTSRequestBody.swift`.
 - See https://api.elevenlabs.io/v1/voices for the IDs that you can pass to `voiceID`.
+- To get timing information of the spoken text, use `elevenLabsService.ttsRequestWithTimestamps`:
 
+```swift
+let res = try await elevenLabsService.ttsRequestWithTimestamps(
+    voiceID: "EXAVITQu4vr4xnSDxMaL",
+    body: body,
+    secondsToWait: 120
+)
+// Timing information is available as `res.alignment` and `res.normalizedAlignment`
+// Audio to pass to the AVAudioPlayer is available as `res.audioData`
+```
 
 ### How to use ElevenLabs for streaming text-to-speech
 
@@ -5231,6 +5241,20 @@ model owner and model name in the string.
 
 - See the full range of TTS controls by viewing `ElevenLabsTTSRequestBody.swift`.
 - See https://api.elevenlabs.io/v1/voices for the IDs that you can pass to `voiceID`.
+- To get timing information of the spoken text, use `elevenLabsService.streamingTTSWithTimestampsRequest`:
+
+```swift
+let stream = try await elevenLabsService.streamingTTSWithTimestampsRequest(
+    voiceID: "EXAVITQu4vr4xnSDxMaL",
+    body: body,
+    secondsToWait: 120
+)
+
+for try await chunk in stream {
+    // Timing information is available as `chunk.alignment` and `chunk.normalizedAlignment`
+    // Audio to pass to the AVAudioPlayer is available as `chunk.audioData`
+}
+```
 
 ### How to use ElevenLabs for speech-to-speech
 
