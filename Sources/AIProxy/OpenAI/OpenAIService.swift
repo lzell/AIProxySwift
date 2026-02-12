@@ -234,12 +234,9 @@ import Foundation
 
     /// Starts a realtime session.
     ///
-    /// To protect this connection through AIProxy's backend, your project must have websocket support enabled.
-    /// If you would like to be added to the private beta for websocket support, please reach out.
-    ///
     /// - Parameters:
-    ///   - model: The model to use. See the available model names here:
-    ///            https://platform.openai.com/docs/models#gpt-4o-realtime
+    ///   - model: The model to use. See the available model names in the `realtime` section here:
+    ///            https://developers.openai.com/api/docs/models
     ///   - configuration: The session configuration object, see this reference:
     ///                    https://platform.openai.com/docs/api-reference/realtime-client-events/session/update#realtime-client-events/session/update-session
     ///   - logLevel: The threshold level that this library begins emitting log messages.
