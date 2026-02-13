@@ -58,8 +58,11 @@ nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
     private var audioUnit: AudioUnit?
     private let microphonePCMSampleVendorCommon = MicrophonePCMSampleVendorCommon()
     private var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
+    private var audioEngine: AVAudioEngine?
 
-    public init() {}
+    public init(audioEngine: AVAudioEngine? = nil) {
+        self.audioEngine = audioEngine
+    }
 
     deinit {
         logIf(.debug)?.debug("MicrophonePCMSampleVendor is being freed")
@@ -101,17 +104,17 @@ nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
             )
         }
 
-        var zero: UInt32 = 0
+        var one_output: UInt32 = 1
         err = AudioUnitSetProperty(audioUnit,
                                    kAudioOutputUnitProperty_EnableIO,
                                    kAudioUnitScope_Output,
                                    0,
-                                   &zero, // <-- This is not a mistake! If you leave this on, iOS spams the logs with: "from AU (address): auou/vpio/appl, render err: -1"
-                                   UInt32(MemoryLayout.size(ofValue: one)))
+                                   &one_output,
+                                   UInt32(MemoryLayout.size(ofValue: one_output)))
 
         guard err == noErr else {
             throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
-                "Could not disable the output scope of the speaker bus"
+                "Could not enable the output scope of the speaker bus"
             )
         }
 
@@ -251,6 +254,49 @@ nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
             )
         }
 
+        // If we have an AVAudioEngine in manual rendering mode, set up the VPIO output bus
+        // to pull rendered audio. This gives the VPIO visibility into playback for AEC.
+        if audioEngine != nil {
+            var outputFormat = AudioStreamBasicDescription(
+                mSampleRate: kVoiceProcessingInputSampleRate,  // 44100
+                mFormatID: kAudioFormatLinearPCM,
+                mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked,
+                mBytesPerPacket: 4,
+                mFramesPerPacket: 1,
+                mBytesPerFrame: 4,
+                mChannelsPerFrame: 1,
+                mBitsPerChannel: 32,
+                mReserved: 0
+            )
+            err = AudioUnitSetProperty(audioUnit,
+                                       kAudioUnitProperty_StreamFormat,
+                                       kAudioUnitScope_Input,
+                                       0,  // Bus 0 (speaker)
+                                       &outputFormat,
+                                       UInt32(MemoryLayout<AudioStreamBasicDescription>.size))
+            guard err == noErr else {
+                throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
+                    "Could not set stream format on the input scope of the speaker bus"
+                )
+            }
+
+            var outputCallbackStruct = AURenderCallbackStruct(
+                inputProc: audioOutputRenderCallback,
+                inputProcRefCon: Unmanaged.passUnretained(self).toOpaque()
+            )
+            err = AudioUnitSetProperty(audioUnit,
+                                       kAudioUnitProperty_SetRenderCallback,
+                                       kAudioUnitScope_Input,
+                                       0,  // Bus 0
+                                       &outputCallbackStruct,
+                                       UInt32(MemoryLayout<AURenderCallbackStruct>.size))
+            guard err == noErr else {
+                throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
+                    "Could not set the output render callback on the voice processing audio unit"
+                )
+            }
+        }
+
         err = AudioUnitInitialize(audioUnit)
         guard err == noErr else {
             throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
@@ -336,6 +382,58 @@ nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
             }
         }
     }
+
+    /// Called from the VPIO output render callback on the real-time audio thread.
+    /// Pulls rendered audio from the AVAudioEngine's manual rendering block and writes it
+    /// into the VPIO's output buffer so the VPIO can use it as the AEC reference signal.
+    fileprivate func didReceiveOutputRenderCallback(
+        _ ioActionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>,
+        _ inTimeStamp: UnsafePointer<AudioTimeStamp>,
+        _ inBusNumber: UInt32,
+        _ inNumberFrames: UInt32,
+        _ ioData: UnsafeMutablePointer<AudioBufferList>?
+    ) {
+        guard let ioData = ioData, let audioEngine = audioEngine else {
+            // No engine — render silence
+            if let ioData = ioData {
+                let buf = UnsafeMutableAudioBufferListPointer(ioData)
+                for i in 0..<buf.count {
+                    memset(buf[i].mData, 0, Int(buf[i].mDataByteSize))
+                }
+            }
+            return
+        }
+        var error: OSStatus = noErr
+        let status = audioEngine.manualRenderingBlock(inNumberFrames, ioData, &error)
+        if status != .success {
+            // On error or insufficient data, fill with silence
+            let buf = UnsafeMutableAudioBufferListPointer(ioData)
+            for i in 0..<buf.count {
+                memset(buf[i].mData, 0, Int(buf[i].mDataByteSize))
+            }
+        }
+    }
+}
+
+// This @AIProxyActor annotation is a lie.
+@AIProxyActor private let audioOutputRenderCallback: AURenderCallback = {
+    inRefCon,
+    ioActionFlags,
+    inTimeStamp,
+    inBusNumber,
+    inNumberFrames,
+    ioData in
+    let vendor = Unmanaged<MicrophonePCMSampleVendorAT>
+        .fromOpaque(inRefCon)
+        .takeUnretainedValue()
+    vendor.didReceiveOutputRenderCallback(
+        ioActionFlags,
+        inTimeStamp,
+        inBusNumber,
+        inNumberFrames,
+        ioData
+    )
+    return noErr
 }
 
 // This @AIProxyActor annotation is a lie.

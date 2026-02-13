@@ -18,16 +18,16 @@ import AVFoundation
 /// We use either AVAudioEngine or AudioToolbox for mic data, depending on the platform and whether headphones are attached.
 /// The following arrangement provides for the best user experience:
 ///
-///     +----------+---------------+------------------+
-///     | Platform | Headphones    | Audio API        |
-///     +----------+---------------+------------------+
-///     | macOS    | Yes           | AudioEngine      |
-///     | macOS    | No            | AudioToolbox     |
-///     | iOS      | Yes           | AudioEngine      |
-///     | iOS      | No            | AudioToolbox     |
-///     | watchOS  | Yes           | AudioEngine      |
-///     | watchOS  | No            | AudioEngine      |
-///     +----------+---------------+------------------+
+///     +----------+---------------+--------------------------------------+
+///     | Platform | Headphones    | Audio API                            |
+///     +----------+---------------+--------------------------------------+
+///     | macOS    | Yes           | AudioEngine                          |
+///     | macOS    | No            | AudioToolbox                         |
+///     | iOS      | Yes           | AudioEngine                          |
+///     | iOS      | No            | AudioToolbox + manual rendering AEC  |
+///     | watchOS  | Yes           | AudioEngine                          |
+///     | watchOS  | No            | AudioEngine                          |
+///     +----------+---------------+--------------------------------------+
 ///
 @AIProxyActor public final class AudioController {
     public enum Mode {
@@ -61,11 +61,29 @@ import AVFoundation
 
         self.audioEngine = AVAudioEngine()
 
+        #if os(iOS)
+        let needsManualRendering = modes.contains(.record) && modes.contains(.playback)
+                                   && !AIProxyUtils.headphonesConnected
+        if needsManualRendering {
+            let renderFormat = AVAudioFormat(
+                commonFormat: .pcmFormatFloat32,
+                sampleRate: 44100,
+                channels: 1,
+                interleaved: true
+            )!
+            try audioEngine.enableManualRenderingMode(
+                .realtime,
+                format: renderFormat,
+                maximumFrameCount: 4096
+            )
+        }
+        #endif
+
         if modes.contains(.record) {
             #if os(macOS) || os(iOS)
             self.microphonePCMSampleVendor = AIProxyUtils.headphonesConnected
                                                ? try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
-                                               : MicrophonePCMSampleVendorAT()
+                                               : MicrophonePCMSampleVendorAT(audioEngine: self.audioEngine)
             #else
             self.microphonePCMSampleVendor = try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
             #endif
