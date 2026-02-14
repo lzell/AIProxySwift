@@ -43,6 +43,13 @@ import AVFoundation
     public init(modes: [Mode]) async throws {
         self.modes = modes
         #if os(iOS)
+        let needsManualRendering = modes.contains(.record) && modes.contains(.playback)
+                                   && !AIProxyUtils.headphonesConnected
+        #else
+        let needsManualRendering = false
+        #endif
+
+        #if os(iOS)
         // This is not respected if `setVoiceProcessingEnabled(true)` is used :/
         // Instead, I've added my own accumulator.
         // try? AVAudioSession.sharedInstance().setPreferredIOBufferDuration(0.1)
@@ -62,8 +69,6 @@ import AVFoundation
         self.audioEngine = AVAudioEngine()
 
         #if os(iOS)
-        let needsManualRendering = modes.contains(.record) && modes.contains(.playback)
-                                   && !AIProxyUtils.headphonesConnected
         if needsManualRendering {
             let renderFormat = AVAudioFormat(
                 commonFormat: .pcmFormatFloat32,
@@ -99,9 +104,17 @@ import AVFoundation
         // Nesting `start` in a Task is necessary on watchOS.
         // There is some sort of race, and letting the runloop tick seems to "fix" it.
         // If I call `prepare` and `start` in serial succession, then there is no playback on watchOS (sometimes).
+        #if os(iOS)
+        try self.audioEngine.start()
+        #elseif os(watchOS)
         Task {
             try self.audioEngine.start()
         }
+        #else
+        Task {
+            try self.audioEngine.start()
+        }
+        #endif
     }
 
     deinit {
