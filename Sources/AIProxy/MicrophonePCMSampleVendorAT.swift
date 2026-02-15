@@ -566,7 +566,11 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
     #endif
 }
 
-// This @AIProxyActor annotation is a lie.
+// NOTE:
+// This callback is invoked by Core Audio on a real-time I/O thread via C APIs.
+// It is not scheduled onto AIProxyActor at runtime, even though the symbol is
+// annotated with @AIProxyActor for Swift type-checking ergonomics.
+// Do not assume actor isolation/synchronization inside this callback.
 @AIProxyActor private let audioOutputRenderCallback: AURenderCallback = {
     inRefCon,
     ioActionFlags,
@@ -587,7 +591,11 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
     return noErr
 }
 
-// This @AIProxyActor annotation is a lie.
+// NOTE:
+// This callback is invoked by Core Audio on a real-time I/O thread via C APIs.
+// It is not scheduled onto AIProxyActor at runtime, even though the symbol is
+// annotated with @AIProxyActor for Swift type-checking ergonomics.
+// Do not assume actor isolation/synchronization inside this callback.
 @AIProxyActor private let audioRenderCallback: AURenderCallback = {
     inRefCon,
     ioActionFlags,
