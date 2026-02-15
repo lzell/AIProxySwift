@@ -115,7 +115,7 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
             )
         }
 
-        #if os(iOS)
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
         let shouldEnableSpeakerBusForAEC = audioEngine?.isInManualRenderingMode ?? false
         #else
         let shouldEnableSpeakerBusForAEC = true
@@ -255,7 +255,7 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
             )
         }
 
-        #if os(iOS)
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
         // Make voice processing explicit so route changes do not accidentally bypass AEC.
         var disableBypass: UInt32 = 0
         err = AudioUnitSetProperty(
@@ -395,7 +395,7 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
             return
         }
 
-        #if os(iOS)
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
         if self.shouldSuppressLikelyEchoInput(bufferList: bufferList, frameCount: inNumberFrames) {
             return
         }
@@ -448,17 +448,17 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
             for i in 0..<buf.count {
                 memset(buf[i].mData, 0, Int(buf[i].mDataByteSize))
             }
-            #if os(iOS)
+            #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
             self.noteRenderedOutput(ioData, frameCount: inNumberFrames)
             #endif
             return
         }
-        #if os(iOS)
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
         self.noteRenderedOutput(ioData, frameCount: inNumberFrames)
         #endif
     }
 
-    #if os(iOS)
+    #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
     private func noteRenderedOutput(
         _ ioData: UnsafeMutablePointer<AudioBufferList>,
         frameCount: UInt32
