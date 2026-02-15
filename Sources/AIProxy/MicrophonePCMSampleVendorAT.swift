@@ -12,6 +12,13 @@ import AudioToolbox
 import Foundation
 
 nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
+nonisolated private let kEchoGuardOutputRMSFloor: Float = 0.0015
+nonisolated private let kEchoGuardOutputTailSeconds: TimeInterval = 0.12
+nonisolated private let kEchoGuardRMSSmoothingFactor: Float = 0.2
+nonisolated private let kEchoGuardBargeInThresholdFloor: Float = 0.018
+nonisolated private let kEchoGuardBargeInRelativeMultiplier: Float = 2.3
+nonisolated private let kEchoGuardFramesForBargeIn = 2
+nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
 
 /// This is an AudioToolbox-based implementation that vends PCM16 microphone samples at a
 /// sample rate that OpenAI's realtime models expect.
@@ -58,8 +65,15 @@ nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
     private var audioUnit: AudioUnit?
     private let microphonePCMSampleVendorCommon = MicrophonePCMSampleVendorCommon()
     private var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
+    private var audioEngine: AVAudioEngine?
+    private var outputLikelyActiveUntilUptime: TimeInterval = 0
+    private var outputSmoothedRMS: Float = 0
+    private var micLoudFrameStreak = 0
+    private var bargeInOpenUntilUptime: TimeInterval = 0
 
-    public init() {}
+    public init(audioEngine: AVAudioEngine? = nil) {
+        self.audioEngine = audioEngine
+    }
 
     deinit {
         logIf(.debug)?.debug("MicrophonePCMSampleVendor is being freed")
@@ -101,17 +115,22 @@ nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
             )
         }
 
-        var zero: UInt32 = 0
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
+        let shouldEnableSpeakerBusForAEC = audioEngine?.isInManualRenderingMode ?? false
+        #else
+        let shouldEnableSpeakerBusForAEC = true
+        #endif
+        var one_output: UInt32 = shouldEnableSpeakerBusForAEC ? 1 : 0
         err = AudioUnitSetProperty(audioUnit,
                                    kAudioOutputUnitProperty_EnableIO,
                                    kAudioUnitScope_Output,
                                    0,
-                                   &zero, // <-- This is not a mistake! If you leave this on, iOS spams the logs with: "from AU (address): auou/vpio/appl, render err: -1"
-                                   UInt32(MemoryLayout.size(ofValue: one)))
+                                   &one_output,
+                                   UInt32(MemoryLayout.size(ofValue: one_output)))
 
         guard err == noErr else {
             throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
-                "Could not disable the output scope of the speaker bus"
+                "Could not configure the output scope of the speaker bus"
             )
         }
 
@@ -236,19 +255,77 @@ nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
             )
         }
 
-        // Do not use auto gain control. Remove in a future commit.
-        // var enable: UInt32 = 1
-        // err = AudioUnitSetProperty(audioUnit,
-        //                      kAUVoiceIOProperty_VoiceProcessingEnableAGC,
-        //                      kAudioUnitScope_Output,
-        //                      1,
-        //                      &enable,
-        //                      UInt32(MemoryLayout.size(ofValue: enable)))
-        //
-        guard err == noErr else {
-            throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
-                "Could not configure auto gain control"
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
+        // Make voice processing explicit so route changes do not accidentally bypass AEC.
+        var disableBypass: UInt32 = 0
+        err = AudioUnitSetProperty(
+            audioUnit,
+            kAUVoiceIOProperty_BypassVoiceProcessing,
+            kAudioUnitScope_Global,
+            0,
+            &disableBypass,
+            UInt32(MemoryLayout<UInt32>.size)
+        )
+        if err != noErr {
+            logIf(.warning)?.warning("Could not force-enable VPIO voice processing: \(err)")
+        }
+
+        // Disable AGC to avoid amplifying far-end leakage into the uplink.
+        var disableAGC: UInt32 = 0
+        err = AudioUnitSetProperty(
+            audioUnit,
+            kAUVoiceIOProperty_VoiceProcessingEnableAGC,
+            kAudioUnitScope_Global,
+            1,
+            &disableAGC,
+            UInt32(MemoryLayout<UInt32>.size)
+        )
+        if err != noErr {
+            logIf(.warning)?.warning("Could not disable VPIO AGC: \(err)")
+        }
+        #endif
+
+        // If we have an AVAudioEngine in manual rendering mode, set up the VPIO output bus
+        // to pull rendered audio. This gives the VPIO visibility into playback for AEC.
+        if shouldEnableSpeakerBusForAEC, audioEngine != nil {
+            var outputFormat = AudioStreamBasicDescription(
+                mSampleRate: kVoiceProcessingInputSampleRate,  // 44100
+                mFormatID: kAudioFormatLinearPCM,
+                mFormatFlags: kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked,
+                mBytesPerPacket: 4,
+                mFramesPerPacket: 1,
+                mBytesPerFrame: 4,
+                mChannelsPerFrame: 1,
+                mBitsPerChannel: 32,
+                mReserved: 0
             )
+            err = AudioUnitSetProperty(audioUnit,
+                                       kAudioUnitProperty_StreamFormat,
+                                       kAudioUnitScope_Input,
+                                       0,  // Bus 0 (speaker)
+                                       &outputFormat,
+                                       UInt32(MemoryLayout<AudioStreamBasicDescription>.size))
+            guard err == noErr else {
+                throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
+                    "Could not set stream format on the input scope of the speaker bus"
+                )
+            }
+
+            var outputCallbackStruct = AURenderCallbackStruct(
+                inputProc: audioOutputRenderCallback,
+                inputProcRefCon: Unmanaged.passUnretained(self).toOpaque()
+            )
+            err = AudioUnitSetProperty(audioUnit,
+                                       kAudioUnitProperty_SetRenderCallback,
+                                       kAudioUnitScope_Input,
+                                       0,  // Bus 0
+                                       &outputCallbackStruct,
+                                       UInt32(MemoryLayout<AURenderCallbackStruct>.size))
+            guard err == noErr else {
+                throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
+                    "Could not set the output render callback on the voice processing audio unit"
+                )
+            }
         }
 
         err = AudioUnitInitialize(audioUnit)
@@ -318,6 +395,12 @@ nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
             return
         }
 
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
+        if self.shouldSuppressLikelyEchoInput(bufferList: bufferList, frameCount: inNumberFrames) {
+            return
+        }
+        #endif
+
         guard let audioFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
             sampleRate: kVoiceProcessingInputSampleRate,
@@ -336,9 +419,183 @@ nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
             }
         }
     }
+
+    /// Called from the VPIO output render callback on the real-time audio thread.
+    /// Pulls rendered audio from the AVAudioEngine's manual rendering block and writes it
+    /// into the VPIO's output buffer so the VPIO can use it as the AEC reference signal.
+    fileprivate func didReceiveOutputRenderCallback(
+        _ ioActionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>,
+        _ inTimeStamp: UnsafePointer<AudioTimeStamp>,
+        _ inBusNumber: UInt32,
+        _ inNumberFrames: UInt32,
+        _ ioData: UnsafeMutablePointer<AudioBufferList>?
+    ) {
+        guard let ioData = ioData, let audioEngine = audioEngine else {
+            // No engine — render silence
+            if let ioData = ioData {
+                let buf = UnsafeMutableAudioBufferListPointer(ioData)
+                for i in 0..<buf.count {
+                    memset(buf[i].mData, 0, Int(buf[i].mDataByteSize))
+                }
+            }
+            return
+        }
+        var error: OSStatus = noErr
+        let status = audioEngine.manualRenderingBlock(inNumberFrames, ioData, &error)
+        if status != .success {
+            // On error or insufficient data, fill with silence
+            let buf = UnsafeMutableAudioBufferListPointer(ioData)
+            for i in 0..<buf.count {
+                memset(buf[i].mData, 0, Int(buf[i].mDataByteSize))
+            }
+            #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
+            self.noteRenderedOutput(ioData, frameCount: inNumberFrames)
+            #endif
+            return
+        }
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
+        self.noteRenderedOutput(ioData, frameCount: inNumberFrames)
+        #endif
+    }
+
+    #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
+    private func noteRenderedOutput(
+        _ ioData: UnsafeMutablePointer<AudioBufferList>,
+        frameCount: UInt32
+    ) {
+        let outputRMS = self.rms(ofFloat32BufferList: ioData)
+        let now = ProcessInfo.processInfo.systemUptime
+
+        if outputRMS > kEchoGuardOutputRMSFloor {
+            let bufferDuration = Double(frameCount) / kVoiceProcessingInputSampleRate
+            self.outputLikelyActiveUntilUptime = now + bufferDuration + kEchoGuardOutputTailSeconds
+            if self.outputSmoothedRMS == 0 {
+                self.outputSmoothedRMS = outputRMS
+            } else {
+                self.outputSmoothedRMS = (self.outputSmoothedRMS * (1 - kEchoGuardRMSSmoothingFactor))
+                                         + (outputRMS * kEchoGuardRMSSmoothingFactor)
+            }
+            return
+        }
+
+        if now > self.outputLikelyActiveUntilUptime {
+            self.outputSmoothedRMS = 0
+            self.micLoudFrameStreak = 0
+        }
+    }
+
+    private func shouldSuppressLikelyEchoInput(
+        bufferList: AudioBufferList,
+        frameCount: UInt32
+    ) -> Bool {
+        let now = ProcessInfo.processInfo.systemUptime
+        if now <= self.bargeInOpenUntilUptime {
+            return false
+        }
+
+        guard now <= self.outputLikelyActiveUntilUptime else {
+            self.micLoudFrameStreak = 0
+            return false
+        }
+
+        let micRMS = self.rms(ofPCM16BufferList: bufferList, frameCount: frameCount)
+        let bargeInThreshold = max(
+            kEchoGuardBargeInThresholdFloor,
+            self.outputSmoothedRMS * kEchoGuardBargeInRelativeMultiplier
+        )
+
+        if micRMS >= bargeInThreshold {
+            self.micLoudFrameStreak += 1
+            if self.micLoudFrameStreak >= kEchoGuardFramesForBargeIn {
+                self.micLoudFrameStreak = 0
+                self.bargeInOpenUntilUptime = now + kEchoGuardBargeInHoldSeconds
+                return false
+            }
+        } else {
+            self.micLoudFrameStreak = 0
+        }
+
+        return true
+    }
+
+    private func rms(
+        ofPCM16BufferList bufferList: AudioBufferList,
+        frameCount: UInt32
+    ) -> Float {
+        guard frameCount > 0,
+              let data = bufferList.mBuffers.mData else {
+            return 0
+        }
+
+        let sampleCount = Int(frameCount)
+        let samples = data.bindMemory(to: Int16.self, capacity: sampleCount)
+        let scale = Float(Int16.max)
+        var sumSquares: Float = 0
+        for i in 0..<sampleCount {
+            let normalized = Float(samples[i]) / scale
+            sumSquares += normalized * normalized
+        }
+        return sqrt(sumSquares / Float(sampleCount))
+    }
+
+    private func rms(ofFloat32BufferList ioData: UnsafeMutablePointer<AudioBufferList>) -> Float {
+        let buffers = UnsafeMutableAudioBufferListPointer(ioData)
+        guard !buffers.isEmpty else {
+            return 0
+        }
+
+        var sampleCount = 0
+        var sumSquares: Float = 0
+        for buffer in buffers {
+            guard let mData = buffer.mData else { continue }
+            let count = Int(buffer.mDataByteSize) / MemoryLayout<Float>.size
+            if count == 0 { continue }
+            let samples = mData.bindMemory(to: Float.self, capacity: count)
+            sampleCount += count
+            for i in 0..<count {
+                let sample = samples[i]
+                sumSquares += sample * sample
+            }
+        }
+
+        guard sampleCount > 0 else {
+            return 0
+        }
+        return sqrt(sumSquares / Float(sampleCount))
+    }
+    #endif
 }
 
-// This @AIProxyActor annotation is a lie.
+// NOTE:
+// This callback is invoked by Core Audio on a real-time I/O thread via C APIs.
+// It is not scheduled onto AIProxyActor at runtime, even though the symbol is
+// annotated with @AIProxyActor for Swift type-checking ergonomics.
+// Do not assume actor isolation/synchronization inside this callback.
+@AIProxyActor private let audioOutputRenderCallback: AURenderCallback = {
+    inRefCon,
+    ioActionFlags,
+    inTimeStamp,
+    inBusNumber,
+    inNumberFrames,
+    ioData in
+    let vendor = Unmanaged<MicrophonePCMSampleVendorAT>
+        .fromOpaque(inRefCon)
+        .takeUnretainedValue()
+    vendor.didReceiveOutputRenderCallback(
+        ioActionFlags,
+        inTimeStamp,
+        inBusNumber,
+        inNumberFrames,
+        ioData
+    )
+    return noErr
+}
+
+// NOTE:
+// This callback is invoked by Core Audio on a real-time I/O thread via C APIs.
+// It is not scheduled onto AIProxyActor at runtime, even though the symbol is
+// annotated with @AIProxyActor for Swift type-checking ergonomics.
+// Do not assume actor isolation/synchronization inside this callback.
 @AIProxyActor private let audioRenderCallback: AURenderCallback = {
     inRefCon,
     ioActionFlags,
