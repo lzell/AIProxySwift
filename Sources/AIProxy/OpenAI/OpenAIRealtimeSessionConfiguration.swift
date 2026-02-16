@@ -61,6 +61,9 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
     /// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
     public let inputAudioFormat: AudioFormat?
 
+    /// Configuration for input audio noise reduction. Set to nil to turn off.
+    public let inputAudioNoiseReduction: InputAudioNoiseReduction?
+
     /// Configuration for input audio transcription. Set to nil to turn off.
     public let inputAudioTranscription: InputAudioTranscription?
 
@@ -112,6 +115,7 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
 
     private enum CodingKeys: String, CodingKey {
         case inputAudioFormat = "input_audio_format"
+        case inputAudioNoiseReduction = "input_audio_noise_reduction"
         case inputAudioTranscription = "input_audio_transcription"
         case instructions
         case maxResponseOutputTokens = "max_response_output_tokens"
@@ -127,6 +131,7 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
 
     public init(
         inputAudioFormat: OpenAIRealtimeSessionConfiguration.AudioFormat? = nil,
+        inputAudioNoiseReduction: OpenAIRealtimeSessionConfiguration.InputAudioNoiseReduction? = nil,
         inputAudioTranscription: OpenAIRealtimeSessionConfiguration.InputAudioTranscription? = nil,
         instructions: String? = nil,
         maxResponseOutputTokens: OpenAIRealtimeSessionConfiguration.MaxResponseOutputTokens? = nil,
@@ -140,6 +145,7 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
         voice: String? = nil
     ) {
         self.inputAudioFormat = inputAudioFormat
+        self.inputAudioNoiseReduction = inputAudioNoiseReduction
         self.inputAudioTranscription = inputAudioTranscription
         self.instructions = instructions
         self.maxResponseOutputTokens = maxResponseOutputTokens
@@ -151,6 +157,22 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
         self.toolChoice = toolChoice
         self.turnDetection = turnDetection
         self.voice = voice
+    }
+}
+
+// MARK: -
+extension OpenAIRealtimeSessionConfiguration {
+    nonisolated public struct InputAudioNoiseReduction: Encodable, Sendable {
+        nonisolated public enum NoiseReductionType: String, Encodable, Sendable {
+            case nearField = "near_field"
+            case farField = "far_field"
+        }
+
+        public let type: NoiseReductionType
+
+        public init(type: NoiseReductionType) {
+            self.type = type
+        }
     }
 }
 
