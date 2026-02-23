@@ -195,7 +195,7 @@ public enum AIProxy {
 
     /// Returns a URLSession for communication with AIProxy.
     nonisolated public static func session() -> URLSession {
-        return AIProxyURLSession.create()
+        return AIProxyURLSession.urlSession
     }
 
     /// AIProxy's OpenAI service
