@@ -13,7 +13,7 @@ final class URLSessionTests: XCTestCase {
         
         try await withThrowingTaskGroup(of: Void.self) { group in
             for i in 1...1000 {
-                if i >= 12 { try await group.next() } // Limit number of parallel requests
+                if i > 12 { try await group.next() } // Limit number of parallel requests
                 
                 group.addTask {
                     let requestBody = OpenAIModerationRequestBody(
