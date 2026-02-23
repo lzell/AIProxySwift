@@ -8,7 +8,7 @@ import UIKit
 public enum AIProxy {
 
     /// The current sdk version
-    nonisolated public static let sdkVersion = "0.145.0"
+    nonisolated public static let sdkVersion = "0.145.1"
 
     /// Configures the AIProxy SDK. Call this during app launch by adding an `init` to your SwiftUI MyApp.swift file, e.g.
     ///
@@ -195,7 +195,7 @@ public enum AIProxy {
 
     /// Returns a URLSession for communication with AIProxy.
     nonisolated public static func session() -> URLSession {
-        return AIProxyURLSession.create()
+        return AIProxyURLSession.urlSession
     }
 
     /// AIProxy's OpenAI service
