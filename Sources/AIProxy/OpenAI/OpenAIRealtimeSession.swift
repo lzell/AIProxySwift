@@ -147,22 +147,33 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
             }
         case "response.created":
             self.continuation?.yield(
-                .responseCreated(responseId: json["response_id"] as? String ?? (jsonObject(at: "response", in: json)?["id"] as? String))
+                .responseCreated(
+                    responseId: json["response_id"] as? String ?? (jsonObject(at: "response", in: json)?["id"] as? String),
+                    eventId: json["event_id"] as? String
+                )
             )
         case "input_audio_buffer.speech_started":
-            self.continuation?.yield(.inputAudioBufferSpeechStarted(itemId: json["item_id"] as? String))
+            self.continuation?.yield(
+                .inputAudioBufferSpeechStarted(
+                    itemId: json["item_id"] as? String,
+                    audioStartMs: intValue(json["audio_start_ms"]),
+                    eventId: json["event_id"] as? String
+                )
+            )
         case "input_audio_buffer.speech_stopped":
             self.continuation?.yield(
                 .inputAudioBufferSpeechStopped(
                     itemId: json["item_id"] as? String,
-                    audioEndMs: json["audio_end_ms"] as? Int
+                    audioEndMs: intValue(json["audio_end_ms"]),
+                    eventId: json["event_id"] as? String
                 )
             )
         case "input_audio_buffer.committed":
             self.continuation?.yield(
                 .inputAudioBufferCommitted(
                     itemId: json["item_id"] as? String,
-                    previousItemId: json["previous_item_id"] as? String
+                    previousItemId: json["previous_item_id"] as? String,
+                    eventId: json["event_id"] as? String
                 )
             )
         case "conversation.item.created":
@@ -171,7 +182,8 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
                 .conversationItemCreated(
                     itemId: item?["id"] as? String ?? json["item_id"] as? String,
                     previousItemId: json["previous_item_id"] as? String,
-                    role: item?["role"] as? String
+                    role: item?["role"] as? String,
+                    eventId: json["event_id"] as? String
                 )
             )
         case "response.function_call_arguments.done":
@@ -186,7 +198,8 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
                 .responseOutputItemAdded(
                     responseId: json["response_id"] as? String,
                     itemId: item?["id"] as? String ?? json["item_id"] as? String,
-                    outputIndex: json["output_index"] as? Int
+                    outputIndex: intValue(json["output_index"]),
+                    eventId: json["event_id"] as? String
                 )
             )
         case "response.output_item.done":
@@ -195,17 +208,21 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
                 .responseOutputItemDone(
                     responseId: json["response_id"] as? String,
                     itemId: item?["id"] as? String ?? json["item_id"] as? String,
-                    outputIndex: json["output_index"] as? Int,
-                    transcript: transcriptFromItem(item)
+                    outputIndex: intValue(json["output_index"]),
+                    transcript: transcriptFromItem(item),
+                    eventId: json["event_id"] as? String
                 )
             )
         case "response.content_part.added":
+            let part = jsonObject(at: "part", in: json)
             self.continuation?.yield(
                 .responseContentPartAdded(
                     responseId: json["response_id"] as? String,
                     itemId: json["item_id"] as? String,
-                    outputIndex: json["output_index"] as? Int,
-                    contentIndex: json["content_index"] as? Int
+                    outputIndex: intValue(json["output_index"]),
+                    contentIndex: intValue(json["content_index"]),
+                    part: contentPart(from: part),
+                    eventId: json["event_id"] as? String
                 )
             )
         case "response.content_part.done":
@@ -214,18 +231,21 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
                 .responseContentPartDone(
                     responseId: json["response_id"] as? String,
                     itemId: json["item_id"] as? String,
-                    outputIndex: json["output_index"] as? Int,
-                    contentIndex: json["content_index"] as? Int,
-                    transcript: part?["transcript"] as? String
+                    outputIndex: intValue(json["output_index"]),
+                    contentIndex: intValue(json["content_index"]),
+                    transcript: part?["transcript"] as? String,
+                    part: contentPart(from: part),
+                    eventId: json["event_id"] as? String
                 )
             )
-        case "response.audio.done":
+        case "response.audio.done", "response.output_audio.done":
             self.continuation?.yield(
                 .responseAudioDone(
                     responseId: json["response_id"] as? String,
                     itemId: json["item_id"] as? String,
-                    outputIndex: json["output_index"] as? Int,
-                    contentIndex: json["content_index"] as? Int
+                    outputIndex: intValue(json["output_index"]),
+                    contentIndex: intValue(json["content_index"]),
+                    eventId: json["event_id"] as? String
                 )
             )
         case "response.done":
@@ -233,31 +253,42 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
             self.continuation?.yield(
                 .responseDone(
                     responseId: response?["id"] as? String ?? json["response_id"] as? String,
-                    conversationId: response?["conversation_id"] as? String
+                    conversationId: response?["conversation_id"] as? String,
+                    status: response?["status"] as? String,
+                    eventId: json["event_id"] as? String
                 )
             )
         case "rate_limits.updated":
-            self.continuation?.yield(.rateLimitsUpdated)
+            self.continuation?.yield(
+                .rateLimitsUpdated(
+                    rateLimits: parseRateLimits(json["rate_limits"]),
+                    eventId: json["event_id"] as? String
+                )
+            )
         
         // New cases for handling transcription messages
-        case "response.audio_transcript.delta":
+        case "response.audio_transcript.delta", "response.output_audio_transcript.delta":
             if let delta = json["delta"] as? String {
                 self.continuation?.yield(
                     .responseTranscriptDelta(
                         delta,
                         responseId: json["response_id"] as? String,
-                        itemId: json["item_id"] as? String
+                        itemId: json["item_id"] as? String,
+                        contentIndex: intValue(json["content_index"]),
+                        eventId: json["event_id"] as? String
                     )
                 )
             }
             
-        case "response.audio_transcript.done":
+        case "response.audio_transcript.done", "response.output_audio_transcript.done":
             if let transcript = json["transcript"] as? String {
                 self.continuation?.yield(
                     .responseTranscriptDone(
                         transcript,
                         responseId: json["response_id"] as? String,
-                        itemId: json["item_id"] as? String
+                        itemId: json["item_id"] as? String,
+                        contentIndex: intValue(json["content_index"]),
+                        eventId: json["event_id"] as? String
                     )
                 )
             }
@@ -272,7 +303,9 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
                 self.continuation?.yield(
                     .inputAudioTranscriptionDelta(
                         delta,
-                        itemId: json["item_id"] as? String ?? (jsonObject(at: "item", in: json)?["id"] as? String)
+                        itemId: json["item_id"] as? String ?? (jsonObject(at: "item", in: json)?["id"] as? String),
+                        contentIndex: intValue(json["content_index"]),
+                        eventId: json["event_id"] as? String
                     )
                 )
             }
@@ -282,7 +315,9 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
                 self.continuation?.yield(
                     .inputAudioTranscriptionCompleted(
                         transcript,
-                        itemId: json["item_id"] as? String ?? (jsonObject(at: "item", in: json)?["id"] as? String)
+                        itemId: json["item_id"] as? String ?? (jsonObject(at: "item", in: json)?["id"] as? String),
+                        contentIndex: intValue(json["content_index"]),
+                        eventId: json["event_id"] as? String
                     )
                 )
             }
@@ -300,6 +335,54 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
 
     private func jsonObject(at key: String, in json: [String: Any]) -> [String: Any]? {
         return json[key] as? [String: Any]
+    }
+
+    private func intValue(_ value: Any?) -> Int? {
+        if let int = value as? Int {
+            return int
+        }
+        if let number = value as? NSNumber {
+            return number.intValue
+        }
+        if let string = value as? String, let int = Int(string) {
+            return int
+        }
+        return nil
+    }
+
+    private func doubleValue(_ value: Any?) -> Double? {
+        if let double = value as? Double {
+            return double
+        }
+        if let number = value as? NSNumber {
+            return number.doubleValue
+        }
+        if let string = value as? String, let double = Double(string) {
+            return double
+        }
+        return nil
+    }
+
+    private func contentPart(from json: [String: Any]?) -> OpenAIRealtimeContentPart? {
+        guard let json else { return nil }
+        return OpenAIRealtimeContentPart(
+            type: json["type"] as? String,
+            audio: json["audio"] as? String,
+            text: json["text"] as? String,
+            transcript: json["transcript"] as? String
+        )
+    }
+
+    private func parseRateLimits(_ value: Any?) -> [OpenAIRealtimeRateLimit] {
+        guard let array = value as? [[String: Any]] else { return [] }
+        return array.map { entry in
+            OpenAIRealtimeRateLimit(
+                name: entry["name"] as? String,
+                limit: intValue(entry["limit"]),
+                remaining: intValue(entry["remaining"]),
+                resetSeconds: doubleValue(entry["reset_seconds"])
+            )
+        }
     }
 
     private func transcriptFromItem(_ item: [String: Any]?) -> String? {
