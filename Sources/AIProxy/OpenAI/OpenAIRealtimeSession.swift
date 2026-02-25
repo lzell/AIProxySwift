@@ -10,11 +10,13 @@ import AVFoundation
 
 nonisolated private let kWebsocketDisconnectedErrorCode = 57
 nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
+nonisolated private let kWebsocketPingIntervalNanoseconds: UInt64 = 20_000_000_000
 
 @AIProxyActor open class OpenAIRealtimeSession {
     private var isTearingDown = false
     private let webSocketTask: URLSessionWebSocketTask
     private var continuation: AsyncStream<OpenAIRealtimeMessage>.Continuation?
+    private var pingKeepaliveTask: Task<Void, Never>?
     private let setupTime = Date()
     let sessionConfiguration: OpenAIRealtimeSessionConfiguration
 
@@ -29,6 +31,7 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
             await self.sendMessage(OpenAIRealtimeSessionUpdate(session: self.sessionConfiguration))
         }
         self.webSocketTask.resume()
+        self.startPingKeepaliveTask()
         self.receiveMessage()
     }
 
@@ -59,6 +62,8 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
 
     /// Close the websocket connection
     public func disconnect() {
+        self.pingKeepaliveTask?.cancel()
+        self.pingKeepaliveTask = nil
         self.isTearingDown = true
         self.continuation?.finish()
         self.continuation = nil
@@ -77,6 +82,30 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
                 Task {
                     await self.didReceiveWebSocketMessage(message)
                 }
+            }
+        }
+    }
+
+    private func startPingKeepaliveTask() {
+        self.pingKeepaliveTask?.cancel()
+        self.pingKeepaliveTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: kWebsocketPingIntervalNanoseconds)
+                guard let self, !Task.isCancelled, !self.isTearingDown else { return }
+                await self.sendPingKeepalive()
+            }
+        }
+    }
+
+    private func sendPingKeepalive() async {
+        await withCheckedContinuation { continuation in
+            self.webSocketTask.sendPing { error in
+                if let error {
+                    logIf(.warning)?.warning("WebSocket ping failed: \(error.localizedDescription)")
+                } else {
+                    logIf(.debug)?.debug("WebSocket ping keepalive sent")
+                }
+                continuation.resume()
             }
         }
     }
@@ -136,133 +165,165 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
         case "error":
             let errorBody = String(describing: json["error"] as? [String: Any])
             logIf(.error)?.error("Received error from OpenAI websocket: \(errorBody)")
-            self.continuation?.yield(.error(errorBody))
+            self.continuation?.yield(.error(.init(errorBody: errorBody)))
         case "session.created":
             self.continuation?.yield(.sessionCreated)
         case "session.updated":
             self.continuation?.yield(.sessionUpdated)
         case "response.audio.delta":
             if let base64Audio = json["delta"] as? String {
-                self.continuation?.yield(.responseAudioDelta(base64Audio))
+                self.continuation?.yield(.responseAudioDelta(.init(base64Audio: base64Audio)))
             }
         case "response.created":
             self.continuation?.yield(
                 .responseCreated(
-                    responseId: json["response_id"] as? String ?? (jsonObject(at: "response", in: json)?["id"] as? String),
-                    eventId: json["event_id"] as? String
+                    .init(
+                        responseID: json["response_id"] as? String ?? (jsonObject(at: "response", in: json)?["id"] as? String),
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         case "input_audio_buffer.speech_started":
             self.continuation?.yield(
                 .inputAudioBufferSpeechStarted(
-                    itemId: json["item_id"] as? String,
-                    audioStartMs: intValue(json["audio_start_ms"]),
-                    eventId: json["event_id"] as? String
+                    .init(
+                        itemID: json["item_id"] as? String,
+                        audioStartMS: intValue(json["audio_start_ms"]),
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         case "input_audio_buffer.speech_stopped":
             self.continuation?.yield(
                 .inputAudioBufferSpeechStopped(
-                    itemId: json["item_id"] as? String,
-                    audioEndMs: intValue(json["audio_end_ms"]),
-                    eventId: json["event_id"] as? String
+                    .init(
+                        itemID: json["item_id"] as? String,
+                        audioEndMS: intValue(json["audio_end_ms"]),
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         case "input_audio_buffer.committed":
             self.continuation?.yield(
                 .inputAudioBufferCommitted(
-                    itemId: json["item_id"] as? String,
-                    previousItemId: json["previous_item_id"] as? String,
-                    eventId: json["event_id"] as? String
+                    .init(
+                        itemID: json["item_id"] as? String,
+                        previousItemID: json["previous_item_id"] as? String,
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         case "conversation.item.created":
             let item = jsonObject(at: "item", in: json)
             self.continuation?.yield(
                 .conversationItemCreated(
-                    itemId: item?["id"] as? String ?? json["item_id"] as? String,
-                    previousItemId: json["previous_item_id"] as? String,
-                    role: item?["role"] as? String,
-                    eventId: json["event_id"] as? String
+                    .init(
+                        itemID: item?["id"] as? String ?? json["item_id"] as? String,
+                        previousItemID: json["previous_item_id"] as? String,
+                        role: item?["role"] as? String,
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         case "response.function_call_arguments.done":
             if let name = json["name"] as? String,
                let arguments = json["arguments"] as? String,
                let callId = json["call_id"] as? String {
-                self.continuation?.yield(.responseFunctionCallArgumentsDone(name, arguments, callId))
+                self.continuation?.yield(
+                    .responseFunctionCallArgumentsDone(
+                        .init(
+                            name: name,
+                            arguments: arguments,
+                            callID: callId
+                        )
+                    )
+                )
             }
         case "response.output_item.added":
             let item = jsonObject(at: "item", in: json)
             self.continuation?.yield(
                 .responseOutputItemAdded(
-                    responseId: json["response_id"] as? String,
-                    itemId: item?["id"] as? String ?? json["item_id"] as? String,
-                    outputIndex: intValue(json["output_index"]),
-                    eventId: json["event_id"] as? String
+                    .init(
+                        responseID: json["response_id"] as? String,
+                        itemID: item?["id"] as? String ?? json["item_id"] as? String,
+                        outputIndex: intValue(json["output_index"]),
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         case "response.output_item.done":
             let item = jsonObject(at: "item", in: json)
             self.continuation?.yield(
                 .responseOutputItemDone(
-                    responseId: json["response_id"] as? String,
-                    itemId: item?["id"] as? String ?? json["item_id"] as? String,
-                    outputIndex: intValue(json["output_index"]),
-                    transcript: transcriptFromItem(item),
-                    eventId: json["event_id"] as? String
+                    .init(
+                        responseID: json["response_id"] as? String,
+                        itemID: item?["id"] as? String ?? json["item_id"] as? String,
+                        outputIndex: intValue(json["output_index"]),
+                        transcript: transcriptFromItem(item),
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         case "response.content_part.added":
             let part = jsonObject(at: "part", in: json)
             self.continuation?.yield(
                 .responseContentPartAdded(
-                    responseId: json["response_id"] as? String,
-                    itemId: json["item_id"] as? String,
-                    outputIndex: intValue(json["output_index"]),
-                    contentIndex: intValue(json["content_index"]),
-                    part: contentPart(from: part),
-                    eventId: json["event_id"] as? String
+                    .init(
+                        responseID: json["response_id"] as? String,
+                        itemID: json["item_id"] as? String,
+                        outputIndex: intValue(json["output_index"]),
+                        contentIndex: intValue(json["content_index"]),
+                        part: contentPart(from: part),
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         case "response.content_part.done":
             let part = jsonObject(at: "part", in: json)
             self.continuation?.yield(
                 .responseContentPartDone(
-                    responseId: json["response_id"] as? String,
-                    itemId: json["item_id"] as? String,
-                    outputIndex: intValue(json["output_index"]),
-                    contentIndex: intValue(json["content_index"]),
-                    transcript: part?["transcript"] as? String,
-                    part: contentPart(from: part),
-                    eventId: json["event_id"] as? String
+                    .init(
+                        responseID: json["response_id"] as? String,
+                        itemID: json["item_id"] as? String,
+                        outputIndex: intValue(json["output_index"]),
+                        contentIndex: intValue(json["content_index"]),
+                        transcript: part?["transcript"] as? String,
+                        part: contentPart(from: part),
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         case "response.audio.done", "response.output_audio.done":
             self.continuation?.yield(
                 .responseAudioDone(
-                    responseId: json["response_id"] as? String,
-                    itemId: json["item_id"] as? String,
-                    outputIndex: intValue(json["output_index"]),
-                    contentIndex: intValue(json["content_index"]),
-                    eventId: json["event_id"] as? String
+                    .init(
+                        responseID: json["response_id"] as? String,
+                        itemID: json["item_id"] as? String,
+                        outputIndex: intValue(json["output_index"]),
+                        contentIndex: intValue(json["content_index"]),
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         case "response.done":
             let response = jsonObject(at: "response", in: json)
             self.continuation?.yield(
                 .responseDone(
-                    responseId: response?["id"] as? String ?? json["response_id"] as? String,
-                    conversationId: response?["conversation_id"] as? String,
-                    status: response?["status"] as? String,
-                    eventId: json["event_id"] as? String
+                    .init(
+                        responseID: response?["id"] as? String ?? json["response_id"] as? String,
+                        conversationID: response?["conversation_id"] as? String,
+                        status: response?["status"] as? String,
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         case "rate_limits.updated":
             self.continuation?.yield(
                 .rateLimitsUpdated(
-                    rateLimits: parseRateLimits(json["rate_limits"]),
-                    eventId: json["event_id"] as? String
+                    .init(
+                        rateLimits: parseRateLimits(json["rate_limits"]),
+                        eventID: json["event_id"] as? String
+                    )
                 )
             )
         
@@ -271,11 +332,13 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
             if let delta = json["delta"] as? String {
                 self.continuation?.yield(
                     .responseTranscriptDelta(
-                        delta,
-                        responseId: json["response_id"] as? String,
-                        itemId: json["item_id"] as? String,
-                        contentIndex: intValue(json["content_index"]),
-                        eventId: json["event_id"] as? String
+                        .init(
+                            delta: delta,
+                            responseID: json["response_id"] as? String,
+                            itemID: json["item_id"] as? String,
+                            contentIndex: intValue(json["content_index"]),
+                            eventID: json["event_id"] as? String
+                        )
                     )
                 )
             }
@@ -284,28 +347,32 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
             if let transcript = json["transcript"] as? String {
                 self.continuation?.yield(
                     .responseTranscriptDone(
-                        transcript,
-                        responseId: json["response_id"] as? String,
-                        itemId: json["item_id"] as? String,
-                        contentIndex: intValue(json["content_index"]),
-                        eventId: json["event_id"] as? String
+                        .init(
+                            transcript: transcript,
+                            responseID: json["response_id"] as? String,
+                            itemID: json["item_id"] as? String,
+                            contentIndex: intValue(json["content_index"]),
+                            eventID: json["event_id"] as? String
+                        )
                     )
                 )
             }
             
         case "input_audio_buffer.transcript":
             if let transcript = json["transcript"] as? String {
-                self.continuation?.yield(.inputAudioBufferTranscript(transcript))
+                self.continuation?.yield(.inputAudioBufferTranscript(.init(transcript: transcript)))
             }
             
         case "conversation.item.input_audio_transcription.delta":
             if let delta = json["delta"] as? String {
                 self.continuation?.yield(
                     .inputAudioTranscriptionDelta(
-                        delta,
-                        itemId: json["item_id"] as? String ?? (jsonObject(at: "item", in: json)?["id"] as? String),
-                        contentIndex: intValue(json["content_index"]),
-                        eventId: json["event_id"] as? String
+                        .init(
+                            delta: delta,
+                            itemID: json["item_id"] as? String ?? (jsonObject(at: "item", in: json)?["id"] as? String),
+                            contentIndex: intValue(json["content_index"]),
+                            eventID: json["event_id"] as? String
+                        )
                     )
                 )
             }
@@ -314,10 +381,12 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
             if let transcript = json["transcript"] as? String {
                 self.continuation?.yield(
                     .inputAudioTranscriptionCompleted(
-                        transcript,
-                        itemId: json["item_id"] as? String ?? (jsonObject(at: "item", in: json)?["id"] as? String),
-                        contentIndex: intValue(json["content_index"]),
-                        eventId: json["event_id"] as? String
+                        .init(
+                            transcript: transcript,
+                            itemID: json["item_id"] as? String ?? (jsonObject(at: "item", in: json)?["id"] as? String),
+                            contentIndex: intValue(json["content_index"]),
+                            eventID: json["event_id"] as? String
+                        )
                     )
                 )
             }
