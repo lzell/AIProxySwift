@@ -10,13 +10,11 @@ import AVFoundation
 
 nonisolated private let kWebsocketDisconnectedErrorCode = 57
 nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
-nonisolated private let kWebsocketPingIntervalNanoseconds: UInt64 = 20_000_000_000
 
 @AIProxyActor open class OpenAIRealtimeSession {
     private var isTearingDown = false
     private let webSocketTask: URLSessionWebSocketTask
     private var continuation: AsyncStream<OpenAIRealtimeMessage>.Continuation?
-    private var pingKeepaliveTask: Task<Void, Never>?
     private let setupTime = Date()
     let sessionConfiguration: OpenAIRealtimeSessionConfiguration
 
@@ -31,7 +29,6 @@ nonisolated private let kWebsocketPingIntervalNanoseconds: UInt64 = 20_000_000_0
             await self.sendMessage(OpenAIRealtimeSessionUpdate(session: self.sessionConfiguration))
         }
         self.webSocketTask.resume()
-        self.startPingKeepaliveTask()
         self.receiveMessage()
     }
 
@@ -62,8 +59,6 @@ nonisolated private let kWebsocketPingIntervalNanoseconds: UInt64 = 20_000_000_0
 
     /// Close the websocket connection
     public func disconnect() {
-        self.pingKeepaliveTask?.cancel()
-        self.pingKeepaliveTask = nil
         self.isTearingDown = true
         self.continuation?.finish()
         self.continuation = nil
@@ -82,30 +77,6 @@ nonisolated private let kWebsocketPingIntervalNanoseconds: UInt64 = 20_000_000_0
                 Task {
                     await self.didReceiveWebSocketMessage(message)
                 }
-            }
-        }
-    }
-
-    private func startPingKeepaliveTask() {
-        self.pingKeepaliveTask?.cancel()
-        self.pingKeepaliveTask = Task { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: kWebsocketPingIntervalNanoseconds)
-                guard let self, !Task.isCancelled, !self.isTearingDown else { return }
-                await self.sendPingKeepalive()
-            }
-        }
-    }
-
-    private func sendPingKeepalive() async {
-        await withCheckedContinuation { continuation in
-            self.webSocketTask.sendPing { error in
-                if let error {
-                    logIf(.warning)?.warning("WebSocket ping failed: \(error.localizedDescription)")
-                } else {
-                    logIf(.debug)?.debug("WebSocket ping keepalive sent")
-                }
-                continuation.resume()
             }
         }
     }
