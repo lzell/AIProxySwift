@@ -5,7 +5,9 @@
 //  Created by Lou Zell on 12/29/24.
 //  Update by harr-sudo 05/05/2025
 
-nonisolated public enum OpenAIRealtimeMessage: Sendable {
+import Foundation
+
+nonisolated public enum OpenAIRealtimeMessage: Decodable, Sendable {
     case error(OpenAIRealtimeErrorEvent)
     case sessionCreated // "session.created"
     case sessionUpdated // "session.updated"
@@ -23,83 +25,321 @@ nonisolated public enum OpenAIRealtimeMessage: Sendable {
     case responseAudioDone(OpenAIRealtimeResponseAudioDoneEvent) // "response.audio.done" / "response.output_audio.done"
     case responseDone(OpenAIRealtimeResponseDoneEvent) // "response.done"
     case rateLimitsUpdated(OpenAIRealtimeRateLimitsUpdatedEvent) // "rate_limits.updated"
-    
+
     case responseTranscriptDelta(OpenAIRealtimeResponseTranscriptDeltaEvent) // "response.audio_transcript.delta" / "response.output_audio_transcript.delta"
     case responseTranscriptDone(OpenAIRealtimeResponseTranscriptDoneEvent) // "response.audio_transcript.done" / "response.output_audio_transcript.done"
     case inputAudioBufferTranscript(OpenAIRealtimeInputAudioBufferTranscriptEvent) // "input_audio_buffer.transcript"
     case inputAudioTranscriptionDelta(OpenAIRealtimeInputAudioTranscriptionDeltaEvent) // "conversation.item.input_audio_transcription.delta"
     case inputAudioTranscriptionCompleted(OpenAIRealtimeInputAudioTranscriptionCompletedEvent) // "conversation.item.input_audio_transcription.completed"
+
+    case futureProof
+
+    private enum CodingKeys: String, CodingKey {
+        case type
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+
+        switch type {
+        case "error":
+            self = .error(try OpenAIRealtimeErrorEvent(from: decoder))
+        case "session.created":
+            self = .sessionCreated
+        case "session.updated":
+            self = .sessionUpdated
+        case "response.created":
+            self = .responseCreated(try OpenAIRealtimeResponseCreatedEvent(from: decoder))
+        case "response.audio.delta":
+            self = .responseAudioDelta(try OpenAIRealtimeResponseAudioDeltaEvent(from: decoder))
+        case "input_audio_buffer.speech_started":
+            self = .inputAudioBufferSpeechStarted(try OpenAIRealtimeInputAudioBufferSpeechStartedEvent(from: decoder))
+        case "input_audio_buffer.speech_stopped":
+            self = .inputAudioBufferSpeechStopped(try OpenAIRealtimeInputAudioBufferSpeechStoppedEvent(from: decoder))
+        case "input_audio_buffer.committed":
+            self = .inputAudioBufferCommitted(try OpenAIRealtimeInputAudioBufferCommittedEvent(from: decoder))
+        case "conversation.item.created":
+            self = .conversationItemCreated(try OpenAIRealtimeConversationItemCreatedEvent(from: decoder))
+        case "response.function_call_arguments.done":
+            self = .responseFunctionCallArgumentsDone(try OpenAIRealtimeResponseFunctionCallArgumentsDoneEvent(from: decoder))
+        case "response.output_item.added":
+            self = .responseOutputItemAdded(try OpenAIRealtimeResponseOutputItemAddedEvent(from: decoder))
+        case "response.output_item.done":
+            self = .responseOutputItemDone(try OpenAIRealtimeResponseOutputItemDoneEvent(from: decoder))
+        case "response.content_part.added":
+            self = .responseContentPartAdded(try OpenAIRealtimeResponseContentPartAddedEvent(from: decoder))
+        case "response.content_part.done":
+            self = .responseContentPartDone(try OpenAIRealtimeResponseContentPartDoneEvent(from: decoder))
+        case "response.audio.done", "response.output_audio.done":
+            self = .responseAudioDone(try OpenAIRealtimeResponseAudioDoneEvent(from: decoder))
+        case "response.done":
+            self = .responseDone(try OpenAIRealtimeResponseDoneEvent(from: decoder))
+        case "rate_limits.updated":
+            self = .rateLimitsUpdated(try OpenAIRealtimeRateLimitsUpdatedEvent(from: decoder))
+        case "response.audio_transcript.delta", "response.output_audio_transcript.delta":
+            self = .responseTranscriptDelta(try OpenAIRealtimeResponseTranscriptDeltaEvent(from: decoder))
+        case "response.audio_transcript.done", "response.output_audio_transcript.done":
+            self = .responseTranscriptDone(try OpenAIRealtimeResponseTranscriptDoneEvent(from: decoder))
+        case "input_audio_buffer.transcript":
+            self = .inputAudioBufferTranscript(try OpenAIRealtimeInputAudioBufferTranscriptEvent(from: decoder))
+        case "conversation.item.input_audio_transcription.delta":
+            self = .inputAudioTranscriptionDelta(try OpenAIRealtimeInputAudioTranscriptionDeltaEvent(from: decoder))
+        case "conversation.item.input_audio_transcription.completed":
+            self = .inputAudioTranscriptionCompleted(try OpenAIRealtimeInputAudioTranscriptionCompletedEvent(from: decoder))
+        default:
+            logIf(.info)?.info("Received unknown OpenAI realtime event of type \(type).")
+            self = .futureProof
+        }
+    }
 }
 
-public struct OpenAIRealtimeErrorEvent: Sendable {
+public struct OpenAIRealtimeErrorEvent: Decodable, Sendable {
     public let errorBody: String?
+
+    private struct ErrorObject: Decodable {
+        let message: String?
+        let type: String?
+        let code: String?
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case error
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if let errorString = try container.decodeIfPresent(String.self, forKey: .error) {
+            self.errorBody = errorString
+            return
+        }
+        if let errorObject = try container.decodeIfPresent(ErrorObject.self, forKey: .error) {
+            if let message = errorObject.message {
+                self.errorBody = message
+            } else if let type = errorObject.type, let code = errorObject.code {
+                self.errorBody = "\(type): \(code)"
+            } else {
+                self.errorBody = errorObject.type ?? errorObject.code
+            }
+            return
+        }
+        self.errorBody = nil
+    }
 }
 
-public struct OpenAIRealtimeResponseCreatedEvent: Sendable {
+public struct OpenAIRealtimeResponseCreatedEvent: Decodable, Sendable {
     public let responseID: String?
     public let eventID: String?
+
+    private struct ResponseBody: Decodable {
+        let id: String?
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case eventID = "event_id"
+        case response
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let response = try container.decodeIfPresent(ResponseBody.self, forKey: .response)
+        self.responseID = response?.id
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeResponseAudioDeltaEvent: Sendable {
+public struct OpenAIRealtimeResponseAudioDeltaEvent: Decodable, Sendable {
     public let base64Audio: String
+
+    private enum CodingKeys: String, CodingKey {
+        case base64Audio = "delta"
+    }
 }
 
-public struct OpenAIRealtimeInputAudioBufferSpeechStartedEvent: Sendable {
+public struct OpenAIRealtimeInputAudioBufferSpeechStartedEvent: Decodable, Sendable {
     public let itemID: String?
     public let audioStartMS: Int?
     public let eventID: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case itemID = "item_id"
+        case audioStartMS = "audio_start_ms"
+        case eventID = "event_id"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.itemID = try container.decodeIfPresent(String.self, forKey: .itemID)
+        self.audioStartMS = container.decodeFlexibleIntIfPresent(forKey: .audioStartMS)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeInputAudioBufferSpeechStoppedEvent: Sendable {
+public struct OpenAIRealtimeInputAudioBufferSpeechStoppedEvent: Decodable, Sendable {
     public let itemID: String?
     public let audioEndMS: Int?
     public let eventID: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case itemID = "item_id"
+        case audioEndMS = "audio_end_ms"
+        case eventID = "event_id"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.itemID = try container.decodeIfPresent(String.self, forKey: .itemID)
+        self.audioEndMS = container.decodeFlexibleIntIfPresent(forKey: .audioEndMS)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeInputAudioBufferCommittedEvent: Sendable {
+public struct OpenAIRealtimeInputAudioBufferCommittedEvent: Decodable, Sendable {
     public let itemID: String?
     public let previousItemID: String?
     public let eventID: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case itemID = "item_id"
+        case previousItemID = "previous_item_id"
+        case eventID = "event_id"
+    }
 }
 
-public struct OpenAIRealtimeConversationItemCreatedEvent: Sendable {
+public struct OpenAIRealtimeConversationItemCreatedEvent: Decodable, Sendable {
     public let itemID: String?
     public let previousItemID: String?
     public let role: String?
     public let eventID: String?
+
+    private struct ItemBody: Decodable {
+        let id: String?
+        let role: String?
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case itemID = "item_id"
+        case previousItemID = "previous_item_id"
+        case eventID = "event_id"
+        case item
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let item = try container.decodeIfPresent(ItemBody.self, forKey: .item)
+        let fallbackItemID = try container.decodeIfPresent(String.self, forKey: .itemID)
+        self.itemID = item?.id ?? fallbackItemID
+        self.previousItemID = try container.decodeIfPresent(String.self, forKey: .previousItemID)
+        self.role = item?.role
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeResponseFunctionCallArgumentsDoneEvent: Sendable {
+public struct OpenAIRealtimeResponseFunctionCallArgumentsDoneEvent: Decodable, Sendable {
     public let name: String
     public let arguments: String
     public let callID: String
+
+    private enum CodingKeys: String, CodingKey {
+        case name
+        case arguments
+        case callID = "call_id"
+    }
 }
 
-public struct OpenAIRealtimeResponseOutputItemAddedEvent: Sendable {
+public struct OpenAIRealtimeResponseOutputItemAddedEvent: Decodable, Sendable {
     public let responseID: String?
     public let itemID: String?
     public let outputIndex: Int?
     public let eventID: String?
+
+    private struct ItemBody: Decodable {
+        let id: String?
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case responseID = "response_id"
+        case itemID = "item_id"
+        case outputIndex = "output_index"
+        case eventID = "event_id"
+        case item
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let item = try container.decodeIfPresent(ItemBody.self, forKey: .item)
+        self.responseID = try container.decodeIfPresent(String.self, forKey: .responseID)
+        let fallbackItemID = try container.decodeIfPresent(String.self, forKey: .itemID)
+        self.itemID = item?.id ?? fallbackItemID
+        self.outputIndex = container.decodeFlexibleIntIfPresent(forKey: .outputIndex)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeResponseOutputItemDoneEvent: Sendable {
+public struct OpenAIRealtimeResponseOutputItemDoneEvent: Decodable, Sendable {
     public let responseID: String?
     public let itemID: String?
     public let outputIndex: Int?
     public let transcript: String?
     public let eventID: String?
+
+    private struct ItemBody: Decodable {
+        struct ContentBody: Decodable {
+            let transcript: String?
+        }
+        let id: String?
+        let content: [ContentBody]?
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case responseID = "response_id"
+        case itemID = "item_id"
+        case outputIndex = "output_index"
+        case eventID = "event_id"
+        case item
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let item = try container.decodeIfPresent(ItemBody.self, forKey: .item)
+        self.responseID = try container.decodeIfPresent(String.self, forKey: .responseID)
+        let fallbackItemID = try container.decodeIfPresent(String.self, forKey: .itemID)
+        self.itemID = item?.id ?? fallbackItemID
+        self.outputIndex = container.decodeFlexibleIntIfPresent(forKey: .outputIndex)
+        self.transcript = item?.content?.first(where: { ($0.transcript?.isEmpty == false) })?.transcript
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeResponseContentPartAddedEvent: Sendable {
+public struct OpenAIRealtimeResponseContentPartAddedEvent: Decodable, Sendable {
     public let responseID: String?
     public let itemID: String?
     public let outputIndex: Int?
     public let contentIndex: Int?
     public let part: OpenAIRealtimeContentPart?
     public let eventID: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case responseID = "response_id"
+        case itemID = "item_id"
+        case outputIndex = "output_index"
+        case contentIndex = "content_index"
+        case part
+        case eventID = "event_id"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.responseID = try container.decodeIfPresent(String.self, forKey: .responseID)
+        self.itemID = try container.decodeIfPresent(String.self, forKey: .itemID)
+        self.outputIndex = container.decodeFlexibleIntIfPresent(forKey: .outputIndex)
+        self.contentIndex = container.decodeFlexibleIntIfPresent(forKey: .contentIndex)
+        self.part = try container.decodeIfPresent(OpenAIRealtimeContentPart.self, forKey: .part)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeResponseContentPartDoneEvent: Sendable {
+public struct OpenAIRealtimeResponseContentPartDoneEvent: Decodable, Sendable {
     public let responseID: String?
     public let itemID: String?
     public let outputIndex: Int?
@@ -107,72 +347,261 @@ public struct OpenAIRealtimeResponseContentPartDoneEvent: Sendable {
     public let transcript: String?
     public let part: OpenAIRealtimeContentPart?
     public let eventID: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case responseID = "response_id"
+        case itemID = "item_id"
+        case outputIndex = "output_index"
+        case contentIndex = "content_index"
+        case part
+        case eventID = "event_id"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let part = try container.decodeIfPresent(OpenAIRealtimeContentPart.self, forKey: .part)
+        self.responseID = try container.decodeIfPresent(String.self, forKey: .responseID)
+        self.itemID = try container.decodeIfPresent(String.self, forKey: .itemID)
+        self.outputIndex = container.decodeFlexibleIntIfPresent(forKey: .outputIndex)
+        self.contentIndex = container.decodeFlexibleIntIfPresent(forKey: .contentIndex)
+        self.transcript = part?.transcript
+        self.part = part
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeResponseAudioDoneEvent: Sendable {
+public struct OpenAIRealtimeResponseAudioDoneEvent: Decodable, Sendable {
     public let responseID: String?
     public let itemID: String?
     public let outputIndex: Int?
     public let contentIndex: Int?
     public let eventID: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case responseID = "response_id"
+        case itemID = "item_id"
+        case outputIndex = "output_index"
+        case contentIndex = "content_index"
+        case eventID = "event_id"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.responseID = try container.decodeIfPresent(String.self, forKey: .responseID)
+        self.itemID = try container.decodeIfPresent(String.self, forKey: .itemID)
+        self.outputIndex = container.decodeFlexibleIntIfPresent(forKey: .outputIndex)
+        self.contentIndex = container.decodeFlexibleIntIfPresent(forKey: .contentIndex)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeResponseDoneEvent: Sendable {
+public struct OpenAIRealtimeResponseDoneEvent: Decodable, Sendable {
     public let responseID: String?
     public let conversationID: String?
     public let status: String?
     public let eventID: String?
+
+    private struct ResponseBody: Decodable {
+        let id: String?
+        let conversationID: String?
+        let status: String?
+
+        private enum CodingKeys: String, CodingKey {
+            case id
+            case conversationID = "conversation_id"
+            case status
+        }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case response
+        case eventID = "event_id"
+        case responseID = "response_id"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let response = try container.decodeIfPresent(ResponseBody.self, forKey: .response)
+        self.responseID = response?.id
+        self.conversationID = response?.conversationID
+        self.status = response?.status
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeRateLimitsUpdatedEvent: Sendable {
+public struct OpenAIRealtimeRateLimitsUpdatedEvent: Decodable, Sendable {
     public let rateLimits: [OpenAIRealtimeRateLimit]
     public let eventID: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case rateLimits = "rate_limits"
+        case eventID = "event_id"
+    }
 }
 
-public struct OpenAIRealtimeResponseTranscriptDeltaEvent: Sendable {
+public struct OpenAIRealtimeResponseTranscriptDeltaEvent: Decodable, Sendable {
     public let delta: String
     public let responseID: String?
     public let itemID: String?
     public let contentIndex: Int?
     public let eventID: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case delta
+        case responseID = "response_id"
+        case itemID = "item_id"
+        case contentIndex = "content_index"
+        case eventID = "event_id"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.delta = try container.decode(String.self, forKey: .delta)
+        self.responseID = try container.decodeIfPresent(String.self, forKey: .responseID)
+        self.itemID = try container.decodeIfPresent(String.self, forKey: .itemID)
+        self.contentIndex = container.decodeFlexibleIntIfPresent(forKey: .contentIndex)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeResponseTranscriptDoneEvent: Sendable {
+public struct OpenAIRealtimeResponseTranscriptDoneEvent: Decodable, Sendable {
     public let transcript: String
     public let responseID: String?
     public let itemID: String?
     public let contentIndex: Int?
     public let eventID: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case transcript
+        case responseID = "response_id"
+        case itemID = "item_id"
+        case contentIndex = "content_index"
+        case eventID = "event_id"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.transcript = try container.decode(String.self, forKey: .transcript)
+        self.responseID = try container.decodeIfPresent(String.self, forKey: .responseID)
+        self.itemID = try container.decodeIfPresent(String.self, forKey: .itemID)
+        self.contentIndex = container.decodeFlexibleIntIfPresent(forKey: .contentIndex)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeInputAudioBufferTranscriptEvent: Sendable {
+public struct OpenAIRealtimeInputAudioBufferTranscriptEvent: Decodable, Sendable {
     public let transcript: String
 }
 
-public struct OpenAIRealtimeInputAudioTranscriptionDeltaEvent: Sendable {
+public struct OpenAIRealtimeInputAudioTranscriptionDeltaEvent: Decodable, Sendable {
     public let delta: String
     public let itemID: String?
     public let contentIndex: Int?
     public let eventID: String?
+
+    private struct ItemBody: Decodable {
+        let id: String?
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case delta
+        case itemID = "item_id"
+        case item
+        case contentIndex = "content_index"
+        case eventID = "event_id"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let item = try container.decodeIfPresent(ItemBody.self, forKey: .item)
+        self.delta = try container.decode(String.self, forKey: .delta)
+        self.itemID = try container.decodeIfPresent(String.self, forKey: .itemID) ?? item?.id
+        self.contentIndex = container.decodeFlexibleIntIfPresent(forKey: .contentIndex)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeInputAudioTranscriptionCompletedEvent: Sendable {
+public struct OpenAIRealtimeInputAudioTranscriptionCompletedEvent: Decodable, Sendable {
     public let transcript: String
     public let itemID: String?
     public let contentIndex: Int?
     public let eventID: String?
+
+    private struct ItemBody: Decodable {
+        let id: String?
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case transcript
+        case itemID = "item_id"
+        case item
+        case contentIndex = "content_index"
+        case eventID = "event_id"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let item = try container.decodeIfPresent(ItemBody.self, forKey: .item)
+        self.transcript = try container.decode(String.self, forKey: .transcript)
+        self.itemID = try container.decodeIfPresent(String.self, forKey: .itemID) ?? item?.id
+        self.contentIndex = container.decodeFlexibleIntIfPresent(forKey: .contentIndex)
+        self.eventID = try container.decodeIfPresent(String.self, forKey: .eventID)
+    }
 }
 
-public struct OpenAIRealtimeContentPart: Sendable {
+public struct OpenAIRealtimeContentPart: Decodable, Sendable {
     public let type: String?
     public let audio: String?
     public let text: String?
     public let transcript: String?
 }
 
-public struct OpenAIRealtimeRateLimit: Sendable {
+public struct OpenAIRealtimeRateLimit: Decodable, Sendable {
     public let name: String?
     public let limit: Int?
     public let remaining: Int?
     public let resetSeconds: Double?
+
+    private enum CodingKeys: String, CodingKey {
+        case name
+        case limit
+        case remaining
+        case resetSeconds = "reset_seconds"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.name = try container.decodeIfPresent(String.self, forKey: .name)
+        self.limit = container.decodeFlexibleIntIfPresent(forKey: .limit)
+        self.remaining = container.decodeFlexibleIntIfPresent(forKey: .remaining)
+        self.resetSeconds = container.decodeFlexibleDoubleIfPresent(forKey: .resetSeconds)
+    }
+}
+
+private extension KeyedDecodingContainer {
+    func decodeFlexibleIntIfPresent(forKey key: Key) -> Int? {
+        if let value = try? self.decodeIfPresent(Int.self, forKey: key) {
+            return value
+        }
+        if let value = try? self.decodeIfPresent(String.self, forKey: key), let int = Int(value) {
+            return int
+        }
+        if let value = try? self.decodeIfPresent(Double.self, forKey: key) {
+            return Int(value)
+        }
+        return nil
+    }
+
+    func decodeFlexibleDoubleIfPresent(forKey key: Key) -> Double? {
+        if let value = try? self.decodeIfPresent(Double.self, forKey: key) {
+            return value
+        }
+        if let value = try? self.decodeIfPresent(Int.self, forKey: key) {
+            return Double(value)
+        }
+        if let value = try? self.decodeIfPresent(String.self, forKey: key), let double = Double(value) {
+            return double
+        }
+        return nil
+    }
 }
