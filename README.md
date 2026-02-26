@@ -1392,7 +1392,7 @@ final class RealtimeManager {
         )
 
         let realtimeSession = try await openAIService.realtimeSession(
-            model: "gpt-4o-mini-realtime-preview-2024-12-17",
+            model: "gpt-realtime-1.5",
             configuration: configuration,
             logLevel: .debug
         )
