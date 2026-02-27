@@ -5,8 +5,8 @@
 //  Created by Lou Zell on 11/28/24.
 //
 
-import Foundation
 import AVFoundation
+import Foundation
 
 nonisolated private let kWebsocketDisconnectedErrorCode = 57
 nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
@@ -117,8 +117,6 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
         }
     }
 
-    // TODO: Add the remaining events from this list to the switch statement below:
-    //       https://platform.openai.com/docs/api-reference/realtime-server-events
     private func didReceiveWebSocketData(_ data: Data) {
         guard !self.isTearingDown else {
             // The caller already initiated disconnect,
@@ -126,72 +124,18 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
             return
         }
 
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let messageType = json["type"] as? String else {
+        do {
+            let message = try JSONDecoder().decode(OpenAIRealtimeMessage.self, from: data)
+            self.continuation?.yield(message)
+            if case .error = message {
+                return
+            }
+            if !self.isTearingDown {
+                self.receiveMessage()
+            }
+        } catch {
             logIf(.error)?.error("Received websocket data that we don't understand")
             self.disconnect()
-            return
-        }
-        logIf(.debug)?.debug("Received \(messageType) from OpenAI")
-
-        switch messageType {
-        case "error":
-            let errorBody = String(describing: json["error"] as? [String: Any])
-            logIf(.error)?.error("Received error from OpenAI websocket: \(errorBody)")
-            self.continuation?.yield(.error(errorBody))
-        case "session.created":
-            self.continuation?.yield(.sessionCreated)
-        case "session.updated":
-            self.continuation?.yield(.sessionUpdated)
-        case "response.audio.delta":
-            if let base64Audio = json["delta"] as? String {
-                self.continuation?.yield(.responseAudioDelta(base64Audio))
-            }
-        case "response.created":
-            self.continuation?.yield(.responseCreated)
-        case "input_audio_buffer.speech_started":
-            self.continuation?.yield(.inputAudioBufferSpeechStarted)
-        case "response.function_call_arguments.done":
-            if let name = json["name"] as? String,
-               let arguments = json["arguments"] as? String,
-               let callId = json["call_id"] as? String {
-                self.continuation?.yield(.responseFunctionCallArgumentsDone(name, arguments, callId))
-            }
-        
-        // New cases for handling transcription messages
-        case "response.audio_transcript.delta":
-            if let delta = json["delta"] as? String {
-                self.continuation?.yield(.responseTranscriptDelta(delta))
-            }
-            
-        case "response.audio_transcript.done":
-            if let transcript = json["transcript"] as? String {
-                self.continuation?.yield(.responseTranscriptDone(transcript))
-            }
-            
-        case "input_audio_buffer.transcript":
-            if let transcript = json["transcript"] as? String {
-                self.continuation?.yield(.inputAudioBufferTranscript(transcript))
-            }
-            
-        case "conversation.item.input_audio_transcription.delta":
-            if let delta = json["delta"] as? String {
-                self.continuation?.yield(.inputAudioTranscriptionDelta(delta))
-            }
-            
-        case "conversation.item.input_audio_transcription.completed":
-            if let transcript = json["transcript"] as? String {
-                self.continuation?.yield(.inputAudioTranscriptionCompleted(transcript))
-            }
-            
-        default:
-            // Log unhandled message types for debugging
-            logIf(.debug)?.debug("Unhandled message type: \(messageType) - \(json)")
-            break
-        }
-
-        if messageType != "error" && !self.isTearingDown {
-            self.receiveMessage()
         }
     }
 }
