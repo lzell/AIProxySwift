@@ -12,7 +12,7 @@ import Foundation
 /// Create stateful interactions with the model, using the output of previous responses as input.
 /// Extend the model's capabilities with built-in tools for file search, web search, computer use, and more.
 /// Allow the model access to external systems and data using function calling.
-/// https://platform.openai.com/docs/api-reference/responses/create
+/// https://developers.openai.com/api/reference/resources/responses/methods/create
 /// Implementor's note: See ResponseCreateParamsBase in `src/openai/types/responses/response_create_params.py`
 nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
 
@@ -27,6 +27,10 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
     /// will not be carried over to the next response. This makes it simple to swap out system
     /// (or developer) messages in new responses.
     public let instructions: String?
+
+    /// An upper bound for the number of tokens that can be generated for a response,
+    /// including visible output tokens and reasoning tokens: https://developers.openai.com/docs/guides/reasoning
+    public let maxOutputTokens: Int?
 
     /// Model ID used to generate the response, like gpt-4o or o1.
     /// OpenAI offers a wide range of models with different capabilities, performance characteristics, and price points.
@@ -96,6 +100,7 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
         case include
         case input
         case instructions
+        case maxOutputTokens = "max_output_tokens"
         case model
         case tools
         case toolChoice = "tool_choice"
@@ -120,6 +125,7 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
         include: [OpenAIInclude]? = nil,
         input: OpenAIResponse.Input? = nil,
         instructions: String? = nil,
+        maxOutputTokens: Int? = nil,
         model: String? = nil,
         parallelToolCalls: Bool? = nil,
         previousResponseId: String? = nil,
@@ -139,6 +145,7 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
         self.include = include
         self.input = input
         self.instructions = instructions
+        self.maxOutputTokens = maxOutputTokens
         self.model = model
         self.parallelToolCalls = parallelToolCalls
         self.previousResponseId = previousResponseId
@@ -643,6 +650,7 @@ extension OpenAICreateResponseRequestBody.Reasoning {
         case low
         case medium
         case high
+        case xhigh
     }
 
     /// Summary types for reasoning models
