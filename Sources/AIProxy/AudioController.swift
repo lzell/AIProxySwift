@@ -18,16 +18,16 @@ import AVFoundation
 /// We use either AVAudioEngine or AudioToolbox for mic data, depending on the platform and whether headphones are attached.
 /// The following arrangement provides for the best user experience:
 ///
-///     +----------+---------------+------------------+
-///     | Platform | Headphones    | Audio API        |
-///     +----------+---------------+------------------+
-///     | macOS    | Yes           | AudioEngine      |
-///     | macOS    | No            | AudioToolbox     |
-///     | iOS      | Yes           | AudioEngine      |
-///     | iOS      | No            | AudioToolbox     |
-///     | watchOS  | Yes           | AudioEngine      |
-///     | watchOS  | No            | AudioEngine      |
-///     +----------+---------------+------------------+
+///     +----------+---------------+--------------------------------------+
+///     | Platform | Headphones    | Audio API                            |
+///     +----------+---------------+--------------------------------------+
+///     | macOS    | Yes           | AudioEngine                          |
+///     | macOS    | No            | AudioToolbox                         |
+///     | iOS      | Yes           | AudioEngine                          |
+///     | iOS      | No            | AudioToolbox + manual rendering AEC  |
+///     | watchOS  | Yes           | AudioEngine                          |
+///     | watchOS  | No            | AudioEngine                          |
+///     +----------+---------------+--------------------------------------+
 ///
 @AIProxyActor public final class AudioController {
     public enum Mode {
@@ -42,7 +42,14 @@ import AVFoundation
 
     public init(modes: [Mode]) async throws {
         self.modes = modes
-        #if os(iOS)
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
+        let needsManualRendering = modes.contains(.record) && modes.contains(.playback)
+                                   && !AIProxyUtils.headphonesConnected
+        #else
+        let needsManualRendering = false
+        #endif
+
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
         // This is not respected if `setVoiceProcessingEnabled(true)` is used :/
         // Instead, I've added my own accumulator.
         // try? AVAudioSession.sharedInstance().setPreferredIOBufferDuration(0.1)
@@ -61,11 +68,27 @@ import AVFoundation
 
         self.audioEngine = AVAudioEngine()
 
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
+        if needsManualRendering {
+            let renderFormat = AVAudioFormat(
+                commonFormat: .pcmFormatFloat32,
+                sampleRate: 44100,
+                channels: 1,
+                interleaved: true
+            )!
+            try audioEngine.enableManualRenderingMode(
+                .realtime,
+                format: renderFormat,
+                maximumFrameCount: 4096
+            )
+        }
+        #endif
+
         if modes.contains(.record) {
             #if os(macOS) || os(iOS)
             self.microphonePCMSampleVendor = AIProxyUtils.headphonesConnected
                                                ? try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
-                                               : MicrophonePCMSampleVendorAT()
+                                               : MicrophonePCMSampleVendorAT(audioEngine: self.audioEngine)
             #else
             self.microphonePCMSampleVendor = try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
             #endif
@@ -81,9 +104,17 @@ import AVFoundation
         // Nesting `start` in a Task is necessary on watchOS.
         // There is some sort of race, and letting the runloop tick seems to "fix" it.
         // If I call `prepare` and `start` in serial succession, then there is no playback on watchOS (sometimes).
+        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
+        try self.audioEngine.start()
+        #elseif os(watchOS)
         Task {
             try self.audioEngine.start()
         }
+        #else
+        Task {
+            try self.audioEngine.start()
+        }
+        #endif
     }
 
     deinit {
