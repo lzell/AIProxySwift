@@ -24,12 +24,15 @@ import Foundation
     /// inspiration to build your own using this method and the polling methods below.
     public func createInference<T: Encodable>(
         model: String,
-        input: T
+        input: T,
+        additionalHeaders: [String: String]
     ) async throws -> FalQueueResponseBody {
         var model = model
         if !model.starts(with: "/") {
             model = "/" + model
         }
+        var headers = ["Authorization": "Key \(self.unprotectedAPIKey)"]
+        headers.merge(additionalHeaders) { _, new in new }
         let request = try AIProxyURLRequest.createDirect(
             baseURL: "https://queue.fal.run",
             path: model,
@@ -37,9 +40,7 @@ import Foundation
             verb: .post,
             secondsToWait: 60,
             contentType: "application/json",
-            additionalHeaders: [
-                "Authorization": "Key \(self.unprotectedAPIKey)"
-            ]
+            additionalHeaders: headers
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }

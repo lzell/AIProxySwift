@@ -28,7 +28,8 @@ import Foundation
     /// inspiration to build your own using this method and the polling methods below.
     public func createInference<T: Encodable>(
         model: String,
-        input: T
+        input: T,
+        additionalHeaders: [String: String]
     ) async throws -> FalQueueResponseBody {
         var model = model
         if !model.starts(with: "/") {
@@ -42,7 +43,8 @@ import Foundation
             body: input.serialize(),
             verb: .post,
             secondsToWait: 60,
-            contentType: "application/json"
+            contentType: "application/json",
+            additionalHeaders: additionalHeaders
         )
         return try await self.makeRequestAndDeserializeResponse(request)
     }

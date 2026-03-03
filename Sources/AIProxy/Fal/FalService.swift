@@ -26,7 +26,8 @@ import Foundation
     /// inspiration to build your own using this method and the polling methods below.
     func createInference<T: Encodable>(
         model: String,
-        input: T
+        input: T,
+        additionalHeaders: [String: String]
     ) async throws -> FalQueueResponseBody
 
     /// Gets the response object from a completed inference. The URL to pass is the
@@ -61,6 +62,13 @@ import Foundation
 }
 
 extension FalService {
+    public func createInference<T: Encodable>(
+        model: String,
+        input: T
+    ) async throws -> FalQueueResponseBody {
+        try await createInference(model: model, input: input, additionalHeaders: [:])
+    }
+
     /// Use this helper to kick off an inference request and wait for the result to be available.
     /// - Parameters:
     ///   - model: The model to run
