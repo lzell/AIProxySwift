@@ -252,9 +252,7 @@ import Foundation
         let request = try await self.requestBuilder.plainGET(
             path: "/v1/realtime?model=\(model)",
             secondsToWait: 60,
-            additionalHeaders: [
-                "openai-beta": "realtime=v1"
-            ]
+            additionalHeaders: [:]
         )
         return OpenAIRealtimeSession(
             webSocketTask: self.serviceNetworker.urlSession.webSocketTask(with: request),

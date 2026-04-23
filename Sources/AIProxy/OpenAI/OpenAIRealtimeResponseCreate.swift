@@ -30,11 +30,11 @@ extension OpenAIRealtimeResponseCreate {
     nonisolated public struct Response: Encodable {
         public let conversation: String?
         public let instructions: String?
-        /// GA Realtime key is `output_modalities` (not beta `modalities`).
+        /// Encoded as `output_modalities` on the wire.
         public let outputModalities: [OpenAIRealtimeSessionConfiguration.Modality]?
         @available(*, deprecated, renamed: "outputModalities")
         public var modalities: [OpenAIRealtimeSessionConfiguration.Modality]? { outputModalities }
-        public let toolChoice: OpenAIRealtimeSessionConfigurationGA.ToolChoice?
+        public let toolChoice: OpenAIRealtimeSessionConfiguration.ToolChoice?
         public let tools: [Tool]?
 
         private enum CodingKeys: String, CodingKey {
@@ -50,7 +50,7 @@ extension OpenAIRealtimeResponseCreate {
             instructions: String? = nil,
             outputModalities: [OpenAIRealtimeSessionConfiguration.Modality]? = nil,
             tools: [Tool]? = nil,
-            toolChoice: OpenAIRealtimeSessionConfigurationGA.ToolChoice? = nil
+            toolChoice: OpenAIRealtimeSessionConfiguration.ToolChoice? = nil
         ) {
             self.conversation = conversation
             self.instructions = instructions
@@ -60,14 +60,14 @@ extension OpenAIRealtimeResponseCreate {
         }
 
         /// Deprecated initializer preserved for source compatibility.
-        @available(*, deprecated, message: "Use outputModalities for GA key output_modalities.")
+        @available(*, deprecated, message: "Use outputModalities (JSON key output_modalities).")
         @_disfavoredOverload
         public init(
             conversation: String? = nil,
             instructions: String? = nil,
             modalities: [OpenAIRealtimeSessionConfiguration.Modality]? = nil,
             tools: [Tool]? = nil,
-            toolChoice: OpenAIRealtimeSessionConfigurationGA.ToolChoice? = nil
+            toolChoice: OpenAIRealtimeSessionConfiguration.ToolChoice? = nil
         ) {
             self.init(
                 conversation: conversation,
@@ -92,8 +92,8 @@ extension OpenAIRealtimeResponseCreate {
 // MARK: -
 extension OpenAIRealtimeResponseCreate.Response {
     nonisolated public enum Tool: Encodable {
-        case function(OpenAIRealtimeSessionConfigurationGA.FunctionTool)
-        case mcp(OpenAIRealtimeSessionConfigurationGA.MCPTool)
+        case function(OpenAIRealtimeSessionConfiguration.FunctionTool)
+        case mcp(OpenAIRealtimeSessionConfiguration.MCPTool)
         case webSearch(OpenAICreateResponseRequestBody.WebSearchTool)
 
         public func encode(to encoder: Encoder) throws {

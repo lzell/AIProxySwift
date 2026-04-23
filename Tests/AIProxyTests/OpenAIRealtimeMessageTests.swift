@@ -7,9 +7,8 @@ import Foundation
 import Testing
 @testable import AIProxy
 
-/// GA migration compatibility subset:
-/// - Verifies selected GA canonical event names decode as expected.
-/// - Verifies selected legacy aliases remain decodable for compatibility.
+/// Realtime server events: verifies selected canonical event names decode as expected.
+/// Selected legacy event type aliases remain decodable for compatibility.
 /// This suite is intentionally not a full realtime event matrix.
 struct OpenAIRealtimeMessageTests {
 
