@@ -136,6 +136,7 @@ extension OpenAICreateImageRequestBody {
         case dallE3 = "dall-e-3"
         case gptImage1 = "gpt-image-1"
         case gptImage1_5 = "gpt-image-1.5"
+        case gptImage2 = "gpt-image-2"
     }
 
     nonisolated public enum Moderation: String, Encodable, Sendable {
