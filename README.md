@@ -1382,7 +1382,7 @@ final class RealtimeManager {
             inputAudioTranscription: .init(model: "whisper-1"),
             instructions: "You are a tour guide of Yosemite national park",
             maxResponseOutputTokens: .int(4096),
-            modalities: [.audio, .text],
+            modalities: [.audio],
             outputAudioFormat: .pcm16,
             temperature: 0.7,
             turnDetection: .init(

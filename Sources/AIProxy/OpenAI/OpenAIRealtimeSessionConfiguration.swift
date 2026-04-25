@@ -5,7 +5,7 @@
 
 /// Realtime session configuration for `session.update`.
 ///
-/// https://developers.openai.com/api/reference/resources/realtime
+/// https://developers.openai.com/api/reference/resources/realtime/client-events#session.update
 nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendable {
     public let include: [IncludeField]?
     public let type: OpenAIRealtimeSessionConfiguration.SessionType
@@ -17,7 +17,12 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
     public let model: String?
     public let outputModalities: [OpenAIRealtimeSessionConfiguration.Modality]?
     public let outputAudioFormat: OpenAIRealtimeSessionConfiguration.AudioFormat?
-    /// Output audio speed; supported range per Realtime API is 0.25...1.5.
+
+    /// The speed of the model's spoken response as a multiple of the original speed.
+    /// 1.0 is the default speed. 0.25 is the minimum speed. 1.5 is the maximum speed.
+    /// This value can only be changed in between model turns, not while a response is in progress.
+    ///
+    /// This parameter is a post-processing adjustment to the audio after it is generated, it's also possible to prompt the model to speak faster or slower.
     public let speed: Float?
     public let tools: [Tool]?
     public let toolChoice: ToolChoice?
@@ -35,10 +40,13 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
         inputAudioTranscription: InputAudioTranscription? = nil,
         instructions: String? = nil,
         maxOutputTokens: OpenAIRealtimeSessionConfiguration.MaxOutputTokens? = nil,
+        maxResponseOutputTokens: OpenAIRealtimeSessionConfiguration.MaxOutputTokens? = nil,
         model: String? = nil,
+        modalities: [OpenAIRealtimeSessionConfiguration.Modality]? = nil,
         outputModalities: [OpenAIRealtimeSessionConfiguration.Modality]? = nil,
         outputAudioFormat: OpenAIRealtimeSessionConfiguration.AudioFormat? = nil,
         speed: Float? = 1.0,
+        temperature: Double? = nil, // Deprecated in realtime GA
         tools: [Tool]? = nil,
         toolChoice: ToolChoice? = nil,
         turnDetection: TurnDetection? = nil,
@@ -47,8 +55,18 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
         tracing: Tracing? = nil,
         truncation: Truncation? = nil
     ) {
+        var resolvedModalities = modalities
+        if let modalities, Set(modalities) == Set([.audio, .text]) {
+            logIf(.warning)?.error("OpenAI realtime no longer accepts [.audio, .text] as modalities. Switching to [.audio].")
+            resolvedModalities = [.audio]
+        }
+        if temperature != nil {
+            logIf(.warning)?.warning("OpenAI realtime no longer accepts temperature in the session.update event.")
+        }
         if let speed {
-            assert((0.25...1.5).contains(speed), "Realtime output speed must be in [0.25, 1.5]")
+            if !(0.25...1.5).contains(speed) {
+                logIf(.warning)?.warning("OpenAI realtime does not support speeds outside of the range [0.25, 1.5].")
+            }
         }
         self.include = include
         self.type = type
@@ -56,9 +74,9 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
         self.inputAudioNoiseReduction = inputAudioNoiseReduction
         self.inputAudioTranscription = inputAudioTranscription
         self.instructions = instructions
-        self.maxOutputTokens = maxOutputTokens
+        self.maxOutputTokens = maxOutputTokens ?? maxResponseOutputTokens
         self.model = model
-        self.outputModalities = outputModalities
+        self.outputModalities = outputModalities ?? resolvedModalities
         self.outputAudioFormat = outputAudioFormat
         self.speed = speed
         self.tools = tools
@@ -531,6 +549,39 @@ extension OpenAIRealtimeSessionConfiguration {
     }
 }
 
+
+// MARK: - Legacy fixes for pre-GA callsites
+extension OpenAIRealtimeSessionConfiguration {
+    public typealias MaxResponseOutputTokens = MaxOutputTokens
+}
+
+extension OpenAIRealtimeSessionConfiguration.Voice: ExpressibleByStringLiteral {
+    public init(stringLiteral value: String) {
+        self = .builtin(value)
+    }
+}
+
+extension OpenAIRealtimeSessionConfiguration.TurnDetection {
+    /// Pre-GA initializer kept for source compatibility with call sites that
+    /// build `TurnDetection(type: .semanticVAD(eagerness: ...))`.
+    public init(type: DetectionType) {
+        switch type {
+        case .serverVAD(let prefixPaddingMs, let silenceDurationMs, let threshold):
+            self = .serverVAD(.init(
+                prefixPaddingMs: prefixPaddingMs,
+                silenceDurationMs: silenceDurationMs,
+                threshold: threshold
+            ))
+        case .semanticVAD(let eagerness):
+            self = .semanticVAD(.init(eagerness: eagerness))
+        }
+    }
+
+    public enum DetectionType: Sendable {
+        case serverVAD(prefixPaddingMs: Int, silenceDurationMs: Int, threshold: Double)
+        case semanticVAD(eagerness: OpenAIRealtimeSessionConfiguration.Eagerness)
+    }
+}
 
 // MARK: -
 extension OpenAIRealtimeSessionConfiguration {
