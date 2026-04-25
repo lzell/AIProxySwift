@@ -134,7 +134,8 @@ nonisolated private let kWebsocketDisconnectedEarlyThreshold: TimeInterval = 3
                 self.receiveMessage()
             }
         } catch {
-            logIf(.error)?.error("Received websocket data that we don't understand")
+            let strMessage = String(data: data, encoding: .utf8) ?? "unknown"
+            logIf(.error)?.error("Received websocket data that we don't understand: \(strMessage)")
             self.disconnect()
         }
     }

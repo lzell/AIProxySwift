@@ -17,7 +17,9 @@ nonisolated public enum OpenAIRealtimeMessage: Decodable, Sendable {
     case inputAudioBufferSpeechStarted(OpenAIRealtimeInputAudioBufferSpeechStartedEvent) // "input_audio_buffer.speech_started"
     case inputAudioBufferSpeechStopped(OpenAIRealtimeInputAudioBufferSpeechStoppedEvent) // "input_audio_buffer.speech_stopped"
     case inputAudioBufferCommitted(OpenAIRealtimeInputAudioBufferCommittedEvent) // "input_audio_buffer.committed"
-    case conversationItemCreated(OpenAIRealtimeConversationItemCreatedEvent) // "conversation.item.created"
+    case conversationItemCreated(OpenAIRealtimeConversationItemCreatedEvent) // "conversation.item.created" (beta)
+    case conversationItemAdded(OpenAIRealtimeConversationItemCreatedEvent) // "conversation.item.added" (GA)
+    case conversationItemDone(OpenAIRealtimeConversationItemCreatedEvent) // "conversation.item.done" (GA)
     case responseFunctionCallArgumentsDone(OpenAIRealtimeResponseFunctionCallArgumentsDoneEvent) // "response.function_call_arguments.done"
     case responseOutputItemAdded(OpenAIRealtimeResponseOutputItemAddedEvent) // "response.output_item.added"
     case responseOutputItemDone(OpenAIRealtimeResponseOutputItemDoneEvent) // "response.output_item.done"
@@ -52,7 +54,7 @@ nonisolated public enum OpenAIRealtimeMessage: Decodable, Sendable {
             self = .sessionUpdated
         case "response.created":
             self = .responseCreated(try OpenAIRealtimeResponseCreatedEvent(from: decoder))
-        case "response.audio.delta":
+        case "response.audio.delta", "response.output_audio.delta":
             self = .responseAudioDelta(try OpenAIRealtimeResponseAudioDeltaEvent(from: decoder))
         case "input_audio_buffer.speech_started":
             self = .inputAudioBufferSpeechStarted(try OpenAIRealtimeInputAudioBufferSpeechStartedEvent(from: decoder))
@@ -62,6 +64,10 @@ nonisolated public enum OpenAIRealtimeMessage: Decodable, Sendable {
             self = .inputAudioBufferCommitted(try OpenAIRealtimeInputAudioBufferCommittedEvent(from: decoder))
         case "conversation.item.created":
             self = .conversationItemCreated(try OpenAIRealtimeConversationItemCreatedEvent(from: decoder))
+        case "conversation.item.added":
+            self = .conversationItemAdded(try OpenAIRealtimeConversationItemCreatedEvent(from: decoder))
+        case "conversation.item.done":
+            self = .conversationItemDone(try OpenAIRealtimeConversationItemCreatedEvent(from: decoder))
         case "response.function_call_arguments.done":
             self = .responseFunctionCallArgumentsDone(try OpenAIRealtimeResponseFunctionCallArgumentsDoneEvent(from: decoder))
         case "response.output_item.added":

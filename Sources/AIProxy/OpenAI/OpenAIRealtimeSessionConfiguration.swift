@@ -6,7 +6,7 @@
 //
 
 /// Realtime session configuration
-/// https://platform.openai.com/docs/api-reference/realtime-client-events/session/update#realtime-client-events/session/update-session
+/// https://developers.openai.com/api/reference/resources/realtime/client-events
 nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendable {
 
     // TODO: Move this to an extension
@@ -57,12 +57,25 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
             }
         }
     }
-    
-    /// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
-    public let inputAudioFormat: AudioFormat?
 
-    /// Configuration for input audio transcription. Set to nil to turn off.
+    /// The session type. Use `realtime` for speech-to-speech, `transcription` for audio transcription.
+    public let type: SessionType?
+
+    /// The model to use for this session.
+    public let model: String?
+
+    /// Audio configuration (GA interface). Use this for new code.
+    /// Legacy fields (inputAudioFormat, inputAudioTranscription, outputAudioFormat, speed, turnDetection, voice)
+    /// are merged into this struct at encode time for backward compatibility.
+    public let audio: AudioConfiguration?
+
+    /// Configuration for input audio transcription.
+    /// Encoded as audio.input.transcription in the GA API.
     public let inputAudioTranscription: InputAudioTranscription?
+
+    /// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
+    /// Encoded as audio.input.format in the GA API.
+    public let inputAudioFormat: AudioFormat?
 
     /// The default system instructions prepended to model calls.
     ///
@@ -78,20 +91,21 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
     ///
     public let instructions: String?
 
-    /// Maximum number of output tokens for a single assistant response, inclusive of tool
-    /// calls. Provide an integer between 1 and 4096 to limit output tokens, or "inf" for
-    /// the maximum available tokens for a given model. Defaults to "inf".
+    /// Maximum number of output tokens for a single assistant response.
+    /// Provide an integer between 1 and 4096 to limit output tokens, or `infinite` for the maximum.
+    /// Encoded as max_output_tokens in the GA API.
     public let maxResponseOutputTokens: MaxResponseOutputTokens?
 
     /// The set of modalities the model can respond with. To disable audio, set this to ["text"].
-    /// Possible values are `audio` and `text`
+    /// Encoded as output_modalities in the GA API.
     public let modalities: [Modality]?
 
     /// The format of output audio.
+    /// Encoded as audio.output.format in the GA API.
     public let outputAudioFormat: AudioFormat?
 
-    /// The speed of the generated audio. Select a value from 0.25 to 4.0.
-    /// Default to `1.0`
+    /// The speed of the generated audio. Select a value from 0.25 to 1.5.
+    /// Encoded as audio.output.speed in the GA API.
     public let speed: Float?
 
     /// Sampling temperature for the model.
@@ -103,42 +117,86 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
     /// How the model chooses tools. Options are "auto", "none", "required", or specify a function.
     public let toolChoice: ToolChoice?
 
-    /// Configuration for turn detection. Set to nil to turn off.
+    /// Configuration for turn detection.
+    /// Encoded as audio.input.turn_detection in the GA API.
     public let turnDetection: TurnDetection?
 
-    /// The voice the model uses to respond - one of alloy, echo, or shimmer. Cannot be
-    /// changed once the model has responded with audio at least once.
+    /// The voice the model uses to respond.
+    /// Encoded as audio.output.voice in the GA API.
     public let voice: String?
 
     private enum CodingKeys: String, CodingKey {
-        case inputAudioFormat = "input_audio_format"
-        case inputAudioTranscription = "input_audio_transcription"
+        case type
+        case model
+        case audio
         case instructions
-        case maxResponseOutputTokens = "max_response_output_tokens"
-        case modalities
-        case outputAudioFormat = "output_audio_format"
-        case speed
-        case temperature
+        case maxOutputTokens = "max_output_tokens"
+        case outputModalities = "output_modalities"
         case tools
         case toolChoice = "tool_choice"
-        case turnDetection = "turn_detection"
-        case voice
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(type, forKey: .type)
+        try container.encodeIfPresent(model, forKey: .model)
+        try container.encodeIfPresent(instructions, forKey: .instructions)
+        try container.encodeIfPresent(maxResponseOutputTokens, forKey: .maxOutputTokens)
+        try container.encodeIfPresent(modalities, forKey: .outputModalities)
+        try container.encodeIfPresent(tools, forKey: .tools)
+        try container.encodeIfPresent(toolChoice, forKey: .toolChoice)
+
+        // Merge legacy fields into the audio struct.
+        // Explicit audio sub-fields take precedence over legacy fields.
+        let resolvedInputFormat = audio?.input?.format ?? inputAudioFormat
+        let resolvedInputTranscription = audio?.input?.transcription ?? inputAudioTranscription
+        let resolvedInputTurnDetection = audio?.input?.turnDetection ?? turnDetection
+        let resolvedOutputFormat = audio?.output?.format ?? outputAudioFormat
+        let resolvedOutputSpeed = audio?.output?.speed ?? speed
+        let resolvedOutputVoice = audio?.output?.voice ?? voice
+
+        let hasInput = resolvedInputFormat != nil || resolvedInputTranscription != nil || resolvedInputTurnDetection != nil
+        let hasOutput = resolvedOutputFormat != nil || resolvedOutputSpeed != nil || resolvedOutputVoice != nil
+
+        if hasInput || hasOutput {
+            let resolvedAudio = AudioConfiguration(
+                input: hasInput ? InputAudio(
+                    format: resolvedInputFormat,
+                    transcription: resolvedInputTranscription,
+                    turnDetection: resolvedInputTurnDetection
+                ) : nil,
+                output: hasOutput ? OutputAudio(
+                    format: resolvedOutputFormat,
+                    speed: resolvedOutputSpeed,
+                    voice: resolvedOutputVoice
+                ) : nil
+            )
+            try container.encode(resolvedAudio, forKey: .audio)
+        } else if let audio {
+            try container.encode(audio, forKey: .audio)
+        }
     }
 
     public init(
+        type: OpenAIRealtimeSessionConfiguration.SessionType? = .realtime,
+        model: String? = nil,
+        audio: OpenAIRealtimeSessionConfiguration.AudioConfiguration? = nil,
         inputAudioFormat: OpenAIRealtimeSessionConfiguration.AudioFormat? = nil,
         inputAudioTranscription: OpenAIRealtimeSessionConfiguration.InputAudioTranscription? = nil,
         instructions: String? = nil,
         maxResponseOutputTokens: OpenAIRealtimeSessionConfiguration.MaxResponseOutputTokens? = nil,
         modalities: [OpenAIRealtimeSessionConfiguration.Modality]? = nil,
         outputAudioFormat: OpenAIRealtimeSessionConfiguration.AudioFormat? = nil,
-        speed: Float? = 1.0,
+        speed: Float? = nil,
         temperature: Double? = nil,
         tools: [OpenAIRealtimeSessionConfiguration.Tool]? = nil,
         toolChoice: OpenAIRealtimeSessionConfiguration.ToolChoice? = nil,
         turnDetection: OpenAIRealtimeSessionConfiguration.TurnDetection? = nil,
         voice: String? = nil
     ) {
+        self.type = type
+        self.model = model
+        self.audio = audio
         self.inputAudioFormat = inputAudioFormat
         self.inputAudioTranscription = inputAudioTranscription
         self.instructions = instructions
@@ -151,6 +209,63 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
         self.toolChoice = toolChoice
         self.turnDetection = turnDetection
         self.voice = voice
+    }
+}
+
+// MARK: -
+extension OpenAIRealtimeSessionConfiguration {
+    nonisolated public enum SessionType: String, Encodable, Sendable {
+        /// Speech-to-speech session
+        case realtime
+        /// Audio transcription session
+        case transcription
+    }
+}
+
+// MARK: -
+extension OpenAIRealtimeSessionConfiguration {
+    nonisolated public struct AudioConfiguration: Encodable, Sendable {
+        public let input: InputAudio?
+        public let output: OutputAudio?
+
+        public init(input: InputAudio? = nil, output: OutputAudio? = nil) {
+            self.input = input
+            self.output = output
+        }
+    }
+
+    nonisolated public struct InputAudio: Encodable, Sendable {
+        public let format: AudioFormat?
+        public let transcription: InputAudioTranscription?
+        public let turnDetection: TurnDetection?
+
+        private enum CodingKeys: String, CodingKey {
+            case format
+            case transcription
+            case turnDetection = "turn_detection"
+        }
+
+        public init(
+            format: AudioFormat? = nil,
+            transcription: InputAudioTranscription? = nil,
+            turnDetection: TurnDetection? = nil
+        ) {
+            self.format = format
+            self.transcription = transcription
+            self.turnDetection = turnDetection
+        }
+    }
+
+    nonisolated public struct OutputAudio: Encodable, Sendable {
+        public let format: AudioFormat?
+        public let speed: Float?
+        public let voice: String?
+
+        public init(format: AudioFormat? = nil, speed: Float? = nil, voice: String? = nil) {
+            self.format = format
+            self.speed = speed
+            self.voice = voice
+        }
     }
 }
 
@@ -197,7 +312,7 @@ extension OpenAIRealtimeSessionConfiguration {
 
         /// The type of the tool, e.g., "function".
         public let type = "function"
-        
+
         public init(name: String, description: String, parameters: [String: AIProxyJSONValue]) {
             self.name = name
             self.description = description
@@ -245,17 +360,34 @@ extension OpenAIRealtimeSessionConfiguration {
 }
 
 // MARK: -
-/// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
+/// Audio format. Options are `pcm16`, `g711Ulaw`, or `g711Alaw`.
 extension OpenAIRealtimeSessionConfiguration {
-    nonisolated public enum AudioFormat: String, Encodable, Sendable {
+    nonisolated public enum AudioFormat: Encodable, Sendable {
         case pcm16
-        case g711Ulaw = "g711_ulaw"
-        case g711Alaw = "g711_alaw"
+        case g711Ulaw
+        case g711Alaw
+
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case rate
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            switch self {
+            case .pcm16:
+                try container.encode("audio/pcm", forKey: .type)
+                try container.encode(24000, forKey: .rate)
+            case .g711Ulaw:
+                try container.encode("audio/pcmu", forKey: .type)
+            case .g711Alaw:
+                try container.encode("audio/pcma", forKey: .type)
+            }
+        }
     }
 }
 
 // MARK: -
-/// The format of input audio. Options are `pcm16`, `g711_ulaw`, or `g711_alaw`.
 extension OpenAIRealtimeSessionConfiguration {
     nonisolated public enum Modality: String, Encodable, Sendable {
         case audio
