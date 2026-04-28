@@ -194,6 +194,7 @@ extension OpenAICreateImageEditRequestBody {
         case gptImage1 = "gpt-image-1"
         case gptImage1Mini = "gpt-image-1-mini"
         case gptImage1_5 = "gpt-image-1.5"
+        case gptImage2 = "gpt-image-2"
     }
 
     nonisolated public enum OutputFormat: String, Sendable {
