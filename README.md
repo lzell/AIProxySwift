@@ -1382,7 +1382,7 @@ final class RealtimeManager {
             inputAudioTranscription: .init(model: "whisper-1"),
             instructions: "You are a tour guide of Yosemite national park",
             maxResponseOutputTokens: .int(4096),
-            modalities: [.audio, .text],
+            modalities: [.audio],
             outputAudioFormat: .pcm16,
             temperature: 0.7,
             turnDetection: .init(
@@ -1444,6 +1444,32 @@ final class RealtimeManager {
         self.realtimeSession = nil
     }
 }
+```
+
+#### GA Realtime migration notes
+
+- `realtimeSessionGA(...)` is the GA-native path and supports GA-only `session.update` fields.
+- `realtimeSession(...)` now defaults to GA. Use `apiVersion: .betaV1` only as an explicit opt-in fallback.
+- OpenAI has announced Realtime beta (`OpenAI-Beta: realtime=v1`) deprecation and shutdown on 2026-05-07. Prefer GA paths for new integrations.
+- For `response.create`, GA uses `output_modalities` (not `modalities`).
+- GA `output_modalities` behavior is nuanced:
+  - `["audio"]` returns audio with transcript.
+  - `["text"]` returns text only.
+- For voice mode with built-in web search, use GA tools (`.webSearch`) and GA tool choice.
+
+```swift
+let configuration = OpenAIRealtimeSessionConfigurationGA(
+    outputModalities: [.audio],
+    voice: .builtin("alloy"),
+    tools: [.webSearch(.init(searchContextSize: .medium))],
+    toolChoice: .auto
+)
+
+let session = try await openAIService.realtimeSessionGA(
+    model: "gpt-realtime",
+    configuration: configuration,
+    logLevel: .info
+)
 ```
 
 ### How to make a basic request using OpenAI's Responses API
