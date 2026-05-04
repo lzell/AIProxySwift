@@ -138,6 +138,8 @@ import Foundation
         additionalHeaders: [String: String] = [:],
         progressCallback: (@Sendable (Double) -> Void)? = nil
     ) async throws -> OpenAICreateTranscriptionResponseBody {
+        var body = body
+        body.stream = false
         let request = try await self.requestBuilder.multipartPOST(
             path: self.resolvedPath("audio/transcriptions"),
             body: body,
@@ -157,6 +159,29 @@ import Foundation
         }
 
         return try OpenAICreateTranscriptionResponseBody.deserialize(from: data)
+    }
+
+    /// Initiates a streaming create transcription request to v1/audio/transcriptions.
+    ///
+    /// - Parameters:
+    ///   - body: The request body to send to aiproxy and openai. `stream` is set to true by this method.
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
+    ///   - additionalHeaders: Optional headers to pass up with the request alongside the lib's default headers
+    /// - Returns: An async sequence of transcription stream events.
+    public func streamingTranscriptionRequest(
+        body: OpenAICreateTranscriptionRequestBody,
+        secondsToWait: UInt,
+        additionalHeaders: [String: String] = [:]
+    ) async throws -> AsyncThrowingStream<OpenAITranscriptionStreamingEvent, Error> {
+        var body = body
+        body.stream = true
+        let request = try await self.requestBuilder.multipartPOST(
+            path: self.resolvedPath("audio/transcriptions"),
+            body: body,
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeStreamingChunks(request)
     }
 
     /// Initiates a create text to speech request to v1/audio/speech
