@@ -17,15 +17,28 @@ nonisolated public struct OpenAICompactionItem: Encodable, Sendable {
     /// The ID of the compaction item.
     public let id: String?
 
+    /// Present when the API includes `created_by` on the compaction object.
+    public let createdBy: String?
+
     private enum CodingKeys: String, CodingKey {
         case encryptedContent = "encrypted_content"
         case type
         case id
+        case createdBy = "created_by"
     }
 
-    public init(encryptedContent: String, id: String? = nil) {
+    public init(encryptedContent: String, id: String? = nil, createdBy: String? = nil) {
         self.encryptedContent = encryptedContent
         self.id = id
+        self.createdBy = createdBy
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(encryptedContent, forKey: .encryptedContent)
+        try container.encode(type, forKey: .type)
+        try container.encodeIfPresent(id, forKey: .id)
+        try container.encodeIfPresent(createdBy, forKey: .createdBy)
     }
 }
 

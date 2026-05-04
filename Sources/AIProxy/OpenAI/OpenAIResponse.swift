@@ -116,8 +116,8 @@ nonisolated public struct OpenAIResponse: Decodable, Sendable {
     public let topP: Double?
 
     /// The truncation strategy to use for the model response.
-    /// - `auto`: If the context of this response and previous ones exceeds the model's context window size, the model will truncate the response to fit the context window by dropping input items in the middle of the conversation.
-    /// - `disabled` (default): If a model response will exceed the context window size for a model, the request will fail with a 400 error.
+    /// - `auto`: If the input to this response exceeds the model's context window size, the model will truncate the response to fit the context window by dropping items from the beginning of the conversation.
+    /// - `disabled` (default): If the input size will exceed the context window size for a model, the request will fail with a 400 error.
     public let truncation: String?
 
     /// Represents token usage details including input tokens, output tokens, a breakdown of output tokens, and the total tokens used.
@@ -188,7 +188,7 @@ nonisolated public struct OpenAIResponse: Decodable, Sendable {
                         break
                     }
                 }
-            case .webSearchCall, .fileSearchCall, .functionCall, .computerCall, .reasoning:
+            case .webSearchCall, .fileSearchCall, .functionCall, .computerCall, .reasoning, .compaction:
                 break
             }
         }
@@ -337,6 +337,7 @@ extension OpenAIResponse {
         case functionCall(FunctionCall)
         case computerCall(ComputerCall)
         case reasoning(Reasoning)
+        case compaction(Compaction)
 
         private enum CodingKeys: String, CodingKey {
             case type
@@ -359,6 +360,8 @@ extension OpenAIResponse {
                 self = .computerCall(try ComputerCall(from: decoder))
             case "reasoning":
                 self = .reasoning(try Reasoning(from: decoder))
+            case "compaction":
+                self = .compaction(try Compaction(from: decoder))
             default:
                 throw DecodingError.dataCorruptedError(
                     forKey: .type,
@@ -366,6 +369,21 @@ extension OpenAIResponse {
                     debugDescription: "Unknown output item type: \(type)"
                 )
             }
+        }
+    }
+
+    // MARK: - Compaction
+    nonisolated public struct Compaction: Decodable, Sendable {
+        public let encryptedContent: String
+        public let id: String?
+
+        /// The identifier of the actor that created the item, when present on the wire.
+        public let createdBy: String?
+
+        private enum CodingKeys: String, CodingKey {
+            case encryptedContent = "encrypted_content"
+            case id
+            case createdBy = "created_by"
         }
     }
 
