@@ -1382,7 +1382,7 @@ final class RealtimeManager {
             inputAudioTranscription: .init(model: "whisper-1"),
             instructions: "You are a tour guide of Yosemite national park",
             maxResponseOutputTokens: .int(4096),
-            modalities: [.audio, .text],
+            modalities: [.audio],
             outputAudioFormat: .pcm16,
             temperature: 0.7,
             turnDetection: .init(
@@ -1392,7 +1392,7 @@ final class RealtimeManager {
         )
 
         let realtimeSession = try await openAIService.realtimeSession(
-            model: "gpt-4o-mini-realtime-preview-2024-12-17",
+            model: "gpt-realtime-1.5",
             configuration: configuration,
             logLevel: .debug
         )
@@ -1421,8 +1421,8 @@ final class RealtimeManager {
                     } else {
                         isOpenAIReadyForAudio = true
                     }
-                case .responseAudioDelta(let base64String):
-                    audioController.playPCM16Audio(base64String: base64String)
+                case .responseAudioDelta(let delta):
+                    audioController.playPCM16Audio(base64String: delta.base64String)
                 case .inputAudioBufferSpeechStarted:
                     audioController.interruptPlayback()
                 case .responseCreated:
@@ -1444,6 +1444,32 @@ final class RealtimeManager {
         self.realtimeSession = nil
     }
 }
+```
+
+#### GA Realtime migration notes
+
+- `realtimeSessionGA(...)` is the GA-native path and supports GA-only `session.update` fields.
+- `realtimeSession(...)` now defaults to GA. Use `apiVersion: .betaV1` only as an explicit opt-in fallback.
+- OpenAI has announced Realtime beta (`OpenAI-Beta: realtime=v1`) deprecation and shutdown on 2026-05-07. Prefer GA paths for new integrations.
+- For `response.create`, GA uses `output_modalities` (not `modalities`).
+- GA `output_modalities` behavior is nuanced:
+  - `["audio"]` returns audio with transcript.
+  - `["text"]` returns text only.
+- For voice mode with built-in web search, use GA tools (`.webSearch`) and GA tool choice.
+
+```swift
+let configuration = OpenAIRealtimeSessionConfigurationGA(
+    outputModalities: [.audio],
+    voice: .builtin("alloy"),
+    tools: [.webSearch(.init(searchContextSize: .medium))],
+    toolChoice: .auto
+)
+
+let session = try await openAIService.realtimeSessionGA(
+    model: "gpt-realtime",
+    configuration: configuration,
+    logLevel: .info
+)
 ```
 
 ### How to make a basic request using OpenAI's Responses API
@@ -2259,6 +2285,275 @@ You can use all of the OpenAI snippets aboves with one change. Initialize the Op
 
 ***
 
+## OpenAI Conversations API
+
+### How to create an OpenAI conversation
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let requestBody = OpenAICreateConversationRequestBody(
+        items: [
+            .item(
+                .inputMessage(OpenAIInputMessage(content: "Hello world", role: .user))
+            )
+        ],
+        metadata: ["topic": "demo"]
+    )
+
+    do {
+         let response = try await openAIService.createConversation(
+             requestBody: requestBody,
+             secondsToWait: 120
+         )
+        print("Created conversation with ID: \(response.id)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create OpenAI Conversation: \(error)")
+    }
+```
+
+### How to get an OpenAI conversation
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let response = try await openAIService.getConversation(
+            conversationID: "<conversation-id>",
+            secondsToWait: 120
+        )
+        print("Retreived conversation with ID \(response.id) and metadata: \(response.metadata)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not get OpenAI Conversation: \(error)")
+    }
+```
+
+### How to list OpenAI conversation items
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let response = try await openAIService.listItems(
+            conversationID: "<conversation-id>",
+            include: [.messageOutputTextLogprobs],
+            secondsToWait: 120
+        )
+        print("Retreived conversation with ID \(response.data)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not list OpenAI conversation items: \(error)")
+    }
+```
+
+### How to add items to an OpenAI conversation
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let createConversationBody = OpenAICreateConversationRequestBody(
+        metadata: ["purpose": "item_creation_test"]
+    )
+
+    do {
+        let conversation = try await openAIService.createConversation(
+            requestBody: createConversationBody,
+            secondsToWait: 120
+        )
+        print("Created conversation: \(conversation.id)")
+
+        let createItemsBody = OpenAICreateConversationItemsRequestBody(
+            items: [
+                .item(
+                    .inputMessage(OpenAIInputMessage(content: "What is the capital of France?", role: .user))
+                )
+            ]
+        )
+
+        let response = try await openAIService.createItems(
+            conversationID: conversation.id,
+            requestBody: createItemsBody,
+            secondsToWait: 120
+        )
+        print("Created \(response.data.count) items in conversation")
+        print("First item ID: \(response.firstID)")
+        print("Last item ID: \(response.lastID)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not create conversation items: \(error)")
+    }
+```
+
+### How to delete an item from an OpenAI conversation
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let result = try await openAIService.deleteItem(
+            conversationID: <conversation-id>,
+            itemID: <item-id>,
+            secondsToWait: 120
+        )
+        print("Deleted conversation item with id: \(result.id)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not delete conversation item: \(error)")
+    }
+```
+
+### How to delete an OpenAI conversation
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let response = try await openAIService.deleteConversation(
+            conversationID: "<conversation-id>",
+            secondsToWait: 120
+        )
+        print("Conversation with ID \(response.id) has been deleted: \(response.deleted)")
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not delete OpenAI Conversation: \(error)")
+    }
+```
+
+### How to list OpenAI conversation items with pagination
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let openAIService = AIProxy.openAIDirectService(
+    //     unprotectedAPIKey: "your-openai-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let openAIService = AIProxy.openAIService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    let createConversationBody = OpenAICreateConversationRequestBody(
+        items: [
+            .item(.inputMessage(OpenAIInputMessage(content: "Page 1 - Item 1", role: .user))),
+            .item(.inputMessage(OpenAIInputMessage(content: "Page 1 - Item 2", role: .user))),
+            .item(.inputMessage(OpenAIInputMessage(content: "Page 2 - Item 1", role: .user))),
+            .item(.inputMessage(OpenAIInputMessage(content: "Page 2 - Item 2", role: .user)))
+        ],
+        metadata: ["purpose": "pagination_test"]
+    )
+
+    do {
+        let conversation = try await openAIService.createConversation(
+            requestBody: createConversationBody,
+            secondsToWait: 120
+        )
+        print("Created conversation: \(conversation.id)")
+
+        let page1 = try await openAIService.listItems(
+            conversationID: conversation.id,
+            limit: 2,
+            order: .asc,
+            secondsToWait: 120
+        )
+        print("Page 1: \(page1.data.count) items")
+        print("Has more: \(page1.hasMore)")
+
+        if page1.hasMore {
+            let page2 = try await openAIService.listItems(
+                conversationID: conversation.id,
+                after: page1.lastID,
+                limit: 2,
+                order: .asc,
+                secondsToWait: 120
+            )
+            print("Page 2: \(page2.data.count) items")
+            print("Has more: \(page2.hasMore)")
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received \(statusCode) status code with response body: \(responseBody)")
+    } catch {
+        print("Could not paginate conversation items: \(error)")
+    }
+```
+
+***
 
 ## Gemini
 
@@ -4908,7 +5203,17 @@ model owner and model name in the string.
 
 - See the full range of TTS controls by viewing `ElevenLabsTTSRequestBody.swift`.
 - See https://api.elevenlabs.io/v1/voices for the IDs that you can pass to `voiceID`.
+- To get timing information of the spoken text, use `elevenLabsService.ttsRequestWithTimestamps`:
 
+```swift
+let res = try await elevenLabsService.ttsRequestWithTimestamps(
+    voiceID: "EXAVITQu4vr4xnSDxMaL",
+    body: body,
+    secondsToWait: 120
+)
+// Timing information is available as `res.alignment` and `res.normalizedAlignment`
+// Audio to pass to the AVAudioPlayer is available as `res.audioData`
+```
 
 ### How to use ElevenLabs for streaming text-to-speech
 
@@ -4962,6 +5267,20 @@ model owner and model name in the string.
 
 - See the full range of TTS controls by viewing `ElevenLabsTTSRequestBody.swift`.
 - See https://api.elevenlabs.io/v1/voices for the IDs that you can pass to `voiceID`.
+- To get timing information of the spoken text, use `elevenLabsService.streamingTTSWithTimestampsRequest`:
+
+```swift
+let stream = try await elevenLabsService.streamingTTSWithTimestampsRequest(
+    voiceID: "EXAVITQu4vr4xnSDxMaL",
+    body: body,
+    secondsToWait: 120
+)
+
+for try await chunk in stream {
+    // Timing information is available as `chunk.alignment` and `chunk.normalizedAlignment`
+    // Audio to pass to the AVAudioPlayer is available as `chunk.audioData`
+}
+```
 
 ### How to use ElevenLabs for speech-to-speech
 

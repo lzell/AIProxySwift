@@ -11,6 +11,6 @@ import Foundation
 
 extension DirectService {
     var urlSession: URLSession {
-        return AIProxyUtils.directURLSession()
+        return AIProxyUtils.directURLSession
     }
 }

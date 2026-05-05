@@ -12,12 +12,12 @@ import Foundation
 /// Create stateful interactions with the model, using the output of previous responses as input.
 /// Extend the model's capabilities with built-in tools for file search, web search, computer use, and more.
 /// Allow the model access to external systems and data using function calling.
-/// https://platform.openai.com/docs/api-reference/responses/create
+/// https://developers.openai.com/api/reference/resources/responses/methods/create
 /// Implementor's note: See ResponseCreateParamsBase in `src/openai/types/responses/response_create_params.py`
 nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
 
     /// Specify additional output data to include in the model response.
-    public let include: [Include]?
+    public let include: [OpenAIInclude]?
 
     /// Text, image, or file inputs to the model, used to generate a response.
     public let input: OpenAIResponse.Input?
@@ -27,6 +27,10 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
     /// will not be carried over to the next response. This makes it simple to swap out system
     /// (or developer) messages in new responses.
     public let instructions: String?
+
+    /// An upper bound for the number of tokens that can be generated for a response,
+    /// including visible output tokens and reasoning tokens: https://developers.openai.com/docs/guides/reasoning
+    public let maxOutputTokens: Int?
 
     /// Model ID used to generate the response, like gpt-4o or o1.
     /// OpenAI offers a wide range of models with different capabilities, performance characteristics, and price points.
@@ -96,6 +100,7 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
         case include
         case input
         case instructions
+        case maxOutputTokens = "max_output_tokens"
         case model
         case tools
         case toolChoice = "tool_choice"
@@ -117,9 +122,10 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
     // To regenerate, use `cmd-shift-a` > Generate Memberwise Initializer
     // To format, place the cursor in the initializer's parameter list and use `ctrl-m`
     public init(
-        include: [Include]? = nil,
+        include: [OpenAIInclude]? = nil,
         input: OpenAIResponse.Input? = nil,
         instructions: String? = nil,
+        maxOutputTokens: Int? = nil,
         model: String? = nil,
         parallelToolCalls: Bool? = nil,
         previousResponseId: String? = nil,
@@ -139,6 +145,7 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
         self.include = include
         self.input = input
         self.instructions = instructions
+        self.maxOutputTokens = maxOutputTokens
         self.model = model
         self.parallelToolCalls = parallelToolCalls
         self.previousResponseId = previousResponseId
@@ -161,30 +168,6 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
 }
 
 extension OpenAICreateResponseRequestBody {
-
-    /// Specify additional output data to include in the model response.
-    nonisolated public enum Include: String, Codable, Sendable {
-        /// Include the outputs of python code execution in code interpreter tool call items.
-        case codeInterpreterCallOutputs = "code_interpreter_call.outputs"
-        
-        /// Include image urls from the computer call output.
-        case computerCallOutputImageUrl = "computer_call_output.output.image_url"
-        
-        /// Include the search results of the file search tool call.
-        case fileSearchCallResults = "file_search_call.results"
-        
-        /// Include image urls from the input message.
-        case messageInputImageImageUrl = "message.input_image.image_url"
-        
-        /// Include logprobs with assistant messages.
-        case messageOutputTextLogprobs = "message.output_text.logprobs"
-        
-        /// Includes an encrypted version of reasoning tokens in reasoning item outputs.
-        case reasoningEncryptedContent = "reasoning.encrypted_content"
-        
-        /// Include the sources of the web search tool call.
-        case webSearchCallActionSources = "web_search_call.action.sources"
-    }
 
     /// The truncation strategy to use for the model response.
     nonisolated public enum Truncation: String, Encodable, Sendable {
@@ -667,6 +650,7 @@ extension OpenAICreateResponseRequestBody.Reasoning {
         case low
         case medium
         case high
+        case xhigh
     }
 
     /// Summary types for reasoning models

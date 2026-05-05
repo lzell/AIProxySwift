@@ -52,7 +52,56 @@ import Foundation
         )
         return data
     }
+    
+    /// Converts text to speech with a request to `/v1/text-to-speech/<voice-id>/with-timestamps`
+    ///
+    /// - Parameters:
+    ///
+    ///   - voiceID: The Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the
+    ///              available voices.
+    ///
+    ///   - body: The request body to send to ElevenLabs. See this reference:
+    ///           https://elevenlabs.io/docs/api-reference/text-to-speech/convert#request
+    ///
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
+    ///
+    /// - Returns: ElevenLabsTTSWithTimestampsResponseBody which includes timings for the returned audio.
 
+    func ttsRequestWithTimestamps(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> ElevenLabsTTSWithTimestampsResponseBody {
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: "https://api.elevenlabs.io",
+            path: "/v1/text-to-speech/\(voiceID)/with-timestamps",
+            body: try body.serialize(),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "application/json",
+            additionalHeaders: [
+                "xi-api-key": self.unprotectedAPIKey
+            ]
+        )
+        
+        return try await self.makeRequestAndDeserializeResponse(request)
+    }
+
+    /// Converts text to speech with a request to `/v1/text-to-speech/<voice-id>/stream?output_format=pcm_24000`
+    ///
+    /// - Parameters:
+    ///
+    ///   - voiceID: The Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the
+    ///              available voices.
+    ///
+    ///   - body: The request body to send to ElevenLabs. See this reference:
+    ///           https://elevenlabs.io/docs/api-reference/text-to-speech/convert#request
+    ///
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
+    ///
+    /// - Returns: Returns an async stream that vends each time a chunk of audio is received over the network.
+    ///            The stream consists of PCM16, int encoded, signed, little-endian audio at a 24 kHz sample rate.
+    ///            The returned audio is playable by the `AudioController` class in this SDK.
     func streamingTTSRequest(
         voiceID: String,
         body: ElevenLabsTTSRequestBody,
@@ -70,6 +119,46 @@ import Foundation
             ]
         )
         return try await BackgroundNetworker.makeRequestAndVendChunks(self.urlSession, request)
+    }
+
+    /// Converts text to speech with a request to `/v1/text-to-speech/<voice-id>/with-timestamps`
+    ///
+    /// - Parameters:
+    ///
+    ///   - voiceID: The Voice ID to be used, you can use https://api.elevenlabs.io/v1/voices to list all the
+    ///              available voices.
+    ///
+    ///   - body: The request body to send to ElevenLabs. See this reference:
+    ///           https://elevenlabs.io/docs/api-reference/text-to-speech/convert#request
+    ///
+    ///   - secondsToWait: Seconds to wait before raising `URLError.timedOut`
+    ///
+    /// - Returns: ElevenLabsTTSWithTimestampsResponseBody which includes timings for the returned audio. The
+    ///            audio is always returned as PCM16, signed, little-endian data at a 24 kHz sample rate
+    ///            (`output_format=pcm_24000`), and this output format is fixed in the request URL rather than
+    ///            being configurable via a parameter.
+
+    func streamingTTSWithTimestampsRequest(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> AsyncThrowingStream<ElevenLabsTTSWithTimestampsResponseBody, Error>  {
+        let path = "/v1/text-to-speech/\(voiceID)/stream/with-timestamps?output_format=pcm_24000"
+
+        let request = try AIProxyURLRequest.createDirect(
+            baseURL: "https://api.elevenlabs.io",
+            path: path,
+            body: try body.serialize(),
+            verb: .post,
+            secondsToWait: secondsToWait,
+            contentType: "application/json",
+            additionalHeaders: [
+                "xi-api-key": self.unprotectedAPIKey
+            ]
+        )
+
+        return try await self.makeRequestAndDeserializeNDJSONChunks(request)
+
     }
 
     /// Converts speech to speech with a request to `/v1/speech-to-speech/<voice-id>`

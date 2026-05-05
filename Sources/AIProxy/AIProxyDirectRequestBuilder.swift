@@ -69,6 +69,22 @@ import Foundation
         )
     }
 
+    func plainDELETE(
+        path: String,
+        secondsToWait: UInt,
+        additionalHeaders: [String : String],
+        baseURLOverride: String?
+    ) async throws -> URLRequest {
+        return try AIProxyURLRequest.createDirect(
+            baseURL: baseURLOverride ?? self.baseURL,
+            path: path,
+            body: nil,
+            verb: .delete,
+            secondsToWait: secondsToWait,
+            additionalHeaders: self.mergedHeaders(additionalHeaders: additionalHeaders)
+        )
+    }
+
     private func mergedHeaders(additionalHeaders: [String: String]) -> [String: String] {
         var mergedHeaders = additionalHeaders
 

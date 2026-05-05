@@ -26,13 +26,11 @@ import Network
 
 enum AIProxyUtils {
 
-    nonisolated static func directURLSession() -> URLSession {
-        return URLSession(
-            configuration: .ephemeral,
-            delegate: DirectURLSessionDataDelegate(),
-            delegateQueue: nil
-        )
-    }
+    nonisolated static let directURLSession = URLSession(
+        configuration: .ephemeral,
+        delegate: DirectURLSessionDataDelegate(),
+        delegateQueue: nil
+    )
 
     nonisolated static func proxiedURLSession() -> URLSession {
         if AIProxy.resolveDNSOverTLS {
@@ -48,7 +46,7 @@ enum AIProxyUtils {
                 fallbackResolver: .tls(host, serverAddresses: endpoints)
             )
         }
-        return AIProxyURLSession.create()
+        return AIProxyURLSession.urlSession
     }
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)

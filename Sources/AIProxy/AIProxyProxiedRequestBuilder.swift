@@ -84,4 +84,26 @@ nonisolated private let legacyURL = "https://api.aiproxy.pro"
             additionalHeaders: additionalHeaders
         )
     }
+
+    func plainDELETE(
+        path: String,
+        secondsToWait: UInt,
+        additionalHeaders: [String : String],
+        baseURLOverride: String?
+    ) async throws -> URLRequest {
+        var additionalHeaders = additionalHeaders
+        if let baseURLOverride = baseURLOverride {
+            additionalHeaders["aiproxy-base-url"] = baseURLOverride
+        }
+        return try await AIProxyURLRequest.create(
+            partialKey: self.partialKey,
+            serviceURL: self.serviceURL ?? legacyURL,
+            clientID: self.clientID,
+            proxyPath: path,
+            body: nil,
+            verb: .delete,
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders
+        )
+    }
 }

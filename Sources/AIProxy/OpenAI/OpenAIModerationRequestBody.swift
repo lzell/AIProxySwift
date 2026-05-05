@@ -8,7 +8,7 @@
 import Foundation
 
 /// Docstrings from https://platform.openai.com/docs/api-reference/moderations/create
-nonisolated public struct OpenAIModerationRequestBody: Encodable {
+nonisolated public struct OpenAIModerationRequestBody: Encodable, Sendable {
     /// An array of multi-modal inputs to classify.
     public let input: [ModerationInput]
 

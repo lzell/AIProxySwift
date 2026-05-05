@@ -10,12 +10,10 @@ import Foundation
 nonisolated public enum AIProxyURLSession {
     public static let delegate = AIProxyCertificatePinningDelegate()
 
-    /// Creates a URLSession that is configured for communication with aiproxy.com
-    static func create() -> URLSession {
-        return URLSession(
-            configuration: .ephemeral,
-            delegate: self.delegate,
-            delegateQueue: nil
-        )
-    }
+    /// A URLSession that is configured for communication with aiproxy.com
+    static let urlSession = URLSession(
+        configuration: .ephemeral,
+        delegate: delegate,
+        delegateQueue: nil
+    )
 }

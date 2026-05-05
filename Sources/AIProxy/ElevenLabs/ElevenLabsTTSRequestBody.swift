@@ -9,6 +9,7 @@ import Foundation
 
 /// Request body for a text-to-speech request to ElevenLabs.
 /// https://elevenlabs.io/docs/api-reference/text-to-speech/convert
+/// https://elevenlabs.io/docs/api-reference/text-to-speech/convert-with-timestamps
 /// Note that `voiceID` is set on the path, not in the request body.
 nonisolated public struct ElevenLabsTTSRequestBody: Encodable {
     // Required
