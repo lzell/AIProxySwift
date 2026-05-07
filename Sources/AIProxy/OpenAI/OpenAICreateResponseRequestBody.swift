@@ -230,6 +230,10 @@ extension OpenAICreateResponseRequestBody {
         /// https://platform.openai.com/docs/guides/function-calling?api-mode=responses
         case function(FunctionTool)
 
+        /// Run shell commands and Agent Skills in a hosted or local execution environment.
+        /// https://developers.openai.com/api/docs/guides/tools-skills
+        case shell(ShellTool)
+
         /// Allow models to search the web for the latest information before generating a response.
         /// https://platform.openai.com/docs/guides/tools-web-search?api-mode=responses
         case webSearch(WebSearchTool)
@@ -290,6 +294,10 @@ extension OpenAICreateResponseRequestBody {
                 try container.encode(tool.parameters, forKey: .parameters)
                 try container.encode(tool.strict, forKey: .strict)
                 try container.encodeIfPresent(tool.description, forKey: .description)
+
+            case .shell(let tool):
+                try container.encode("shell", forKey: .type)
+                try container.encode(tool.environment, forKey: .environment)
             }
         }
 
@@ -327,6 +335,10 @@ extension OpenAICreateResponseRequestBody {
                 let strict = try container.decode(Bool.self, forKey: .strict)
                 let description = try container.decodeIfPresent(String.self, forKey: .description)
                 self = .function(FunctionTool(name: name, parameters: parameters, strict: strict, description: description))
+
+            case "shell":
+                let environment = try container.decode(ShellTool.Environment.self, forKey: .environment)
+                self = .shell(ShellTool(environment: environment))
 
             default:
                 throw DecodingError.dataCorruptedError(
@@ -581,6 +593,147 @@ extension OpenAICreateResponseRequestBody {
             self.parameters = parameters
             self.strict = strict
             self.description = description
+        }
+    }
+
+    // MARK: - Shell Tool
+    /// Run shell commands and Agent Skills in a hosted or local execution environment.
+    /// https://developers.openai.com/api/docs/guides/tools-skills
+    nonisolated public struct ShellTool: Codable, Sendable {
+
+        /// The type of the shell tool. Always `shell`.
+        public let type = "shell"
+
+        /// The execution environment for the shell tool, plus any skills mounted into it.
+        public let environment: Environment
+
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case environment
+        }
+
+        public init(environment: Environment) {
+            self.environment = environment
+        }
+
+        /// The execution environment for a shell tool.
+        nonisolated public enum Environment: Codable, Sendable {
+            /// A hosted container managed by OpenAI, with optional Agent Skills mounted from uploaded skill bundles.
+            case containerAuto(skills: [SkillReference]? = nil)
+
+            /// A local execution environment with optional Agent Skills mounted from filesystem paths.
+            case local(skills: [LocalSkill]? = nil)
+
+            private enum CodingKeys: String, CodingKey {
+                case type
+                case skills
+            }
+
+            public func encode(to encoder: Encoder) throws {
+                var container = encoder.container(keyedBy: CodingKeys.self)
+                switch self {
+                case .containerAuto(let skills):
+                    try container.encode("container_auto", forKey: .type)
+                    try container.encodeIfPresent(skills, forKey: .skills)
+                case .local(let skills):
+                    try container.encode("local", forKey: .type)
+                    try container.encodeIfPresent(skills, forKey: .skills)
+                }
+            }
+
+            public init(from decoder: Decoder) throws {
+                let container = try decoder.container(keyedBy: CodingKeys.self)
+                let type = try container.decode(String.self, forKey: .type)
+                switch type {
+                case "container_auto":
+                    let skills = try container.decodeIfPresent([SkillReference].self, forKey: .skills)
+                    self = .containerAuto(skills: skills)
+                case "local":
+                    let skills = try container.decodeIfPresent([LocalSkill].self, forKey: .skills)
+                    self = .local(skills: skills)
+                default:
+                    throw DecodingError.dataCorruptedError(
+                        forKey: .type,
+                        in: container,
+                        debugDescription: "Unknown shell environment type: \(type)"
+                    )
+                }
+            }
+        }
+
+        /// A reference to an Agent Skill that has been uploaded to OpenAI.
+        nonisolated public struct SkillReference: Codable, Sendable {
+
+            /// The type of the skill entry. Always `skill_reference`.
+            public let type = "skill_reference"
+
+            /// The ID of the uploaded skill bundle.
+            public let skillId: String
+
+            /// The version of the skill to use. Accepts a specific integer version or `.latest`.
+            /// When omitted, the skill's `default_version` is used.
+            public let version: Version?
+
+            private enum CodingKeys: String, CodingKey {
+                case type
+                case skillId = "skill_id"
+                case version
+            }
+
+            public init(skillId: String, version: Version? = nil) {
+                self.skillId = skillId
+                self.version = version
+            }
+
+            /// A skill version selector. Either a specific integer version or the symbolic `latest`.
+            nonisolated public enum Version: Codable, Sendable {
+                case number(Int)
+                case latest
+
+                public func encode(to encoder: Encoder) throws {
+                    var container = encoder.singleValueContainer()
+                    switch self {
+                    case .number(let n): try container.encode(n)
+                    case .latest: try container.encode("latest")
+                    }
+                }
+
+                public init(from decoder: Decoder) throws {
+                    let container = try decoder.singleValueContainer()
+                    if let n = try? container.decode(Int.self) {
+                        self = .number(n)
+                        return
+                    }
+                    let s = try container.decode(String.self)
+                    guard s == "latest" else {
+                        throw DecodingError.dataCorruptedError(
+                            in: container,
+                            debugDescription: "Unknown skill version: \(s)"
+                        )
+                    }
+                    self = .latest
+                }
+            }
+        }
+
+        /// An Agent Skill mounted from a local filesystem path.
+        /// `name`, `description`, and `path` are added to the user prompt context so the model can discover and invoke the skill.
+        nonisolated public struct LocalSkill: Codable, Sendable {
+
+            /// A short identifier for the skill (e.g. `csv-insights`).
+            public let name: String
+
+            /// Natural-language description of what the skill does. Shown to the model so it can decide when to invoke the skill.
+            public let description: String
+
+            /// Path to the skill folder containing a `SKILL.md` manifest.
+            public let path: String
+
+            public init(name: String, description: String, path: String) {
+                self.name = name
+                self.description = description
+                self.path = path
+            }
         }
     }
 }
