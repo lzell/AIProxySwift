@@ -286,7 +286,7 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
 
         // If we have an AVAudioEngine in manual rendering mode, set up the VPIO output bus
         // to pull rendered audio. This gives the VPIO visibility into playback for AEC.
-        if self.shouldEnableSpeakerBusForAEC, audioEngine != nil {
+        if self.shouldEnableSpeakerBusForAEC, self.audioEngine != nil {
             var outputFormat = AudioStreamBasicDescription(
                 mSampleRate: kVoiceProcessingInputSampleRate,  // 44100
                 mFormatID: kAudioFormatLinearPCM,
@@ -364,11 +364,6 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
         _ inBusNumber: UInt32,
         _ inNumberFrames: UInt32
     ) {
-        var allocatedMicData: UnsafeMutableRawPointer?
-        defer {
-            allocatedMicData?.deallocate()
-        }
-
         // iOS does not respect the buffer size we ask for. macOS is much closer. I'm accumulating them downstream anyway:
         // print("Got \(inNumberFrames) frames - expected \(UInt(kVoiceProcessingInputSampleRate /  20))")
         guard let audioUnit = audioUnit else {
@@ -380,14 +375,10 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
             mBuffers: AudioBuffer(
                 mNumberChannels: 1,
                 mDataByteSize: inNumberFrames * 2,
-                mData: {
-                    let data = UnsafeMutableRawPointer.allocate(
-                        byteCount: Int(inNumberFrames) * 2,
-                        alignment: MemoryLayout<Int16>.alignment
-                    )
-                    allocatedMicData = data
-                    return data
-                }()
+                mData: UnsafeMutableRawPointer.allocate(
+                    byteCount: Int(inNumberFrames) * 2,
+                    alignment: MemoryLayout<Int16>.alignment
+                )
             )
         )
 
@@ -420,7 +411,6 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
 
         if let sampleBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, bufferListNoCopy: &bufferList),
            let accumulatedBuffer = self.microphonePCMSampleVendorCommon.resampleAndAccumulate(sampleBuffer) {
-            allocatedMicData = nil
             // If the buffer has accumulated to a sufficient level, give it back to the caller
             Task { @AIProxyActor in
                 self.continuation?.yield(accumulatedBuffer)
