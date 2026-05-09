@@ -66,13 +66,19 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
     private let microphonePCMSampleVendorCommon = MicrophonePCMSampleVendorCommon()
     private var continuation: AsyncStream<AVAudioPCMBuffer>.Continuation?
     private var audioEngine: AVAudioEngine?
+    private let shouldEnableSpeakerBusForAEC: Bool
     private var outputLikelyActiveUntilUptime: TimeInterval = 0
     private var outputSmoothedRMS: Float = 0
     private var micLoudFrameStreak = 0
     private var bargeInOpenUntilUptime: TimeInterval = 0
 
-    public init(audioEngine: AVAudioEngine? = nil) {
+    public init(
+        audioEngine: AVAudioEngine? = nil,
+        useManualEchoCancellation: Bool = false
+    ) {
         self.audioEngine = audioEngine
+        self.shouldEnableSpeakerBusForAEC = useManualEchoCancellation
+                                           && (audioEngine?.isInManualRenderingMode ?? false)
     }
 
     deinit {
@@ -115,18 +121,13 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
             )
         }
 
-        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
-        let shouldEnableSpeakerBusForAEC = audioEngine?.isInManualRenderingMode ?? false
-        #else
-        let shouldEnableSpeakerBusForAEC = true
-        #endif
-        var one_output: UInt32 = shouldEnableSpeakerBusForAEC ? 1 : 0
+        var oneOutput: UInt32 = self.shouldEnableSpeakerBusForAEC ? 1 : 0
         err = AudioUnitSetProperty(audioUnit,
                                    kAudioOutputUnitProperty_EnableIO,
                                    kAudioUnitScope_Output,
                                    0,
-                                   &one_output,
-                                   UInt32(MemoryLayout.size(ofValue: one_output)))
+                                   &oneOutput,
+                                   UInt32(MemoryLayout.size(ofValue: oneOutput)))
 
         guard err == noErr else {
             throw MicrophonePCMSampleVendorError.couldNotConfigureAudioUnit(
@@ -255,7 +256,6 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
             )
         }
 
-        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
         // Make voice processing explicit so route changes do not accidentally bypass AEC.
         var disableBypass: UInt32 = 0
         err = AudioUnitSetProperty(
@@ -283,11 +283,10 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
         if err != noErr {
             logIf(.warning)?.warning("Could not disable VPIO AGC: \(err)")
         }
-        #endif
 
         // If we have an AVAudioEngine in manual rendering mode, set up the VPIO output bus
         // to pull rendered audio. This gives the VPIO visibility into playback for AEC.
-        if shouldEnableSpeakerBusForAEC, audioEngine != nil {
+        if self.shouldEnableSpeakerBusForAEC, audioEngine != nil {
             var outputFormat = AudioStreamBasicDescription(
                 mSampleRate: kVoiceProcessingInputSampleRate,  // 44100
                 mFormatID: kAudioFormatLinearPCM,
@@ -365,6 +364,11 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
         _ inBusNumber: UInt32,
         _ inNumberFrames: UInt32
     ) {
+        var allocatedMicData: UnsafeMutableRawPointer?
+        defer {
+            allocatedMicData?.deallocate()
+        }
+
         // iOS does not respect the buffer size we ask for. macOS is much closer. I'm accumulating them downstream anyway:
         // print("Got \(inNumberFrames) frames - expected \(UInt(kVoiceProcessingInputSampleRate /  20))")
         guard let audioUnit = audioUnit else {
@@ -376,10 +380,14 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
             mBuffers: AudioBuffer(
                 mNumberChannels: 1,
                 mDataByteSize: inNumberFrames * 2,
-                mData: UnsafeMutableRawPointer.allocate(
-                    byteCount: Int(inNumberFrames) * 2,
-                    alignment: MemoryLayout<Int16>.alignment
-                )
+                mData: {
+                    let data = UnsafeMutableRawPointer.allocate(
+                        byteCount: Int(inNumberFrames) * 2,
+                        alignment: MemoryLayout<Int16>.alignment
+                    )
+                    allocatedMicData = data
+                    return data
+                }()
             )
         )
 
@@ -395,11 +403,10 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
             return
         }
 
-        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
-        if self.shouldSuppressLikelyEchoInput(bufferList: bufferList, frameCount: inNumberFrames) {
+        if self.shouldEnableSpeakerBusForAEC
+            && self.shouldSuppressLikelyEchoInput(bufferList: bufferList, frameCount: inNumberFrames) {
             return
         }
-        #endif
 
         guard let audioFormat = AVAudioFormat(
             commonFormat: .pcmFormatInt16,
@@ -413,6 +420,7 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
 
         if let sampleBuffer = AVAudioPCMBuffer(pcmFormat: audioFormat, bufferListNoCopy: &bufferList),
            let accumulatedBuffer = self.microphonePCMSampleVendorCommon.resampleAndAccumulate(sampleBuffer) {
+            allocatedMicData = nil
             // If the buffer has accumulated to a sufficient level, give it back to the caller
             Task { @AIProxyActor in
                 self.continuation?.yield(accumulatedBuffer)
@@ -448,17 +456,16 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
             for i in 0..<buf.count {
                 memset(buf[i].mData, 0, Int(buf[i].mDataByteSize))
             }
-            #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
-            self.noteRenderedOutput(ioData, frameCount: inNumberFrames)
-            #endif
+            if self.shouldEnableSpeakerBusForAEC {
+                self.noteRenderedOutput(ioData, frameCount: inNumberFrames)
+            }
             return
         }
-        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
-        self.noteRenderedOutput(ioData, frameCount: inNumberFrames)
-        #endif
+        if self.shouldEnableSpeakerBusForAEC {
+            self.noteRenderedOutput(ioData, frameCount: inNumberFrames)
+        }
     }
 
-    #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
     private func noteRenderedOutput(
         _ ioData: UnsafeMutablePointer<AudioBufferList>,
         frameCount: UInt32
@@ -563,7 +570,6 @@ nonisolated private let kEchoGuardBargeInHoldSeconds: TimeInterval = 1.0
         }
         return sqrt(sumSquares / Float(sampleCount))
     }
-    #endif
 }
 
 // NOTE:

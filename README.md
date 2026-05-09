@@ -1373,7 +1373,10 @@ final class RealtimeManager {
         // Set to false if you want your user to speak first
         let aiSpeaksFirst = true
 
-        let audioController = try await AudioController(modes: [.playback, .record])
+        let audioController = try await AudioController(
+            modes: [.playback, .record],
+            useManualEchoCancellation: true
+        )
         let micStream = try audioController.micStream()
 
         // Start the realtime session:
@@ -1446,26 +1449,24 @@ final class RealtimeManager {
 }
 ```
 
-#### GA Realtime migration notes
+#### General Availability (GA) Realtime migration notes
 
-- `realtimeSessionGA(...)` is the GA-native path and supports GA-only `session.update` fields.
-- `realtimeSession(...)` now defaults to GA. Use `apiVersion: .betaV1` only as an explicit opt-in fallback.
-- OpenAI has announced Realtime beta (`OpenAI-Beta: realtime=v1`) deprecation and shutdown on 2026-05-07. Prefer GA paths for new integrations.
+- OpenAI has announced Realtime beta (`OpenAI-Beta: realtime=v1`) deprecation and shutdown on 2026-05-07.
 - For `response.create`, GA uses `output_modalities` (not `modalities`).
-- GA `output_modalities` behavior is nuanced:
+- The new `output_modalities` for OpenAI realtime GA (general availability) is as follows:
   - `["audio"]` returns audio with transcript.
   - `["text"]` returns text only.
-- For voice mode with built-in web search, use GA tools (`.webSearch`) and GA tool choice.
+- For voice mode with built-in web search, use GA tool (`.webSearch`) and specify `.auto` for toolChoice to let the model decide when to use it.
 
 ```swift
-let configuration = OpenAIRealtimeSessionConfigurationGA(
+let configuration = OpenAIRealtimeSessionConfiguration(
     outputModalities: [.audio],
     voice: .builtin("alloy"),
     tools: [.webSearch(.init(searchContextSize: .medium))],
     toolChoice: .auto
 )
 
-let session = try await openAIService.realtimeSessionGA(
+let session = try await openAIService.realtimeSession(
     model: "gpt-realtime",
     configuration: configuration,
     logLevel: .info

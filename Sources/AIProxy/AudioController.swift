@@ -18,38 +18,42 @@ import AVFoundation
 /// We use either AVAudioEngine or AudioToolbox for mic data, depending on the platform and whether headphones are attached.
 /// The following arrangement provides for the best user experience:
 ///
-///     +----------+---------------+--------------------------------------+
-///     | Platform | Headphones    | Audio API                            |
-///     +----------+---------------+--------------------------------------+
-///     | macOS    | Yes           | AudioEngine                          |
-///     | macOS    | No            | AudioToolbox                         |
-///     | iOS      | Yes           | AudioEngine                          |
-///     | iOS      | No            | AudioToolbox + manual rendering AEC  |
-///     | watchOS  | Yes           | AudioEngine                          |
-///     | watchOS  | No            | AudioEngine                          |
-///     +----------+---------------+--------------------------------------+
+///     +----------+--------------------------------+-------------------------------------+
+///     | Platform | Headphones                     | Audio API                           |
+///     +----------+--------------------------------+-------------------------------------+
+///     | macOS    | Yes                            | AudioEngine                         |
+///     | macOS    | No                             | AudioToolbox                        |
+///     | iOS      | Yes                            | AudioEngine                         |
+///     | iOS      | No                             | AudioToolbox                        |
+///     | iOS      | No + useManualEchoCancellation | AudioToolbox + manual rendering AEC |
+///     | watchOS  | Yes                            | AudioEngine                         |
+///     | watchOS  | No                             | AudioEngine                         |
+///     +----------+--------------------------------+-------------------------------------+
 ///
 @AIProxyActor public final class AudioController {
     public enum Mode {
         case record
         case playback
     }
+
+    public let useManualEchoCancellation: Bool
     public let modes: [Mode]
     private let audioEngine: AVAudioEngine
     private var microphonePCMSampleVendor: MicrophonePCMSampleVendor? = nil
     private var audioPCMPlayer: AudioPCMPlayer? = nil
     private var pendingUTF8Byte: UInt8? = nil
 
-    public init(modes: [Mode]) async throws {
+    public init(
+        modes: [Mode],
+        useManualEchoCancellation: Bool = false
+    ) async throws {
         self.modes = modes
-        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
-        let needsManualRendering = modes.contains(.record) && modes.contains(.playback)
-                                   && !AIProxyUtils.headphonesConnected
-        #else
-        let needsManualRendering = false
-        #endif
+        self.useManualEchoCancellation = useManualEchoCancellation
+                                         && modes.contains(.record) && modes.contains(.playback)
+                                         && !AIProxyUtils.headphonesConnected
 
-        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
+
+        #if os(iOS)
         // This is not respected if `setVoiceProcessingEnabled(true)` is used :/
         // Instead, I've added my own accumulator.
         // try? AVAudioSession.sharedInstance().setPreferredIOBufferDuration(0.1)
@@ -68,8 +72,7 @@ import AVFoundation
 
         self.audioEngine = AVAudioEngine()
 
-        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
-        if needsManualRendering {
+        if self.useManualEchoCancellation {
             let renderFormat = AVAudioFormat(
                 commonFormat: .pcmFormatFloat32,
                 sampleRate: 44100,
@@ -82,13 +85,15 @@ import AVFoundation
                 maximumFrameCount: 4096
             )
         }
-        #endif
 
         if modes.contains(.record) {
             #if os(macOS) || os(iOS)
             self.microphonePCMSampleVendor = AIProxyUtils.headphonesConnected
                                                ? try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
-                                               : MicrophonePCMSampleVendorAT(audioEngine: self.audioEngine)
+                                               : MicrophonePCMSampleVendorAT(
+                                                   audioEngine: self.audioEngine,
+                                                   useManualEchoCancellation: self.useManualEchoCancellation
+                                               )
             #else
             self.microphonePCMSampleVendor = try MicrophonePCMSampleVendorAE(audioEngine: self.audioEngine)
             #endif
@@ -104,16 +109,12 @@ import AVFoundation
         // Nesting `start` in a Task is necessary on watchOS.
         // There is some sort of race, and letting the runloop tick seems to "fix" it.
         // If I call `prepare` and `start` in serial succession, then there is no playback on watchOS (sometimes).
-        #if os(iOS) // iOS-first guard: non-iOS behavior has not been validated for this path yet.
-        try self.audioEngine.start()
-        #elseif os(watchOS)
+        #if os(watchOS)
         Task {
             try self.audioEngine.start()
         }
         #else
-        Task {
-            try self.audioEngine.start()
-        }
+        try self.audioEngine.start()
         #endif
     }
 
