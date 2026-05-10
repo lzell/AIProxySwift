@@ -13,11 +13,11 @@ import Foundation
 
 extension ServiceMixin {
     @AIProxyActor func makeRequestAndDeserializeResponse<T: Decodable & Sendable>(_ request: URLRequest) async throws -> T {
-        let response: ElevenLabsTTSResponse<T> = try await self.makeRequestAndDeserializeResponseWithMetadata(request)
+        let response: AIProxyResponseWithHeaders<T> = try await self.makeRequestAndDeserializeResponseWithMetadata(request)
         return response.body
     }
 
-    @AIProxyActor func makeRequestAndDeserializeResponseWithMetadata<T: Decodable & Sendable>(_ request: URLRequest) async throws -> ElevenLabsTTSResponse<T> {
+    @AIProxyActor func makeRequestAndDeserializeResponseWithMetadata<T: Decodable & Sendable>(_ request: URLRequest) async throws -> AIProxyResponseWithHeaders<T> {
         if AIProxy.printRequestBodies {
             printRequestBody(request)
         }
@@ -28,7 +28,7 @@ extension ServiceMixin {
         if AIProxy.printResponseBodies {
             printBufferedResponseBody(data)
         }
-        return ElevenLabsTTSResponse(
+        return AIProxyResponseWithHeaders(
             body: try T.deserialize(from: data),
             headers: httpResponse.readableHeaders
         )
@@ -79,11 +79,11 @@ extension ServiceMixin {
     /// Unlike `makeRequestAndDeserializeStreamingChunks`, this method does not expect
     /// SSE-style "data: " prefixes. Each line is treated as raw JSON.
     @AIProxyActor func makeRequestAndDeserializeNDJSONChunks<T: Decodable & Sendable>(_ request: URLRequest) async throws -> AsyncThrowingStream<T, Error> {
-        let response: ElevenLabsTTSChunkStreamResponse<T> = try await self.makeRequestAndDeserializeNDJSONChunksWithMetadata(request)
+        let response: AIProxyChunkStreamResponse<T> = try await self.makeRequestAndDeserializeNDJSONChunksWithMetadata(request)
         return response.stream
     }
 
-    @AIProxyActor func makeRequestAndDeserializeNDJSONChunksWithMetadata<T: Decodable & Sendable>(_ request: URLRequest) async throws -> ElevenLabsTTSChunkStreamResponse<T> {
+    @AIProxyActor func makeRequestAndDeserializeNDJSONChunksWithMetadata<T: Decodable & Sendable>(_ request: URLRequest) async throws -> AIProxyChunkStreamResponse<T> {
         if AIProxy.printRequestBodies {
             printRequestBody(request)
         }
@@ -126,7 +126,7 @@ extension ServiceMixin {
                 task.cancel()
             }
         }
-        return ElevenLabsTTSChunkStreamResponse(
+        return AIProxyChunkStreamResponse(
             headers: httpResponse.readableHeaders,
             stream: stream
         )
