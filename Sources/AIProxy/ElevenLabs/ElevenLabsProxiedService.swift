@@ -38,6 +38,19 @@ import Foundation
         body: ElevenLabsTTSRequestBody,
         secondsToWait: UInt
     ) async throws -> Data {
+        let response = try await self.ttsRequestWithMetadata(
+            voiceID: voiceID,
+            body: body,
+            secondsToWait: secondsToWait
+        )
+        return response.body
+    }
+
+    public func ttsRequestWithMetadata(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> ElevenLabsTTSResponse<Data> {
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
@@ -48,11 +61,11 @@ import Foundation
             secondsToWait: secondsToWait,
             contentType: "application/json"
         )
-        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+        let (data, httpResponse) = try await BackgroundNetworker.makeRequestAndWaitForData(
             self.urlSession,
             request
         )
-        return data
+        return ElevenLabsTTSResponse(body: data, headers: httpResponse.readableHeaders)
     }
     
     /// Converts text to speech with a request to `/v1/text-to-speech/<voice-id>/with-timestamps`
@@ -74,6 +87,19 @@ import Foundation
         body: ElevenLabsTTSRequestBody,
         secondsToWait: UInt
     ) async throws -> ElevenLabsTTSWithTimestampsResponseBody {
+        let response = try await self.ttsRequestWithTimestampsAndMetadata(
+            voiceID: voiceID,
+            body: body,
+            secondsToWait: secondsToWait
+        )
+        return response.body
+    }
+
+    public func ttsRequestWithTimestampsAndMetadata(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> ElevenLabsTTSResponse<ElevenLabsTTSWithTimestampsResponseBody> {
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
@@ -84,7 +110,7 @@ import Foundation
             secondsToWait: secondsToWait,
             contentType: "application/json"
         )
-        return try await self.makeRequestAndDeserializeResponse(request)
+        return try await self.makeRequestAndDeserializeResponseWithMetadata(request)
     }
     
     /// Converts text to speech with a request to `/v1/text-to-speech/<voice-id>/stream?output_format=pcm_24000`
@@ -107,6 +133,19 @@ import Foundation
         body: ElevenLabsTTSRequestBody,
         secondsToWait: UInt
     ) async throws -> AsyncStream<Data> {
+        let response = try await self.streamingTTSRequestWithMetadata(
+            voiceID: voiceID,
+            body: body,
+            secondsToWait: secondsToWait
+        )
+        return response.stream
+    }
+
+    func streamingTTSRequestWithMetadata(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> ElevenLabsTTSAudioStreamResponse {
         let request = try await AIProxyURLRequest.create(
             partialKey: self.partialKey,
             serviceURL: self.serviceURL,
@@ -117,7 +156,8 @@ import Foundation
             secondsToWait: secondsToWait,
             contentType: "application/json"
         )
-        return try await BackgroundNetworker.makeRequestAndVendChunks(self.urlSession, request)
+        let (stream, httpResponse) = try await BackgroundNetworker.makeRequestAndVendChunksWithResponse(self.urlSession, request)
+        return ElevenLabsTTSAudioStreamResponse(headers: httpResponse.readableHeaders, stream: stream)
     }
     
     
@@ -141,6 +181,19 @@ import Foundation
         body: ElevenLabsTTSRequestBody,
         secondsToWait: UInt
     ) async throws -> AsyncThrowingStream<ElevenLabsTTSWithTimestampsResponseBody, Error> {
+        let response = try await self.streamingTTSWithTimestampsRequestWithMetadata(
+            voiceID: voiceID,
+            body: body,
+            secondsToWait: secondsToWait
+        )
+        return response.stream
+    }
+
+    func streamingTTSWithTimestampsRequestWithMetadata(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> ElevenLabsTTSChunkStreamResponse<ElevenLabsTTSWithTimestampsResponseBody> {
         let path = "/v1/text-to-speech/\(voiceID)/stream/with-timestamps?output_format=pcm_24000"
         
         let request = try await AIProxyURLRequest.create(
@@ -153,7 +206,7 @@ import Foundation
             secondsToWait: secondsToWait,
             contentType: "application/json"
         )
-        return try await self.makeRequestAndDeserializeNDJSONChunks(request)
+        return try await self.makeRequestAndDeserializeNDJSONChunksWithMetadata(request)
         
     }
     

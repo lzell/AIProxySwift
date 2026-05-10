@@ -65,6 +65,14 @@ struct BackgroundNetworker {
         _ session: URLSession,
         _ request: URLRequest
     ) async throws -> AsyncStream<Data> {
+        let (stream, _) = try await self.makeRequestAndVendChunksWithResponse(session, request)
+        return stream
+    }
+
+    @AIProxyActor static func makeRequestAndVendChunksWithResponse(
+        _ session: URLSession,
+        _ request: URLRequest
+    ) async throws -> (AsyncStream<Data>, HTTPURLResponse) {
 
         let dataTaskBridge = URLSessionDataTaskBridge()
         let task = session.dataTask(with: request)
@@ -95,7 +103,7 @@ struct BackgroundNetworker {
             })
         }
 
-        let _: Void = try await withCheckedThrowingContinuation { @AIProxyActor continuation in
+        let httpResponse: HTTPURLResponse = try await withCheckedThrowingContinuation { @AIProxyActor continuation in
             task.resume()
             dataTaskBridge.onResponse.append { [weak dataTaskBridge] res in
                 guard let dataTaskBridge = dataTaskBridge else { return }
@@ -105,7 +113,7 @@ struct BackgroundNetworker {
                 }
                 dataTaskBridge.statusCode = httpResponse.statusCode
                 if !dataTaskBridge.isBadStatusCode {
-                    continuation.resume()
+                    continuation.resume(returning: httpResponse)
                 }
             }
 
@@ -131,6 +139,6 @@ struct BackgroundNetworker {
             }
         }
 
-        return asyncStream
+        return (asyncStream, httpResponse)
     }
 }
