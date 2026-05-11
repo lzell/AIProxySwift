@@ -32,6 +32,9 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
     /// including visible output tokens and reasoning tokens: https://developers.openai.com/docs/guides/reasoning
     public let maxOutputTokens: Int?
 
+    /// Elements of the JSON `context_management` array on the create-response request.
+    public let contextManagement: [ContextManagementItem]?
+
     /// Model ID used to generate the response, like gpt-4o or o1.
     /// OpenAI offers a wide range of models with different capabilities, performance characteristics, and price points.
     /// Refer to the model guide to browse and compare available models: https://platform.openai.com/docs/models
@@ -101,6 +104,7 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
         case input
         case instructions
         case maxOutputTokens = "max_output_tokens"
+        case contextManagement = "context_management"
         case model
         case tools
         case toolChoice = "tool_choice"
@@ -126,6 +130,7 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
         input: OpenAIResponse.Input? = nil,
         instructions: String? = nil,
         maxOutputTokens: Int? = nil,
+        contextManagement: [OpenAICreateResponseRequestBody.ContextManagementItem]? = nil,
         model: String? = nil,
         parallelToolCalls: Bool? = nil,
         previousResponseId: String? = nil,
@@ -146,6 +151,7 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
         self.input = input
         self.instructions = instructions
         self.maxOutputTokens = maxOutputTokens
+        self.contextManagement = contextManagement
         self.model = model
         self.parallelToolCalls = parallelToolCalls
         self.previousResponseId = previousResponseId
@@ -169,12 +175,42 @@ nonisolated public struct OpenAICreateResponseRequestBody: Encodable, Sendable {
 
 extension OpenAICreateResponseRequestBody {
 
+    /// One object in the JSON `context_management` array (`type`, `compact_threshold`, …).
+    nonisolated public struct ContextManagementItem: Encodable, Sendable {
+        /// The context management entry type. Currently only `compaction` is supported.
+        public let type: EntryType
+
+        /// Token threshold at which compaction should be triggered for this entry.
+        public let compactThreshold: Int?
+
+        private enum CodingKeys: String, CodingKey {
+            case type
+            case compactThreshold = "compact_threshold"
+        }
+
+        public init(
+            type: EntryType = .compaction,
+            compactThreshold: Int? = nil
+        ) {
+            self.type = type
+            self.compactThreshold = compactThreshold
+        }
+
+        nonisolated public enum EntryType: String, Encodable, Sendable {
+            case compaction
+        }
+    }
+
+    /// Legacy name for one element of the JSON `context_management` array.
+    @available(*, deprecated, renamed: "ContextManagementItem")
+    public typealias ContextManagement = ContextManagementItem
+
     /// The truncation strategy to use for the model response.
     nonisolated public enum Truncation: String, Encodable, Sendable {
-        /// If the context of this response and previous ones exceeds the model's context window size, the model will truncate the response to fit the context window by dropping input items in the middle of the conversation.
+        /// If the input to this response exceeds the model's context window size, the model will truncate the response to fit the context window by dropping items from the beginning of the conversation.
         case auto
 
-        /// If a model response will exceed the context window size for a model, the request will fail with a 400 error.
+        /// If the input size will exceed the context window size for a model, the request will fail with a 400 error.
         case disabled
     }
 

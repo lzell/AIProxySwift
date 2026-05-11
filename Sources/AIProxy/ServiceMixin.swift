@@ -13,17 +13,25 @@ import Foundation
 
 extension ServiceMixin {
     @AIProxyActor func makeRequestAndDeserializeResponse<T: Decodable & Sendable>(_ request: URLRequest) async throws -> T {
+        let response: AIProxyResponseWithHeaders<T> = try await self.makeRequestAndDeserializeResponseWithMetadata(request)
+        return response.body
+    }
+
+    @AIProxyActor func makeRequestAndDeserializeResponseWithMetadata<T: Decodable & Sendable>(_ request: URLRequest) async throws -> AIProxyResponseWithHeaders<T> {
         if AIProxy.printRequestBodies {
             printRequestBody(request)
         }
-        let (data, _) = try await BackgroundNetworker.makeRequestAndWaitForData(
+        let (data, httpResponse) = try await BackgroundNetworker.makeRequestAndWaitForData(
             self.urlSession,
             request
         )
         if AIProxy.printResponseBodies {
             printBufferedResponseBody(data)
         }
-        return try T.deserialize(from: data)
+        return AIProxyResponseWithHeaders(
+            body: try T.deserialize(from: data),
+            headers: httpResponse.readableHeaders
+        )
     }
 
     @AIProxyActor func makeRequestAndDeserializeStreamingChunks<T: Decodable & Sendable>(_ request: URLRequest) async throws -> AsyncThrowingStream<T, Error> {
@@ -71,16 +79,21 @@ extension ServiceMixin {
     /// Unlike `makeRequestAndDeserializeStreamingChunks`, this method does not expect
     /// SSE-style "data: " prefixes. Each line is treated as raw JSON.
     @AIProxyActor func makeRequestAndDeserializeNDJSONChunks<T: Decodable & Sendable>(_ request: URLRequest) async throws -> AsyncThrowingStream<T, Error> {
+        let response: AIProxyChunkStreamResponse<T> = try await self.makeRequestAndDeserializeNDJSONChunksWithMetadata(request)
+        return response.stream
+    }
+
+    @AIProxyActor func makeRequestAndDeserializeNDJSONChunksWithMetadata<T: Decodable & Sendable>(_ request: URLRequest) async throws -> AIProxyChunkStreamResponse<T> {
         if AIProxy.printRequestBodies {
             printRequestBody(request)
         }
 
-        let (asyncBytes, _) = try await BackgroundNetworker.makeRequestAndWaitForAsyncBytes(
+        let (asyncBytes, httpResponse) = try await BackgroundNetworker.makeRequestAndWaitForAsyncBytes(
             self.urlSession,
             request
         )
 
-        return AsyncThrowingStream { @AIProxyActor continuation in
+        let stream = AsyncThrowingStream<T, Error> { @AIProxyActor continuation in
             let task = Task {
                 do {
                     for try await line in asyncBytes.lines {
@@ -113,6 +126,10 @@ extension ServiceMixin {
                 task.cancel()
             }
         }
+        return AIProxyChunkStreamResponse(
+            headers: httpResponse.readableHeaders,
+            stream: stream
+        )
     }
 }
 
@@ -156,4 +173,14 @@ nonisolated private func printStreamingResponseChunk(_ chunk: String) {
         \(chunk)
         """
     )
+}
+
+extension HTTPURLResponse {
+    var readableHeaders: [String: String] {
+        var headers: [String: String] = [:]
+        for (key, value) in self.allHeaderFields {
+            headers[String(describing: key)] = String(describing: value)
+        }
+        return headers
+    }
 }

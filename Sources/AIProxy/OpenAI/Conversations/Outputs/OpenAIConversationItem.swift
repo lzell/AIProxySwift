@@ -39,6 +39,10 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
     /// Be sure to include these items in your input to the Responses API for subsequent turns of a conversation if you are manually managing context: https://platform.openai.com/docs/guides/conversation-state
     case reasoning(OpenAIReasoningItem)
 
+    /// A compaction item (same shape as a compaction entry in a Response `output` array).
+    /// API reference (conversation item schema, compaction variant): https://developers.openai.com/api/reference/resources/conversations#(resource)%20conversations.items%20%3E%20(model)%20conversation_item%20%3E%20(schema)%20%3E%20(variant)%2011
+    case compaction(OpenAIResponse.Compaction)
+
     /// A tool call to run code.
     case codeInterpreterToolCall(OpenAICodeInterpreterToolCall)
 
@@ -127,6 +131,8 @@ nonisolated public enum OpenAIConversationItem: Decodable, Sendable {
             self = .message(try OpenAIMessage(from: decoder))
         case "reasoning":
             self = .reasoning(try OpenAIReasoningItem(from: decoder))
+        case "compaction":
+            self = .compaction(try OpenAIResponse.Compaction(from: decoder))
         case "shell_call":
             self = .functionShellCall(try OpenAIShellToolCall(from: decoder))
         case "shell_call_output":

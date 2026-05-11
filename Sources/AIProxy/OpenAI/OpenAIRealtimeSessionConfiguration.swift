@@ -3,8 +3,7 @@
 //  AIProxy
 //
 
-/// Realtime session configuration for `session.update`.
-///
+/// Represents OpenAI's `RealtimeSessionCreateRequest` type, which is a member of the `session.update` event:
 /// https://developers.openai.com/api/reference/resources/realtime/client-events#session.update
 nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendable {
     public let include: [IncludeField]?

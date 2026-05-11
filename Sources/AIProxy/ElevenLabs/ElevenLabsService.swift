@@ -26,6 +26,13 @@ import Foundation
         body: ElevenLabsTTSRequestBody,
         secondsToWait: UInt
     ) async throws -> Data
+
+    /// Same as `ttsRequest`, but also returns the response headers from ElevenLabs.
+    func ttsRequestWithMetadata(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> ElevenLabsTTSResponse<Data>
     
     
     /// Converts text to speech with a request to `/v1/text-to-speech/<voice-id>/with-timestamps`
@@ -47,6 +54,13 @@ import Foundation
         body: ElevenLabsTTSRequestBody,
         secondsToWait: UInt
     ) async throws -> ElevenLabsTTSWithTimestampsResponseBody
+
+    /// Same as `ttsRequestWithTimestamps`, but also returns the response headers from ElevenLabs.
+    func ttsRequestWithTimestampsAndMetadata(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> ElevenLabsTTSResponse<ElevenLabsTTSWithTimestampsResponseBody>
 
 
     /// Converts text to speech with a request to `/v1/text-to-speech/<voice-id>/stream?output_format=pcm_24000`
@@ -70,6 +84,13 @@ import Foundation
         secondsToWait: UInt
     ) async throws -> AsyncStream<Data>
 
+    /// Same as `streamingTTSRequest`, but also returns the response headers from ElevenLabs.
+    func streamingTTSRequestWithMetadata(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> ElevenLabsTTSAudioStreamResponse
+
     /// Converts text to speech with a request to `/v1/text-to-speech/<voice-id>/stream/with-timestamps`
     /// and returns a stream of JSONs containing audio as base64 together with character timing information.
     ///
@@ -91,6 +112,13 @@ import Foundation
         body: ElevenLabsTTSRequestBody,
         secondsToWait: UInt
     ) async throws -> AsyncThrowingStream<ElevenLabsTTSWithTimestampsResponseBody, Error>
+
+    /// Same as `streamingTTSWithTimestampsRequest`, but also returns the response headers from ElevenLabs.
+    func streamingTTSWithTimestampsRequestWithMetadata(
+        voiceID: String,
+        body: ElevenLabsTTSRequestBody,
+        secondsToWait: UInt
+    ) async throws -> ElevenLabsTTSChunkStreamResponse<ElevenLabsTTSWithTimestampsResponseBody>
     
     /// Converts speech to speech with a request to `/v1/speech-to-speech/<voice-id>`
     ///

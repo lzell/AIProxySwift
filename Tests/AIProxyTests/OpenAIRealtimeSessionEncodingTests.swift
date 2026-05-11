@@ -64,6 +64,20 @@ struct OpenAIRealtimeSessionEncodingTests {
     }
 
     @Test
+    func sessionUpdateEncodesInputAudioTranscriptionLogprobsInclude() throws {
+        let update = OpenAIRealtimeSessionUpdate(
+            session: OpenAIRealtimeSessionConfiguration(
+                include: [.inputAudioTranscriptionLogprobs],
+                inputAudioTranscription: .init(model: "gpt-4o-transcribe")
+            )
+        )
+        let encoded = try encoder.encode(update)
+        let session = (try Self.jsonObject(encoded) as! [String: Any])["session"] as! [String: Any]
+
+        #expect(session["include"] as? [String] == ["item.input_audio_transcription.logprobs"])
+    }
+
+    @Test
     func serverVADTurnDetectionEncodesUnderAudioInput() throws {
         let update = OpenAIRealtimeSessionUpdate(
             session: OpenAIRealtimeSessionConfiguration(
