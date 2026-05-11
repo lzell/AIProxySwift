@@ -370,6 +370,14 @@ extension OpenAIResponse {
                 )
             }
         }
+        
+        // MARK: - OutputItem Reasoning
+        nonisolated public struct Reasoning: Decodable, Sendable {
+            public let id: String?
+
+            /// A summary of the reasoning performed by the model. This can be useful for debugging and understanding the model's reasoning process.
+            public let summary: [OpenAISummaryText]?
+        }
     }
 
     // MARK: - Compaction
