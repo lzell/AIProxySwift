@@ -9,6 +9,7 @@
 
 @preconcurrency import AVFoundation
 import AudioToolbox
+import CoreAudio
 import Foundation
 
 nonisolated private let kVoiceProcessingInputSampleRate: Double = 44100
