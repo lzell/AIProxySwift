@@ -12,6 +12,7 @@ import Foundation
 @AIProxyActor final class URLSessionDataTaskBridge: Sendable {
     var statusCode: Int = 200
     var accumulatedErrorBody = Data()
+    var responseDelivered = false
     var onResponse: [(@AIProxyActor (URLResponse) -> Void)] = []
     var onData: [(@AIProxyActor (Data) -> Void)] = []
     var onComplete: [(@AIProxyActor (Error?) -> Void)] = []

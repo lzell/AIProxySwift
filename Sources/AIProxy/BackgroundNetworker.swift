@@ -113,6 +113,7 @@ struct BackgroundNetworker {
                 }
                 dataTaskBridge.statusCode = httpResponse.statusCode
                 if !dataTaskBridge.isBadStatusCode {
+                    dataTaskBridge.responseDelivered = true
                     continuation.resume(returning: httpResponse)
                 }
             }
@@ -126,14 +127,20 @@ struct BackgroundNetworker {
 
             dataTaskBridge.onComplete.append { [weak dataTaskBridge] err in
                 guard let dataTaskBridge = dataTaskBridge else { return }
+                if dataTaskBridge.responseDelivered {
+                    return
+                }
                 if let err = err {
+                    dataTaskBridge.responseDelivered = true
                     continuation.resume(throwing: err)
+                    return
                 }
                 if dataTaskBridge.isBadStatusCode {
                     let err = AIProxyError.unsuccessfulRequest(
                         statusCode: dataTaskBridge.statusCode,
                         responseBody: String(data: dataTaskBridge.accumulatedErrorBody, encoding: .utf8) ?? ""
                     )
+                    dataTaskBridge.responseDelivered = true
                     continuation.resume(throwing: err)
                 }
             }
