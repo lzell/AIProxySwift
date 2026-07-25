@@ -17,6 +17,10 @@ import Foundation
 /// ```
 ///
 /// AIProxy deserializes the JSON from each `data:` line.
+///
+/// ## Contributors
+/// Mistral's OpenAPI spec is here:
+/// https://raw.githubusercontent.com/mistralai/platform-docs-public/main/openapi.yaml
 nonisolated public enum MistralTranscriptionStreamingEvent: Decodable, Sendable {
     case textDelta(TextDelta)
     case language(Language)

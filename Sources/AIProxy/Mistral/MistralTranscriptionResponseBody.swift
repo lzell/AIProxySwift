@@ -9,6 +9,10 @@ import Foundation
 
 /// Response body for Mistral's audio transcription endpoint:
 /// https://docs.mistral.ai/api/endpoint/audio/transcriptions#operation-audio_api_v1_transcriptions_post
+///
+/// ## Contributors
+/// Mistral's OpenAPI spec is here:
+/// https://raw.githubusercontent.com/mistralai/platform-docs-public/main/openapi.yaml
 nonisolated public struct MistralTranscriptionResponseBody: Decodable, Sendable {
     /// The model that produced the transcription.
     public let model: String?
