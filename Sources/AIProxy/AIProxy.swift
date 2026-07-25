@@ -8,7 +8,7 @@ import UIKit
 public enum AIProxy {
 
     /// The current sdk version
-    nonisolated public static let sdkVersion = "0.153.0"
+    nonisolated public static let sdkVersion = "0.154.0"
 
     /// Configures the AIProxy SDK. Call this during app launch by adding an `init` to your SwiftUI MyApp.swift file, e.g.
     ///
@@ -738,12 +738,16 @@ public enum AIProxy {
     ///
     /// - Parameters:
     ///   - unprotectedAPIKey: Your Mistral API key
-    /// - Returns: An instance of  MistralService configured and ready to make requests
+    ///   - baseURL: An optional base URL to use for requests. If not provided, the default Mistral API
+    ///     base URL is used (`https://api.mistral.ai`).
+    /// - Returns: An instance of MistralService configured and ready to make requests
     nonisolated public static func mistralDirectService(
-        unprotectedAPIKey: String
+        unprotectedAPIKey: String,
+        baseURL: String? = nil
     ) -> MistralService {
         return MistralDirectService(
-            unprotectedAPIKey: unprotectedAPIKey
+            unprotectedAPIKey: unprotectedAPIKey,
+            baseURL: baseURL
         )
     }
 

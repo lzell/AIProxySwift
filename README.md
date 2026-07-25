@@ -5995,6 +5995,127 @@ Use `api.mistral.ai` as the proxy domain when creating your AIProxy service in t
     }
 ```
 
+### How to transcribe audio with Mistral (buffered case)
+
+1. Record an audio file in quicktime and save it as "helloworld.m4a"
+2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
+3. Run this snippet:
+
+```swift
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let mistralService = AIProxy.mistralDirectService(
+    //     unprotectedAPIKey: "your-mistral-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let mistralService = AIProxy.mistralService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a")!
+        let requestBody = MistralTranscriptionRequestBody(
+            model: "voxtral-mini-latest",
+            file: try Data(contentsOf: url)
+        )
+        let response = try await mistralService.createTranscriptionRequest(
+            body: requestBody,
+            secondsToWait: 60
+        )
+        let transcript = response.text ?? "None"
+        print("Mistral transcribed: \(transcript)")
+        if let language = response.language {
+            print("Language: \(language)")
+        }
+        if let usage = response.usage {
+            print(
+                """
+                Used:
+                 \(usage.promptTokens ?? 0) prompt tokens
+                 \(usage.completionTokens ?? 0) completion tokens
+                 \(usage.totalTokens ?? 0) total tokens
+                 \(usage.promptAudioSeconds.map(String.init) ?? "n/a") prompt audio seconds
+                """
+            )
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create mistral transcription: \(error)")
+    }
+```
+
+### How to transcribe audio with Mistral (streaming case)
+
+1. Record an audio file in quicktime and save it as "helloworld.m4a"
+2. Add the audio file to your Xcode project. Make sure it's included in your target: select your audio file in the project tree, type `cmd-opt-0` to open the inspect panel, and view `Target Membership`
+3. Run this snippet:
+
+```
+    import AIProxy
+
+    /* Uncomment for BYOK use cases */
+    // let mistralService = AIProxy.mistralDirectService(
+    //     unprotectedAPIKey: "your-mistral-key"
+    // )
+
+    /* Uncomment for all other production use cases */
+    // let mistralService = AIProxy.mistralService(
+    //     partialKey: "partial-key-from-your-developer-dashboard",
+    //     serviceURL: "service-url-from-your-developer-dashboard"
+    // )
+
+    do {
+        let url = Bundle.main.url(forResource: "helloworld", withExtension: "m4a")!
+        let requestBody = MistralTranscriptionRequestBody(
+            model: "voxtral-mini-latest",
+            file: try Data(contentsOf: url),
+            timestampGranularities: [.segment]
+        )
+        let stream = try await mistralService.streamingTranscriptionRequest(
+            body: requestBody,
+            secondsToWait: 60
+        )
+        var assembled = ""
+        for try await event in stream {
+            switch event {
+            case .textDelta(let delta):
+                let text = delta.text ?? ""
+                assembled += text
+                print(text, terminator: "")
+            case .language(let language):
+                print("\nLanguage: \(language.audioLanguage ?? "unknown")")
+            case .segment(let segment):
+                print(
+                    "\nSegment [\(segment.start.map { String($0) } ?? "?")-\(segment.end.map { String($0) } ?? "?")]: \(segment.text ?? "")"
+                )
+            case .done(let done):
+                print("Done: \(done.text ?? assembled)")
+                if let usage = done.usage {
+                    print(
+                        """
+                        Used:
+                         \(usage.promptTokens ?? 0) prompt tokens
+                         \(usage.completionTokens ?? 0) completion tokens
+                         \(usage.totalTokens ?? 0) total tokens
+                         \(usage.promptAudioSeconds.map(String.init) ?? "n/a") prompt audio seconds
+                        """
+                    )
+                }
+            case .futureProof:
+                print("Received new streaming event from mistral that we don't understand")
+            }
+        }
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not create mistral streaming transcription: \(error)")
+    }
+```
+
 ***
 
 ## EachAI
