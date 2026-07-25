@@ -52,6 +52,10 @@ nonisolated public struct MistralTranscriptionRequestBody: MultipartFormEncodabl
     /// Granularities of timestamps to include in the response.
     public let timestampGranularities: [TimestampGranularity]?
 
+    /// If set to true, Mistral streams transcription events using server-sent events.
+    /// Prefer `MistralService.streamingTranscriptionRequest` when consuming streamed transcriptions.
+    public var stream: Bool?
+
     public var formFields: [FormField] {
         var fields: [FormField] = [
             .textField(name: "model", content: self.model),
@@ -60,6 +64,7 @@ nonisolated public struct MistralTranscriptionRequestBody: MultipartFormEncodabl
             self.language.flatMap { .textField(name: "language", content: $0) },
             self.temperature.flatMap { .textField(name: "temperature", content: String($0)) },
             self.diarize.flatMap { .textField(name: "diarize", content: $0 ? "true" : "false") },
+            self.stream.flatMap { .textField(name: "stream", content: $0 ? "true" : "false") },
         ].compactMap { $0 }
 
         if let file {
@@ -107,7 +112,8 @@ nonisolated public struct MistralTranscriptionRequestBody: MultipartFormEncodabl
         temperature: Double? = nil,
         diarize: Bool? = nil,
         contextBias: [String]? = nil,
-        timestampGranularities: [MistralTranscriptionRequestBody.TimestampGranularity]? = nil
+        timestampGranularities: [MistralTranscriptionRequestBody.TimestampGranularity]? = nil,
+        stream: Bool? = nil
     ) {
         self.model = model
         self.file = file
@@ -120,6 +126,7 @@ nonisolated public struct MistralTranscriptionRequestBody: MultipartFormEncodabl
         self.diarize = diarize
         self.contextBias = contextBias
         self.timestampGranularities = timestampGranularities
+        self.stream = stream
     }
 }
 

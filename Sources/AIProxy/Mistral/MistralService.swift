@@ -106,6 +106,8 @@ import Foundation
         secondsToWait: UInt,
         additionalHeaders: [String: String] = [:]
     ) async throws -> MistralTranscriptionResponseBody {
+        var body = body
+        body.stream = false
         let request = try await self.requestBuilder.multipartPOST(
             path: "/v1/audio/transcriptions",
             body: body,
@@ -113,5 +115,29 @@ import Foundation
             additionalHeaders: additionalHeaders
         )
         return try await self.serviceNetworker.makeRequestAndDeserializeResponse(request)
+    }
+
+    /// Initiates a streaming transcription request to `/v1/audio/transcriptions`.
+    ///
+    /// - Parameters:
+    ///   - body: The audio transcription request body. `stream` is set to true by this method.
+    ///           See: https://docs.mistral.ai/api/endpoint/audio/transcriptions#operation-audio_api_v1_transcriptions_post_stream
+    ///   - secondsToWait: The amount of time to wait before `URLError.timedOut` is raised
+    ///   - additionalHeaders: Optional headers to pass up with the request alongside the lib's default headers
+    /// - Returns: An async sequence of transcription stream events.
+    public func streamingTranscriptionRequest(
+        body: MistralTranscriptionRequestBody,
+        secondsToWait: UInt,
+        additionalHeaders: [String: String] = [:]
+    ) async throws -> AsyncThrowingStream<MistralTranscriptionStreamingEvent, Error> {
+        var body = body
+        body.stream = true
+        let request = try await self.requestBuilder.multipartPOST(
+            path: "/v1/audio/transcriptions",
+            body: body,
+            secondsToWait: secondsToWait,
+            additionalHeaders: additionalHeaders
+        )
+        return try await self.serviceNetworker.makeRequestAndDeserializeStreamingChunks(request)
     }
 }
