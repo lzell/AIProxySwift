@@ -186,6 +186,7 @@ Once you're happy with your changes, open a PR here.
 * [DeepSeek](#deepseek)
 * [Fireworks AI](#fireworks-ai)
 * [Brave](#brave)
+* [gRPC](#grpc)
 * [Advanced Settings](#advanced-settings)
 
 
@@ -7237,6 +7238,62 @@ into the OpenMeteoSDK:
         print(responses)
     } catch {
         print("Could not fetch the weather: \(error)")
+    }
+```
+
+***
+
+## gRPC
+
+### How to protect an existing gRPC call with AIProxy
+
+AIProxySwift does not need to know about your protobuf messages or depend on your gRPC library.
+
+Use your existing `HTTP2ClientTransport.TransportService` as usual, but set the host to your
+AIProxy `serviceURL` and attach the required AIProxy metadata, demonstrated in the snippet below.
+
+This example uses [grpc-swift](https://github.com/grpc/grpc-swift). Replace the generated
+`Aiproxy_Tester_V1_*` types with the types generated from your own `.proto` file:
+
+```swift
+    import Foundation
+    import AIProxy
+    import GRPCCore
+    import GRPCNIOTransportHTTP2
+
+    let serviceURL = "service-url-from-your-developer-dashboard"
+
+    do {
+        guard let proxyURL = URL(string: serviceURL), let host = proxyURL.host else {
+            print("Invalid AIProxy service URL")
+            return
+        }
+
+        let proxyMetadata = try await AIProxy.grpcMetadata(
+            partialKey: "partial-key-from-your-developer-dashboard",
+            serviceURL: serviceURL
+        )
+        let metadata = Metadata(
+            proxyMetadata.map { name, value in
+                (name, .string(value))
+            }
+        )
+        let transport = try HTTP2ClientTransport.TransportServices(
+            target: .dns(host: host, port: proxyURL.port ?? 443),
+            transportSecurity: .tls
+        )
+
+        let message = try await withGRPCClient(transport: transport) { client in
+            let hello = Aiproxy_Tester_V1_HelloWorld.Client(wrapping: client)
+            let request = Aiproxy_Tester_V1_HelloRequest.with { $0.name = "hello world" }
+            let response = try await hello.sayHello(request, metadata: metadata)
+            return response.message
+        }
+        print(message)
+    } catch AIProxyError.unsuccessfulRequest(let statusCode, let responseBody) {
+        print("Received non-200 status code: \(statusCode) with response body: \(responseBody)")
+    } catch {
+        print("Could not complete gRPC request: \(error)")
     }
 ```
 
