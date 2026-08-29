@@ -16,6 +16,17 @@ struct OpenAIRealtimeSessionEncodingTests {
         return e
     }()
 
+    @AIProxyActor
+    private func compilePerformanceRealtimeSessionCall(
+        service: OpenAIService
+    ) async throws {
+        _ = try await service.realtimeSession(
+            model: "gpt-realtime-1.5",
+            configuration: .init(),
+            logLevel: .debug
+        )
+    }
+
     @Test
     func sessionUpdateEncodesNestedAudioAndOutputModalities() throws {
         let update = OpenAIRealtimeSessionUpdate(
@@ -38,11 +49,55 @@ struct OpenAIRealtimeSessionEncodingTests {
         #expect(session["output_modalities"] as? [String] == ["audio"])
         #expect(session["modalities"] == nil)
         #expect(session["max_response_output_tokens"] == nil)
+        #expect(session["reasoning"] == nil)
+        #expect(session["parallel_tool_calls"] == nil)
         let audio = session["audio"] as! [String: Any]
         let input = audio["input"] as! [String: Any]
         let inputFormat = input["format"] as! [String: Any]
         #expect(inputFormat["type"] as? String == "audio/pcm")
         #expect(inputFormat["rate"] as? Int == 24000)
+    }
+
+    @Test
+    func sessionUpdateAcceptsInlineDefaultPerformanceConfiguration() throws {
+        let update = OpenAIRealtimeSessionUpdate(session: .init())
+        let encoded = try encoder.encode(update)
+        let root = try Self.jsonObject(encoded) as! [String: Any]
+        let session = root["session"] as! [String: Any]
+
+        #expect(session["type"] as? String == "realtime")
+        #expect(session["reasoning"] == nil)
+        #expect(session["parallel_tool_calls"] == nil)
+    }
+
+    @Test
+    func reasoningSessionUpdateMergesBaseAndReasoningFields() throws {
+        let update = OpenAIRealtimeSessionUpdate(
+            session: OpenAIRealtimeReasoningSessionConfiguration(
+                session: OpenAIRealtimeSessionConfiguration(
+                    inputAudioFormat: .pcm16,
+                    instructions: "Solve carefully.",
+                    outputModalities: [.audio],
+                    voice: .builtin("alloy")
+                ),
+                reasoning: .init(effort: .low),
+                parallelToolCalls: true
+            )
+        )
+        let encoded = try encoder.encode(update)
+        let root = try Self.jsonObject(encoded) as! [String: Any]
+        #expect(root["type"] as? String == "session.update")
+        let session = root["session"] as! [String: Any]
+        #expect(session["instructions"] as? String == "Solve carefully.")
+        #expect(session["output_modalities"] as? [String] == ["audio"])
+        #expect(session["parallel_tool_calls"] as? Bool == true)
+        let reasoning = session["reasoning"] as! [String: Any]
+        #expect(reasoning["effort"] as? String == "low")
+        let audio = session["audio"] as! [String: Any]
+        let inputFormat = (audio["input"] as! [String: Any])["format"] as! [String: Any]
+        #expect(inputFormat["type"] as? String == "audio/pcm")
+        let output = audio["output"] as! [String: Any]
+        #expect(output["voice"] as? String == "alloy")
     }
 
     @Test
@@ -151,6 +206,33 @@ struct OpenAIRealtimeSessionEncodingTests {
         #expect(response["instructions"] as? String == "Be concise.")
         #expect(response["output_modalities"] as? [String] == ["audio"])
         #expect(response["modalities"] == nil)
+    }
+
+    @Test
+    func reasoningResponseCreateEncodesReasoning() throws {
+        let event = OpenAIRealtimeReasoningResponseCreate(
+            eventID: "evt_reasoning",
+            response: .init(
+                base: .init(
+                    instructions: "Use the lowest sufficient reasoning effort.",
+                    outputModalities: [.audio],
+                    toolChoice: .auto
+                ),
+                reasoning: .init(effort: .minimal),
+                parallelToolCalls: false
+            )
+        )
+        let encoded = try encoder.encode(event)
+        let root = try Self.jsonObject(encoded) as! [String: Any]
+        #expect(root["type"] as? String == "response.create")
+        #expect(root["event_id"] as? String == "evt_reasoning")
+        let response = root["response"] as! [String: Any]
+        #expect(response["instructions"] as? String == "Use the lowest sufficient reasoning effort.")
+        #expect(response["output_modalities"] as? [String] == ["audio"])
+        #expect(response["tool_choice"] as? String == "auto")
+        #expect(response["parallel_tool_calls"] as? Bool == false)
+        let reasoning = response["reasoning"] as! [String: Any]
+        #expect(reasoning["effort"] as? String == "minimal")
     }
 
     @Test

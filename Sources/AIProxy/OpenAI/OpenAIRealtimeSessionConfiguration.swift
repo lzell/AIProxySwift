@@ -45,7 +45,7 @@ nonisolated public struct OpenAIRealtimeSessionConfiguration: Encodable, Sendabl
         outputModalities: [OpenAIRealtimeSessionConfiguration.Modality]? = nil,
         outputAudioFormat: OpenAIRealtimeSessionConfiguration.AudioFormat? = nil,
         speed: Float? = 1.0,
-        temperature: Double? = nil, // Deprecated in realtime GA
+        temperature: Double? = nil, // Deprecated in the current Realtime API
         tools: [Tool]? = nil,
         toolChoice: ToolChoice? = nil,
         turnDetection: TurnDetection? = nil,
@@ -549,7 +549,7 @@ extension OpenAIRealtimeSessionConfiguration {
 }
 
 
-// MARK: - Legacy fixes for pre-GA callsites
+// MARK: - Legacy callsite compatibility
 extension OpenAIRealtimeSessionConfiguration {
     public typealias MaxResponseOutputTokens = MaxOutputTokens
 }
@@ -561,7 +561,7 @@ extension OpenAIRealtimeSessionConfiguration.Voice: ExpressibleByStringLiteral {
 }
 
 extension OpenAIRealtimeSessionConfiguration.TurnDetection {
-    /// Pre-GA initializer kept for source compatibility with call sites that
+    /// Legacy initializer kept for source compatibility with call sites that
     /// build `TurnDetection(type: .semanticVAD(eagerness: ...))`.
     public init(type: DetectionType) {
         switch type {
@@ -639,8 +639,14 @@ private struct OpenAIRealtimeSessionConfigurationWire: Encodable, Sendable {
     let prompt: OpenAIRealtimeSessionConfiguration.Prompt?
     let tracing: OpenAIRealtimeSessionConfiguration.Tracing?
     let truncation: OpenAIRealtimeSessionConfiguration.Truncation?
+    let reasoning: OpenAIRealtimeReasoningConfiguration?
+    let parallelToolCalls: Bool?
 
-    init(_ configuration: OpenAIRealtimeSessionConfiguration) {
+    init(
+        _ configuration: OpenAIRealtimeSessionConfiguration,
+        reasoning: OpenAIRealtimeReasoningConfiguration? = nil,
+        parallelToolCalls: Bool? = nil
+    ) {
         self.include = configuration.include
         self.type = configuration.type
         self.inputAudioFormat = configuration.inputAudioFormat
@@ -659,6 +665,8 @@ private struct OpenAIRealtimeSessionConfigurationWire: Encodable, Sendable {
         self.prompt = configuration.prompt
         self.tracing = configuration.tracing
         self.truncation = configuration.truncation
+        self.reasoning = reasoning
+        self.parallelToolCalls = parallelToolCalls
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -670,6 +678,8 @@ private struct OpenAIRealtimeSessionConfigurationWire: Encodable, Sendable {
         case model
         case outputModalities = "output_modalities"
         case prompt
+        case reasoning
+        case parallelToolCalls = "parallel_tool_calls"
         case tracing
         case truncation
         case tools
@@ -722,6 +732,8 @@ private struct OpenAIRealtimeSessionConfigurationWire: Encodable, Sendable {
         try container.encodeIfPresent(model, forKey: .model)
         try container.encodeIfPresent(outputModalities, forKey: .outputModalities)
         try container.encodeIfPresent(prompt, forKey: .prompt)
+        try container.encodeIfPresent(reasoning, forKey: .reasoning)
+        try container.encodeIfPresent(parallelToolCalls, forKey: .parallelToolCalls)
         try container.encodeIfPresent(tracing, forKey: .tracing)
         try container.encodeIfPresent(truncation, forKey: .truncation)
         try container.encodeIfPresent(tools, forKey: .tools)
@@ -773,5 +785,15 @@ private struct OpenAIRealtimeSessionConfigurationWire: Encodable, Sendable {
 extension OpenAIRealtimeSessionConfiguration {
     public func encode(to encoder: Encoder) throws {
         try OpenAIRealtimeSessionConfigurationWire(self).encode(to: encoder)
+    }
+}
+
+extension OpenAIRealtimeReasoningSessionConfiguration {
+    public func encode(to encoder: Encoder) throws {
+        try OpenAIRealtimeSessionConfigurationWire(
+            session,
+            reasoning: reasoning,
+            parallelToolCalls: parallelToolCalls
+        ).encode(to: encoder)
     }
 }
